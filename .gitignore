@@ -1,0 +1,46 @@
+# Build output
+bin/
+obj/
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider/IDE
+.idea/
+*.iml
+
+# Visual Studio
+.vs/
+
+# NuGet
+packages/
+*.nupkg
+
+# Publish output
+publish/
+wwwroot/
+
+# Logs
+*.log
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Secret files
+appsettings.Secret.json
+secrets.json
+
+# JetBrains Rider
+.idea/
+
+# Others
+.vscode/
+*.db
+*.sqlite
+node_modules/

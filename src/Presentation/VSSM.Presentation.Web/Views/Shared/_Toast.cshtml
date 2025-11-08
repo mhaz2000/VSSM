@@ -1,0 +1,20 @@
+﻿@{
+    var toast = TempData["toast"] as string;
+    var type = TempData["toast-type"] as string; // success, error, info
+}
+
+@if (!string.IsNullOrEmpty(toast))
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            Toastify({
+                text: "@toast",
+                className: "toastify-rtl @type",
+                gravity: "top",
+                position: "left",
+                close: true,
+                duration: 20000
+            }).showToast();
+        });
+    </script>
+}

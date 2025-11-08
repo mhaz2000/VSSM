@@ -8,7 +8,7 @@
     <link href="~/css/simple-line-icons.css" rel="stylesheet">
     <!-- Main styles for this application -->
     <link href="~/dest/style.css" rel="stylesheet">
-    <link href="~/toastify/toastify.min.css" rel="stylesheet" />
+    <link href="~/toastify/toast.css" rel="stylesheet" />
     <style>
         .container-fluid {
             padding: 0px 0px !important;
@@ -19,22 +19,7 @@
             border: 0px !important;
         }
 
-        .toastify-rtl {
-            direction: rtl;
-            text-align: right;
-        }
-
-        .success {
-            background: #28a745 !important;
-        }
-
-        .error {
-            background: #dc3545 !important;
-        }
-
-        .info {
-            background: #17a2b8 !important;
-        }
+        
     </style>
 </head>
 <body class="navbar-fixed sidebar-nav fixed-nav">
@@ -156,10 +141,24 @@
     <!-- Plugins and scripts required by this views -->
     <!-- Custom scripts required by this view -->
     <script src="~/js/views/main.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    @await Html.PartialAsync("_Toast")
-    <!-- Grunt watch plugin -->
-    <script src="//localhost:35729/livereload.js"></script>
+    <script src="~/toastify/toast.js"></script>
+
+    @using System.Text.Json
+    @{
+        var toastMessage = TempData["ToastMessage"]?.ToString();
+        var toastType = TempData["ToastType"]?.ToString();
+    }
+
+    <script>
+        const toastMessage = @Html.Raw(JsonSerializer.Serialize(toastMessage));
+        const toastType = @Html.Raw(JsonSerializer.Serialize(toastType ?? "success"));
+
+        if (toastMessage) {
+            showToast(toastMessage, toastType);
+        }
+    </script>
+    <!-- Grunt watch plugin
+    <script src="//localhost:35729/livereload.js"></script> -->
 
 
     @await RenderSectionAsync("Scripts", required: false)

@@ -26,8 +26,6 @@ namespace VSSM.Presentation.Web.Controllers
                                                                     sortOrder, 
                                                                     cancellationTOken);
 
-            TempData["toast"] = "test soastify";
-            TempData["toast-type"] = "info";
             return View(listModel);
         }
 
@@ -66,8 +64,8 @@ namespace VSSM.Presentation.Web.Controllers
                 var res = await _itemClassService.Update(dto, cancellationTOken);
             }
 
-            TempData["toast"] = "اطلاعات با موفقیت ثبت شد.";
-            TempData["toast-type"] = "success";
+            TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+            TempData["ToastType"] = "success";
 
             return RedirectToAction("Index");
         }

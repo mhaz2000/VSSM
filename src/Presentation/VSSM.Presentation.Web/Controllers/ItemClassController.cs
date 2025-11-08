@@ -15,8 +15,8 @@ namespace VSSM.Presentation.Web.Controllers
         }
         public async Task<IActionResult> Index(CancellationToken cancellationTOken,string? search,
                                                 int page = 1,
-                                                int pageSize = 4,
-                                                string sortField = "Id",
+                                                int pageSize = 20,
+                                                string sortField = "Orders",
                                                 string sortOrder = "desc")
         {
             var listModel = await _itemClassService.GetPagedList(search,

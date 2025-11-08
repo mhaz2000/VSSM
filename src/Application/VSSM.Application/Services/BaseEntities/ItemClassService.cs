@@ -122,7 +122,7 @@ namespace VSSM.Application.Services.BaseEntities
             {
                 "Name" => sortOrder == "asc" ? query.OrderBy(x => x.FullName) : query.OrderByDescending(x => x.FullName),
                 "Code" => sortOrder == "asc" ? query.OrderBy(x => x.Code) : query.OrderByDescending(x => x.Code),
-                _ => sortOrder == "asc" ? query.OrderBy(x => x.ItemClassId) : query.OrderByDescending(x => x.ItemClassId)
+                _ => sortOrder == "asc" ? query.OrderBy(x => x.Orders) : query.OrderByDescending(x => x.Orders)
             };
 
             // 3) Total count before paging

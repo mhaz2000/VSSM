@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Services.BaseEntities;
+using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.ItemClass;
 
 namespace VSSM.Presentation.Web.Controllers
@@ -31,6 +33,14 @@ namespace VSSM.Presentation.Web.Controllers
 
         public IActionResult New()
         {
+            ViewBag.UnitList = Enum.GetValues(typeof(UnitNameEnum))
+                                .Cast<UnitNameEnum>()
+                                .Select(u => new SelectListItem
+                                {
+                                    Text = u.ToString(),
+                                    Value = u.ToString()
+                                })
+                                .ToList();
             return View();
         }
 
@@ -43,7 +53,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             var dto = new ItemClassCreateDto
             {
-                ItemdClassId = model.ItemdClassId,
+                ItemClassId = model.ItemClassId.GetValueOrDefault(),
                 Code = model.Code,
                 FullName = model.FullName,
                 IsActive = model.IsActive,
@@ -51,11 +61,11 @@ namespace VSSM.Presentation.Web.Controllers
                 ReqBatchNo = model.ReqBatchNo,
                 ReqExpireDate = model.ReqExpireDate,
                 ReqManufacturer = model.ReqManufacturer,
-                UnitName = model.UnitName,
+                UnitName = model.UnitName.ToString(),
                 ReqDosePerVial = model.ReqDosePerVial,
             };
 
-            if (model.ItemdClassId == 0)
+            if (model.ItemClassId == null || model.ItemClassId == 0)
             {
                 // ---------- Create ----------
                 var res = await _itemClassService.Create(dto, cancellationTOken);
@@ -81,7 +91,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             var model = new ItemClassViewModel
             {
-                ItemdClassId = itemClass.ItemdClassId,
+                ItemClassId = itemClass.ItemdClassId,
                 Code = itemClass.Code,
                 FullName = itemClass.FullName,
                 IsActive = itemClass.IsActive,
@@ -89,7 +99,7 @@ namespace VSSM.Presentation.Web.Controllers
                 ReqBatchNo = itemClass.ReqBatchNo.GetValueOrDefault(),
                 ReqExpireDate = itemClass.ReqExpiryDate.GetValueOrDefault(),
                 ReqManufacturer = itemClass.ReqManufacturer.GetValueOrDefault(),
-                UnitName = itemClass.UnitName,
+                UnitName = Enum.Parse<UnitNameEnum>(itemClass.UnitName),
                 ReqDosePerVial = itemClass.ReqDosePerVial.GetValueOrDefault(),
             };
 

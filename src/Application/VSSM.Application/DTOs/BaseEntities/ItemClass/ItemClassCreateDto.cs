@@ -8,7 +8,7 @@ namespace VSSM.Application.DTOs.BaseEntities.ItemClass
 {
     public class ItemClassCreateDto
     {
-        public int ItemdClassId { get; set; }
+        public int ItemClassId { get; set; }
         public string? FullName { get; set; }
 
         public string? Code { get; set; }

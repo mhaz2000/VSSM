@@ -162,7 +162,7 @@ namespace VSSM.Application.Services.BaseEntities
 
 
             var entity = await _dbContext.TblItemsClasses
-                                .Where(x => x.ItemClassId == dto.ItemdClassId)
+                                .Where(x => x.ItemClassId == dto.ItemClassId)
                                 .FirstOrDefaultAsync(cancellationToken);
 
             if(entity != null)

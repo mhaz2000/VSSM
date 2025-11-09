@@ -1,7 +1,7 @@
 ﻿@model ItemClassViewModel
 @{
     string formName = "ثبت";
-    if (Model != null && Model.ItemdClassId > 0)
+    if (Model != null && Model.ItemClassId > 0)
         formName = "ویرایش";
 }
 <style>
@@ -54,7 +54,7 @@
                     <div class="card-block">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <form asp-action="Create" method="post" class="form-horizontal">
-                        <input type="hidden" asp-for="ItemdClassId" />
+                        <input type="hidden" asp-for="ItemClassId" />
                         <div class="col-lg-6">
                             <div class="form-group">
                                 <label class="form-label" for="Code">کد:</label>
@@ -68,10 +68,7 @@
 
                             <div class="form-group">
                                 <label class="form-label" for="Unit">واحد حجم:</label>
-                                <select asp-for="UnitName" name="UnitName" class="form-select">
-                                    <option value="M3">M3</option>
-                                    @*<option value="Kg">Kg</option>*@
-                                    <option value="Lit">Lit</option>
+                                <select asp-for="UnitName" asp-items="ViewBag.UnitList" class="form-select">
                                 </select>
                             </div>
 

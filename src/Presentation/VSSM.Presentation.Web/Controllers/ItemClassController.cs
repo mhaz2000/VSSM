@@ -15,7 +15,7 @@ namespace VSSM.Presentation.Web.Controllers
         }
         public async Task<IActionResult> Index(CancellationToken cancellationTOken,string? search,
                                                 int page = 1,
-                                                int pageSize = 20,
+                                                int pageSize = 10,
                                                 string sortField = "Orders",
                                                 string sortOrder = "desc")
         {
@@ -37,7 +37,9 @@ namespace VSSM.Presentation.Web.Controllers
         public async Task<IActionResult> Create(ItemClassViewModel model, CancellationToken cancellationTOken)
         {
             if (!ModelState.IsValid)
-                return View(model);
+            {
+                return View("New", model);
+            }
 
             var dto = new ItemClassCreateDto
             {

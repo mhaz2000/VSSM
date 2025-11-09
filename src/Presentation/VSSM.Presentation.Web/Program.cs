@@ -1,18 +1,11 @@
-using FluentValidation;
-using Microsoft.EntityFrameworkCore;
-using VSSM.Application.DTOs.BaseEntities.ItemClass;
-using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
-using VSSM.Infrastructure.Data.Models;
+using VSSM.Presentation.Web;
+using VSSM.Presentation.Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<VSSMDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("VSSMDbConnectionStrings")));
 
-// Add services to the container.
-builder.Services.AddScoped<IItemClassService, ItemClassService>();
-builder.Services.AddScoped<IValidator<ItemClassCreateDto>, ItemClassCreateValidator>();
+builder.Services.AddServiceCollectionExtension(builder.Configuration);
+
 
 if (builder.Environment.IsDevelopment())
 {
@@ -24,6 +17,8 @@ else
 }
 
 var app = builder.Build();
+
+app.UseGlobalException();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

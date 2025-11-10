@@ -33,14 +33,7 @@ namespace VSSM.Presentation.Web.Controllers
 
         public IActionResult New()
         {
-            ViewBag.UnitList = Enum.GetValues(typeof(UnitNameEnum))
-                                .Cast<UnitNameEnum>()
-                                .Select(u => new SelectListItem
-                                {
-                                    Text = u.ToString(),
-                                    Value = u.ToString()
-                                })
-                                .ToList();
+            LoadDropDowns();
             return View();
         }
 
@@ -103,8 +96,23 @@ namespace VSSM.Presentation.Web.Controllers
                 ReqDosePerVial = itemClass.ReqDosePerVial.GetValueOrDefault(),
             };
 
+            LoadDropDowns();
+
             // نمایش فرم ویرایش با داده‌ها
             return View("New", model);
+        }
+
+
+        private void LoadDropDowns()
+        {
+            ViewBag.UnitList = Enum.GetValues(typeof(UnitNameEnum))
+                                .Cast<UnitNameEnum>()
+                                .Select(u => new SelectListItem
+                                {
+                                    Text = u.ToString(),
+                                    Value = u.ToString()
+                                })
+                                .ToList();
         }
 
     }

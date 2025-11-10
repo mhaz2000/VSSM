@@ -23,7 +23,6 @@ packages/
 
 # Publish output
 publish/
-wwwroot/
 
 # Logs
 *.log

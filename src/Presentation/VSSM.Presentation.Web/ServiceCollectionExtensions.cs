@@ -16,6 +16,7 @@ namespace VSSM.Presentation.Web
                                     options.UseSqlServer(configuration.GetConnectionString("VSSMDbConnectionStrings")));
 
             services.AddScoped<IItemClassService, ItemClassService>();
+            services.AddScoped<IItemService, ItemService>();
             services.AddScoped<IValidator<ItemClassCreateDto>, ItemClassCreateValidator>();
         }
     }

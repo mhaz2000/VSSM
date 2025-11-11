@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -34,7 +35,7 @@ namespace VSSM.Application.Services.BaseEntities
             throw new NotImplementedException();
         }
 
-        public Task<ItemListPagingAndSearchDto> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
+        public Task<PagingSearchOrderDto<ItemListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

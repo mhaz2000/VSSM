@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
@@ -104,7 +105,7 @@ namespace VSSM.Application.Services.BaseEntities
 
         }
 
-        public async Task<ItemClassListPagingAndSearchDto> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
+        public async Task<PagingSearchOrderDto<ItemClassListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = page, PageSize = pageSize };
 
@@ -143,7 +144,7 @@ namespace VSSM.Application.Services.BaseEntities
                 })
                 .ToListAsync(cancellationToken);
 
-            return new ItemClassListPagingAndSearchDto
+            return new PagingSearchOrderDto<ItemClassListDto>
             {
                 Items = items,
                 Paging = paging,

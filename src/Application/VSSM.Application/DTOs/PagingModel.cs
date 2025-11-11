@@ -1,4 +1,4 @@
-﻿namespace VSSM.Application.DTOs.BaseEntities.ItemClass;
+﻿namespace VSSM.Application.DTOs;
 
 public class PagingModel
 {

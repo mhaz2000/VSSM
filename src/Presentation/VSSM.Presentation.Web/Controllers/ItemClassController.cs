@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
 using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.ItemClass;
 

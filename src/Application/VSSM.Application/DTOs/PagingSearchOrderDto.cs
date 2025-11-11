@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VSSM.Application.DTOs.BaseEntities.ItemClass
+namespace VSSM.Application.DTOs
 {
-    public class ItemClassListPagingAndSearchDto
+    public class PagingSearchOrderDto<T>
     {
-        public IEnumerable<ItemClassListDto> Items { get; set; }
+        public IEnumerable<T> Items { get; set; }
 
         // Search parameters
         public string? SearchText { get; set; }

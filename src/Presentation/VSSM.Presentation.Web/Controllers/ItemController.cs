@@ -1,15 +1,21 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using VSSM.Application.Common.Extensions;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Domain.Enums;
 
 namespace VSSM.Presentation.Web.Controllers
 {
     public class ItemController : Controller
     {
         private readonly IItemService _itemService;
-        public ItemController(IItemService itemService)
+        private readonly IItemClassService _itemClassService;
+        public ItemController(IItemService itemService, IItemClassService itemClassService)
         {
             _itemService = itemService;
+            _itemClassService = itemClassService;
         }
 
         public async Task<IActionResult> Index(CancellationToken cancellationTOken, string? search,
@@ -25,77 +31,28 @@ namespace VSSM.Presentation.Web.Controllers
                                                                     sortOrder,
                                                                     cancellationTOken);
 
+            LoadItemTypeEnum();
             return View(listModel);
         
         }
-
-        // GET: ItemController/Details/5
-        public ActionResult Details(int id)
+        public IActionResult New()
         {
+            LoadItemTypeEnum();
             return View();
         }
 
-        // GET: ItemController/Create
-        public ActionResult Create()
+        private void LoadItemTypeEnum()
         {
-            return View();
-        }
+            var list = Enum.GetValues(typeof(ItemTypeEnum))
+                   .Cast<ItemTypeEnum>()
+                   .Select(x => new
+                   {
+                       Id = (int)x,
+                       Title = x.GetDescription()
+                   })
+                   .ToList();
 
-        // POST: ItemController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: ItemController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: ItemController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: ItemController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: ItemController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            ViewBag.ItemTypes = list;
         }
     }
 }

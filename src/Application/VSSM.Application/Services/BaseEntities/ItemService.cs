@@ -90,5 +90,6 @@ namespace VSSM.Application.Services.BaseEntities
         {
             throw new NotImplementedException();
         }
+ 
     }
 }

@@ -10,7 +10,7 @@
         <div class="card">
             <div class="card-block">
                 <div class="col-lg-3">
-                    <div><h5> مدیریت نوع کالا</h5></div>
+                    <div><h5> مدیریت کالا</h5></div>
                 </div>
 
                 <div class="col-lg-4">
@@ -26,7 +26,7 @@
                     </div>
                 </form>
                 <div class="col-lg-1">
-                    <a type="submit" class="btn btn btn-success" asp-controller="ItemClass" asp-action="New"><i class="fa fa-plus-circle"></i> جدید</a>
+                    <a type="submit" class="btn btn btn-success" asp-controller="Item" asp-action="New"><i class="fa fa-plus-circle"></i> جدید</a>
                 </div>
             </div>
         </div>
@@ -39,13 +39,14 @@
                         <table class="table table-bordered table-striped table-condensed text-center">
                             <thead>
                                 <tr>
-                                    @* <th>ردیف</th> *@
-                                    @* <th><a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">کد</a></th>
-                                    <th><a href="?sortField=Name&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">نام</a></th>
-                                    <th><a href="?sortField=Orders&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">ترتیب نمایش در لیست</a></th>
-                                    <th>واحد حجم</th>
+                                    @* <th>نوع کالا</th> *@
+                                    <th>کد</th>
+                                    <th>نام کامل</th>
+                                    <th>کد بین المللی</th>
+                                    <th>حلال</th>
+                                    <th>ترتیب نمایش در لیست</th>
                                     <th>وضعیت</th>
-                                    <th>عملیات</th> *@
+                                    <th>عملیات</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -55,15 +56,15 @@
                                     foreach (var item in Model.Items)
                                     {
                                         <tr>
-                                            @* <td>@i</td> *@
-                                            @* <td>@item.Code</td>
-                                            <td>@item.Name</td>
+                                            <td>@item.Code</td>
+                                            <td>@item.FullName</td>
+                                            <td>@item.UniCode</td>
+                                            <td>@item.DiluentId</td>
                                             <td>@item.OrderInList</td>
-                                            <td>@item.UnitName</td>
                                             <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
                                             <td>
                                                 <a class="btn btn-primary btn-sm" asp-controller="ItemClass" asp-action="Edit" asp-route-id="@item.Id">ویرایش</a>
-                                            </td> *@
+                                            </td>
                                         </tr>
                                         i++;
                                     }
@@ -71,7 +72,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="6" class="text-center text-danger">داده‌ای یافت نشد</td>
+                                        <td colspan="7" class="text-center text-danger">داده‌ای یافت نشد</td>
                                     </tr>
                                 }
                             </tbody>

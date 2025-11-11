@@ -1,14 +1,32 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers
 {
     public class ItemController : Controller
     {
-        // GET: ItemController
-        public ActionResult Index()
+        private readonly IItemService _itemService;
+        public ItemController(IItemService itemService)
         {
-            return View();
+            _itemService = itemService;
+        }
+
+        public async Task<IActionResult> Index(CancellationToken cancellationTOken, string? search,
+                                                int page = 1,
+                                                int pageSize = 10,
+                                                string sortField = "Orders",
+                                                string sortOrder = "desc")
+        {
+            var listModel = await _itemService.GetPagedList(search,
+                                                                    page,
+                                                                    pageSize,
+                                                                    sortField,
+                                                                    sortOrder,
+                                                                    cancellationTOken);
+
+            return View(listModel);
+        
         }
 
         // GET: ItemController/Details/5

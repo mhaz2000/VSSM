@@ -55,7 +55,6 @@ namespace VSSM.Application.Services.BaseEntities
 
             IQueryable<TblLevel> query = _dbContext.TblLevels.AsNoTracking();
 
-            // -------------------- Search --------------------
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(x =>
@@ -64,7 +63,6 @@ namespace VSSM.Application.Services.BaseEntities
                 );
             }
 
-            // -------------------- Sorting --------------------
             query = sortField switch
             {
                 "ShipCount" => sortOrder == "asc"
@@ -80,10 +78,8 @@ namespace VSSM.Application.Services.BaseEntities
                 _ => sortOrder == "asc" ? query.OrderBy(x => x.LevelId) : query.OrderByDescending(x => x.LevelId),
             };
 
-            // -------------------- Total count --------------------
             paging.TotalItems = await query.CountAsync(cancellationToken);
 
-            // -------------------- Paging --------------------
             var items = await query
                 .Skip(paging.Skip)
                 .Take(paging.PageSize)

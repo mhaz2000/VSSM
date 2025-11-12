@@ -7,17 +7,24 @@
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <div class="card mb-3">
-            <div class="card-body d-flex align-items-center">
+        <div class="card">
+            <div class="card-block">
                 <div class="col-lg-3">
                     <h5>مدیریت سطوح</h5>
                 </div>
+                <div class="col-lg-4">
+                </div>
+                <form method="get">
+                    <div class="col-lg-4">
+                        <div class="input-group">
+                            <input type="text" name="search" value="@Model.SearchText" class="form-control" placeholder="جستجو...">
+                            <div class="input-group-btn">
+                                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> جستجو</button>
+                            </div>
 
-                <form method="get" class="col-lg-4">
-                    <div class="input-group">
-                        <input type="text" name="search" value="@Model.SearchText" class="form-control" placeholder="جستجو...">
-                        <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> جستجو</button>
+                        </div>
                     </div>
+
                 </form>
 
                 <div class="col-lg-1 ms-auto">
@@ -32,45 +39,45 @@
                     <div class="card-body p-0">
                         <table class="table table-bordered table-striped table-condensed text-center mb-0">
                             <thead>
-                                <tr>
-                                    <th>شناسه</th>
-                                    <th>تعداد ارسال</th>
-                                    <th>درصد موجودی ایمنی</th>
-                                    <th>ماه موجودی ایمنی</th>
-                                    <th>حداکثر روز</th>
-                                    <th>یادداشت</th>
-                                    <th>عملیات</th>
-                                </tr>
+                            <tr>
+                                <th>شناسه</th>
+                                <th>تعداد ارسال</th>
+                                <th>درصد موجودی ایمنی</th>
+                                <th>ماه موجودی ایمنی</th>
+                                <th>حداکثر روز</th>
+                                <th>یادداشت</th>
+                                <th>عملیات</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                @if (Model.Items != null && Model.Items.Any())
-                                {
-                                    foreach (var level in Model.Items)
-                                    {
-                                        <tr>
-                                            <td>@level.LevelId</td>
-                                            <td>@level.ShipCount</td>
-                                            <td>@level.SafetyStockPercentage</td>
-                                            <td>@level.SafetyStockMonth</td>
-                                            <td>@level.MaxDay</td>
-                                            <td>@level.Note</td>
-                                            <td>
-                                                <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@level.LevelId">ویرایش</a>
-
-                                                <form asp-action="Delete" asp-route-id="@level.LevelId" method="post" style="display:inline;">
-                                                    @Html.AntiForgeryToken()
-                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('آیا مطمئن هستید می‌خواهید حذف کنید؟');">حذف</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    }
-                                }
-                                else
+                            @if (Model.Items != null && Model.Items.Any())
+                            {
+                                foreach (var level in Model.Items)
                                 {
                                     <tr>
-                                        <td colspan="7" class="text-center text-danger">داده‌ای یافت نشد</td>
+                                        <td>@level.LevelId</td>
+                                        <td>@level.ShipCount</td>
+                                        <td>@level.SafetyStockPercentage</td>
+                                        <td>@level.SafetyStockMonth</td>
+                                        <td>@level.MaxDay</td>
+                                        <td>@level.Note</td>
+                                        <td>
+                                            <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@level.LevelId">ویرایش</a>
+
+                                            <form asp-action="Delete" asp-route-id="@level.LevelId" method="post" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('آیا مطمئن هستید می‌خواهید حذف کنید؟');">حذف</button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center text-danger">داده‌ای یافت نشد</td>
+                                </tr>
+                            }
                             </tbody>
                         </table>
 
@@ -93,7 +100,7 @@
                                 </li>
                             </ul>
                         </nav>
-                        
+
                     </div>
                 </div>
             </div>

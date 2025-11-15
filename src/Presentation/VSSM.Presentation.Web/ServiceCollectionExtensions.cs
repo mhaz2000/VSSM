@@ -18,6 +18,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IItemClassService, ItemClassService>();
             services.AddScoped<IItemService, ItemService>();
             services.AddScoped<IValidator<ItemClassCreateDto>, ItemClassCreateValidator>();
+            services.AddScoped<IReceivingModeService, ReceivingModeService>();
         }
     }
 

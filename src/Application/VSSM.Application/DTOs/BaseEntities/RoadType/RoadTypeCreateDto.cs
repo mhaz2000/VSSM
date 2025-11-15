@@ -4,13 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VSSM.Application.DTOs.BaseEntities.TblRoadType;
+namespace VSSM.Application.DTOs.BaseEntities.RoadType;
 
-public class TblRoadTypeCreateDto
+public class RoadTypeCreateDto
 {
     public string Code { get; set; }
 
     public string FullName { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
+
+
 }

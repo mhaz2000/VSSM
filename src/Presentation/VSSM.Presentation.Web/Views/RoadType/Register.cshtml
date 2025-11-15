@@ -1,0 +1,109 @@
+﻿@model RoadTypeCreateDto
+
+<style>
+    .form-container {
+        width: 60%;
+        margin: 0 auto;
+        direction: rtl;
+        padding-top: 20px;
+    }
+
+    .form-table {
+        width: 100%;
+    }
+
+    .form-label {
+        width: 120px;
+        text-align: left;
+        padding-left: 10px;
+        font-weight: bold;
+    }
+
+    .form-input {
+        width: 250px;
+        background-color: #ffffcc; /* رنگ زرد کم‌رنگ مطابق عکس */
+        border: 1px solid #ccc;
+        height: 28px;
+    }
+
+    .form-checkbox {
+        margin-top: 5px;
+    }
+
+    .submit-btn {
+        width: 100px;
+        height: 32px;
+        background-color: #e6e6e6;
+        border: 1px solid #999;
+    }
+
+    .header-box {
+        background-color: #dce6ff;
+        height: 35px;
+        border: 1px solid #aac6ff;
+        margin-bottom: 25px;
+    }
+
+    .panel-wrapper {
+        border: 1px solid #aac6ff;
+        padding: 20px;
+        margin-top: -25px;
+    }
+
+    .page-title {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 15px;
+        margin-top: 10px;
+    }
+
+</style>
+
+<div class="page-title">ثبت</div>
+
+<div class="header-box"></div>
+
+<div class="form-container panel-wrapper">
+
+    <h6 style="text-align:center; margin-bottom:20px;">ثبت نوع راه</h6>
+
+    <form method="post">
+
+        <table class="form-table">
+
+            <tr>
+                <td class="form-label">کد</td>
+                <td><input asp-for="Code" class="form-input" /></td>
+            </tr>
+
+            <tr><td colspan="2" style="height:10px;"></td></tr>
+
+            <tr>
+                <td class="form-label">نام کامل</td>
+                <td><input asp-for="FullName" class="form-input" /></td>
+            </tr>
+
+            <tr><td colspan="2" style="height:10px;"></td></tr>
+
+            <tr>
+                <td class="form-label">وضعیت</td>
+                <td>
+                    <input type="checkbox" asp-for="IsActive" class="form-checkbox" />
+                    فعال است
+                </td>
+            </tr>
+
+            <tr><td colspan="2" style="height:20px;"></td></tr>
+
+            <tr>
+                <td></td>
+                <td>
+                    <button type="submit" class="submit-btn">ثبت</button>
+                </td>
+            </tr>
+
+        </table>
+
+    </form>
+
+</div>

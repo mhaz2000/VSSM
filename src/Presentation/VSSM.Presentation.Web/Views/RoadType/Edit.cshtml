@@ -1,0 +1,41 @@
+﻿@model RoadTypeEditDto
+
+<div class="container-fluid" dir="rtl">
+
+    <div class="card mt-3">
+        <div class="card-block">
+            <h5>ویرایش نوع راه</h5>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-block">
+
+            <form method="post">
+
+                <input type="hidden" asp-for="RoadTypeId" />
+
+                <div class="form-group d-flex mt-2">
+                    <label class="form-label">کد:</label>
+                    <input asp-for="Code" class="form-control bg-warning-subtle" />
+                </div>
+
+                <div class="form-group d-flex mt-2">
+                    <label class="form-label">نام کامل:</label>
+                    <input asp-for="FullName" class="form-control bg-warning-subtle" />
+                </div>
+
+                <div class="form-group d-flex mt-2">
+                    <label class="form-label">وضعیت:</label>
+                    <input asp-for="IsActive" type="checkbox" class="form-check-input" />
+                    <label class="form-check-label ms-2">فعال است</label>
+                </div>
+
+                <button type="submit" class="btn btn-success">ذخیره</button>
+                <a asp-action="Management" class="btn btn-primary">بازگشت</a>
+
+            </form>
+
+        </div>
+    </div>
+</div>

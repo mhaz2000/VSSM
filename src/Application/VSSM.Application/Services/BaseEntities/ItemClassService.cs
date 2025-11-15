@@ -55,24 +55,24 @@ namespace VSSM.Application.Services.BaseEntities
             try
             {
 
-            
-            var items = await _dbContext.TblItemsClasses
-                                .AsNoTracking()
-                                .ToListAsync(cancellationToken);
 
-            var result = items.Select(x => new ItemClassListDto
-            {
-                Id = x.ItemClassId,
-                Name = x.FullName,
-                Code = x.Code,
-                UnitName = x.VolumeType,
-                OrderInList = x.Orders.GetValueOrDefault(),
-                IsActive = x.IsActive.GetValueOrDefault(),
-            }).ToList();
+                var items = await _dbContext.TblItemsClasses
+                                    .AsNoTracking()
+                                    .ToListAsync(cancellationToken);
 
-            return result;
+                var result = items.Select(x => new ItemClassListDto
+                {
+                    Id = x.ItemClassId,
+                    Name = x.FullName,
+                    Code = x.Code,
+                    UnitName = x.VolumeType,
+                    OrderInList = x.Orders.GetValueOrDefault(),
+                    IsActive = x.IsActive.GetValueOrDefault(),
+                }).ToList();
+
+                return result;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 throw;
@@ -166,7 +166,7 @@ namespace VSSM.Application.Services.BaseEntities
                                 .Where(x => x.ItemClassId == dto.ItemClassId)
                                 .FirstOrDefaultAsync(cancellationToken);
 
-            if(entity != null)
+            if (entity != null)
             {
                 entity.Code = dto.Code;
                 entity.FullName = dto.FullName;
@@ -182,7 +182,7 @@ namespace VSSM.Application.Services.BaseEntities
             await _dbContext.SaveChangesAsync();
             return true;
         }
-    
-    
+
+
     }
 }

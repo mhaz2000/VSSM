@@ -111,9 +111,22 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="components-cards.html"> شرایط اقلیمی</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="components-forms.html"> نوع راه</a>
+                                <li class="nav-item nav-dropdown">
+                                    <a class="nav-link nav-dropdown-toggle" href="#"> نوع راه</a>
+                                    <ul class="nav-dropdown-items">
+                                        <li class="nav-item">
+                                            <a class="nav-link" asp-controller="RoadType" asp-action="Management">
+                                                مدیریت
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" asp-controller="RoadType" asp-action="Register">
+                                                ثبت
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
+
                                 <li class="nav-item">
                                     <a class="nav-link" href="components-cards.html"> نوع مالکیت</a>
                                 </li>

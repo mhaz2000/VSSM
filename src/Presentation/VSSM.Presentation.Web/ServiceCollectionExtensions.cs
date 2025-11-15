@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs.BaseEntities.AdjustReason;
+using VSSM.Application.DTOs.BaseEntities.CommercialName;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.DTOs.BaseEntities.Levels;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -21,7 +22,9 @@ namespace VSSM.Presentation.Web
             services.AddScoped<ILevelService, LevelService>();
             services.AddScoped<IItemService, ItemService>();
             services.AddScoped<IAdjustReasonService, AdjustReasonService>();
+            services.AddScoped<ICommercialNameService, CommercialNameService>();
             services.AddScoped<IValidator<ItemClassCreateDto>, ItemClassCreateValidator>();
+            services.AddScoped<IValidator<CommercialNameDto>, CommercialNameValidator>();
             services.AddScoped<IValidator<AdjustreasonDto>, AdjustReasonValidator>();
             services.AddScoped<IValidator<LevelDto>, LevelValidator>();
         }

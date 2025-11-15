@@ -1,0 +1,130 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model VSSM.Presentation.Web.Models.AdjustReason.AdjustReasonViewModel
+
+@{
+string formName = "ثبت دلیل تعدیل";
+if (Model != null && Model.AdjustReasonId > 0 && Model.AdjustReasonId > 0)
+{
+formName = "ویرایش دلیل تعدیل";
+}
+}
+
+<style>
+    .form-label {
+        text-align: left;
+        width: 160px;
+        margin-left: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        direction: rtl;
+    }
+
+    .form-control, .form-select {
+        flex: 1;
+    }
+
+    .form-check {
+        margin-inline-end: 25px;
+        margin-right: 30px !important;
+    }
+
+    .form-check-label {
+        padding-right: 0rem !important;
+    }
+
+    .card {
+        direction: rtl;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <!-- Title -->
+        <div class="card mb-3">
+            <div class="card-block">
+                <h5>@formName</h5>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-block">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <form asp-action="Create" method="post" class="form-horizontal">
+                    <input type="hidden" asp-for="AdjustReasonId" />
+
+                    <div class="col-lg-6">
+
+                        <!-- Code -->
+                        <div class="form-group">
+                            <label class="form-label">کد</label>
+                            <input asp-for="Code" class="form-control" />
+                        </div>
+
+                        <!-- Full Name -->
+                        <div class="form-group">
+                            <label class="form-label">نام کامل</label>
+                            <input asp-for="FullName" class="form-control" />
+                        </div>
+
+                        <!-- Entry Date -->
+                        <div class="form-group">
+                            <label class="form-label">تاریخ ورود</label>
+                            <input asp-for="EntryDate" type="date" class="form-control" />
+                        </div>
+
+                        <hr />
+
+                        <!-- Checkboxes -->
+                        <div class="form-group">
+                            <label class="form-label">فعال</label>
+                            <input asp-for="IsActive" type="checkbox" class="form-check-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">استفاده برای تعدیل ارسال</label>
+                            <input asp-for="UsedForDispatchAdjust" type="checkbox" class="form-check-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">استفاده برای تعدیل رسید</label>
+                            <input asp-for="UserForArrivalAdjust" type="checkbox" class="form-check-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">استفاده برای تعدیل موجودی</label>
+                            <input asp-for="UsedForStockAdjust" type="checkbox" class="form-check-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">ضایعات</label>
+                            <input asp-for="IsWaste" type="checkbox" class="form-check-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">کاهش موجودی</label>
+                            <input asp-for="ApplicationForStockSubtraction" type="checkbox" class="form-check-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">افزایش موجودی</label>
+                            <input asp-for="ApplicationForStockAddition" type="checkbox" class="form-check-input" />
+                        </div>
+                        <!-- Submit + Back Buttons -->
+                        <div class="col-lg-12 text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5">ثبت</button>
+                            <a class="btn btn-primary px-5" asp-action="Index">لیست</a>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>

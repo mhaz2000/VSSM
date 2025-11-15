@@ -13,11 +13,11 @@ namespace VSSM.Application.DTOs.BaseEntities.RoadType
         public RoadTypeEditValidator()
         {
             RuleFor(x => x.Code)
-               .NotEmpty().WithMessage("کد نوع کالا اجباری است");
+               .NotEmpty().WithMessage("کد اجباری است");
 
 
             RuleFor(x => x.FullName)
-                .NotEmpty().WithMessage("نام کامل نوع کالا اجباری است");
+                .NotEmpty().WithMessage("نام اجباری است");
 
         }
     }

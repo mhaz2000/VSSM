@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.DTOs.BaseEntities.RoadType;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
@@ -83,23 +85,7 @@ namespace VSSM.Application.Services.BaseEntities
         // ---------------------------------------------------------
         // GET ALL  (RAW SQL → TblRoadType)
         // ---------------------------------------------------------
-        public async Task<List<RoadTypeGetDto>> GetAll(CancellationToken cancellationToken)
-        {
-            var sql = "SELECT * FROM tblRoadType";
 
-            var items = await _dbContext.TblRoadTypes
-                .FromSqlRaw(sql)
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
-
-            return items.Select(x => new RoadTypeGetDto
-            {
-                RoadTypeId = x.RoadTypeId,
-                Code = x.Code,
-                FullName = x.FullName,
-                IsActive = x.IsActive ?? false
-            }).ToList();
-        }
 
         // ---------------------------------------------------------
         // GET BY ID (RAW SQL → TblRoadType)
@@ -122,6 +108,65 @@ namespace VSSM.Application.Services.BaseEntities
                 Code = row.Code,
                 FullName = row.FullName,
                 IsActive = row.IsActive ?? false
+            };
+        }
+
+
+        public async Task<PagingSearchOrderDto<RoadTypeGetDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
+        {
+            var paging = new PagingModel { Page = page, PageSize = pageSize };
+
+            IQueryable<TblRoadType> query = _dbContext.TblRoadTypes;
+
+            // ---------- 1) SEARCH ----------
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x =>
+                    x.FullName.Contains(search) ||
+                    x.Code.Contains(search)
+                );
+            }
+
+            // ---------- 2) SORTING ----------
+            query = sortField switch
+            {
+                "FullName" => sortOrder == "asc"
+                                ? query.OrderBy(x => x.FullName)
+                                : query.OrderByDescending(x => x.FullName),
+
+                "Code" => sortOrder == "asc"
+                                ? query.OrderBy(x => x.Code)
+                                : query.OrderByDescending(x => x.Code),
+
+                _ => sortOrder == "asc"
+                                ? query.OrderBy(x => x.RoadTypeId)
+                                : query.OrderByDescending(x => x.RoadTypeId)
+            };
+
+            // ---------- 3) TOTAL ITEMS ----------
+            paging.TotalItems = await query.CountAsync(cancellationToken);
+
+            // ---------- 4) PAGE DATA ----------
+            var items = await query
+                .Skip(paging.Skip)
+                .Take(paging.PageSize)
+                .Select(x => new RoadTypeGetDto
+                {
+                    RoadTypeId = x.RoadTypeId,
+                    Code = x.Code,
+                    FullName = x.FullName,
+                    IsActive = x.IsActive ?? false
+                })
+                .ToListAsync(cancellationToken);
+
+            // ---------- RETURN MODEL ----------
+            return new PagingSearchOrderDto<RoadTypeGetDto>
+            {
+                Items = items,
+                Paging = paging,
+                SearchText = search,
+                SortField = sortField,
+                SortOrder = sortOrder
             };
         }
     }

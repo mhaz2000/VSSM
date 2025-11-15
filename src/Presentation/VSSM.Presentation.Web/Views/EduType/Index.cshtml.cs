@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace VSSM.Presentation.Web.Views.RoadType
+namespace VSSM.Presentation.Web.Views.EduType
 {
-    public class RegisterModel : PageModel
+    public class IndexModel : PageModel
     {
         public void OnGet()
         {

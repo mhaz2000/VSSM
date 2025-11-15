@@ -3,89 +3,118 @@ using VSSM.Application.DTOs.BaseEntities.RoadType;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.RoadType;
 
-public class RoadTypeController : Controller
+namespace VSSM.Presentation.Web.Controllers
 {
-    private readonly IRoadTypeService _service;
-
-    public RoadTypeController(IRoadTypeService service)
+    public class RoadTypeController : Controller
     {
-        _service = service;
-    }
+        private readonly IRoadTypeService _roadTypeService;
 
-
-    // -------------------------------------------------------
-    // ثبت (CREATE PAGE)
-    // -------------------------------------------------------
-    public IActionResult Register()
-    {
-        return View();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Register(RoadTypeCreateDto dto, CancellationToken cancellationToken)
-    {
-        if (!ModelState.IsValid)
-            return View(dto);
-
-        await _service.Create(dto, cancellationToken);
-
-        TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
-        TempData["ToastType"] = "success";
-
-        return RedirectToAction("Management");
-    }
-
-    // -------------------------------------------------------
-    // ویرایش (EDIT PAGE)
-    // -------------------------------------------------------
-    public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
-    {
-        var dto = await _service.GetById(id, cancellationToken);
-
-        var vm = new RoadTypeEditDto
+        public RoadTypeController(IRoadTypeService roadTypeService)
         {
-            RoadTypeId = dto.RoadTypeId,
-            Code = dto.Code,
-            FullName = dto.FullName,
-            IsActive = dto.IsActive
-        };
+            _roadTypeService = roadTypeService;
+        }
 
-        return View(vm);
+        // لیست + جستجو + صفحه‌بندی + مرتب‌سازی
+        public async Task<IActionResult> Index(
+            CancellationToken cancellationToken,
+            string? search,
+            int page = 1,
+            int pageSize = 10,
+            string sortField = "Code",
+            string sortOrder = "asc")
+        {
+            var listModel = await _roadTypeService.GetPagedList(
+                search,
+                page,
+                pageSize,
+                sortField,
+                sortOrder,
+                cancellationToken);
+
+            return View(listModel);
+        }
+
+        // نمایش فرم ثبت/ویرایش
+        public async Task<IActionResult> New(int? id, CancellationToken cancellationToken)
+        {
+            RoadTypeViewModel model = new RoadTypeViewModel();
+
+            if (id.HasValue && id.Value > 0)
+            {
+                var dto = await _roadTypeService.GetById(id.Value, cancellationToken);
+                if (dto == null)
+                    return NotFound();
+
+                model = new RoadTypeViewModel
+                {
+                    RoadTypeId = dto.RoadTypeId,
+                    Code = dto.Code,
+                    FullName = dto.FullName,
+                    IsActive = dto.IsActive
+                };
+            }
+
+            return View(model);
+        }
+
+        // Create + Update (مثل ItemClass)
+        [HttpPost]
+        public async Task<IActionResult> Create(RoadTypeViewModel model, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("New", model);
+            }
+
+            if (model.RoadTypeId == null || model.RoadTypeId == 0)
+            {
+                // ---------- Create ----------
+                var dto = new RoadTypeCreateDto
+                {
+                    Code = model.Code,
+                    FullName = model.FullName,
+                    IsActive = model.IsActive
+                };
+
+                var res = await _roadTypeService.Create(dto, cancellationToken);
+            }
+            else
+            {
+                // ---------- Update ----------
+                var dto = new RoadTypeEditDto
+                {
+                    RoadTypeId = model.RoadTypeId.Value,
+                    Code = model.Code,
+                    FullName = model.FullName,
+                    IsActive = model.IsActive
+                };
+
+                var res = await _roadTypeService.Update(dto, cancellationToken);
+            }
+
+            TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index");
+        }
+
+        // ویرایش مستقیم مانند ItemClass/Edit (اختیاری، ولی کاملش می‌کنیم)
+        public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
+        {
+            var dto = await _roadTypeService.GetById(id, cancellationToken);
+            if (dto == null)
+                return NotFound();
+
+            var model = new RoadTypeViewModel
+            {
+                RoadTypeId = dto.RoadTypeId,
+                Code = dto.Code,
+                FullName = dto.FullName,
+                IsActive = dto.IsActive
+            };
+
+            // استفاده از همان فرم New برای Edit
+            return View("New", model);
+        }
     }
-
-    public async Task<IActionResult> Management(string? search, int? id, CancellationToken token)
-    {
-        var vm = new RoadTypeManagementViewModel();
-
-        // مقدار سرچ
-        vm.Search = search;
-
-        // دریافت همه رکوردها
-        var data = await _service.GetAll(token);
-
-        // اگر سرچ زده باشد
-        if (!string.IsNullOrEmpty(search))
-            data = data.Where(x => x.FullName.Contains(search) || x.Code.Contains(search)).ToList();
-
-        vm.Items = data;
-
-        // اگر id ارسال شده باشد → یعنی نمایش/ویرایش
-        if (id != null)
-            vm.EditItem = await _service.GetById(id.Value, token);
-
-        return View(vm);
-    }
-
-
-    [HttpPost]
-    public async Task<IActionResult> Update(RoadTypeEditDto dto, CancellationToken token)
-    {
-        await _service.Update(dto, token);
-
-        TempData["ToastMessage"] = "ویرایش با موفقیت انجام شد";
-        TempData["ToastType"] = "success";
-
-        return RedirectToAction("Management");
-    }
-
 }

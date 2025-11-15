@@ -111,25 +111,15 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="components-cards.html"> شرایط اقلیمی</a>
                                 </li>
-                                <li class="nav-item nav-dropdown">
-                                    <a class="nav-link nav-dropdown-toggle" href="#"> نوع راه</a>
-                                    <ul class="nav-dropdown-items">
-                                        <li class="nav-item">
-                                            <a class="nav-link" asp-controller="RoadType" asp-action="Management">
-                                                مدیریت
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" asp-controller="RoadType" asp-action="Register">
-                                                ثبت
-                                            </a>
-                                        </li>
-                                    </ul>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="RoadType" asp-action="Index"> نوع راه</a>
                                 </li>
+ 
 
                                 <li class="nav-item">
-                                    <a class="nav-link" href="components-cards.html"> نوع مالکیت</a>
+                                    <a class="nav-link" asp-controller="Ownership" asp-action="Index"> نوع مالکیت</a>
                                 </li>
+
                             </ul>
                         </li>
                         <li class="nav-item nav-dropdown">
@@ -150,7 +140,7 @@
                                     <a class="nav-link" href="components-social-buttons.html"> نوع انبار</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="components-social-buttons.html"> منبع انرژی</a>
+                                    <a class="nav-link" asp-controller="PowerSource" asp-action="Index"> منبع انرژی</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="components-social-buttons.html"> دلیل عدم استفاده از دستگاه</a>
@@ -175,11 +165,12 @@
                             <a class="nav-link nav-dropdown-toggle" href="#"> اطلاعات مربوط به کاربران</a>
                             <ul class="nav-dropdown-items">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="components-social-buttons.html"> تحصیلات</a>
+                                    <a class="nav-link" asp-controller="EduType" asp-action="Index"> تحصیلات</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="components-social-buttons.html">شغل </a>
+                                    <a class="nav-link" asp-controller="JobType" asp-action="Index"> عنوان شغل </a>
                                 </li>
+
                             </ul>
                         </li>
                         <li class="nav-item">

@@ -42,7 +42,9 @@
                                 <tr>
                                     @* <th>ردیف</th> *@
                                     <th><a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">کد</a></th>
-                                    <th><a href="?sortField=Name&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">نام</a></th>
+                                    <th>
+                                        <<a href="?sortField=FullName&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">نام</a>
+                                    </th>
                                     <th><a href="?sortField=Orders&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">ترتیب نمایش در لیست</a></th>
                                     <th>واحد حجم</th>
                                     <th>وضعیت</th>

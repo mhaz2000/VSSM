@@ -20,7 +20,7 @@ public class ReceivingModeService : IReceivingModeService
         {
             Code = dto.Code,
             FullName = dto.FullName,
-            EntryDate = dto.EntryDate,
+            EntryDate = DateTime.Now,
             IsActive = dto.IsActive,
         };
 
@@ -126,7 +126,7 @@ public class ReceivingModeService : IReceivingModeService
         {
             receivingMode.Code = dto.Code;
             receivingMode.FullName = dto.FullName;
-            receivingMode.EntryDate = dto.EntryDate;
+            //receivingMode.EntryDate = dto.EntryDate;
             receivingMode.IsActive = dto.IsActive;
 
             await _dbContext.SaveChangesAsync(cancellationToken);

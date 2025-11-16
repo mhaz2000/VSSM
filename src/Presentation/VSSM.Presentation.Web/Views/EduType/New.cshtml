@@ -1,0 +1,104 @@
+﻿@model VSSM.Presentation.Web.Models.EduType.EduTypeViewModel
+
+@{
+    string formName = "ثبت";
+    if (Model != null && Model.EduTypeId > 0)
+        formName = "ویرایش";
+}
+
+<style>
+    .form-label {
+        text-align: left;
+        width: 130px;
+        margin-left: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-control {
+        flex: 1;
+    }
+
+    .form-check {
+        margin-inline-end: 20px;
+        margin-right: 30px !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-check-label {
+        padding-right: 0rem !important;
+    }
+
+    .card {
+        direction: rtl;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <div><h5>@formName تحصیلات</h5></div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <div class="card-block">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <form asp-action="Create" method="post" class="form-horizontal">
+                        <input type="hidden" asp-for="EduTypeId" />
+
+                        <div class="col-lg-6">
+
+                            <div class="form-group">
+                                <label class="form-label" for="FullName">نام کامل:</label>
+                                <input type="text"
+                                       asp-for="FullName"
+                                       class="form-control bg-warning-subtle" />
+                            </div>
+                            <span class="text-danger" asp-validation-for="FullName"></span>
+
+                            <div class="form-group">
+                                <label class="form-label">وضعیت:</label>
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           asp-for="IsActive"
+                                           name="IsActive" />
+                                    <label class="form-check-label" for="IsActive">فعال است</label>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-8"></div>
+                            <div class="col-lg-4">
+                                <div class="text-center mt-4 align-middle">
+                                    <button type="submit" class="btn btn-success px-5">ثبت</button>
+                                    <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -14,7 +14,7 @@ namespace VSSM.Presentation.Web.Controllers
         {
             _itemClassService = itemClassService;
         }
-        public async Task<IActionResult> Index(CancellationToken cancellationTOken,string? search,
+        public async Task<IActionResult> Index(CancellationToken cancellationTOken, string? search,
                                                 int page = 1,
                                                 int pageSize = 10,
                                                 string sortField = "Orders",
@@ -24,7 +24,7 @@ namespace VSSM.Presentation.Web.Controllers
                                                                     page,
                                                                     pageSize,
                                                                     sortField,
-                                                                    sortOrder, 
+                                                                    sortOrder,
                                                                     cancellationTOken);
 
             return View(listModel);

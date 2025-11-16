@@ -9,6 +9,6 @@ namespace VSSM.Application.Common.Helpers
 {
     public static class EnumHelper
     {
-        
+
     }
 }

@@ -33,7 +33,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             LoadItemTypeEnum();
             return View(listModel);
-        
+
         }
         public IActionResult New()
         {

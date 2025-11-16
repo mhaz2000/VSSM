@@ -483,9 +483,13 @@ public partial class VSSMDbContext : DbContext
 
         modelBuilder.Entity<TblClimate>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("tblClimate");
+            //entity
+            //    .HasNoKey()
+            //    .ToTable("tblClimate");
+
+            entity.HasKey(e => e.ClimateId).HasName("PK_TransportModes");
+
+            entity.ToTable("tblClimate");
 
             entity.Property(e => e.ClimateId)
                 .ValueGeneratedOnAdd()

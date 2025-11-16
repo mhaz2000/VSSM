@@ -40,6 +40,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IJobTypeService, JobTypeService>();
             services.AddScoped<ITransportModeService, TransportModeService>();
             services.AddScoped<IReceivingModeService, ReceivingModeService>();
+            services.AddScoped<IClimateService, ClimateService>();
         }
     }
 

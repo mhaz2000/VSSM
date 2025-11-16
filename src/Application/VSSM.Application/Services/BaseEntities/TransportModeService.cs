@@ -16,7 +16,7 @@ public class TransportModeService : ITransportModeService
 
     public async Task CreateAsync(CreateTransportModeDto dto, CancellationToken cancellationToken)
     {
-        var TransportMode = new TblTransportMode()
+        var transportMode = new TblTransportMode()
         {
             Code = dto.Code,
             FullName = dto.FullName,
@@ -24,18 +24,18 @@ public class TransportModeService : ITransportModeService
             IsActive = dto.IsActive,
         };
 
-        await _dbContext.TblTransportModes.AddAsync(TransportMode, cancellationToken);
+        await _dbContext.TblTransportModes.AddAsync(transportMode, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<List<TransportModeDto>> GetAllAsync(CancellationToken cancellationToken)
     {
-        var TransportModes = _dbContext.TblTransportModes
+        var transportModes = _dbContext.TblTransportModes
             .AsNoTracking()
             .OrderBy(receivingMode => receivingMode.TransportModeId)
             .AsEnumerable();
 
-        var receivingModeDto = TransportModes.Select(receivingMode => new TransportModeDto()
+        var receivingModeDto = transportModes.Select(receivingMode => new TransportModeDto()
         {
             TransportModeId = receivingMode.TransportModeId,
             Code = receivingMode.Code,
@@ -49,20 +49,20 @@ public class TransportModeService : ITransportModeService
 
     public async Task<TransportModeDto> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var TransportMode = await _dbContext.TblTransportModes
+        var transportMode = await _dbContext.TblTransportModes
         .AsNoTracking()
         .SingleOrDefaultAsync(r => r.TransportModeId == id, cancellationToken);
 
-        var TransportModeDto = TransportMode == null ? null : new TransportModeDto
+        var transportModeDto = transportMode == null ? null : new TransportModeDto
         {
-            TransportModeId = TransportMode.TransportModeId,
-            Code = TransportMode.Code,
-            FullName = TransportMode.FullName,
-            EntryDate = TransportMode.EntryDate,
-            IsActive = TransportMode.IsActive.GetValueOrDefault()
+            TransportModeId = transportMode.TransportModeId,
+            Code = transportMode.Code,
+            FullName = transportMode.FullName,
+            EntryDate = transportMode.EntryDate,
+            IsActive = transportMode.IsActive.GetValueOrDefault()
         };
 
-        return TransportModeDto;
+        return transportModeDto;
     }
 
     public async Task<PagingSearchOrderDto<TransportModeDto>> GetPagedListAsync(

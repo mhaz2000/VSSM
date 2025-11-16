@@ -34,10 +34,6 @@
     }
 </style>
 
-@section Styles {
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persianDatepicker-default.css" />
-}
-
 <div class="container-fluid">
     <div class="animated fadeIn">
 
@@ -69,11 +65,6 @@
                                 <input type="text" asp-for="FullName" name="FullName" class="form-control bg-warning-subtle" required />
                             </div>
 
-                            @* <div class="form-group">
-                                <label class="form-label" for="EntryDate">تاریخ ورود</label>
-                                <input asp-for="EntryDate" id="EntryDate" name="EntryDate" class="form-control bg-warning-subtle" required />
-                            </div> *@
-
                             <div class="form-group">
                                 <label class="form-label">وضعیت:</label>
                                 <div class="form-check">
@@ -96,17 +87,3 @@
         </div>
     </div>
 </div>
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persianDatepicker.min.js"></script>
-
-    <script>
-        $(document).ready(function() {
-            $("#EntryDate").persianDatepicker({
-                format: "YYYY/MM/DD",
-                autoClose: true,
-                initialValue: false,
-                observer: true
-            });
-        });
-    </script>
-}

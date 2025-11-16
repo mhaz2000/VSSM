@@ -855,11 +855,12 @@ public partial class VSSMDbContext : DbContext
 
         modelBuilder.Entity<TblLevel>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("tblLevels");
+            entity.HasKey(e => e.LevelId);
+            entity.ToTable("tblLevels");
 
-            entity.Property(e => e.LevelId).HasColumnName("LevelID");
+            entity.Property(e => e.LevelId)
+                .HasColumnName("LevelID")
+                .ValueGeneratedOnAdd(); 
         });
 
         modelBuilder.Entity<TblManItemClass>(entity =>

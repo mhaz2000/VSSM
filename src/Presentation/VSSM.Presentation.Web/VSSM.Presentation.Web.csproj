@@ -16,4 +16,9 @@
     <ProjectReference Include="..\..\Domain\VSSM.Domain\VSSM.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\ManItemClass\Index.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\ManItemClass\New.cshtml" />
+  </ItemGroup>
+
 </Project>

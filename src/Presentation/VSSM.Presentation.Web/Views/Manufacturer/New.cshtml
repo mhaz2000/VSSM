@@ -1,0 +1,130 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model VSSM.Presentation.Web.Models.Manufacturer.ManufacturerViewModel
+@{
+// Determine if we are creating (ثبت) or editing (ویرایش)
+string formName = "ثبت";
+if (Model != null && Model.ManufacturerId > 0)
+formName = "ویرایش";
+}
+
+<style>
+    /* Styling copied from the Level example for consistency */
+    .form-label {
+        text-align: left;
+        width: 130px;
+        margin-left: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-control, .form-select {
+        flex: 1;
+    }
+
+    /* Custom style for boolean checkboxes to align correctly */
+    .form-check-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-check-group .form-label {
+        width: 130px; /* Keep label width consistent */
+        margin-left: 15px;
+        flex-shrink: 0; /* Prevent label from shrinking */
+    }
+
+    .form-check-input {
+        margin-right: 0 !important; /* Override default margin */
+        margin-left: 10px;
+    }
+
+    .card {
+        direction: rtl;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <div><h5>@formName سازنده</h5></div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <form asp-controller="Manufacturer" asp-action="Create" method="post" class="form-horizontal">
+                        <input type="hidden" asp-for="ManufacturerId" />
+
+                        <div class="col-lg-6">
+
+                            @* Code *@
+                            <div class="form-group">
+                                <label class="form-label" for="Code">کد:</label>
+                                <input type="text" asp-for="Code" class="form-control" />
+                            </div>
+                            <span asp-validation-for="Code" class="text-danger"></span>
+
+                            @* FullName *@
+                            <div class="form-group">
+                                <label class="form-label" for="FullName">نام کامل:</label>
+                                <input type="text" asp-for="FullName" class="form-control" />
+                            </div>
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+
+                            @* EntryDate *@
+                            <div class="form-group">
+                                <label class="form-label" for="EntryDate">تاریخ ورود:</label>
+                                <input type="date" asp-for="EntryDate" class="form-control" />
+                            </div>
+                            <span asp-validation-for="EntryDate" class="text-danger"></span>
+
+                            <hr class="my-4"/>
+
+                            @* Boolean Fields (Checkboxes) *@
+                            <div class="form-check-group">
+                                @* ShowForVac *@
+                                <label class="form-label" for="ShowForVac">نمایش برای VAC:</label>
+                                <input type="checkbox" asp-for="ShowForVac" class="form-check-input" />
+                            </div>
+
+                            <div class="form-check-group">
+                                @* ShowForOther *@
+                                <label class="form-label" for="ShowForOther">نمایش برای سایر:</label>
+                                <input type="checkbox" asp-for="ShowForOther" class="form-check-input" />
+                            </div>
+
+                            <div class="form-check-group">
+                                @* IsActive *@
+                                <label class="form-label" for="IsActive">فعال:</label>
+                                <input type="checkbox" asp-for="IsActive" class="form-check-input" />
+                            </div>
+
+
+                            <div class="col-lg-8"></div>
+                            <div class="col-lg-4">
+                                <div class="text-center mt-4 align-middle">
+                                    <button type="submit" class="btn btn-success px-5">@formName</button>
+                                    <a type="button" class="btn btn-primary px-5" asp-controller="Manufacturer" asp-action="Index">لیست</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

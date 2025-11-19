@@ -33,13 +33,11 @@ public class AdjustreasonController : Controller
         return View(result);
     }
 
-    // -------------------- New (GET) --------------------
     public IActionResult New()
     {
         return View(new AdjustReasonViewModel());
     }
 
-    // -------------------- Edit (GET) --------------------
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
         var entity = await _adjustReasonService.GetById(id, cancellationToken);

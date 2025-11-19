@@ -14,7 +14,6 @@ namespace VSSM.Presentation.Web.Controllers
             _roadTypeService = roadTypeService;
         }
 
-        // لیست + جستجو + صفحه‌بندی + مرتب‌سازی
         public async Task<IActionResult> Index(
             CancellationToken cancellationToken,
             string? search,
@@ -34,7 +33,6 @@ namespace VSSM.Presentation.Web.Controllers
             return View(listModel);
         }
 
-        // نمایش فرم ثبت/ویرایش
         public async Task<IActionResult> New(int? id, CancellationToken cancellationToken)
         {
             RoadTypeViewModel model = new RoadTypeViewModel();
@@ -57,7 +55,6 @@ namespace VSSM.Presentation.Web.Controllers
             return View(model);
         }
 
-        // Create + Update (مثل ItemClass)
         [HttpPost]
         public async Task<IActionResult> Create(RoadTypeViewModel model, CancellationToken cancellationToken)
         {
@@ -68,7 +65,6 @@ namespace VSSM.Presentation.Web.Controllers
 
             if (model.RoadTypeId == null || model.RoadTypeId == 0)
             {
-                // ---------- Create ----------
                 var dto = new RoadTypeCreateDto
                 {
                     Code = model.Code,
@@ -80,7 +76,6 @@ namespace VSSM.Presentation.Web.Controllers
             }
             else
             {
-                // ---------- Update ----------
                 var dto = new RoadTypeEditDto
                 {
                     RoadTypeId = model.RoadTypeId.Value,
@@ -98,7 +93,6 @@ namespace VSSM.Presentation.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        // ویرایش مستقیم مانند ItemClass/Edit (اختیاری، ولی کاملش می‌کنیم)
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
             var dto = await _roadTypeService.GetById(id, cancellationToken);
@@ -113,7 +107,6 @@ namespace VSSM.Presentation.Web.Controllers
                 IsActive = dto.IsActive
             };
 
-            // استفاده از همان فرم New برای Edit
             return View("New", model);
         }
     }

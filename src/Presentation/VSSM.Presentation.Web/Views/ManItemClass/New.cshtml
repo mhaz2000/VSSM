@@ -1,0 +1,86 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model VSSM.Presentation.Web.Models.ManItemClass.ManItemClassViewModel
+
+@{
+string formName = Model != null && Model.ManItemClassId > 0 ? "ویرایش" : "ثبت";
+}
+
+<style>
+    .form-label {
+        text-align: left;
+        width: 130px;
+        margin-left: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-control, .form-select {
+        flex: 1;
+    }
+
+    .card {
+        direction: rtl;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <h5>@formName کلاس/تولیدکننده</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <form asp-controller="ManItemClass" asp-action="Create" method="post" class="form-horizontal">
+
+                    @* Hidden for edit *@
+                    <input type="hidden" asp-for="ManItemClassId" />
+
+                    <div class="col-lg-6">
+
+                        @* ItemClassCode *@
+                        <div class="form-group">
+                            <label class="form-label" for="ItemClassCode">کد کلاس قلم:</label>
+                            <input type="text" asp-for="ItemClassCode" class="form-control" />
+                        </div>
+                        <span asp-validation-for="ItemClassCode" class="text-danger"></span>
+
+                        @* ManufacturerId Dropdown *@
+                        <div class="form-group">
+                            <label class="form-label" for="ManufacturerId">تولید کننده:</label>
+                            <select asp-for="ManufacturerId" asp-items="Model.Manufacturers" class="form-select">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="ManufacturerId" class="text-danger"></span>
+
+                        <hr class="my-4" />
+
+                        @* Action Buttons *@
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5">@formName</button>
+                            <a class="btn btn-primary px-5" asp-controller="ManItemClass" asp-action="Index">لیست</a>
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>

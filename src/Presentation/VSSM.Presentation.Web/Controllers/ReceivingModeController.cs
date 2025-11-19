@@ -66,7 +66,7 @@ public class ReceivingModeController : Controller
             ReceivingModeId = receivingMode.ReceivingModeId,
             Code = receivingMode.Code,
             FullName = receivingMode.FullName,
-            //EntryDate = receivingMode.EntryDate,
+            // EntryDate = receivingMode.EntryDate,
             IsActive = receivingMode.IsActive
         };
 

@@ -14,7 +14,6 @@ public class PowerSourceService : IPowerSourceService
         _db = db;
     }
 
-    // ---------- GET BY ID ----------
     public async Task<PowerSourceEditDto> GetById(int id, CancellationToken token)
     {
         var entity = await _db.TblPowerSources
@@ -33,7 +32,6 @@ public class PowerSourceService : IPowerSourceService
         };
     }
 
-    // ---------- CREATE (RAW SQL) ----------
     public async Task<int> Create(PowerSourceCreateDto dto, CancellationToken token)
     {
         string sql = @"
@@ -50,7 +48,6 @@ public class PowerSourceService : IPowerSourceService
         return 1;
     }
 
-    // ---------- UPDATE (RAW SQL) ----------
     public async Task<bool> Update(PowerSourceEditDto dto, CancellationToken token)
     {
         string sql = @"
@@ -69,7 +66,6 @@ public class PowerSourceService : IPowerSourceService
         return true;
     }
 
-    // ---------- PAGING + SEARCH ----------
     public async Task<PagingSearchOrderDto<PowerSourceGetDto>> GetPagedList(
         string? search, int page, int pageSize, string sortField, string sortOrder,
         CancellationToken token)

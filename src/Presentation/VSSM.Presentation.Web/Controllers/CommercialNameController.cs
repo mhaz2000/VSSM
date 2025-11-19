@@ -14,7 +14,6 @@ namespace VSSM.Presentation.Web.Controllers
             _commercialNameService = commercialNameService;
         }
 
-        // -------------------- Index / List --------------------
         public async Task<IActionResult> Index(
             CancellationToken cancellationToken,
             string? search = null,

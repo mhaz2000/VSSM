@@ -9,7 +9,7 @@ namespace VSSM.Application.Services.BaseEntities;
 
  public class VvmstageService : IVvmstageService
     {
-        private readonly VSSMDbContext _dbContext; // Assuming VSSMDbContext is your DB context
+        private readonly VSSMDbContext _dbContext; 
         private readonly IValidator<VvmstageDto> _validator;
 
         public VvmstageService(VSSMDbContext dbContext, IValidator<VvmstageDto> validator)
@@ -18,7 +18,6 @@ namespace VSSM.Application.Services.BaseEntities;
             _validator = validator;
         }
 
-        // Create
         public async Task<int> Create(VvmstageDto dto, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -39,7 +38,6 @@ namespace VSSM.Application.Services.BaseEntities;
             return entity.VvmstageId;
         }
 
-        // Get All (Paged)
         public async Task<PagingSearchOrderDto<VvmstageDto>> GetPagedList(
             string? search,
             int page,
@@ -95,7 +93,6 @@ namespace VSSM.Application.Services.BaseEntities;
             };
         }
 
-        // Get By Id
         public async Task<VvmstageDto> GetById(int id, CancellationToken cancellationToken)
         {
             var entity = await _dbContext.TblVvmstages
@@ -115,7 +112,6 @@ namespace VSSM.Application.Services.BaseEntities;
             };
         }
 
-        // Update
         public async Task<bool> Update(VvmstageDto dto, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -137,7 +133,6 @@ namespace VSSM.Application.Services.BaseEntities;
             return true;
         }
 
-        // Delete
         public async Task<bool> Delete(int id, CancellationToken cancellationToken)
         {
             var entity = await _dbContext.TblVvmstages

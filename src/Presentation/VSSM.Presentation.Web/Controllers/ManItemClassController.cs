@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.ManItemClass;
-using VSSM.Presentation.Web.Models.Manufacturer;
 
 namespace VSSM.Presentation.Web.Controllers;
 
@@ -15,7 +15,6 @@ public class ManItemClassController : Controller
         _service = service;
     }
 
-    // ---------------------- INDEX (LIST) ----------------------
     public async Task<IActionResult> Index(
         CancellationToken cancellationToken,
         string? search = null,
@@ -32,13 +31,23 @@ public class ManItemClassController : Controller
             sortOrder,
             cancellationToken);
 
-        return View(list); // Views/ManItemClass/Index.cshtml
+        return View(list); 
     }
-
-    // ---------------------- NEW ----------------------
-    public IActionResult New()
+    
+    public async Task<IActionResult> New()
     {
-        return View("New", new ManItemClassViewModel()); // Views/ManItemClass/New.cshtml
+        var manufacturers = await _service.ManufacturerDropDown(CancellationToken.None);
+
+        var viewModel = new ManItemClassViewModel();
+        viewModel.Manufacturers = manufacturers
+            .Select(c => new SelectListItem
+            {
+                Value = c.ManufacturerId.ToString(),
+                Text = c.Name
+            })
+            .ToList();
+
+        return View("New", viewModel);   // 👈 return the filled viewmodel
     }
 
     public async Task<IActionResult> ManufacturerDropDown(CancellationToken cancellationToken)
@@ -47,24 +56,30 @@ public class ManItemClassController : Controller
         return View("New", manufacturers);
     }
 
-    // ---------------------- EDIT ----------------------
-    public async Task<IActionResult> Edit(long id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Edit(int id)
     {
-        var entity = await _service.GetById(id, cancellationToken);
-        if (entity == null)
-            return NotFound();
+        var model = await _service.GetById(id, CancellationToken.None);
+        var manufacturers = await _service.ManufacturerDropDown(CancellationToken.None);
 
-        var model = new ManItemClassViewModel
+        var viewModel = new ManItemClassViewModel
         {
-            ManItemClassId = entity.ManItemClassId,
-            ItemClassCode = entity.ItemClassCode,
-            ManufacturerId = entity.ManufacturerId
+            ManItemClassId = model.ManufacturerId,
+            ItemClassCode = model.ItemClassCode,
+            ManufacturerId = model.ManufacturerId
         };
 
-        return View("New", model); // reuse the New form
+        viewModel.Manufacturers = manufacturers
+            .Select(c => new SelectListItem
+            {
+                Value = c.ManufacturerId.ToString(),
+                Text = c.Name
+            })
+            .ToList();
+
+        return View("New", viewModel);   // ✔ same view
     }
 
-    // ---------------------- CREATE / UPDATE ----------------------
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ManItemClassViewModel model, CancellationToken cancellationToken)
@@ -76,7 +91,7 @@ public class ManItemClassController : Controller
         {
             ManItemClassId = model.ManItemClassId.GetValueOrDefault(),
             ItemClassCode = model.ItemClassCode,
-            ManufacturerId = model.ManufacturerId
+            ManufacturerId = model.ManufacturerId,
         };
 
         if (model.ManItemClassId == null || model.ManItemClassId == 0)
@@ -96,7 +111,6 @@ public class ManItemClassController : Controller
         return RedirectToAction("Index");
     }
 
-    // ---------------------- DELETE ----------------------
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)

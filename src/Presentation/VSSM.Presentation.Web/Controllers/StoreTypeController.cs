@@ -14,7 +14,6 @@ public class StoreTypeController : Controller
             _storeTypeService = storeTypeService;
         }
 
-        // -------------------- Index / List --------------------
         public async Task<IActionResult> Index(
             CancellationToken cancellationToken,
             string? search = null,
@@ -31,16 +30,14 @@ public class StoreTypeController : Controller
                 sortOrder,
                 cancellationToken);
 
-            return View(storeTypes); // View file: /Views/StoreType/Index.cshtml
+            return View(storeTypes); 
         }
 
-        // -------------------- New (GET) --------------------
         public IActionResult New()
         {
-            return View(new StoreTypeViewModel()); // View file: /Views/StoreType/New.cshtml
+            return View(new StoreTypeViewModel()); 
         }
 
-        // -------------------- Edit (GET) --------------------
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
             var storeType = await _storeTypeService.GetById(id, cancellationToken);
@@ -57,10 +54,9 @@ public class StoreTypeController : Controller
                 IsUserEditable = storeType.IsUserEditable
             };
 
-            return View("New", model); // Reuse the New view for editing
+            return View("New", model); 
         }
 
-        // -------------------- Create / Update (POST) --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(StoreTypeViewModel model, CancellationToken cancellationToken)
@@ -95,7 +91,6 @@ public class StoreTypeController : Controller
             return RedirectToAction("Index");
         }
 
-        // -------------------- Delete (POST) --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
@@ -109,7 +104,7 @@ public class StoreTypeController : Controller
             }
             else
             {
-                TempData["ToastMessage"] = "نوع فروشگاه مورد نظر یافت نشد"; // Updated text for StoreType
+                TempData["ToastMessage"] = "نوع فروشگاه مورد نظر یافت نشد"; 
                 TempData["ToastType"] = "error";
             }
 

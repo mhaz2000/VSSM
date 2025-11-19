@@ -18,7 +18,6 @@ namespace VSSM.Application.Services.BaseEntities
             _validator = validator;
         }
 
-        // Create
         public async Task<int> Create(LevelDto dto, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -29,7 +28,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             var entity = new TblLevel
             {
-                LevelId = maxId + 1, // manually increment
+                LevelId = maxId + 1,
                 ShipCount = dto.ShipCount,
                 SafetyStockPercentage = dto.SafetyStockPercentage,
                 SafetyStockMonth = dto.SafetyStockMonth,
@@ -42,7 +41,6 @@ namespace VSSM.Application.Services.BaseEntities
             return entity.LevelId;
         }
 
-        // Get All
         public async Task<PagingSearchOrderDto<LevelDto>> GetPagedList(
             string? search,
             int page,
@@ -104,7 +102,6 @@ namespace VSSM.Application.Services.BaseEntities
             };
         }
 
-        // Get By Id
         public async Task<LevelDto> GetById(int id, CancellationToken cancellationToken)
         {
             var entity = await _dbContext.TblLevels
@@ -125,7 +122,6 @@ namespace VSSM.Application.Services.BaseEntities
             };
         }
 
-        // Update
         public async Task<bool> Update(LevelDto dto, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -148,7 +144,6 @@ namespace VSSM.Application.Services.BaseEntities
             return true;
         }
 
-        // Delete
         public async Task<bool> Delete(int id, CancellationToken cancellationToken)
         {
             var entity = await _dbContext.TblLevels

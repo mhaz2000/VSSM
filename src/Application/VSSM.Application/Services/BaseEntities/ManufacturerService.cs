@@ -40,7 +40,6 @@ public class ManufacturerService : IManufacturerService
         return entity.ManufacturerId;
     }
 
-    // --- Get All (Paged List) ---
     public async Task<PagingSearchOrderDto<ManufacturerDto>> GetPagedList(
         string? search,
         int page,
@@ -55,7 +54,6 @@ public class ManufacturerService : IManufacturerService
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            // Search on Code, FullName, and ManufacturerId
             query = query.Where(x =>
                 (x.Code != null && x.Code.Contains(search)) ||
                 (x.FullName != null && x.FullName.Contains(search)) ||
@@ -63,7 +61,6 @@ public class ManufacturerService : IManufacturerService
             );
         }
 
-        // Apply sorting
         query = sortField switch
         {
             "Code" => sortOrder == "asc" ? query.OrderBy(x => x.Code) : query.OrderByDescending(x => x.Code),
@@ -102,7 +99,6 @@ public class ManufacturerService : IManufacturerService
         };
     }
 
-    // --- Get By Id ---
     public async Task<ManufacturerDto> GetById(int id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.TblManufacturers
@@ -124,7 +120,6 @@ public class ManufacturerService : IManufacturerService
         };
     }
 
-    // --- Update ---
     public async Task<bool> Update(ManufacturerDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -137,7 +132,6 @@ public class ManufacturerService : IManufacturerService
         if (entity == null)
             return false;
 
-        // Update properties
         entity.Code = dto.Code;
         entity.FullName = dto.FullName;
         entity.EntryDate = dto.EntryDate;
@@ -149,7 +143,6 @@ public class ManufacturerService : IManufacturerService
         return true;
     }
 
-    // --- Delete ---
     public async Task<bool> Delete(int id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.TblManufacturers

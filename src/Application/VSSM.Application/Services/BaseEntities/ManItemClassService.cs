@@ -18,7 +18,6 @@ public class ManItemClassService : IManItemClassService
         _validator = validator;
     }
 
-    // ---------------- CREATE ----------------
     public async Task<long> Create(ManItemClassDto dto, CancellationToken cancellationToken)
     {
         var validation = await _validator.ValidateAsync(dto, cancellationToken);
@@ -35,7 +34,6 @@ public class ManItemClassService : IManItemClassService
         return entity.ManItemClassId;
     }
 
-    // ---------------- GET PAGED LIST ----------------
     public async Task<PagingSearchOrderDto<ManItemClassDto>> GetPagedList(
         string? search,
         int page,
@@ -93,7 +91,6 @@ public class ManItemClassService : IManItemClassService
         };
     }
 
-    // ---------------- GET BY ID ----------------
     public async Task<ManItemClassDto?> GetById(long id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.TblManItemClasses

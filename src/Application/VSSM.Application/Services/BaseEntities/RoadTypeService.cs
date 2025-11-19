@@ -26,9 +26,6 @@ namespace VSSM.Application.Services.BaseEntities
             _editValidator = editValidator;
         }
 
-        // ---------------------------------------------------------
-        // CREATE (RAW SQL)
-        // ---------------------------------------------------------
         public async Task<int> Create(RoadTypeCreateDto dto, CancellationToken cancellationToken)
         {
             var result = await _validator.ValidateAsync(dto, cancellationToken);
@@ -52,9 +49,6 @@ namespace VSSM.Application.Services.BaseEntities
             return 1;
         }
 
-        // ---------------------------------------------------------
-        // UPDATE (RAW SQL)
-        // ---------------------------------------------------------
         public async Task<bool> Update(RoadTypeEditDto dto, CancellationToken cancellationToken)
         {
             var validation = await _editValidator.ValidateAsync(dto, cancellationToken);
@@ -82,14 +76,6 @@ namespace VSSM.Application.Services.BaseEntities
             return affected > 0;
         }
 
-        // ---------------------------------------------------------
-        // GET ALL  (RAW SQL → TblRoadType)
-        // ---------------------------------------------------------
-
-
-        // ---------------------------------------------------------
-        // GET BY ID (RAW SQL → TblRoadType)
-        // ---------------------------------------------------------
         public async Task<RoadTypeEditDto> GetById(int id, CancellationToken cancellationToken)
         {
             var sql = "SELECT * FROM tblRoadType WHERE RoadTypeID = @Id";
@@ -159,7 +145,6 @@ namespace VSSM.Application.Services.BaseEntities
                 })
                 .ToListAsync(cancellationToken);
 
-            // ---------- RETURN MODEL ----------
             return new PagingSearchOrderDto<RoadTypeGetDto>
             {
                 Items = items,

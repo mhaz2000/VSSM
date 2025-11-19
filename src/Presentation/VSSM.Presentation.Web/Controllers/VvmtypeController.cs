@@ -34,13 +34,11 @@ public class VvmtypeController : Controller
             return View(vvmtypes); // View file: /Views/Vvmtype/Index.cshtml
         }
 
-        // -------------------- New (GET) --------------------
         public IActionResult New()
         {
-            return View(new VvmtypeViewModel()); // View file: /Views/Vvmtype/New.cshtml
+            return View(new VvmtypeViewModel()); 
         }
 
-        // -------------------- Edit (GET) --------------------
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
             var vvmtype = await _vvmtypeService.GetById(id, cancellationToken);
@@ -57,10 +55,9 @@ public class VvmtypeController : Controller
                 IsActive = vvmtype.IsActive
             };
 
-            return View("New", model); // Reuse the New view for editing
+            return View("New", model); 
         }
 
-        // -------------------- Create / Update (POST) --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(VvmtypeViewModel model, CancellationToken cancellationToken)
@@ -95,7 +92,6 @@ public class VvmtypeController : Controller
             return RedirectToAction("Index");
         }
 
-        // -------------------- Delete (POST) --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)

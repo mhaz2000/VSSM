@@ -9,7 +9,7 @@ namespace VSSM.Application.Services.BaseEntities;
 
 public class VvmtypeService : IVvmtypeService
     {
-        private readonly VSSMDbContext _dbContext; // Assuming VSSMDbContext is your DB context
+        private readonly VSSMDbContext _dbContext; 
         private readonly IValidator<VvmtypeDto> _validator;
 
         public VvmtypeService(VSSMDbContext dbContext, IValidator<VvmtypeDto> validator)
@@ -18,7 +18,6 @@ public class VvmtypeService : IVvmtypeService
             _validator = validator;
         }
 
-        // Create
         public async Task<int> Create(VvmtypeDto dto, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -39,7 +38,6 @@ public class VvmtypeService : IVvmtypeService
             return entity.VvmtypeId;
         }
 
-        // Get All (Paged)
         public async Task<PagingSearchOrderDto<VvmtypeDto>> GetPagedList(
             string? search,
             int page,
@@ -61,7 +59,6 @@ public class VvmtypeService : IVvmtypeService
                 );
             }
 
-            // Simplified sorting logic (customize as needed for specific fields)
             query = sortField switch
             {
                 "Code" => sortOrder == "asc" ? query.OrderBy(x => x.Code) : query.OrderByDescending(x => x.Code),
@@ -98,7 +95,6 @@ public class VvmtypeService : IVvmtypeService
             };
         }
 
-        // Get By Id
         public async Task<VvmtypeDto> GetById(int id, CancellationToken cancellationToken)
         {
             var entity = await _dbContext.TblVvmtypes
@@ -119,7 +115,6 @@ public class VvmtypeService : IVvmtypeService
             };
         }
 
-        // Update
         public async Task<bool> Update(VvmtypeDto dto, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -142,7 +137,6 @@ public class VvmtypeService : IVvmtypeService
             return true;
         }
 
-        // Delete
         public async Task<bool> Delete(int id, CancellationToken cancellationToken)
         {
             var entity = await _dbContext.TblVvmtypes

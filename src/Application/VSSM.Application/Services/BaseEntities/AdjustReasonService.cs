@@ -18,7 +18,6 @@ public class AdjustReasonService : IAdjustReasonService
         _validator = validator;
     }
 
-    // Create
     public async Task<int> Create(AdjustreasonDto dto, CancellationToken cancellationToken)
     {
         var validation = await _validator.ValidateAsync(dto, cancellationToken);
@@ -48,7 +47,6 @@ public class AdjustReasonService : IAdjustReasonService
         return entity.AdjustreasonId;
     }
 
-    // Get Paged List
     public async Task<PagingSearchOrderDto<AdjustreasonDto>> GetPagedList(
         string? search,
         int page,
@@ -61,7 +59,6 @@ public class AdjustReasonService : IAdjustReasonService
 
         IQueryable<TblAdjustreason> query = _dbContext.TblAdjustreasons.AsNoTracking();
 
-        // SEARCH
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(x =>
@@ -70,7 +67,6 @@ public class AdjustReasonService : IAdjustReasonService
                 x.AdjustreasonId.ToString().Contains(search));
         }
 
-        // SORTING
         query = sortField switch
         {
             "Code" => sortOrder == "asc" ?
@@ -117,7 +113,6 @@ public class AdjustReasonService : IAdjustReasonService
         };
     }
 
-    // Get By ID
     public async Task<AdjustreasonDto?> GetById(int id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.TblAdjustreasons
@@ -143,7 +138,6 @@ public class AdjustReasonService : IAdjustReasonService
         };
     }
 
-    // Update
     public async Task<bool> Update(AdjustreasonDto dto, CancellationToken cancellationToken)
     {
         var validation = await _validator.ValidateAsync(dto, cancellationToken);
@@ -171,7 +165,6 @@ public class AdjustReasonService : IAdjustReasonService
         return true;
     }
 
-    // Delete
     public async Task<bool> Delete(int id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.TblAdjustreasons

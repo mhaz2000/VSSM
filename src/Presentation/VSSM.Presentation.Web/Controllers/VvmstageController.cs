@@ -14,7 +14,6 @@ namespace VSSM.Presentation.Web.Controllers;
             _vvmstageService = vvmstageService;
         }
 
-        // -------------------- Index / List --------------------
         public async Task<IActionResult> Index(
             CancellationToken cancellationToken,
             string? search = null,
@@ -31,16 +30,14 @@ namespace VSSM.Presentation.Web.Controllers;
                 sortOrder,
                 cancellationToken);
 
-            return View(vvmstages); // View file: /Views/Vvmstage/Index.cshtml
+            return View(vvmstages);  
         }
 
-        // -------------------- New (GET) --------------------
         public IActionResult New()
         {
-            return View(new VvmstageViewModel()); // View file: /Views/Vvmstage/New.cshtml
+            return View(new VvmstageViewModel()); 
         }
 
-        // -------------------- Edit (GET) --------------------
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
             var vvmstage = await _vvmstageService.GetById(id, cancellationToken);
@@ -56,10 +53,9 @@ namespace VSSM.Presentation.Web.Controllers;
                 IsActive = vvmstage.IsActive
             };
 
-            return View("New", model); // Reuse the New view for editing
+            return View("New", model); 
         }
 
-        // -------------------- Create / Update (POST) --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(VvmstageViewModel model, CancellationToken cancellationToken)
@@ -93,7 +89,6 @@ namespace VSSM.Presentation.Web.Controllers;
             return RedirectToAction("Index");
         }
 
-        // -------------------- Delete (POST) --------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)

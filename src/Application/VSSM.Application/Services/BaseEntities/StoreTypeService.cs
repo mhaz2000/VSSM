@@ -18,7 +18,6 @@ public class StoreTypeService : IStoreTypeService
         _validator = validator;
     }
 
-    // Create
     public async Task<int> Create(StoreTypeDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -29,7 +28,7 @@ public class StoreTypeService : IStoreTypeService
         {
             Code = dto.Code,
             FullName = dto.FullName,
-            EntryDate = dto.EntryDate ?? DateTime.Now, // Optional: Default to Now if null
+            EntryDate = dto.EntryDate ?? DateTime.Now, 
             IsActive = dto.IsActive,
             IsUserEditable = dto.IsUserEditable
         };
@@ -39,7 +38,6 @@ public class StoreTypeService : IStoreTypeService
         return entity.StoreTypeId;
     }
 
-    // Get All (Paged)
     public async Task<PagingSearchOrderDto<StoreTypeDto>> GetPagedList(
         string? search,
         int page,
@@ -52,7 +50,6 @@ public class StoreTypeService : IStoreTypeService
 
         IQueryable<TblStoreType> query = _dbContext.TblStoreTypes.AsNoTracking();
 
-        // Search Logic
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(x =>
@@ -62,7 +59,6 @@ public class StoreTypeService : IStoreTypeService
             );
         }
 
-        // Sort Logic
         query = sortField switch
         {
             "Code" => sortOrder == "asc"
@@ -108,7 +104,6 @@ public class StoreTypeService : IStoreTypeService
         };
     }
 
-    // Get By Id
     public async Task<StoreTypeDto> GetById(int id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.TblStoreTypes
@@ -129,7 +124,6 @@ public class StoreTypeService : IStoreTypeService
         };
     }
 
-    // Update
     public async Task<bool> Update(StoreTypeDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -152,7 +146,6 @@ public class StoreTypeService : IStoreTypeService
         return true;
     }
 
-    // Delete
     public async Task<bool> Delete(int id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.TblStoreTypes

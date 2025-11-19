@@ -18,7 +18,6 @@ public class CommercialNameService : ICommercialNameService
             _validator = validator;
         }
 
-        // Create
         public async Task<int> Create(CommercialNameDto dto, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -38,7 +37,6 @@ public class CommercialNameService : ICommercialNameService
             return entity.CommercialNameId;
         }
 
-        // Get All with Paging
         public async Task<PagingSearchOrderDto<CommercialNameDto>> GetPagedList(
             string? search,
             int page,
@@ -93,7 +91,6 @@ public class CommercialNameService : ICommercialNameService
             };
         }
 
-        // Get By Id
         public async Task<CommercialNameDto> GetById(int id, CancellationToken cancellationToken)
         {
             var entity = await _dbContext.TblCommercialNames
@@ -113,7 +110,6 @@ public class CommercialNameService : ICommercialNameService
             };
         }
 
-        // Update
         public async Task<bool> Update(CommercialNameDto dto, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
@@ -135,7 +131,6 @@ public class CommercialNameService : ICommercialNameService
             return true;
         }
 
-        // Delete
         public async Task<bool> Delete(int id, CancellationToken cancellationToken)
         {
             var entity = await _dbContext.TblCommercialNames

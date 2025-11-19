@@ -30,12 +30,12 @@ public class ManufacturerController : Controller
             sortOrder,
             cancellationToken);
 
-        return View(manufacturers); // View file: /Views/Manufacturer/Index.cshtml
+        return View(manufacturers); 
     }
 
     public IActionResult New()
     {
-        return View(new ManufacturerViewModel()); // View file: /Views/Manufacturer/New.cshtml
+        return View(new ManufacturerViewModel());
     }
 
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
@@ -55,7 +55,7 @@ public class ManufacturerController : Controller
             IsActive = manufacturer.IsActive
         };
 
-        return View("New", model); // Reuse the New view for editing
+        return View("New", model);
     }
 
     [HttpPost]
@@ -89,7 +89,7 @@ public class ManufacturerController : Controller
             await _manufacturerService.Update(dto, cancellationToken);
         }
 
-        TempData["ToastMessage"] = "عملیات با موفقیت انجام شد"; // Operation successfully completed (Persian)
+        TempData["ToastMessage"] = "عملیات با موفقیت انجام شد"; 
         TempData["ToastType"] = "success";
 
         return RedirectToAction("Index");
@@ -103,13 +103,13 @@ public class ManufacturerController : Controller
 
         if (deleted)
         {
-            TempData["ToastMessage"] = "عملیات حذف با موفقیت انجام شد"; // Deletion successfully completed (Persian)
+            TempData["ToastMessage"] = "عملیات حذف با موفقیت انجام شد"; 
             TempData["ToastType"] = "success";
         }
         else
         {
             TempData["ToastMessage"] =
-                "تولید کننده مورد نظر یافت نشد"; // The requested manufacturer was not found (Persian)
+                "تولید کننده مورد نظر یافت نشد"; 
             TempData["ToastType"] = "error";
         }
 

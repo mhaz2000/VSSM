@@ -130,10 +130,13 @@
                             <a class="nav-link nav-dropdown-toggle" href="#"> سازندگان</a>
                             <ul class="nav-dropdown-items">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="components-social-buttons.html"> سازندگان</a>
+                                    <a class="nav-link" asp-controller="ManItemClass" asp-action="Index"> سازندگان</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="components-social-buttons.html"> نامهای تجاری</a>
+                                    <a class="nav-link" asp-controller="Manufacturer" asp-action="Index"> مدیریت سازندگان</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="CommercialName" asp-action="Index"> نامهای تجاری</a>
                                 </li>
                             </ul>
                         </li>
@@ -141,7 +144,7 @@
                             <a class="nav-link nav-dropdown-toggle" href="#"> تجهیزات</a>
                             <ul class="nav-dropdown-items">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="components-social-buttons.html"> نوع انبار</a>
+                                    <a class="nav-link" asp-controller="StoreType" asp-action="Index"> نوع انبار</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="PowerSource" asp-action="Index"> منبع انرژی</a>
@@ -158,10 +161,10 @@
                             <a class="nav-link nav-dropdown-toggle" href="#"> VVM</a>
                             <ul class="nav-dropdown-items">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="components-social-buttons.html"> مرحله VVM</a>
+                                    <a class="nav-link" asp-controller="Vvmstage" asp-action="Index"> مرحله VVM</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="components-social-buttons.html"> انواع VVM</a>
+                                    <a class="nav-link" asp-controller="Vvmtype" asp-action="Index"> انواع VVM</a>
                                 </li>
                             </ul>
                         </li>

@@ -1,0 +1,122 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model VSSM.Presentation.Web.Models.StoreType.StoreTypeViewModel
+@{
+string formName = "ثبت";
+if (Model != null && Model.StoreTypeId > 0)
+formName = "ویرایش";
+}
+
+<style>
+    /* Styling copied directly from the sample */
+    .form-label {
+        text-align: left;
+        width: 130px;
+        margin-left: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-control, .form-select {
+        flex: 1;
+    }
+
+    .card {
+        direction: rtl;
+    }
+
+    /* Adjust checkbox alignment for better visual appearance */
+    .checkbox-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        margin: 0 !important; /* Resetting default margins */
+        margin-right: 15px !important;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <!-- Updated title to 'نوع فروشگاه' -->
+                    <div><h5>@formName نوع فروشگاه</h5></div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <div class="card-block">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <!-- Updated asp-action to Create (which handles both create/edit in the controller) -->
+                    <form asp-action="Create" method="post" class="form-horizontal">
+                        <!-- Updated hidden field to StoreTypeId -->
+                        <input type="hidden" asp-for="StoreTypeId" />
+
+                        <div class="col-lg-6">
+
+                            <!-- 1. Code -->
+                            <div class="form-group">
+                                <label class="form-label" for="Code">کد:</label>
+                                <input type="text" asp-for="Code" class="form-control" />
+                            </div>
+                            <span asp-validation-for="Code" class="text-danger d-block text-end"></span>
+
+                            <!-- 2. FullName -->
+                            <div class="form-group">
+                                <label class="form-label" for="FullName">نام کامل:</label>
+                                <input type="text" asp-for="FullName" class="form-control" />
+                            </div>
+                            <span asp-validation-for="FullName" class="text-danger d-block text-end"></span>
+
+                            <!-- 3. EntryDate (Using text for flexibility with date formats) -->
+                            <div class="form-group">
+                                <label class="form-label" for="EntryDate">تاریخ ثبت:</label>
+                                <input type="text" asp-for="EntryDate" class="form-control" placeholder="YYYY/MM/DD" />
+                            </div>
+                            <span asp-validation-for="EntryDate" class="text-danger d-block text-end"></span>
+
+                            <!-- 4. IsActive (Checkbox) - FIX APPLIED: Switched to Html.CheckBoxFor due to nullable bool -->
+                            <div class="form-group">
+                                <label class="form-label" for="IsActive">فعال:</label>
+                                <div class="checkbox-container">
+                                    @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+                                </div>
+                            </div>
+
+                            <!-- 5. IsUserEditable (Checkbox) - FIX APPLIED: Switched to Html.CheckBoxFor due to nullable bool -->
+                            <div class="form-group">
+                                <label class="form-label" for="IsUserEditable">قابل ویرایش توسط کاربر:</label>
+                                <div class="checkbox-container">
+                                    @Html.CheckBoxFor(m => m.IsUserEditable, new { @class = "form-check-input" })
+                                </div>
+                            </div>
+
+                            <div class="col-lg-8"></div>
+                            <div class="col-lg-4">
+                                <div class="text-center mt-4 align-middle">
+                                    <button type="submit" class="btn btn-success px-5">ثبت</button>
+                                    <!-- Updated asp-action to Index (assuming StoreTypeController handles the Index action) -->
+                                    <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

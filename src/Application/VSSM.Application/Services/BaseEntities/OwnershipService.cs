@@ -23,7 +23,6 @@ public class OwnershipService : IOwnershipService
         _editValidator = editValidator;
     }
 
-    // ------------------ GET BY ID ------------------
     public async Task<OwnershipEditDto> GetById(int id, CancellationToken token)
     {
         var entity = await _db.TblOwnerships
@@ -42,7 +41,6 @@ public class OwnershipService : IOwnershipService
         };
     }
 
-    // ------------------ CREATE (RAW SQL + VALIDATION) ------------------
     public async Task<int> Create(OwnershipCreateDto dto, CancellationToken token)
     {
         // Validate
@@ -64,7 +62,6 @@ public class OwnershipService : IOwnershipService
         return 1;
     }
 
-    // ------------------ UPDATE (RAW SQL + VALIDATION) ------------------
     public async Task<bool> Update(OwnershipEditDto dto, CancellationToken token)
     {
         // Validate
@@ -88,7 +85,6 @@ public class OwnershipService : IOwnershipService
         return true;
     }
 
-    // ------------------ PAGING + SEARCH ------------------
     public async Task<PagingSearchOrderDto<OwnershipGetDto>> GetPagedList(
         string? search,
         int page,
@@ -101,7 +97,6 @@ public class OwnershipService : IOwnershipService
 
         IQueryable<TblOwnership> query = _db.TblOwnerships;
 
-        // Search
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(x =>
@@ -109,7 +104,6 @@ public class OwnershipService : IOwnershipService
                 x.Code.Contains(search));
         }
 
-        // Sorting
         query = sortField switch
         {
             "Code" => sortOrder == "asc" ? query.OrderBy(x => x.Code) : query.OrderByDescending(x => x.Code),
@@ -119,7 +113,6 @@ public class OwnershipService : IOwnershipService
 
         paging.TotalItems = await query.CountAsync(token);
 
-        // Paging & projection
         var rows = await query
             .Skip(paging.Skip)
             .Take(paging.PageSize)

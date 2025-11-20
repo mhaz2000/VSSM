@@ -1,0 +1,139 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model PagingSearchOrderDto<VSSM.Application.DTOs.BaseEntities.Vvmstage.VvmstageDto>
+@{
+ViewData["Title"] = "مدیریت مراحل VVM";
+}
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <h5>مدیریت مراحل VVM</h5>
+                </div>
+                <div class="col-lg-4">
+                </div>
+                <form method="get">
+                    <div class="col-lg-4">
+                        <div class="input-group">
+                            <input type="text" name="search" value="@Model.SearchText" class="form-control" placeholder="جستجو (کد یا نام)...">
+                            <div class="input-group-btn">
+                                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> جستجو</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Hidden fields to maintain sorting state -->
+                    <input type="hidden" name="sortField" value="@Model.SortField" />
+                    <input type="hidden" name="sortOrder" value="@Model.SortOrder" />
+                </form>
+
+                <div class="col-lg-1 ms-auto">
+                    <a class="btn btn-success" asp-controller="Vvmstage" asp-action="New"><i class="fa fa-plus-circle"></i> جدید</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <table class="table table-bordered table-striped table-condensed text-center mb-0">
+                            <thead>
+                            <tr>
+                                <th>
+                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=VvmstageId&sortOrder=@(Model.SortField == "VvmstageId" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                        شناسه <i class="fa fa-sort"></i>
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=Code&sortOrder=@(Model.SortField == "Code" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                        کد <i class="fa fa-sort"></i>
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=FullName&sortOrder=@(Model.SortField == "FullName" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                        نام کامل <i class="fa fa-sort"></i>
+                                    </a>
+                                </th>
+                                <th>تاریخ ثبت</th>
+                                <th>فعال</th>
+                                <th>عملیات</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @if (Model.Items != null && Model.Items.Any())
+                            {
+                            foreach (var item in Model.Items)
+                            {
+                            <tr>
+                                <td>@item.VvmstageId</td>
+                                <td>@item.Code</td>
+                                <td>@item.FullName</td>
+                                <td>@(item.EntryDate.HasValue ? item.EntryDate.Value.ToString("yyyy/MM/dd") : "-")</td>
+
+                                <!-- Boolean visual representation -->
+                                <td>
+                                    @if (item.IsActive == true)
+                                    {
+                                    <span class="badge badge-success">بله</span>
+                                    }
+                                    else
+                                    {
+                                    <span class="badge badge-secondary">خیر</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.VvmstageId">ویرایش</a>
+
+                                    <form asp-action="Delete" asp-route-id="@item.VvmstageId" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('آیا مطمئن هستید می‌خواهید این مرحله را حذف کنید؟');">حذف</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            }
+                            }
+                            else
+                            {
+                            <tr>
+                                <td colspan="6" class="text-center text-danger">داده‌ای یافت نشد</td>
+                            </tr>
+                            }
+                            </tbody>
+                        </table>
+
+                        <!-- Pagination -->
+                        <nav class="mt-2">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
+                                    <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
+                                </li>
+
+                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                                {
+                                <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
+                                    <a class="page-link" href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
+                                </li>
+                                }
+
+                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
+                                    <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
+                                </li>
+                            </ul>
+                        </nav>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Optional: Add any JavaScript if needed
+</script>
+}

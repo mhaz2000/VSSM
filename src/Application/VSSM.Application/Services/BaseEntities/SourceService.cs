@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Source;
+using VSSM.Application.DTOs.BaseEntities.Store;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
@@ -103,5 +104,19 @@ public class SourceService : ISourceService
             SortField = sortField,
             SortOrder = sortOrder
         };
+    }
+
+    public async Task<List<SourceGetDto>> GetAll(CancellationToken cancellationToken)
+    {
+        IQueryable<TblSource> query = _db.TblSources;
+        return await query.Select(x =>
+               new SourceGetDto
+               {
+                   SourceId = x.SourceId,
+                   Code = x.Code,
+                   FullName = x.FullName,
+                   IsActive = x.IsActive ?? false
+               }
+            ).ToListAsync(cancellationToken);
     }
 }

@@ -16,4 +16,10 @@
     <ProjectReference Include="..\..\Domain\VSSM.Domain\VSSM.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Stores\" />
+    <Folder Include="Views\Stores\" />
+    <Folder Include="Views\Source\" />
+  </ItemGroup>
+
 </Project>

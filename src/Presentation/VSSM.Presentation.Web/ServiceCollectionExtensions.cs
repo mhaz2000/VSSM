@@ -56,6 +56,9 @@ namespace VSSM.Presentation.Web
             services.AddScoped<ITransportModeService, TransportModeService>();
             services.AddScoped<IReceivingModeService, ReceivingModeService>();
             services.AddScoped<IClimateService, ClimateService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ISourceService, SourceService>();
+            services.AddScoped<IStoreService, StoreService>();
         }
     }
 

@@ -23,14 +23,13 @@ namespace VSSM.Presentation.Web.Models.Store
         public bool IsActive { get; set; }
 
         public int? RecipientId { get; set; }
-        public float? GrossVol { get; set; }
         public int? Year { get; set; }
         public string Model { get; set; }
         public string Manufacturer { get; set; }
         public string Pqsno { get; set; }
         public int? CoolingUnitNo { get; set; }
         public string RefrigerantGas { get; set; }
-        public string RoomBox { get; set; }
+ 
 
         public int? PoweSource { get; set; }
         public int? Source { get; set; }

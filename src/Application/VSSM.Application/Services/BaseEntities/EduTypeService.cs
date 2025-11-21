@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.EduType;
+using VSSM.Application.DTOs.BaseEntities.PowerSource;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
@@ -118,6 +119,20 @@ namespace VSSM.Application.Services.BaseEntities
                 SortField = sortField,
                 SortOrder = sortOrder
             };
+        }
+
+        public async Task<List<EduTypeGetDto>> GetAll(CancellationToken cancellationToken)
+        {
+
+            var query = _db.TblEduTypes;
+            return await query.Select(x =>
+                   new EduTypeGetDto
+                   {
+                       EduTypeId = x.EduTypeId,
+                       FullName = x.FullName,
+                       IsActive = x.IsActive ?? false
+                   }
+                ).ToListAsync(cancellationToken);
         }
     }
 }

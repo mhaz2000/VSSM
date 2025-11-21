@@ -10,20 +10,20 @@ namespace VSSM.Presentation.Web.Controllers
     {
         private readonly IStoreService _storeService;
         private readonly IStoreTypeService _storeTypeService;
-        private readonly IRecipientService _recipientService;
+        //private readonly IRecipientService _recipientService;
         private readonly IPowerSourceService _powerSourceService;
         private readonly ISourceService _sourceService;
 
         public StoreController(
             IStoreService storeService,
             IStoreTypeService storeTypeService,
-            IRecipientService recipientService,
+            //IRecipientService recipientService,
             IPowerSourceService powerSourceService,
             ISourceService sourceService)
         {
             _storeService = storeService;
             _storeTypeService = storeTypeService;
-            _recipientService = recipientService;
+            //_recipientService = recipientService;
             _powerSourceService = powerSourceService;
             _sourceService = sourceService;
         }
@@ -66,14 +66,14 @@ namespace VSSM.Presentation.Web.Controllers
                     Note = dto.Note,
                     IsActive = dto.IsActive,
                     RecipientId = dto.RecipientId,
-                    GrossVol = dto.GrossVol,
+      
                     Year = dto.Year,
                     Model = dto.Model,
                     Manufacturer = dto.Manufacturer,
                     Pqsno = dto.Pqsno,
                     CoolingUnitNo = dto.CoolingUnitNo,
                     RefrigerantGas = dto.RefrigerantGas,
-                    RoomBox = dto.RoomBox,
+ 
                     PoweSource = dto.PoweSource,
                     Source = dto.Source,
                     Barcode = dto.Barcode,
@@ -106,14 +106,14 @@ namespace VSSM.Presentation.Web.Controllers
                     Note = model.Note,
                     IsActive = model.IsActive,
                     RecipientId = model.RecipientId,
-                    GrossVol = model.GrossVol,
+          
                     Year = model.Year,
                     Model = model.Model,
                     Manufacturer = model.Manufacturer,
                     Pqsno = model.Pqsno,
                     CoolingUnitNo = model.CoolingUnitNo,
                     RefrigerantGas = model.RefrigerantGas,
-                    RoomBox = model.RoomBox,
+ 
                     PoweSource = model.PoweSource,
                     Source = model.Source,
                     Barcode = model.Barcode,
@@ -136,14 +136,13 @@ namespace VSSM.Presentation.Web.Controllers
                     Note = model.Note,
                     IsActive = model.IsActive,
                     RecipientId = model.RecipientId,
-                    GrossVol = model.GrossVol,
+   
                     Year = model.Year,
                     Model = model.Model,
                     Manufacturer = model.Manufacturer,
                     Pqsno = model.Pqsno,
                     CoolingUnitNo = model.CoolingUnitNo,
-                    RefrigerantGas = model.RefrigerantGas,
-                    RoomBox = model.RoomBox,
+            
                     PoweSource = model.PoweSource,
                     Source = model.Source,
                     Barcode = model.Barcode,
@@ -168,7 +167,7 @@ namespace VSSM.Presentation.Web.Controllers
         private async Task LoadDropDowns(CancellationToken cancellationToken)
         {
             var storeTypes = await _storeTypeService.GetAll(cancellationToken);
-            var recipients = await _recipientService.GetAll(cancellationToken);
+            //var recipients = await _recipientService.GetAll(cancellationToken);
             var powerSources = await _powerSourceService.GetAll(cancellationToken);
             var sources = await _sourceService.GetAll(cancellationToken);
 
@@ -180,13 +179,13 @@ namespace VSSM.Presentation.Web.Controllers
                 })
                 .ToList();
 
-            ViewBag.RecipientList = recipients
-                .Select(x => new SelectListItem
-                {
-                    Text = x.FullName,
-                    Value = x.RecipientId.ToString()
-                })
-                .ToList();
+            //ViewBag.RecipientList = recipients
+            //    .Select(x => new SelectListItem
+            //    {
+            //        Text = x.FullName,
+            //        Value = x.RecipientId.ToString()
+            //    })
+            //    .ToList();
 
             ViewBag.PowerSourceList = powerSources
                 .Select(x => new SelectListItem

@@ -76,7 +76,6 @@ public class AdjustreasonController : Controller
             AdjustReasonId = model.AdjustReasonId??0,
             Code = model.Code,
             FullName = model.FullName,
-            EntryDate = model.EntryDate,
             IsActive = model.IsActive,
             UsedForDispatchAdjust = model.UsedForDispatchAdjust,
             UserForArrivalAdjust = model.UserForArrivalAdjust,

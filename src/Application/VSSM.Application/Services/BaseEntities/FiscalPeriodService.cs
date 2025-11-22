@@ -19,13 +19,20 @@ namespace VSSM.Application.Services.BaseEntities
         {
             var entity = new TblFiscalPeriod
             {
-                StartDate = dto.StartDate,
-                EndTime = dto.EndTime,
+                StartDate = DateTime.Now,
                 FullName = dto.FullName,
                 SuggestedEndDate = dto.SuggestedEndDate,
-                EntryDate = dto.EntryDate ?? DateTime.Now,
+                EntryDate = DateTime.Now,
                 IsActive = dto.IsActive
             };
+            
+            var lastOne = await _dbContext.TblFiscalPeriods.OrderByDescending(c => c.EntryDate).FirstOrDefaultAsync();
+
+            if (lastOne != null)
+            {
+                lastOne.IsActive = false;
+                lastOne.EndTime = DateTime.Now;
+            }
 
             _dbContext.TblFiscalPeriods.Add(entity);
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -39,11 +46,17 @@ namespace VSSM.Application.Services.BaseEntities
             if (entity == null)
                 return false;
 
-            entity.StartDate = dto.StartDate;
-            entity.EndTime = dto.EndTime;
+            var lastOne = await _dbContext.TblFiscalPeriods.OrderBy(c => c.EntryDate).FirstOrDefaultAsync();
+
+            if (lastOne != null)
+            {
+                lastOne.IsActive = false;
+                lastOne.EndTime = DateTime.Now;
+            }
+            entity.StartDate = DateTime.Now;
             entity.FullName = dto.FullName;
             entity.SuggestedEndDate = dto.SuggestedEndDate;
-            entity.EntryDate = dto.EntryDate;
+            entity.EntryDate = DateTime.Now;
             entity.IsActive = dto.IsActive;
 
             await _dbContext.SaveChangesAsync(cancellationToken);

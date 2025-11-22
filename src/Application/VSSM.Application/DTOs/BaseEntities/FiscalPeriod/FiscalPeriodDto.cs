@@ -8,5 +8,5 @@ public class FiscalPeriodDto
     public string FullName { get; set; }
     public DateTime? SuggestedEndDate { get; set; }
     public DateTime? EntryDate { get; set; }
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
 }

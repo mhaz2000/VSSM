@@ -1,8 +1,8 @@
 ﻿@model VSSM.Application.DTOs.BaseEntities.FiscalPeriod.FiscalPeriodDto
 @{
-string formName = "ثبت";
-if (Model != null && Model.FiscalPeriodId > 0)
-formName = "ویرایش";
+    string formName = "ثبت";
+    if (Model != null && Model.FiscalPeriodId > 0)
+        formName = "ویرایش";
 }
 
 <style>
@@ -35,6 +35,12 @@ formName = "ویرایش";
     .card {
         direction: rtl;
     }
+    
+    .oneline-warning {
+        white-space: nowrap;
+        margin: 10px 0;
+        width: auto !important; 
+    }
 </style>
 
 <div class="container-fluid">
@@ -47,12 +53,14 @@ formName = "ویرایش";
         </div>
 
         <div class="card">
+
             <div class="card-block">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                 <form asp-action="@(Model.FiscalPeriodId > 0 ? "Edit" : "New")" method="post" class="form-horizontal">
                     <input type="hidden" asp-for="FiscalPeriodId"/>
-                    <div class="col-lg-6">
+                    
+                    <div class="col-lg-6"> 
 
                         <div class="form-group">
                             <label class="form-label" for="FullName">نام کامل:</label>
@@ -60,43 +68,26 @@ formName = "ویرایش";
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="StartDate">تاریخ شروع:</label>
-                            <input type="date" asp-for="StartDate" class="form-control" required />
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="EndTime">تاریخ پایان:</label>
-                            <input type="date" asp-for="EndTime" class="form-control" />
-                        </div>
-
-                        <div class="form-group">
                             <label class="form-label" for="SuggestedEndDate">تاریخ پایان پیشنهادی:</label>
                             <input type="date" asp-for="SuggestedEndDate" class="form-control" />
                         </div>
+                    </div>
+                    
+                    <div class="col-lg-12 mt-4">
 
-                        <div class="form-group">
-                            <label class="form-label" for="EntryDate">تاریخ ثبت:</label>
-                            <input type="date" asp-for="EntryDate" class="form-control" />
+                        <div class="form-group justify-content-center">
+                            <label class="form-label text-danger oneline-warning">
+                                وقتی یک دوره تراکنش جدید ثبت کنید، دوره‌های تراکنش قبلی غیر فعال می‌شوند و دیگر امکان فعال نمودن آنها وجود نخواهد داشت.
+                            </label>
                         </div>
-
-                        <div class="form-group">
-                            <label class="form-label">وضعیت:</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" asp-for="IsActive" checked />
-                                <label class="form-check-label" for="IsActive">فعال است</label>
-                            </div>
+                        
+                        <div class="text-center mt-4 align-middle">
+                            <button type="submit" class="btn btn-success px-5">
+                                @(Model.FiscalPeriodId > 0 ? "ذخیره تغییرات" : "ثبت")
+                            </button>
+                            <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
                         </div>
-
-                        <div class="col-lg-8"></div>
-                        <div class="col-lg-4">
-                            <div class="text-center mt-4 align-middle">
-                                <button type="submit" class="btn btn-success px-5">
-                                    @(Model.FiscalPeriodId > 0 ? "ذخیره تغییرات" : "ثبت")
-                                </button>
-                                <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
-                            </div>
-                        </div>
-
+                        
                     </div>
                 </form>
             </div>

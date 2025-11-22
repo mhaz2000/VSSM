@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Domain.Enums;
 
 namespace VSSM.Presentation.Web.Controllers
 {
@@ -33,7 +31,14 @@ namespace VSSM.Presentation.Web.Controllers
         // GET: /FiscalPeriod/New
         public IActionResult New()
         {
-            return View(new FiscalPeriodDto());
+            var model = new FiscalPeriodDto();
+            var today = DateTime.Today;
+            var lastDayOfYear = new DateTime(today.Year, 12, 31);
+    
+            // تنظیم مقدار پیش‌فرض
+            model.SuggestedEndDate = lastDayOfYear;
+            
+            return View(model);
         }
 
         // POST: /FiscalPeriod/New

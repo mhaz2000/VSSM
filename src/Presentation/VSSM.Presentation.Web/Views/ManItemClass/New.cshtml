@@ -19,62 +19,85 @@ string formName = Model != null && Model.ManItemClassId > 0 ? "ویرایش" : "
         direction: rtl;
     }
 
-    .form-control, .form-select {
+    .form-control {
         flex: 1;
     }
 
     .card {
         direction: rtl;
     }
+
+    .checkbox-container {
+        max-height: 250px;
+        overflow-y: auto;
+        border: 1px solid #ced4da;
+        border-radius: .375rem;
+        padding: 10px;
+        background: #fff;
+    }
 </style>
 
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <h5>@formName کلاس/تولیدکننده</h5>
-                </div>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>@formName کلاس / تولیدکننده</h5>
             </div>
         </div>
 
         <div class="card">
             <div class="card-body">
 
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                <form asp-controller="ManItemClass" asp-action="Create" method="post" class="form-horizontal">
+                <form asp-controller="ManItemClass" asp-action="Create" method="post">
 
-                    @* Hidden for edit *@
+                    @* Hidden Id for Edit *@
                     <input type="hidden" asp-for="ManItemClassId" />
 
-                    <div class="col-lg-6">
-
-                        @* ItemClassCode *@
-                        <div class="form-group">
-                            <label class="form-label" for="ItemClassCode">کد کلاس قلم:</label>
-                            <input type="text" asp-for="ItemClassCode" class="form-control" />
-                        </div>
+                    @* --- Item Class Code --- *@
+                    <div class="form-group mb-3">
+                        <label class="form-label" for="ItemClassCode">کد کلاس قلم:</label>
+                        <input type="text" asp-for="ItemClassCode" class="form-control" />
                         <span asp-validation-for="ItemClassCode" class="text-danger"></span>
+                    </div>
 
-                        @* ManufacturerId Dropdown *@
-                        <div class="form-group">
-                            <label class="form-label" for="ManufacturerId">تولید کننده:</label>
-                            <select asp-for="ManufacturerId" asp-items="Model.Manufacturers" class="form-select">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
+                    @* --- Manufacturer Multi-Select with Checkboxes --- *@
+                    <div class="mb-3" style="direction: rtl;">
+                        <label class="form-label fw-bold">تولیدکنندگان:</label>
+
+                        <div class="checkbox-container">
+                            @foreach (var item in Model.ItemClasses)
+                            {
+                            bool isChecked = Model.ManufacturerIds != null && Model.ManufacturerIds.Any(c=>c.ToString() == item.Value);
+
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="ManufacturerIds"
+                                       value="@item.Value"
+                                       id="chk_@item.Value"
+                                       @(isChecked ? "checked" : "") />
+                                <label class="form-check-label" for="chk_@item.Value">
+                                    @item.Text
+                                </label>
+                            </div>
+                            }
                         </div>
-                        <span asp-validation-for="ManufacturerId" class="text-danger"></span>
 
-                        <hr class="my-4" />
+                        <small class="text-muted d-block mt-1">
+                            برای انتخاب چند مورد کافیست تیک‌ها را بزنید، نیازی به نگه داشتن Ctrl نیست.
+                        </small>
+                        <span asp-validation-for="ManufacturerIds" class="text-danger"></span>
+                    </div>
 
-                        @* Action Buttons *@
-                        <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-success px-5">@formName</button>
-                            <a class="btn btn-primary px-5" asp-controller="ManItemClass" asp-action="Index">لیست</a>
-                        </div>
+                    <hr class="my-4" />
 
+                    @* --- Buttons --- *@
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-success px-5">@formName</button>
+                        <a class="btn btn-primary px-5" asp-action="Index">لیست</a>
                     </div>
 
                 </form>

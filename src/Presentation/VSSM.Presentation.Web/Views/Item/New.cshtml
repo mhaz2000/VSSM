@@ -1,41 +1,9 @@
-﻿
-@model ItemViewModel
+﻿@model ItemViewModel
 @{
     string formName = "ثبت";
     if (Model != null && Model.ItemId > 0)
         formName = "ویرایش";
 }
-<style>
-    .form-label {
-        text-align: left;
-        width: 130px;
-        margin-left: 15px;
-    }
-
-    .form-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-        direction: rtl;
-    }
-
-    .form-control, .form-select {
-        flex: 1;
-    }
-
-    .form-check {
-        margin-inline-end: 20px;
-        margin-right: 30px !important;
-    }
-
-    .form-check-label {
-        padding-right: 0rem !important;
-    }
-
-    .card {
-        direction: rtl;
-    }
-</style>
 
 <div class="container-fluid">
     <div class="animated fadeIn">
@@ -55,11 +23,86 @@
                 <div class="card-block">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <form asp-action="Create" method="post" class="form-horizontal">
-                        @* <input type="hidden" asp-for="ItemId" /> *@
-                        <div class="col-lg-6">
-                            
+                         <input type="hidden" asp-for="ItemId" />
+                        <div class="col-lg-12">
 
-                            <div class="col-lg-8"></div>
+                            <div class="form-group col-md-4">
+                                <label class="form-label">نوع کالا</label>
+                                <select class="form-control">
+                                    <option value="">-- انتخاب کنید --</option>
+
+                                    @foreach (var itemType in ViewBag.ItemClass)
+                                    {
+                                        <option value="@itemType.Id">@itemType.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label class="form-label">حجم (لیتر)</label>
+                                <input type="number" class="form-control" asp-for="Volume" name="Volume" />
+                            </div>
+                            <div class="form-group col-md-4">
+                                <p>برای تعیین حجم واکسنها و حلالها به منوی "دوز اختصاص داده شده به کالا" مراجعه کنید</p>
+                            </div>
+                            
+                            <div class="form-group col-md-4">
+                                <label class="form-label">کد</label>
+                                <input class="form-control" asp-for="Code" />
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="form-label">نام کامل</label>
+                                <input class="form-control" asp-for="FullName" />
+                            </div>
+                            
+                            <div class="form-group col-md-4">
+                                <input class="form-check-input" type="checkbox" asp-for="RequiresDiluent" name="RequiresDiluent" />
+                                <label class="form-check-label">نیاز به حلال</label>
+                                <select class="form-control">
+                                    <option value="">--</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group col-md-4">
+                                <label class="form-label">روزهای قبل از تاریخ انقضا</label>
+                                <input type="number" class="form-control" asp-for="DayToWarmExpire" />
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label class="form-label">قیمت واحد خروجی</label>
+                                <input class="form-control" asp-for="UnitPrice" name="UnitPrice" />
+                            </div>
+
+                            <div class="form-group col-md-4">
+                                <label class="form-label">ترتیب نمایش در لیست</label>
+                                <input type="number" class="form-control" asp-for="OrderInList" />
+                            </div>
+
+                            <div class="col-md-12">
+                            <div class="form-group col-md-3">
+                                <input class="form-check-input" type="checkbox" asp-for="UserBelowZeroStore" name="UserBelowZeroStore" />
+                                <label class="form-check-label">انبار در زیر صفر درجه</label>
+                            </div>
+
+                            <div class="form-group col-md-3">
+                                <input class="form-check-input" type="checkbox" asp-for="UserAboveZeroStore" name="UserAboveZeroStore" />
+                                <label class="form-check-label">انبار در بالای صفر درجه</label>
+                            </div>
+
+                            <div class="form-group col-md-3">
+                                <input class="form-check-input" type="checkbox" asp-for="UseOrdinaryStore" name="UseOrdinaryStore" />
+                                <label class="form-check-label">انبار معمولی</label>
+                            </div>
+
+                            <div class="form-group col-md-3">
+                                <input class="form-check-input" type="checkbox" asp-for="IsActive" name="IsActive" />
+                                <label class="form-check-label">وضعیت فعال است</label>
+                            </div>
+                            </div>
+                            
+                            <div class="col-lg-5">
+                                
+                            </div>
                             <div class="col-lg-4">
                                 <div class="text-center mt-4 align-middle">
                                     <button type="submit" class="btn btn-success px-5">ثبت</button>

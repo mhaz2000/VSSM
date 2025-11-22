@@ -12,17 +12,19 @@
                 <div class="col-lg-3">
                     <div><h5> مدیریت کالا</h5></div>
                 </div>
-                <div class="col-lg-2">
-                </div>
-                <div class="col-lg-2">
+                
+                <div class="col-lg-4">
+                    <div class="form-group">
+                    <label class="form-label">نوع کالا</label>
                     <select class="form-control">
                         <option value="">-- انتخاب کنید --</option>
 
-                        @foreach (var itemType in ViewBag.ItemTypes)
+                        @foreach (var itemType in ViewBag.ItemClass)
                         {
-                            <option value="@itemType.Id">@itemType.Title</option>
+                            <option value="@itemType.Id">@itemType.Name</option>
                         }
                     </select>
+                    </div>
                 </div>
                 <form method="get">
                     <div class="col-lg-4">

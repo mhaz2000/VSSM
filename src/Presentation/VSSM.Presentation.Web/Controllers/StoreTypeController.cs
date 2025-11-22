@@ -71,7 +71,7 @@ public class StoreTypeController : Controller
                 StoreTypeId = model.StoreTypeId.GetValueOrDefault(),
                 Code = model.Code,
                 FullName = model.FullName,
-                EntryDate = model.EntryDate,
+                EntryDate = DateTime.Now,
                 IsActive = model.IsActive,
                 IsUserEditable = model.IsUserEditable
             };

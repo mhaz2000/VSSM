@@ -70,7 +70,7 @@ namespace VSSM.Presentation.Web.Controllers;
                 VvmstageId = model.VvmstageId.GetValueOrDefault(),
                 Code = model.Code,
                 FullName = model.FullName,
-                EntryDate = model.EntryDate,
+                EntryDate = DateTime.Now,
                 IsActive = model.IsActive
             };
 

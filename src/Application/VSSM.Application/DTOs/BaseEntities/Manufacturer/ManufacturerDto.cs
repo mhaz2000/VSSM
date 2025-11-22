@@ -15,4 +15,7 @@ public class ManufacturerDto
     public bool ShowForOther { get; set; }
 
     public bool IsActive { get; set; }
+
+    public List<int> ItemClasses { get; set; } =
+        new();
 }

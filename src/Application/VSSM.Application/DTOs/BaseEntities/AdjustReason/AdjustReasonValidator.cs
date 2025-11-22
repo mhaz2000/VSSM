@@ -14,11 +14,6 @@ public class AdjustReasonValidator : AbstractValidator<AdjustreasonDto>
             .NotEmpty().WithMessage("نام کامل نمی‌تواند خالی باشد")
             .MaximumLength(200).WithMessage("نام کامل نمی‌تواند بیش از ۲۰۰ کاراکتر باشد");
 
-        RuleFor(x => x.EntryDate)
-            .LessThanOrEqualTo(DateTime.Now)
-            .WithMessage("تاریخ ورود نمی‌تواند بزرگتر از امروز باشد")
-            .When(x => x.EntryDate.HasValue);
-
         // Boolean fields (all optional)
         RuleFor(x => x.IsActive)
             .NotNull().WithMessage("وضعیت فعال/غیرفعال باید مشخص شود");

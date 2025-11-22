@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using VSSM.Application.Common.Extensions;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Domain.Enums;
@@ -18,7 +19,7 @@ namespace VSSM.Presentation.Web.Controllers
             _itemClassService = itemClassService;
         }
 
-        public async Task<IActionResult> Index(CancellationToken cancellationTOken, string? search,
+        public async Task<IActionResult> Index(CancellationToken cancellationToken, string? search,
                                                 int page = 1,
                                                 int pageSize = 10,
                                                 string sortField = "Orders",
@@ -29,30 +30,23 @@ namespace VSSM.Presentation.Web.Controllers
                                                                     pageSize,
                                                                     sortField,
                                                                     sortOrder,
-                                                                    cancellationTOken);
+                                                                    cancellationToken);
 
-            LoadItemTypeEnum();
+            await PrepareDropdown(cancellationToken);
             return View(listModel);
 
         }
-        public IActionResult New()
+        public async Task<IActionResult> New()
         {
-            LoadItemTypeEnum();
+            await PrepareDropdown(CancellationToken.None);
             return View();
         }
 
-        private void LoadItemTypeEnum()
+        private async Task PrepareDropdown(CancellationToken cancellationTOken)
         {
-            var list = Enum.GetValues(typeof(ItemTypeEnum))
-                   .Cast<ItemTypeEnum>()
-                   .Select(x => new
-                   {
-                       Id = (int)x,
-                       Title = x.GetDescription()
-                   })
-                   .ToList();
+            var list = await _itemClassService.GetActives(cancellationTOken);
 
-            ViewBag.ItemTypes = list;
+            ViewBag.ItemClass = list;
         }
     }
 }

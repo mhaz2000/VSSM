@@ -94,7 +94,7 @@ public class AdjustreasonController : Controller
             await _adjustReasonService.Update(dto, cancellationToken);
         }
 
-        TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+        TempData["ToastMessage"] = "عملیات با موفقیت انجام شد"; 
         TempData["ToastType"] = "success";
 
         return RedirectToAction("Index");

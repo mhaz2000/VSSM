@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs.BaseEntities.AdjustReason;
 using VSSM.Application.DTOs.BaseEntities.CommercialName;
+using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.DTOs.BaseEntities.Levels;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
@@ -34,9 +35,11 @@ namespace VSSM.Presentation.Web
             services.AddScoped<ICommercialNameService, CommercialNameService>();
             services.AddScoped<IVvmtypeService, VvmtypeService>();
             services.AddScoped<IVvmstageService, VvmstageService>();
+            services.AddScoped<IFiscalPeriodService, FiscalPeriodService>();
             services.AddScoped<IStoreTypeService, StoreTypeService>();
             services.AddScoped<IValidator<VvmtypeDto>, VvmtypeValidator>();
             services.AddScoped<IValidator<ManufacturerDto>, ManufacturerDtoValidator>();
+            services.AddScoped<IValidator<FiscalPeriodDto>, FiscalPeriodDtoValidator>();
             services.AddScoped<IValidator<ManItemClassDto>, ManItemClassValidator>();
             services.AddScoped<IValidator<StoreTypeDto>, StoreTypeValidator>();
             services.AddScoped<IValidator<VvmstageDto>, VvmstageValidator>();

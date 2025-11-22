@@ -1,0 +1,126 @@
+﻿@using VSSM.Presentation.Web.Models.Pack
+@model PackViewModel
+
+@{
+    string formName = Model.PackId > 0 ? "ویرایش بسته‌بندی" : "ثبت بسته‌بندی جدید";
+}
+
+<style>
+    .form-label {
+        text-align: left;
+        width: 130px;
+        margin-left: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-control {
+        flex: 1;
+    }
+
+    .form-check {
+        margin-inline-end: 20px;
+        margin-right: 30px !important;
+    }
+
+    .form-check-label {
+        padding-right: 0rem !important;
+    }
+
+    .card {
+        direction: rtl;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <h5>@formName</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-block">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <form asp-action="Create" method="post" class="form-horizontal">
+
+                    <input type="hidden" asp-for="PackId" />
+
+                    <div class="col-lg-6">
+
+                        <div class="form-group">
+                            <label class="form-label">کد:</label>
+                            <input type="text" asp-for="Code" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">نام:</label>
+                            <input type="text" asp-for="FullName" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">حجم خالص:</label>
+                            <input type="number" asp-for="NetVolume" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">اندازه خارجی:</label>
+                            <input type="number" asp-for="ExternalSize" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">وزن:</label>
+                            <input type="number" asp-for="PackWeight" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">وضعیت:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="IsActive" />
+                                <label class="form-check-label">فعال</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">مورد استفاده آنفولانزا:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="UseForVacDL" />
+                             
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">سایر:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="UseForOS" />
+                         
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5">ثبت</button>
+                            <a asp-action="Index" class="btn btn-primary px-5">لیست</a>
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<partial name="_ValidationScriptsPartial" />

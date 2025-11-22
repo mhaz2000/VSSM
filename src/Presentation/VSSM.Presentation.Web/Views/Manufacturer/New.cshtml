@@ -30,8 +30,12 @@ string formName = Model != null && Model.ManufacturerId > 0 ? "ویرایش" : "
         direction: rtl;
     }
 
+    /*
+    * تغییر: برای انتقال چک‌باکس به چپ، مارجین چپ حذف و مارجین راست اضافه شد.
+    */
     .form-check-input {
-        margin-left: 10px;
+        /* margin-left: 10px;  // حذف شد */
+        margin-right: 10px; /* اضافه شد */
     }
 
     .checkbox-container {
@@ -51,14 +55,12 @@ string formName = Model != null && Model.ManufacturerId > 0 ? "ویرایش" : "
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <!-- Card Title -->
         <div class="card mb-3">
             <div class="card-body">
                 <h5>@formName سازنده</h5>
             </div>
         </div>
 
-        <!-- Form Card -->
         <div class="card">
             <div class="card-body">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -68,21 +70,18 @@ string formName = Model != null && Model.ManufacturerId > 0 ? "ویرایش" : "
 
                     <div class="col-lg-6">
 
-                        <!-- Code -->
                         <div class="form-group">
                             <label class="form-label" for="Code">کد:</label>
                             <input type="text" asp-for="Code" class="form-control" />
                             <span asp-validation-for="Code" class="text-danger"></span>
                         </div>
 
-                        <!-- Full Name -->
                         <div class="form-group">
                             <label class="form-label" for="FullName">نام کامل:</label>
                             <input type="text" asp-for="FullName" class="form-control" />
                             <span asp-validation-for="FullName" class="text-danger"></span>
                         </div>
 
-                        <!-- Entry Date -->
                         <div class="form-group">
                             <label class="form-label" for="EntryDate">تاریخ ورود:</label>
                             <input type="date" asp-for="EntryDate" class="form-control" />
@@ -91,25 +90,23 @@ string formName = Model != null && Model.ManufacturerId > 0 ? "ویرایش" : "
 
                         <hr class="my-4"/>
 
-                        <!-- Boolean Fields -->
                         <div class="form-check-group">
-                            <label class="form-label" for="ShowForVac">نمایش برای VAC:</label>
                             <input type="checkbox" asp-for="ShowForVac" class="form-check-input" />
+                            <label class="form-label" for="ShowForVac">نمایش برای VAC:</label>
                         </div>
 
                         <div class="form-check-group">
-                            <label class="form-label" for="ShowForOther">نمایش برای سایر:</label>
                             <input type="checkbox" asp-for="ShowForOther" class="form-check-input" />
+                            <label class="form-label" for="ShowForOther">نمایش برای سایر:</label>
                         </div>
 
                         <div class="form-check-group">
-                            <label class="form-label" for="IsActive">فعال:</label>
                             <input type="checkbox" asp-for="IsActive" class="form-check-input" />
+                            <label class="form-label" for="IsActive">فعال:</label>
                         </div>
 
                         <hr class="my-4"/>
 
-                        <!-- ItemClasses Multi-Select with Checkboxes -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">کلاس‌های قلم:</label>
                             <div class="checkbox-container">
@@ -117,17 +114,14 @@ string formName = Model != null && Model.ManufacturerId > 0 ? "ویرایش" : "
                                 {
                                 bool isChecked = Model.SelectedItemClassIds != null && Model.SelectedItemClassIds.Contains(int.Parse(item.Value));
 
-                                <div class="form-check">
+                                <div class="form-check form-check-reverse"> <label class="form-check-label" for="chk_@item.Value"> @item.Text
+                                    </label>
                                     <input class="form-check-input"
                                            type="checkbox"
                                            name="SelectedItemClassIds"
                                            value="@item.Value"
                                            id="chk_@item.Value"
-                                           @(isChecked ? "checked" : "") />
-                                    <label class="form-check-label" for="chk_@item.Value">
-                                        @item.Text
-                                    </label>
-                                </div>
+                                           @(isChecked ? "checked" : "") /> </div>
                                 }
                             </div>
                             <small class="text-muted d-block mt-1">
@@ -136,7 +130,6 @@ string formName = Model != null && Model.ManufacturerId > 0 ? "ویرایش" : "
                             <span asp-validation-for="SelectedItemClassIds" class="text-danger"></span>
                         </div>
 
-                        <!-- Action Buttons aligned left -->
                         <div class="mt-4 text-start">
                             <button type="submit" class="btn btn-success px-5">@formName</button>
                             <a class="btn btn-primary px-5" asp-controller="Manufacturer" asp-action="Index">لیست</a>

@@ -60,6 +60,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<ISourceService, SourceService>();
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IPackService, PackService>();
+            services.AddScoped<IRecipientService, RecipientService>();
         }
     }
 

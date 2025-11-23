@@ -1,10 +1,12 @@
 ﻿using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.PowerSource;
 using VSSM.Application.DTOs.BaseEntities.TransportMode;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
 public interface ITransportModeService
 {
+    Task<List<TransportModeDto>> GetAll(CancellationToken cancellationToken);
     Task CreateAsync(CreateTransportModeDto dto, CancellationToken cancellationToken);
     Task<List<TransportModeDto>> GetAllAsync(CancellationToken cancellationToken);
     Task<TransportModeDto> GetByIdAsync(int id, CancellationToken cancellationToken);

@@ -1,0 +1,209 @@
+﻿@model VSSM.Presentation.Web.Models.Recipient.RecipientViewModel
+
+@{
+    string formName = Model.RecipientId > 0 ? "ویرایش گیرنده" : "ثبت گیرنده جدید";
+}
+
+<style>
+    .form-label {
+        text-align: left;
+        width: 130px;
+        margin-left: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-control, .form-select {
+        flex: 1;
+    }
+
+    .card {
+        direction: rtl;
+    }
+
+    .help-text {
+        color: blue;
+        margin-top: 15px;
+        font-size: 13px;
+        line-height: 1.8;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <h5>@formName</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-block">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <form asp-action="Create" method="post" class="form-horizontal">
+                    <input type="hidden" asp-for="RecipientId" />
+
+                    <div class="col-lg-6">
+
+                        <div class="form-group">
+                            <label class="form-label">کد:</label>
+                            <input asp-for="Code" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">نام کامل:</label>
+                            <input asp-for="FullName" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">سطح در زنجیره:</label>
+                            <input asp-for="ChainLevel" type="number" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">جمعیت:</label>
+                            <input asp-for="Population" type="number" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">سال:</label>
+                            <input asp-for="Year" type="number" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">طریقه حمل و نقل:</label>
+                            <select asp-for="TransportModeId" asp-items="ViewBag.TransportList" class="form-select"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">روش دریافت:</label>
+                            <select asp-for="ReceivingModeId" asp-items="ViewBag.ReceivingList" class="form-select"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">نوع:</label>
+                            <select asp-for="ParentType" asp-items="ViewBag.ParentTypeList" class="form-select"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">تاریخ شروع فعالیت:</label>
+                            <input asp-for="StartUp" type="date" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">آدرس 1:</label>
+                            <input asp-for="Address1" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">آدرس 2:</label>
+                            <input asp-for="Address2" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">کد پستی:</label>
+                            <input asp-for="PostalCode" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">شهر:</label>
+                            <input asp-for="City" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">استان:</label>
+                            <input asp-for="Province" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">تلفن:</label>
+                            <input asp-for="Phone" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">پست الکترونیکی:</label>
+                            <input asp-for="Email" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">زمان بین درخواست و ورود محموله:</label>
+                            <input asp-for="LeadTime" type="number" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">شرایط اقلیمی:</label>
+                            <select asp-for="ClimateId" asp-items="ViewBag.ClimateList" class="form-select"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">نوع مالکیت:</label>
+                            <select asp-for="OwnershipId" asp-items="ViewBag.OwnershipList" class="form-select"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">منبع انرژی:</label>
+                            <select asp-for="PowerSourceId" asp-items="ViewBag.PowerSourceList" class="form-select"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">نوع راه:</label>
+                            <select asp-for="TypeOfRoadId" asp-items="ViewBag.RoadTypeList" class="form-select"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">تلفن ثابت:</label>
+                            <input type="checkbox" asp-for="HasLandLine" class="form-check-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">ارتباط اینترنتی:</label>
+                            <input type="checkbox" asp-for="HasInternet" class="form-check-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">فاصله زمانی (دقیقه):</label>
+                            <input asp-for="DistanceTime" type="number" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">ملاحظات:</label>
+                            <textarea asp-for="Note" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">وضعیت:</label>
+                            <input type="checkbox" asp-for="IsActive" class="form-check-input" /> فعال است
+                        </div>
+
+                        <div class="help-text">
+                            وقتی شما دکمه ثبت را فشار دهید، گیرنده تعریف می‌گردد و شما می‌توانید هر کالایی را به آن گیرنده ارسال دارید...
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5">ثبت</button>
+                            <a asp-action="Index" class="btn btn-primary px-5">لیست</a>
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

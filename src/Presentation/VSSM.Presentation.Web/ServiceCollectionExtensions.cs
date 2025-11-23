@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs.BaseEntities.AdjustReason;
 using VSSM.Application.DTOs.BaseEntities.CommercialName;
+using VSSM.Application.DTOs.BaseEntities.DosePerVial;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
@@ -55,12 +56,14 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IOwnershipService, OwnershipService>();
             services.AddScoped<IValidator<OwnershipEditDto>, OwnershipEditValidator>();
             services.AddScoped<IValidator<OwnershipCreateDto>, OwnershipCreateValidator>();
+            services.AddScoped<IValidator<DosePerVialCreateDto>, DosePerVialCreateValidator>();
             services.AddScoped<IPowerSourceService, PowerSourceService>();
             services.AddScoped<IEduTypeService, EduTypeService>();
             services.AddScoped<IJobTypeService, JobTypeService>();
             services.AddScoped<ITransportModeService, TransportModeService>();
             services.AddScoped<IReceivingModeService, ReceivingModeService>();
             services.AddScoped<IClimateService, ClimateService>();
+            services.AddScoped<IDosePerVialService, DosePerVialService>();
         }
     }
 

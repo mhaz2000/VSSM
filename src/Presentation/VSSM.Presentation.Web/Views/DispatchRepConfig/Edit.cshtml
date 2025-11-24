@@ -1,0 +1,133 @@
+﻿@model VSSM.Application.DTOs.BaseEntities.DispatchRepConfig.DispatchRepConfigDto
+
+@{
+    ViewData["Title"] = "تنظیمات گزارش ارسال";
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">تنظیمات گزارش ارسال</h5>
+    </div>
+
+    <div class="card-body">
+        <form asp-action="Save" method="post">
+            <div class="row">
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="DispatchDate" checked disabled />
+                        <input type="hidden" asp-for="DispatchDate" value="true" />
+                        <label class="form-check-label" asp-for="DispatchDate">تاریخ ارسال</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Recipient" checked disabled />
+                        <input type="hidden" asp-for="Recipient" value="true" />
+                        <label class="form-check-label" asp-for="Recipient">گیرنده</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="VoucherNumber" checked disabled />
+                        <input type="hidden" asp-for="VoucherNumber" value="true" />
+                        <label class="form-check-label" asp-for="VoucherNumber">شماره حواله</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="RequestNumber" />
+                        <label class="form-check-label" asp-for="RequestNumber">شماره درخواست</label>
+                    </div>
+                </div>
+
+                    
+                
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="ItemCode" />
+                        <label class="form-check-label" asp-for="ItemCode">کد کالا</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="ItemClass" />
+                        <label class="form-check-label" asp-for="ItemClass">کلاس کالا</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="ItemName" />
+                        <label class="form-check-label" asp-for="ItemName">نام کالا</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="BatchNumber" />
+                        <label class="form-check-label" asp-for="BatchNumber">سری ساخت</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Quantity" />
+                        <label class="form-check-label" asp-for="Quantity">تعداد</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="DosePerVial" />
+                        <label class="form-check-label" asp-for="DosePerVial">دوز هر ویال</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="NumberOfVial" />
+                        <label class="form-check-label" asp-for="NumberOfVial">تعداد ویال</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="ExpDate" />
+                        <label class="form-check-label" asp-for="ExpDate">تاریخ انقضا</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Store" />
+                        <label class="form-check-label" asp-for="Store">انبار</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Activity" />
+                        <label class="form-check-label" asp-for="Activity">فعالیت</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-success">ذخیره</button>
+            </div>
+        </form>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success mt-3">
+                @TempData["Success"]
+            </div>
+        }
+    </div>
+</div>

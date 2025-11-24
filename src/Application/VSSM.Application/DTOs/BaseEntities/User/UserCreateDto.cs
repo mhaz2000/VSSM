@@ -1,0 +1,22 @@
+﻿public class UserCreateDto
+{
+    public string UserName { get; set; }
+    public string Password { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+
+    public string Email { get; set; }
+    public int? RecipientId { get; set; }
+    public int? PermissionLevel { get; set; }
+
+    public string Phone1 { get; set; }
+    public string Phone2 { get; set; }
+
+    public string Idnumber { get; set; }
+    public int? CodeEdu { get; set; }
+    public int? CodeJob { get; set; }
+    public bool IsAdmin { get; set; }
+
+    public string Course { get; set; }
+    public DateTime? CourseDate { get; set; }
+}

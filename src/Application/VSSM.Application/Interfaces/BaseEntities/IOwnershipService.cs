@@ -1,7 +1,9 @@
 ﻿using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.TransportMode;
 
 public interface IOwnershipService
 {
+    Task<List<OwnershipGetDto>> GetAll(CancellationToken cancellationToken);
     Task<PagingSearchOrderDto<OwnershipGetDto>> GetPagedList(string? search,
         int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
 

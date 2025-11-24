@@ -11,11 +11,14 @@ using VSSM.Application.DTOs.BaseEntities.Levels;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
 using VSSM.Application.DTOs.BaseEntities.Manufacturer;
 using VSSM.Application.DTOs.BaseEntities.Ownership;
+using VSSM.Application.DTOs.BaseEntities.RecipientMaxItem;
 using VSSM.Application.DTOs.BaseEntities.RoadType;
 using VSSM.Application.DTOs.BaseEntities.StoreType;
+using VSSM.Application.DTOs.BaseEntities.StoreUsageWarning;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
 using VSSM.Application.DTOs.BaseEntities.Vvmtype;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
@@ -35,12 +38,20 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IAdjustReasonService, AdjustReasonService>();
             services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IManItemClassService, ManItemClassService>();
+            services.AddScoped<IUserHomeService, UserHomeService>();
+            services.AddScoped<IArrivalRepConfigService, ArrivalRepConfigService>();
+            services.AddScoped<IVoucherConfigService, VoucherConfigService>();
             services.AddScoped<ICommercialNameService, CommercialNameService>();
             services.AddScoped<IVvmtypeService, VvmtypeService>();
             services.AddScoped<IVvmstageService, VvmstageService>();
+            services.AddScoped<IDispatchRepConfigService, DispatchRepConfigService>();
+            services.AddScoped<IStoreUsageWarningService, StoreUsageWarningService>();
             services.AddScoped<IFiscalPeriodService, FiscalPeriodService>();
+            services.AddScoped<IRecipientMaxItemService, RecipientMaxItemService>();
             services.AddScoped<IStoreTypeService, StoreTypeService>();
+            services.AddScoped<IValidator<RecipientMaxItemDto>, RecipientMaxItemValidator>();
             services.AddScoped<IValidator<VvmtypeDto>, VvmtypeValidator>();
+            services.AddScoped<IValidator<StoreUsageWarningDto>, StoreUsageWarningValidator>();
             services.AddScoped<IValidator<ManufacturerDto>, ManufacturerDtoValidator>();
             services.AddScoped<IValidator<FiscalPeriodDto>, FiscalPeriodDtoValidator>();
             services.AddScoped<IValidator<ManItemClassDto>, ManItemClassValidator>();
@@ -65,6 +76,12 @@ namespace VSSM.Presentation.Web
             services.AddScoped<ITransportModeService, TransportModeService>();
             services.AddScoped<IReceivingModeService, ReceivingModeService>();
             services.AddScoped<IClimateService, ClimateService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ISourceService, SourceService>();
+            services.AddScoped<IStoreService, StoreService>();
+            services.AddScoped<IPackService, PackService>();
+            services.AddScoped<IRecipientService, RecipientService>();
+            services.AddScoped<IRecipientConfigurationService, RecipientConfigurationService>();
             services.AddScoped<IDosePerVialService, DosePerVialService>();
             services.AddScoped<IItemDoseAssignmentService, ItemDoseAssignmentService>();
         }

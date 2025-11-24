@@ -28,11 +28,12 @@ public class ReceivingModeService : IReceivingModeService
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+   
+
     public async Task<List<ReceivingModeDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         var receivingModes = _dbContext.TblReceivingModes
             .AsNoTracking()
-            .OrderBy(receivingMode => receivingMode.ReceivingModeId)
             .AsEnumerable();
 
         var receivingModeDto = receivingModes.Select(receivingMode => new ReceivingModeDto()

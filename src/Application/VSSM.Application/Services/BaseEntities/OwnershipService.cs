@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Ownership;
+using VSSM.Application.DTOs.BaseEntities.TransportMode;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 using ValidationException = FluentValidation.ValidationException;
@@ -133,5 +134,20 @@ public class OwnershipService : IOwnershipService
             SortField = sortField,
             SortOrder = sortOrder
         };
+    }
+
+    public async Task<List<OwnershipGetDto>> GetAll(CancellationToken cancellationToken)
+    {
+
+        var query = _db.TblOwnerships;
+        return await query.Select(x =>
+               new OwnershipGetDto
+               {
+                   OwnershipId = x.OwnershipId,
+                   Code = x.Code,
+                   FullName = x.FullName,
+                   IsActive = x.IsActive ?? false
+               }
+            ).ToListAsync(cancellationToken);
     }
 }

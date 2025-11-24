@@ -1,10 +1,12 @@
 ﻿using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.EduType;
+using VSSM.Application.DTOs.BaseEntities.PowerSource;
 
 namespace VSSM.Application.Interfaces.BaseEntities
 {
     public interface IEduTypeService
     {
+        Task<List<EduTypeGetDto>> GetAll(CancellationToken cancellationToken);
         Task<PagingSearchOrderDto<EduTypeGetDto>> GetPagedList(
             string? search,
             int page,

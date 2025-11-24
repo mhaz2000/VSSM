@@ -6,6 +6,7 @@ using VSSM.Application.DTOs.BaseEntities.DosePerVial;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
+using VSSM.Application.DTOs.BaseEntities.ItemDoseAssignment;
 using VSSM.Application.DTOs.BaseEntities.Levels;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
 using VSSM.Application.DTOs.BaseEntities.Manufacturer;
@@ -57,6 +58,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IValidator<OwnershipEditDto>, OwnershipEditValidator>();
             services.AddScoped<IValidator<OwnershipCreateDto>, OwnershipCreateValidator>();
             services.AddScoped<IValidator<DosePerVialCreateDto>, DosePerVialCreateValidator>();
+            services.AddScoped<IValidator<ItemDoseAssignmentCreateDto>, ItemDoseAssignmentCreateValidator>();
             services.AddScoped<IPowerSourceService, PowerSourceService>();
             services.AddScoped<IEduTypeService, EduTypeService>();
             services.AddScoped<IJobTypeService, JobTypeService>();
@@ -64,6 +66,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IReceivingModeService, ReceivingModeService>();
             services.AddScoped<IClimateService, ClimateService>();
             services.AddScoped<IDosePerVialService, DosePerVialService>();
+            services.AddScoped<IItemDoseAssignmentService, ItemDoseAssignmentService>();
         }
     }
 

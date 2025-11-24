@@ -58,6 +58,22 @@ namespace VSSM.Application.Services.BaseEntities
             return model.ItemId;
         }
 
+        public async Task<List<ItemListDto>> GetActives(CancellationToken cancellationToken)
+        {
+            var items = await _dbContext.TblItems
+                                    .AsNoTracking()
+                                    .Where(c => c.IsActive == true)
+                                    .ToListAsync(cancellationToken);
+
+            var result = items.Select(x => new ItemListDto
+            {
+                Id = x.ItemId,
+                FullName = x.FullName
+            }).ToList();
+
+            return result;
+        }
+
         public Task<List<ItemListDto>> GetAll(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

@@ -230,10 +230,13 @@
                             <a class="nav-link" href="#"> کشور - واحد ارزی - اخطار</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#"> Arrival report config</a>
+                            <a class="nav-link" asp-controller="ArrivalRepConfig" asp-action="Index"> Arrival report config </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Dispatch report config </a>
+                            <a class="nav-link" asp-controller="DispatchRepConfig" asp-action="Index"> Dispatch report config </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="VoucherConfig" asp-action="Index"> تنظیمات فاکتور </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">فرهنگ ها </a>
@@ -245,7 +248,7 @@
                             <a class="nav-link" href="#">مدیریت صفحه نخست کاربر </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#"> آخرین میزان مصرف انبارها</a>
+                            <a class="nav-link" asp-controller="StoreUsageWarning" asp-action="Index">اخطار میزان مصرف انبار</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#"> مدیریت لوگوها</a>

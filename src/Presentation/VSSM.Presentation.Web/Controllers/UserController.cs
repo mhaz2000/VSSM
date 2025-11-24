@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
-using VSSM.Presentation.Web.Helpers;
+using VSSM.Infrastructure.Common.Helper;
 using VSSM.Presentation.Web.Models.Utility;
 
 namespace VSSM.Presentation.Web.Controllers
@@ -12,18 +9,18 @@ namespace VSSM.Presentation.Web.Controllers
     public class UserController : Controller
     {
         private readonly IUserService _userService;
-        //private readonly IRecipientService _recipientService;
+        private readonly IRecipientService _recipientService;
         private readonly IEduTypeService _eduService;
         private readonly IJobTypeService _jobService;
 
         public UserController(
             IUserService userService,
-            //IRecipientService recipientService,
+            IRecipientService recipientService,
             IEduTypeService eduService,
             IJobTypeService jobService)
         {
             _userService = userService;
-            //_recipientService = recipientService;
+            _recipientService = recipientService;
             _eduService = eduService;
             _jobService = jobService;
         }
@@ -46,7 +43,7 @@ namespace VSSM.Presentation.Web.Controllers
         // ====================== NEW / EDIT ============================
         public async Task<IActionResult> New(int? id, CancellationToken token)
         {
-             await LoadDropDowns(token);
+            await LoadDropDowns(token);
 
             if (id == null)
                 return View(new UserViewModel());
@@ -73,12 +70,7 @@ namespace VSSM.Presentation.Web.Controllers
                 CodeJob = dto.CodeJob,
                 IsAdmin = dto.IsAdmin,
                 Course = dto.Course,
-                CourseDate = new EntryDateViewModel
-                {
-                    EntryYear = dto.CourseDate?.Year,
-                    EntryMonth = dto.CourseDate?.Month,
-                    EntryDay = dto.CourseDate?.Day
-                }
+                CourseDate = PersianDateHelper.ToStringDate(dto.CourseDate),
             };
 
             return View(model);
@@ -93,12 +85,7 @@ namespace VSSM.Presentation.Web.Controllers
             if (!ModelState.IsValid)
                 return View("New", model);
 
-            // Convert Persian date to Gregorian
-            var courseDate = DateHelper.PersianToGregorian(
-                model.CourseDate.EntryYear,
-                model.CourseDate.EntryMonth,
-                model.CourseDate.EntryDay
-            );
+
 
             if (model.UserId == null || model.UserId == 0)
             {
@@ -110,16 +97,16 @@ namespace VSSM.Presentation.Web.Controllers
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     Email = model.Email,
-                    RecipientId = model.RecipientId.Value,
+                    RecipientId = model.RecipientId,
                     PermissionLevel = model.PermissionLevel.Value,
                     Phone1 = model.Phone1,
                     Phone2 = model.Phone2,
                     Idnumber = model.Idnumber,
-                    CodeEdu = model.CodeEdu.Value,
-                    CodeJob = model.CodeJob.Value,
+                    CodeEdu = model.CodeEdu,
+                    CodeJob = model.CodeJob,
                     IsAdmin = model.IsAdmin,
                     Course = model.Course,
-                    CourseDate = courseDate
+                    CourseDate = PersianDateHelper.ToDateTime(model.CourseDate),
                 };
 
                 await _userService.Create(dto, token);
@@ -135,16 +122,16 @@ namespace VSSM.Presentation.Web.Controllers
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     Email = model.Email,
-                    RecipientId = model.RecipientId.Value,
-                    PermissionLevel = model.PermissionLevel.Value,
+                    RecipientId = model.RecipientId,
+                    PermissionLevel = model.PermissionLevel,
                     Phone1 = model.Phone1,
                     Phone2 = model.Phone2,
                     Idnumber = model.Idnumber,
-                    CodeEdu = model.CodeEdu.Value,
-                    CodeJob = model.CodeJob.Value,
+                    CodeEdu = model.CodeEdu,
+                    CodeJob = model.CodeJob,
                     IsAdmin = model.IsAdmin,
                     Course = model.Course,
-                    CourseDate = courseDate
+                    CourseDate = PersianDateHelper.ToDateTime(model.CourseDate),
                 };
 
                 await _userService.Update(dto, token);
@@ -170,13 +157,13 @@ namespace VSSM.Presentation.Web.Controllers
         // ====================== LOAD DROPDOWNS ============================
         private async Task LoadDropDowns(CancellationToken cancellationToken)
         {
-            //ViewBag.RecipientList = _recipientService.GetAll()
-            //    .Select(x => new SelectListItem
-            //    {
-            //        Value = x.RecipientId.ToString(),
-            //        Text = x.FullName
-            //    })
-            //    .ToList();
+            ViewBag.RecipientList = (await _recipientService.GetAll(cancellationToken))
+                .Select(x => new SelectListItem
+                {
+                    Value = x.RecipientId.ToString(),
+                    Text = x.FullName
+                })
+                .ToList();
 
             ViewBag.EduList = (await _eduService.GetAll(cancellationToken))
                 .Select(x => new SelectListItem

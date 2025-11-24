@@ -1,9 +1,7 @@
 ﻿@model VSSM.Presentation.Web.Models.Store.StoreViewModel
 
 @{
-    string formName = "ثبت";
-    if (Model != null && Model.StoreId > 0)
-        formName = "ویرایش";
+    string formName = Model?.StoreId > 0 ? "ویرایش انبار" : "ثبت انبار جدید";
 }
 
 <style>
@@ -46,7 +44,7 @@
         <div class="card">
             <div class="card-block">
                 <div class="col-lg-3">
-                    <div><h5>@formName انبار</h5></div>
+                    <div><h5>@formName</h5></div>
                 </div>
             </div>
         </div>
@@ -55,27 +53,32 @@
             <div class="card">
                 <div class="card-block">
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <form asp-action="Create" asp-controller="Store" method="post" class="form-horizontal">
+                        @Html.AntiForgeryToken()
 
-                    <form asp-action="Create" method="post" class="form-horizontal">
                         <input type="hidden" asp-for="StoreId" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                         <div class="col-lg-8">
 
+                            <!-- Code -->
                             <div class="form-group">
-                                <label class="form-label" for="Code">کد:</label>
+                                <label class="form-label">کد:</label>
                                 <input asp-for="Code" class="form-control bg-warning-subtle" />
                             </div>
                             <span class="text-danger" asp-validation-for="Code"></span>
 
+                            <!-- Name -->
                             <div class="form-group">
-                                <label class="form-label" for="Name">نام انبار:</label>
+                                <label class="form-label">نام انبار:</label>
                                 <input asp-for="Name" class="form-control bg-warning-subtle" />
                             </div>
                             <span class="text-danger" asp-validation-for="Name"></span>
 
+                            <!-- Type -->
                             <div class="form-group">
-                                <label class="form-label" for="TypeId">نوع درجه حرارت:</label>
+                                <label class="form-label">نوع درجه حرارت:</label>
                                 <select asp-for="TypeId"
                                         asp-items="ViewBag.StoreTypeList"
                                         class="form-select">
@@ -84,19 +87,22 @@
                             </div>
                             <span class="text-danger" asp-validation-for="TypeId"></span>
 
+                            <!-- FreeVolume -->
                             <div class="form-group">
-                                <label class="form-label" for="FreeVolume">حجم:</label>
+                                <label class="form-label">حجم (لیتر):</label>
                                 <input asp-for="FreeVolume" class="form-control" />
                             </div>
                             <span class="text-danger" asp-validation-for="FreeVolume"></span>
 
+                            <!-- Volume -->
                             <div class="form-group">
-                                <label class="form-label" for="Volume">حجم کلی فضا:</label>
+                                <label class="form-label">حجم کلی فضا (لیتر):</label>
                                 <input asp-for="Volume" class="form-control" />
                             </div>
 
+                            <!-- Recipient -->
                             <div class="form-group">
-                                <label class="form-label" for="RecipientId">گیرنده:</label>
+                                <label class="form-label">گیرنده:</label>
                                 <select asp-for="RecipientId"
                                         asp-items="ViewBag.RecipientList"
                                         class="form-select">
@@ -104,50 +110,55 @@
                                 </select>
                             </div>
 
-
-
+                            <!-- Year -->
                             <div class="form-group">
-                                <label class="form-label" for="Year">سال نصب:</label>
+                                <label class="form-label">سال نصب:</label>
                                 <input asp-for="Year" class="form-control" />
                             </div>
 
+                            <!-- Model -->
                             <div class="form-group">
-                                <label class="form-label" for="Model">مدل:</label>
+                                <label class="form-label">مدل:</label>
                                 <input asp-for="Model" class="form-control" />
                             </div>
 
+                            <!-- Manufacturer -->
                             <div class="form-group">
-                                <label class="form-label" for="Manufacturer">سازنده:</label>
+                                <label class="form-label">سازنده:</label>
                                 <input asp-for="Manufacturer" class="form-control" />
                             </div>
 
+                            <!-- PQS -->
                             <div class="form-group">
-                                <label class="form-label" for="Pqsno">PQS No:</label>
+                                <label class="form-label">PQS No:</label>
                                 <input asp-for="Pqsno" class="form-control" />
                             </div>
 
+                            <!-- Cooling Units -->
                             <div class="form-group">
-                                <label class="form-label" for="CoolingUnitNo">تعداد واحدهای سردخانه:</label>
+                                <label class="form-label">تعداد واحدهای سردخانه:</label>
                                 <input asp-for="CoolingUnitNo" class="form-control" />
                             </div>
 
+                            <!-- Gas -->
                             <div class="form-group">
-                                <label class="form-label" for="RefrigerantGas">گاز یخچال:</label>
+                                <label class="form-label">گاز یخچال:</label>
                                 <input asp-for="RefrigerantGas" class="form-control" />
                             </div>
 
-
+                            <!-- Power Source -->
                             <div class="form-group">
-                                <label class="form-label" for="PoweSource">منبع انرژی:</label>
-                                <select asp-for="PoweSource"
+                                <label class="form-label">منبع انرژی:</label>
+                                <select asp-for="PowerSource"
                                         asp-items="ViewBag.PowerSourceList"
                                         class="form-select">
                                     <option value="">انتخاب کنید...</option>
                                 </select>
                             </div>
 
+                            <!-- Source -->
                             <div class="form-group">
-                                <label class="form-label" for="Source">منبع:</label>
+                                <label class="form-label">منبع:</label>
                                 <select asp-for="Source"
                                         asp-items="ViewBag.SourceList"
                                         class="form-select">
@@ -155,26 +166,31 @@
                                 </select>
                             </div>
 
+                            <!-- Barcode -->
                             <div class="form-group">
-                                <label class="form-label" for="Barcode">بارکد:</label>
+                                <label class="form-label">بارکد:</label>
                                 <input asp-for="Barcode" class="form-control" />
                             </div>
 
+                            <!-- PeriodNoteUse -->
                             <div class="form-group">
-                                <label class="form-label" for="PeriodNotUse">مدت زمان استفاده نشده:</label>
-                                <input asp-for="PeriodNotUse" class="form-control" />
+                                <label class="form-label">مدت عدم استفاده:</label>
+                                <input asp-for="PeriodNoteUse" class="form-control" />
                             </div>
 
+                            <!-- UnitCost -->
                             <div class="form-group">
-                                <label class="form-label" for="UnitCost">هزینه واحد:</label>
+                                <label class="form-label">هزینه واحد:</label>
                                 <input asp-for="UnitCost" class="form-control" />
                             </div>
 
+                            <!-- Note -->
                             <div class="form-group">
-                                <label class="form-label" for="Note">ملاحظات:</label>
+                                <label class="form-label">ملاحظات:</label>
                                 <textarea asp-for="Note" class="form-control"></textarea>
                             </div>
 
+                            <!-- Status -->
                             <div class="form-group">
                                 <label class="form-label">وضعیت:</label>
                                 <div class="form-check">

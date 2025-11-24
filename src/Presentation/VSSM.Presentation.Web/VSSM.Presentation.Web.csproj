@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\VSSM.Infrastructure.Common\VSSM.Infrastructure.Common.csproj" />
     <ProjectReference Include="..\..\Application\VSSM.Application\VSSM.Application.csproj" />
     <ProjectReference Include="..\..\Domain\VSSM.Domain\VSSM.Domain.csproj" />
   </ItemGroup>

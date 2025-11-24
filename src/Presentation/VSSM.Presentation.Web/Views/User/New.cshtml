@@ -38,45 +38,50 @@
             </div>
         </div>
 
-        <div class="card mt-2">
-            <div class="card-block">
-
+        <div class="card">
+            <div class="card-block p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <form asp-action="Create" method="post" class="form-horizontal">
 
                     <input type="hidden" asp-for="UserId" />
 
                     <div class="col-lg-6">
 
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                   
 
-                        <!-- Username -->
+                 
+
                         <div class="form-group">
-                            <label class="form-label">نام کاربری:</label>
+                            <label class="form-label" for="Code">نام کاری:</label>
                             <input asp-for="UserName" class="form-control bg-warning-subtle" />
+                            <span class="text-danger" asp-validation-for="UserName"></span>
                         </div>
 
                         <!-- Password -->
                         <div class="form-group">
                             <label class="form-label">کلمه عبور:</label>
+                            <span asp-validation-for="Password" class="text-danger"></span>
                             <input asp-for="Password" type="password" class="form-control bg-warning-subtle" />
                         </div>
 
                         <!-- First Name -->
                         <div class="form-group">
                             <label class="form-label">نام:</label>
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
                             <input asp-for="FirstName" class="form-control bg-warning-subtle" />
                         </div>
 
                         <!-- Last Name -->
                         <div class="form-group">
                             <label class="form-label">نام خانوادگی:</label>
+                            <span asp-validation-for="LastName" class="text-danger"></span>
                             <input asp-for="LastName" class="form-control bg-warning-subtle" />
                         </div>
 
-                        <!-- Email -->
                         <div class="form-group">
-                            <label class="form-label">ایمیل:</label>
-                            <input asp-for="Email" class="form-control" />
+                            <label class="form-label">ایمیل</label>
+                            <input type="text" asp-for="Email" class="form-control bg-warning-subtle" />
+           
                         </div>
 
                         <!-- Phone 1 -->
@@ -97,28 +102,41 @@
                             <input asp-for="Idnumber" class="form-control" />
                         </div>
 
-                  @*       <!-- Recipient -->
+                        <!-- Recipient -->
                         <div class="form-group">
                             <label class="form-label">گیرنده:</label>
-                            <select asp-for="RecipientId" class="form-select" asp-items="ViewBag.RecipientList"></select>
-                        </div> *@
+                            <select asp-for="RecipientId" class="form-select" asp-items="ViewBag.RecipientList">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+
+                        </div>
 
                         <!-- EduType -->
                         <div class="form-group">
                             <label class="form-label">تحصیلات:</label>
-                            <select asp-for="CodeEdu" class="form-select" asp-items="ViewBag.EduList"></select>
+                            <select asp-for="CodeEdu" class="form-select" asp-items="ViewBag.EduList">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+
                         </div>
 
                         <!-- JobType -->
                         <div class="form-group">
                             <label class="form-label">شغل:</label>
-                            <select asp-for="CodeJob" class="form-select" asp-items="ViewBag.JobList"></select>
+                            <select asp-for="CodeJob" class="form-select" asp-items="ViewBag.JobList">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+
                         </div>
 
                         <!-- Permission Level -->
                         <div class="form-group">
                             <label class="form-label">سطح دسترسی:</label>
-                            <select asp-for="PermissionLevel" class="form-select" asp-items="ViewBag.PermissionList"></select>
+                            <span asp-validation-for="PermissionLevel" class="text-danger"></span>
+                            <select asp-for="PermissionLevel" class="form-select" asp-items="ViewBag.PermissionList">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+
                         </div>
 
                         <!-- Is Admin -->
@@ -137,33 +155,11 @@
                         </div>
 
                         <!-- Persian Date -->
+                        <!-- DATE -->
                         <div class="form-group">
-                            <label class="form-label">تاریخ دوره:</label>
-
-                            <select asp-for="CourseDate.EntryYear" class="form-select" style="width: 90px; margin-left:5px;">
-                                <option value="">سال</option>
-                                @for (int y = 1350; y <= 1410; y++)
-                                {
-                                    <option value="@y">@y</option>
-                                }
-                            </select>
-
-                            <select asp-for="CourseDate.EntryMonth" class="form-select" style="width: 80px; margin-left:5px;">
-                                <option value="">ماه</option>
-                                @for (int m = 1; m <= 12; m++)
-                                {
-                                    <option value="@m">@m</option>
-                                }
-                            </select>
-
-                            <select asp-for="CourseDate.EntryDay" class="form-select" style="width: 80px;">
-                                <option value="">روز</option>
-                                @for (int d = 1; d <= 31; d++)
-                                {
-                                    <option value="@d">@d</option>
-                                }
-                            </select>
-
+                            <span class="form-label">تاریخ ثبت (روز/ماه/سال):</span>
+                            <input asp-for="CourseDate" class="form-control" placeholder="مثال: 03/01/24" />
+                            <span asp-validation-for="CourseDate" class="text-danger"></span>
                         </div>
 
                         <div class="text-center mt-4">
@@ -181,4 +177,7 @@
     </div>
 </div>
 
-<partial name="_ValidationScriptsPartial" />
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

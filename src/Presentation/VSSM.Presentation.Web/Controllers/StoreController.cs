@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Store;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -10,43 +11,49 @@ namespace VSSM.Presentation.Web.Controllers
     {
         private readonly IStoreService _storeService;
         private readonly IStoreTypeService _storeTypeService;
-        //private readonly IRecipientService _recipientService;
+        private readonly IRecipientService _recipientService;
         private readonly IPowerSourceService _powerSourceService;
         private readonly ISourceService _sourceService;
 
         public StoreController(
             IStoreService storeService,
             IStoreTypeService storeTypeService,
-            //IRecipientService recipientService,
+            IRecipientService recipientService,
             IPowerSourceService powerSourceService,
             ISourceService sourceService)
         {
             _storeService = storeService;
             _storeTypeService = storeTypeService;
-            //_recipientService = recipientService;
+            _recipientService = recipientService;
             _powerSourceService = powerSourceService;
             _sourceService = sourceService;
         }
 
         public async Task<IActionResult> Index(
-            CancellationToken cancellationToken,
-            string? search,
-            int page = 1,
-            int pageSize = 10,
-            string sortField = "Code",
-            string sortOrder = "asc")
+         string? search,
+         int? typeId,
+         int page = 1,
+         int pageSize = 10,
+         CancellationToken token = default)
         {
-            var listModel = await _storeService.GetPagedList(
-                search, page, pageSize, sortField, sortOrder, cancellationToken);
+            ViewBag.TypeList = (await _storeTypeService.GetAll(token))
+                .Select(x => new SelectListItem
+                {
+                    Value = x.StoreTypeId.ToString(),
+                    Text = x.FullName
+                })
+                .ToList();
 
-            return View(listModel);
+            var list = await _storeService.GetPagedList(search, typeId, page, pageSize, token);
+
+            return View(list);
         }
 
         public async Task<IActionResult> New(int? id, CancellationToken cancellationToken)
         {
             await LoadDropDowns(cancellationToken);
 
-            StoreViewModel model = new StoreViewModel
+            StoreViewModel models = new StoreViewModel
             {
                 IsActive = true
             };
@@ -55,7 +62,7 @@ namespace VSSM.Presentation.Web.Controllers
             {
                 var dto = await _storeService.GetById(id.Value, cancellationToken);
 
-                model = new StoreViewModel
+                models = new StoreViewModel
                 {
                     StoreId = dto.StoreId,
                     Code = dto.Code,
@@ -66,31 +73,32 @@ namespace VSSM.Presentation.Web.Controllers
                     Note = dto.Note,
                     IsActive = dto.IsActive,
                     RecipientId = dto.RecipientId,
-      
+
                     Year = dto.Year,
                     Model = dto.Model,
                     Manufacturer = dto.Manufacturer,
                     Pqsno = dto.Pqsno,
                     CoolingUnitNo = dto.CoolingUnitNo,
                     RefrigerantGas = dto.RefrigerantGas,
- 
-                    PoweSource = dto.PoweSource,
+
+                    PowerSource = dto.PowerSource,
                     Source = dto.Source,
                     Barcode = dto.Barcode,
-                    PeriodNotUse = dto.PeriodNotUse,
+                    PeriodNoteUse = dto.PeriodNoteUse,
                     UnitCost = dto.UnitCost
                 };
             }
 
-            return View(model);
+            return View(models);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(StoreViewModel model, CancellationToken cancellationToken)
         {
+            await LoadDropDowns(cancellationToken);
             if (!ModelState.IsValid)
             {
-                await LoadDropDowns(cancellationToken);
+
                 return View("New", model);
             }
 
@@ -106,18 +114,18 @@ namespace VSSM.Presentation.Web.Controllers
                     Note = model.Note,
                     IsActive = model.IsActive,
                     RecipientId = model.RecipientId,
-          
+
                     Year = model.Year,
                     Model = model.Model,
                     Manufacturer = model.Manufacturer,
                     Pqsno = model.Pqsno,
                     CoolingUnitNo = model.CoolingUnitNo,
                     RefrigerantGas = model.RefrigerantGas,
- 
-                    PoweSource = model.PoweSource,
+
+                    PowerSource = model.PowerSource,
                     Source = model.Source,
                     Barcode = model.Barcode,
-                    PeriodNotUse = model.PeriodNotUse,
+                    PeriodNoteUse = model.PeriodNoteUse,
                     UnitCost = model.UnitCost
                 };
 
@@ -136,17 +144,17 @@ namespace VSSM.Presentation.Web.Controllers
                     Note = model.Note,
                     IsActive = model.IsActive,
                     RecipientId = model.RecipientId,
-   
+
                     Year = model.Year,
                     Model = model.Model,
                     Manufacturer = model.Manufacturer,
                     Pqsno = model.Pqsno,
                     CoolingUnitNo = model.CoolingUnitNo,
-            
-                    PoweSource = model.PoweSource,
+
+                    PowerSource = model.PowerSource,
                     Source = model.Source,
                     Barcode = model.Barcode,
-                    PeriodNotUse = model.PeriodNotUse,
+                    PeriodNoteUse = model.PeriodNoteUse,
                     UnitCost = model.UnitCost
                 };
 
@@ -167,7 +175,7 @@ namespace VSSM.Presentation.Web.Controllers
         private async Task LoadDropDowns(CancellationToken cancellationToken)
         {
             var storeTypes = await _storeTypeService.GetAll(cancellationToken);
-            //var recipients = await _recipientService.GetAll(cancellationToken);
+            var recipients = await _recipientService.GetAll(cancellationToken);
             var powerSources = await _powerSourceService.GetAll(cancellationToken);
             var sources = await _sourceService.GetAll(cancellationToken);
 
@@ -179,13 +187,13 @@ namespace VSSM.Presentation.Web.Controllers
                 })
                 .ToList();
 
-            //ViewBag.RecipientList = recipients
-            //    .Select(x => new SelectListItem
-            //    {
-            //        Text = x.FullName,
-            //        Value = x.RecipientId.ToString()
-            //    })
-            //    .ToList();
+            ViewBag.RecipientList = recipients
+                .Select(x => new SelectListItem
+                {
+                    Text = x.FullName,
+                    Value = x.RecipientId.ToString()
+                })
+                .ToList();
 
             ViewBag.PowerSourceList = powerSources
                 .Select(x => new SelectListItem

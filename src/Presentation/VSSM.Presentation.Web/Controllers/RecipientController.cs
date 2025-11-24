@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Recipient;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Domain.Enums;
+using VSSM.Infrastructure.Common.Helper;
 using VSSM.Presentation.Web.Models.Recipient;
 
 namespace VSSM.Presentation.Web.Controllers
@@ -76,7 +77,7 @@ namespace VSSM.Presentation.Web.Controllers
                 ParentType = dto.ParentId.HasValue
                     ? (RecipientTypeEnum?)dto.ParentId.Value
                     : null,
-                StartUp = dto.StartUp,
+                StartUp = PersianDateHelper.ToStringDate(dto.StartUp),
                 Address1 = dto.Address1,
                 Address2 = dto.Address2,
                 PostalCode = dto.PostalCode,
@@ -119,7 +120,7 @@ namespace VSSM.Presentation.Web.Controllers
                     Year = model.Year,
                     Note = model.Note,
                     ParentId = model.ParentType.HasValue ? (int)model.ParentType.Value : (int?)null,
-                    StartUp = model.StartUp,
+                    StartUp = PersianDateHelper.ToDateTime(model.StartUp),
                     ChainLevel = model.ChainLevel,
                     ReceivingModeId = model.ReceivingModeId,
                     Address1 = model.Address1,
@@ -156,7 +157,7 @@ namespace VSSM.Presentation.Web.Controllers
                     Year = model.Year,
                     Note = model.Note,
                     ParentId = model.ParentType.HasValue ? (int)model.ParentType.Value : (int?)null,
-                    StartUp = model.StartUp,
+                    StartUp = PersianDateHelper.ToDateTime(model.StartUp),
                     ChainLevel = model.ChainLevel,
                     ReceivingModeId = model.ReceivingModeId,
                     Address1 = model.Address1,

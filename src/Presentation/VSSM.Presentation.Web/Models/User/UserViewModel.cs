@@ -17,28 +17,31 @@ public class UserViewModel
     [Required(ErrorMessage = "نام خانوادگی نمی‌تواند خالی باشد.")]
     public string LastName { get; set; }
 
-    public string Email { get; set; }
+    public string? Email { get; set; } = null;
 
-    //[Required(ErrorMessage = "گیرنده نمی‌تواند خالی باشد.")]
+ 
     public int? RecipientId { get; set; }
 
     [Required(ErrorMessage = "سطح دسترسی نمی‌تواند خالی باشد.")]
     public int? PermissionLevel { get; set; }
 
-    public string Phone1 { get; set; }
-    public string Phone2 { get; set; }
+    public string? Phone1 { get; set; }
+    public string? Phone2 { get; set; }
 
-    public string Idnumber { get; set; }
+    public string? Idnumber { get; set; }
 
-    [Required(ErrorMessage = "تحصیلات نمی‌تواند خالی باشد.")]
+ 
     public int? CodeEdu { get; set; }
 
-    [Required(ErrorMessage = "شغل نمی‌تواند خالی باشد.")]
+ 
     public int? CodeJob { get; set; }
 
     public bool IsAdmin { get; set; }
 
     public string Course { get; set; }
-
-    public EntryDateViewModel CourseDate { get; set; }
+    // 👇 این را اضافه کن
+    [Display(Name = "تاریخ ثبت")]
+    [RegularExpression(@"^\d{2}/\d{2}/\d{2}$",
+        ErrorMessage = "فرمت تاریخ باید به صورت yy/MM/dd باشد (مثال: 03/01/24).")]
+    public string CourseDate { get; set; }
 }

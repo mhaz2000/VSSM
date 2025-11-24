@@ -45,10 +45,10 @@ namespace VSSM.Application.Services.BaseEntities
                 CoolingUnitNo = entity.CoolingUnitNo,
                 RefrigerantGas = entity.RefrigerantGas,
                 RoomBox = entity.RoomBox,
-                PoweSource = entity.PoweSource,
+                PowerSource = entity.PoweSource,
                 Source = entity.Source,
                 Barcode = entity.Barcode,
-                PeriodNotUse = entity.PeriodNotUse,
+                PeriodNoteUse = entity.PeriodNotUse,
                 UnitCost = entity.UnitCost
             };
         }
@@ -73,10 +73,10 @@ namespace VSSM.Application.Services.BaseEntities
                 CoolingUnitNo = dto.CoolingUnitNo,
                 RefrigerantGas = dto.RefrigerantGas,
                 RoomBox = dto.RoomBox,
-                PoweSource = dto.PoweSource,
+                PoweSource = dto.PowerSource,
                 Source = dto.Source,
                 Barcode = dto.Barcode,
-                PeriodNotUse = dto.PeriodNotUse,
+                PeriodNotUse = dto.PeriodNoteUse,
                 UnitCost = dto.UnitCost,
                 EntryDate = DateTime.Now
             };
@@ -111,10 +111,10 @@ namespace VSSM.Application.Services.BaseEntities
             entity.CoolingUnitNo = dto.CoolingUnitNo;
             entity.RefrigerantGas = dto.RefrigerantGas;
             entity.RoomBox = dto.RoomBox;
-            entity.PoweSource = dto.PoweSource;
+            entity.PoweSource = dto.PowerSource;
             entity.Source = dto.Source;
             entity.Barcode = dto.Barcode;
-            entity.PeriodNotUse = dto.PeriodNotUse;
+            entity.PeriodNotUse = dto.PeriodNoteUse;
             entity.UnitCost = dto.UnitCost;
 
             await _db.SaveChangesAsync(token);
@@ -122,50 +122,49 @@ namespace VSSM.Application.Services.BaseEntities
         }
 
         public async Task<PagingSearchOrderDto<StoreListDto>> GetPagedList(
-            string? search,
-            int page,
-            int pageSize,
-            string sortField,
-            string sortOrder,
-            CancellationToken token)
+       string? search,
+       int? typeId,
+       int page,
+       int pageSize,
+       CancellationToken token)
         {
             var paging = new PagingModel { Page = page, PageSize = pageSize };
 
-            IQueryable<TblStore> query = _db.TblStores;
+            var query = _db.TblStores.AsQueryable();
 
+            // ---------------- FILTER: TypeId ----------------
+            if (typeId.HasValue && typeId.Value > 0)
+                query = query.Where(x => x.TypeId == typeId);
+
+            // ---------------- SEARCH: Code + FullName ----------------
             if (!string.IsNullOrWhiteSpace(search))
             {
+                search = search.Trim();
                 query = query.Where(x =>
                     x.Code.Contains(search) ||
                     x.Name.Contains(search));
             }
 
-            query = sortField switch
-            {
-                "Code" => sortOrder == "asc"
-                    ? query.OrderBy(x => x.Code)
-                    : query.OrderByDescending(x => x.Code),
-
-                "Name" => sortOrder == "asc"
-                    ? query.OrderBy(x => x.Name)
-                    : query.OrderByDescending(x => x.Name),
-
-                _ => sortOrder == "asc"
-                    ? query.OrderBy(x => x.StoreId)
-                    : query.OrderByDescending(x => x.StoreId)
-            };
-
             paging.TotalItems = await query.CountAsync(token);
 
             var items = await query
+                .OrderBy(x => x.StoreId)
                 .Skip(paging.Skip)
                 .Take(paging.PageSize)
                 .Select(x => new StoreListDto
                 {
                     StoreId = x.StoreId,
                     Code = x.Code,
-                    Name = x.Name,
-                    FreeVolume = x.FreeVolume ?? 0,
+                    FullName = x.Name,
+                    TypeId = x.TypeId ?? 0,
+
+                    TypeName = _db.TblStoreTypes
+                        .Where(t => t.StoreTypeId == x.TypeId)
+                        .Select(t => t.FullName)
+                        .FirstOrDefault(),
+
+                    Volume = x.Volume,
+                    FreeVolume = x.FreeVolume,
                     IsActive = x.IsActive ?? false
                 })
                 .ToListAsync(token);
@@ -174,11 +173,10 @@ namespace VSSM.Application.Services.BaseEntities
             {
                 Items = items,
                 Paging = paging,
-                SearchText = search,
-                SortField = sortField,
-                SortOrder = sortOrder
+                SearchText = search
             };
         }
+
 
         public async Task<List<StoreListDto>> GetAll(CancellationToken cancellationToken)
         {
@@ -189,7 +187,7 @@ namespace VSSM.Application.Services.BaseEntities
                    {
                        StoreId = x.StoreId,
                        Code = x.Code,
-                       Name = x.Name,
+                       FullName = x.Name,
                        FreeVolume = x.FreeVolume ?? 0,
                        IsActive = x.IsActive ?? false
                    }

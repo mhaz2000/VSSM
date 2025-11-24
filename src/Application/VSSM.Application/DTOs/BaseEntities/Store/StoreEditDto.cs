@@ -24,11 +24,11 @@
         public string RefrigerantGas { get; set; }
         public string RoomBox { get; set; }
 
-        public int? PoweSource { get; set; }
+        public int? PowerSource { get; set; }
         public int? Source { get; set; }
 
         public string Barcode { get; set; }
-        public int? PeriodNotUse { get; set; }
+        public int? PeriodNoteUse { get; set; }
         public float? UnitCost { get; set; }
     }
 }

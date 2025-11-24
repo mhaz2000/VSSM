@@ -6,13 +6,12 @@ namespace VSSM.Application.Interfaces.BaseEntities
     public interface IStoreService
     {
         Task<List<StoreListDto>> GetAll(CancellationToken cancellationToken);
-        Task<PagingSearchOrderDto<StoreListDto>> GetPagedList(
-            string? search,
-            int page,
-            int pageSize,
-            string sortField,
-            string sortOrder,
-            CancellationToken cancellationToken);
+        public Task<PagingSearchOrderDto<StoreListDto>> GetPagedList(
+      string? search,
+      int? typeId,
+      int page,
+      int pageSize,
+      CancellationToken token);
 
         Task<StoreEditDto> GetById(int id, CancellationToken cancellationToken);
 

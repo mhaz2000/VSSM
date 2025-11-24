@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace VSSM.Presentation.Web.Helpers
+namespace VSSM.Infrastructure.Common.Helper
 {
     public static class DateHelper
     {

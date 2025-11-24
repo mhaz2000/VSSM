@@ -33,6 +33,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IAdjustReasonService, AdjustReasonService>();
             services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IManItemClassService, ManItemClassService>();
+            services.AddScoped<IUserHomeService, UserHomeService>();
             services.AddScoped<ICommercialNameService, CommercialNameService>();
             services.AddScoped<IVvmtypeService, VvmtypeService>();
             services.AddScoped<IVvmstageService, VvmstageService>();

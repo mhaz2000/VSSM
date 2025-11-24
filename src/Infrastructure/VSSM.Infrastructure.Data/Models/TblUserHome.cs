@@ -8,7 +8,6 @@ namespace VSSM.Infrastructure.Data.Models;
 public partial class TblUserHome
 {
     public string Message { get; set; }
-
     public string Loginmessage { get; set; }
 
     public string Message2 { get; set; }

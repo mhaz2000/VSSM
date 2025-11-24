@@ -35,6 +35,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<ICommercialNameService, CommercialNameService>();
             services.AddScoped<IVvmtypeService, VvmtypeService>();
             services.AddScoped<IVvmstageService, VvmstageService>();
+            services.AddScoped<IDispatchRepConfigService, DispatchRepConfigService>();
             services.AddScoped<IFiscalPeriodService, FiscalPeriodService>();
             services.AddScoped<IStoreTypeService, StoreTypeService>();
             services.AddScoped<IValidator<VvmtypeDto>, VvmtypeValidator>();

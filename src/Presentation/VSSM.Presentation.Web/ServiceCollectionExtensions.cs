@@ -12,6 +12,7 @@ using VSSM.Application.DTOs.BaseEntities.StoreType;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
 using VSSM.Application.DTOs.BaseEntities.Vvmtype;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
@@ -61,6 +62,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IPackService, PackService>();
             services.AddScoped<IRecipientService, RecipientService>();
+            services.AddScoped<IRecipientConfigurationService, RecipientConfigurationService>();
         }
     }
 

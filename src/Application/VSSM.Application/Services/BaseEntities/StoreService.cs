@@ -165,7 +165,8 @@ namespace VSSM.Application.Services.BaseEntities
 
                     Volume = x.Volume,
                     FreeVolume = x.FreeVolume,
-                    IsActive = x.IsActive ?? false
+                    IsActive = x.IsActive ?? false,
+                    Note =  string.IsNullOrEmpty(x.Note) ? string.Empty : x.Note
                 })
                 .ToListAsync(token);
 

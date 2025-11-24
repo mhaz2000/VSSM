@@ -56,7 +56,7 @@
                                     <th>طریقه حمل و نقل</th>
                                     <th>روش دریافت</th>
                                     <th>تاریخ شروع فعالیت</th>
-                                    <th>نوع</th>
+                             
                                     <th>
                                         <a href="?sortField=Year&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
                                             سال
@@ -84,10 +84,10 @@
                                     {
                                         <tr>
                                             <td>@(item.IsActive ? "✓" : "")</td>
+                                            <td>@item.EntryDate</td>
                                             <td>@item.TransportModeName</td>
                                             <td>@item.ReceivingModeName</td>
-                                            <td>@item.StartUp?.ToShortDateString()</td>
-                                            <td>@item.ParentId</td> @* بعداً می‌توانید با enum نمایش دهید *@
+                                            <td>@item.StartUp</td>                             
                                             <td>@item.Year</td>
                                             <td>@item.Population</td>
                                             <td>@item.ChainLevel</td>

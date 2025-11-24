@@ -8,129 +8,115 @@
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <div class="card">
+        <!-- Search Card -->
+        <div class="card mb-3">
             <div class="card-block">
 
                 <form method="get">
-                    <div class="row d-flex align-items-center">
+                    <div class="row d-flex align-items-center justify-content-between">
 
-                        <!-- RIGHT SIDE -->
-                        <div class="col-lg-3 text-right">
+                        <div class="col-lg-3">
                             <input class="form-control"
                                    name="search"
                                    value="@Model.SearchText"
-                                   placeholder="جستجو..." />
+                                   placeholder="جستجو بر اساس کد یا نام..." />
                         </div>
 
-                        <div class="col-lg-3 text-right">
+                        <div class="col-lg-3">
                             <select name="typeId" class="form-select" asp-items="ViewBag.TypeList">
-                                <option value="">نوع درجه حرارت</option>
+                                <option value="">نوع انبار</option>
                             </select>
                         </div>
 
-                        <!-- LEFT SIDE -->
-                        <div class="col-lg-2 text-left">
-                            <button type="submit" class="btn btn-primary w-50">جستجو</button>
+                        <div class="col-lg-2 d-flex justify-content-start">
+                            <button type="submit" class="btn btn-primary w-100">جستجو</button>
                         </div>
 
-                        <div class="col-lg-2 text-left">
-                            <a class="btn btn-success w-50" asp-action="New">جدید +</a>
+                        <div class="col-lg-2 d-flex justify-content-start mt-2 mt-lg-0">
+                            <a class="btn btn-success w-100" asp-action="New">+ جدید</a>
                         </div>
+
+
+
 
                     </div>
                 </form>
 
-
             </div>
         </div>
 
+        <!-- TABLE -->
+        <div class="card">
+            <div class="card-block">
 
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-block">
+                <table class="table table-bordered table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th>کد</th>
+                            <th>نام</th>
+                            <th>نوع انبار</th>
+                            <th>حجم (لیتر)</th>
+                            <th>حجم خالی (لیتر)</th>
+                            <th>ملاحظات</th>
+                            <th>فعال است</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
 
-                        <table class="table table-bordered table-striped table-condensed text-center">
-                            <thead>
+                    <tbody>
+                        @if (Model != null && Model.Items.Any())
+                        {
+                            foreach (var item in Model.Items)
+                            {
                                 <tr>
-                                    <th>
-                                        <a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
-                                            کد
+                                    <td>@item.Code</td>
+                                    <td>@item.FullName</td>
+                                    <td>@item.TypeName</td>
+                                    <td>@item.Volume</td>
+                                    <td>@item.FreeVolume</td>
+                                    <td>@item.Note</td>
+                                    <td>
+                                        <input type="checkbox" checked="@item.IsActive" disabled />
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-primary btn-sm"
+                                           asp-action="Edit"
+                                           asp-route-id="@item.StoreId">
+                                            ویرایش
                                         </a>
-                                    </th>
-                                    <th>
-                                        <a href="?sortField=Name&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
-                                            نام انبار
-                                        </a>
-                                    </th>
-                                    <th>حجم</th>
-                                    <th>وضعیت</th>
-                                    <th>عملیات</th>
+                                    </td>
                                 </tr>
-                            </thead>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-danger">داده‌ای یافت نشد</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-                            <tbody>
-                                @if (Model != null && Model.Items.Any())
-                                {
-                                    foreach (var item in Model.Items)
-                                    {
-                                        <tr>
-                                            <td>@item.Code</td>
-                                            <td>@item.FullName</td>
-                                            <td>@item.FreeVolume</td>
-                                            <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
-                                            <td>
-                                                <a class="btn btn-primary btn-sm"
-                                                   asp-controller="Store"
-                                                   asp-action="Edit"
-                                                   asp-route-id="@item.StoreId">
-                                                    ویرایش
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    }
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="5" class="text-center text-danger">
-                                            داده‌ای یافت نشد
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                <!-- Pagination -->
+                <nav class="mt-2">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
+                            <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
+                        </li>
 
-                        <nav>
-                            <ul class="pagination">
-                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                        قبلی
-                                    </a>
-                                </li>
+                        @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                        {
+                            <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
+                                <a class="page-link" href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
+                            </li>
+                        }
 
-                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
-                                {
-                                    <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
-                                        <a class="page-link"
-                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                            @i
-                                        </a>
-                                    </li>
-                                }
+                        <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
+                        </li>
+                    </ul>
+                </nav>
 
-                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                        بعدی
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-
-                    </div>
-                </div>
             </div>
         </div>
 

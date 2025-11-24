@@ -11,7 +11,7 @@
 
         public float? Volume { get; set; }
         public float? FreeVolume { get; set; }
-
+        public string? Note { get; set; }
         public bool IsActive { get; set; }
     }
 

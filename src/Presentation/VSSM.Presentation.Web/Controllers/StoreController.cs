@@ -93,40 +93,40 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(StoreViewModel model, CancellationToken cancellationToken)
+        public async Task<IActionResult> Create(StoreViewModel storeView, CancellationToken cancellationToken)
         {
             await LoadDropDowns(cancellationToken);
             if (!ModelState.IsValid)
             {
 
-                return View("New", model);
+                return View("New", storeView);
             }
 
-            if (model.StoreId == null || model.StoreId == 0)
+            if (storeView.StoreId == null || storeView.StoreId == 0)
             {
                 var dto = new StoreCreateDto
                 {
-                    Code = model.Code,
-                    Name = model.Name,
-                    TypeId = model.TypeId.Value,
-                    FreeVolume = model.FreeVolume.Value,
-                    Volume = model.Volume,
-                    Note = model.Note,
-                    IsActive = model.IsActive,
-                    RecipientId = model.RecipientId,
+                    Code = storeView.Code,
+                    Name = storeView.Name,
+                    TypeId = storeView.TypeId.Value,
+                    FreeVolume = storeView.FreeVolume.Value,
+                    Volume = storeView.Volume,
+                    Note = storeView.Note,
+                    IsActive = storeView.IsActive,
+                    RecipientId = storeView.RecipientId,
 
-                    Year = model.Year,
-                    Model = model.Model,
-                    Manufacturer = model.Manufacturer,
-                    Pqsno = model.Pqsno,
-                    CoolingUnitNo = model.CoolingUnitNo,
-                    RefrigerantGas = model.RefrigerantGas,
+                    Year = storeView.Year,
+                    Model = storeView.Model,
+                    Manufacturer = storeView.Manufacturer,
+                    Pqsno = storeView.Pqsno,
+                    CoolingUnitNo = storeView.CoolingUnitNo,
+                    RefrigerantGas = storeView.RefrigerantGas,
 
-                    PowerSource = model.PowerSource,
-                    Source = model.Source,
-                    Barcode = model.Barcode,
-                    PeriodNoteUse = model.PeriodNoteUse,
-                    UnitCost = model.UnitCost
+                    PowerSource = storeView.PowerSource,
+                    Source = storeView.Source,
+                    Barcode = storeView.Barcode,
+                    PeriodNoteUse = storeView.PeriodNoteUse,
+                    UnitCost = storeView.UnitCost
                 };
 
                 await _storeService.Create(dto, cancellationToken);
@@ -135,27 +135,27 @@ namespace VSSM.Presentation.Web.Controllers
             {
                 var dto = new StoreEditDto
                 {
-                    StoreId = model.StoreId.Value,
-                    Code = model.Code,
-                    Name = model.Name,
-                    TypeId = model.TypeId.Value,
-                    FreeVolume = model.FreeVolume.Value,
-                    Volume = model.Volume,
-                    Note = model.Note,
-                    IsActive = model.IsActive,
-                    RecipientId = model.RecipientId,
+                    StoreId = storeView.StoreId.Value,
+                    Code = storeView.Code,
+                    Name = storeView.Name,
+                    TypeId = storeView.TypeId.Value,
+                    FreeVolume = storeView.FreeVolume.Value,
+                    Volume = storeView.Volume,
+                    Note = storeView.Note,
+                    IsActive = storeView.IsActive,
+                    RecipientId = storeView.RecipientId,
 
-                    Year = model.Year,
-                    Model = model.Model,
-                    Manufacturer = model.Manufacturer,
-                    Pqsno = model.Pqsno,
-                    CoolingUnitNo = model.CoolingUnitNo,
+                    Year = storeView.Year,
+                    Model = storeView.Model,
+                    Manufacturer = storeView.Manufacturer,
+                    Pqsno = storeView.Pqsno,
+                    CoolingUnitNo = storeView.CoolingUnitNo,
 
-                    PowerSource = model.PowerSource,
-                    Source = model.Source,
-                    Barcode = model.Barcode,
-                    PeriodNoteUse = model.PeriodNoteUse,
-                    UnitCost = model.UnitCost
+                    PowerSource = storeView.PowerSource,
+                    Source = storeView.Source,
+                    Barcode = storeView.Barcode,
+                    PeriodNoteUse = storeView.PeriodNoteUse,
+                    UnitCost = storeView.UnitCost
                 };
 
                 await _storeService.Update(dto, cancellationToken);

@@ -52,6 +52,7 @@ namespace VSSM.Application.Services.BaseEntities
                 .Take(paging.PageSize)
                 .Select(x => new RecipientGetDto
                 {
+                    EntryDate = x.EntryDate.HasValue ? Helpers.DateTimeHelper.ToShamsi(x.EntryDate.Value) : string.Empty,
                     RecipientId = x.RecipientId,
                     Code = x.Code,
                     FullName = x.FullName,
@@ -59,8 +60,9 @@ namespace VSSM.Application.Services.BaseEntities
                     Year = x.Year,
                     Population = x.Population,
                     ChainLevel = x.ChainLevel,
-                    StartUp = x.StartUp,
+                    StartUp = x.StartUp.HasValue ? Helpers.DateTimeHelper.ToShamsi(x.StartUp.Value) : string.Empty,
                     ParentId = x.ParentId,
+
 
                     TransportModeName = _db.TblTransportModes
                         .Where(t => t.TransportModeId == x.TransportModeId)

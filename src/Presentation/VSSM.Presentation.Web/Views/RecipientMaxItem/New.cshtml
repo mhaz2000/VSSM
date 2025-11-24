@@ -1,0 +1,89 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model VSSM.Presentation.Web.Models.RecipientMaxItem.RecipientMaxItemViewModel
+@{
+string formName = "ثبت";
+if (Model != null && Model.RecipientMaxItemId > 0)
+formName = "ویرایش";
+}
+
+<style>
+    .form-label {
+        text-align: left;
+        width: 130px;
+        margin-left: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-control, .form-select {
+        flex: 1;
+    }
+
+    .card {
+        direction: rtl;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <div><h5>@formName آیتم حداکثر گیرنده</h5></div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <div class="card-block">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <form asp-action="Create" method="post" class="form-horizontal">
+                        <input type="hidden" asp-for="RecipientMaxItemId" />
+
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="form-label" for="ItemId">آیتم:</label>
+                                <input type="number" asp-for="ItemId" class="form-control" min="0" />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="RecipientId">گیرنده:</label>
+                                <input type="number" asp-for="RecipientId" class="form-control" min="0" />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="NumberDose">تعداد دوز:</label>
+                                <input type="number" asp-for="NumberDose" class="form-control" min="0" />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="ReceiverId">دریافت‌کننده:</label>
+                                <input type="number" asp-for="ReceiverId" class="form-control" min="0" />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="RelatedToItem">مرتبط با آیتم:</label>
+                                <input type="number" asp-for="RelatedToItem" class="form-control" min="0" />
+                            </div>
+
+                            <div class="col-lg-8"></div>
+                            <div class="col-lg-4">
+                                <div class="text-center mt-4 align-middle">
+                                    <button type="submit" class="btn btn-success px-5">ثبت</button>
+                                    <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

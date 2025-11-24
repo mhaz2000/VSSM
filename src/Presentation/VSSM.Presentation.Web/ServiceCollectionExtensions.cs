@@ -10,6 +10,7 @@ using VSSM.Application.DTOs.BaseEntities.Levels;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
 using VSSM.Application.DTOs.BaseEntities.Manufacturer;
 using VSSM.Application.DTOs.BaseEntities.Ownership;
+using VSSM.Application.DTOs.BaseEntities.RecipientMaxItem;
 using VSSM.Application.DTOs.BaseEntities.RoadType;
 using VSSM.Application.DTOs.BaseEntities.StoreType;
 using VSSM.Application.DTOs.BaseEntities.StoreUsageWarning;
@@ -45,7 +46,9 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IDispatchRepConfigService, DispatchRepConfigService>();
             services.AddScoped<IStoreUsageWarningService, StoreUsageWarningService>();
             services.AddScoped<IFiscalPeriodService, FiscalPeriodService>();
+            services.AddScoped<IRecipientMaxItemService, RecipientMaxItemService>();
             services.AddScoped<IStoreTypeService, StoreTypeService>();
+            services.AddScoped<IValidator<RecipientMaxItemDto>, RecipientMaxItemValidator>();
             services.AddScoped<IValidator<VvmtypeDto>, VvmtypeValidator>();
             services.AddScoped<IValidator<StoreUsageWarningDto>, StoreUsageWarningValidator>();
             services.AddScoped<IValidator<ManufacturerDto>, ManufacturerDtoValidator>();

@@ -34,6 +34,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IManItemClassService, ManItemClassService>();
             services.AddScoped<IUserHomeService, UserHomeService>();
+            services.AddScoped<IArrivalRepConfigService, ArrivalRepConfigService>();
             services.AddScoped<ICommercialNameService, CommercialNameService>();
             services.AddScoped<IVvmtypeService, VvmtypeService>();
             services.AddScoped<IVvmstageService, VvmstageService>();

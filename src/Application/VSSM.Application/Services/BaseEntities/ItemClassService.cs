@@ -50,6 +50,22 @@ namespace VSSM.Application.Services.BaseEntities
             return model.ItemClassId;
         }
 
+        public async Task<List<ItemClassListDto>> GetActives(CancellationToken cancellationToken)
+        {
+            var items = await _dbContext.TblItemsClasses
+                                    .AsNoTracking()
+                                    .Where(c => c.IsActive == true)
+                                    .ToListAsync(cancellationToken);
+
+            var result = items.Select(x => new ItemClassListDto
+            {
+                Id = x.ItemClassId,
+                Name = x.FullName
+            }).ToList();
+
+            return result;
+        }
+
         public async Task<List<ItemClassListDto>> GetAll(CancellationToken cancellationToken)
         {
             try

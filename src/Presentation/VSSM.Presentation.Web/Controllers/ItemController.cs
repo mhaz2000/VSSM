@@ -2,9 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using VSSM.Application.Common.Extensions;
+using VSSM.Application.DTOs.BaseEntities.Item;
+using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Domain.Enums;
+using VSSM.Presentation.Web.Models.Item;
+using VSSM.Presentation.Web.Models.ItemClass;
 
 namespace VSSM.Presentation.Web.Controllers
 {
@@ -18,7 +23,7 @@ namespace VSSM.Presentation.Web.Controllers
             _itemClassService = itemClassService;
         }
 
-        public async Task<IActionResult> Index(CancellationToken cancellationTOken, string? search,
+        public async Task<IActionResult> Index(CancellationToken cancellationToken, string? search,
                                                 int page = 1,
                                                 int pageSize = 10,
                                                 string sortField = "Orders",
@@ -29,30 +34,99 @@ namespace VSSM.Presentation.Web.Controllers
                                                                     pageSize,
                                                                     sortField,
                                                                     sortOrder,
-                                                                    cancellationTOken);
+                                                                    cancellationToken);
 
-            LoadItemTypeEnum();
+            await PrepareDropdown(cancellationToken);
             return View(listModel);
 
         }
-        public IActionResult New()
+        public async Task<IActionResult> New()
         {
-            LoadItemTypeEnum();
+            await PrepareDropdown(CancellationToken.None);
             return View();
         }
 
-        private void LoadItemTypeEnum()
+        public async Task<IActionResult> Create(ItemViewModel model, CancellationToken cancellationTOken)
         {
-            var list = Enum.GetValues(typeof(ItemTypeEnum))
-                   .Cast<ItemTypeEnum>()
-                   .Select(x => new
-                   {
-                       Id = (int)x,
-                       Title = x.GetDescription()
-                   })
-                   .ToList();
+            if (!ModelState.IsValid)
+            {
+                return Redirect("New");
+            }
 
-            ViewBag.ItemTypes = list;
+            var dto = new ItemCreateDto
+            {
+                ItemId = model.ItemId.GetValueOrDefault(),
+                ItemClassId = model.ItemClassId,
+                Code = model.Code,
+                FullName = model.FullName,
+                IsActive = model.IsActive,
+                OrderId = model.OrderInList,
+                DayToWarmExpire = model.DayToWarmExpire,
+                DiluentId = model.DiluentId,
+                RequiresDiluent = model.RequiresDiluent,
+                UniCode = model.UniCode,
+                UnitPrice = model.UnitPrice,
+                UseOrdinaryStore = model.UseOrdinaryStore,
+                UserAboveZeroStore = model.UserAboveZeroStore,
+                UserBelowZeroStore = model.UserBelowZeroStore,
+                Volume = model.Volume
+            };
+
+            if (model.ItemId == null || model.ItemId == 0)
+            {
+                // ---------- Create ----------
+                var res = await _itemService.Create(dto, cancellationTOken);
+            }
+            else
+            {
+                // ---------- Update ----------
+                var res = await _itemService.Update(dto, cancellationTOken);
+            }
+
+            TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index");
+        }
+
+
+        public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
+        {
+            // داده را از دیتابیس می‌خوانیم
+            var item = await _itemService.GetById(id, cancellationToken);
+            if (item == null)
+                return NotFound();
+
+            var model = new ItemViewModel
+            {
+                ItemId = item.ItemId,
+                ItemClassId = item.ItemClassId.GetValueOrDefault(),
+                Code = item.Code,
+                FullName = item.FullName,
+                IsActive = item.IsActive.GetValueOrDefault(),
+                OrderInList = item.OrderId.GetValueOrDefault(),
+                Volume = item.Volume.GetValueOrDefault(),
+                RequiresDiluent = item.RequiresDiluent.GetValueOrDefault(),
+                UserBelowZeroStore = item.UserBelowZeroStore.GetValueOrDefault(),
+                UseOrdinaryStore = item.UseOrdinaryStore.GetValueOrDefault(),
+                UnitPrice = item.UnitPrice.GetValueOrDefault(),
+                UniCode = item.UniCode,
+                DayToWarmExpire = item.DayToWarmExpire.GetValueOrDefault(),
+                DiluentId = item.DiluentId.GetValueOrDefault(),
+                UserAboveZeroStore = item.UserAboveZeroStore.GetValueOrDefault(),
+                
+            };
+
+            await PrepareDropdown(cancellationToken);
+            // نمایش فرم ویرایش با داده‌ها
+            return View("New", model);
+        }
+
+        private async Task PrepareDropdown(CancellationToken cancellationTOken)
+        {
+            var list = await _itemClassService.GetActives(cancellationTOken);
+
+            ViewBag.ItemClass = list;
         }
     }
 }

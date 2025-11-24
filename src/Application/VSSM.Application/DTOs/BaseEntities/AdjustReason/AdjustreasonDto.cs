@@ -6,7 +6,7 @@ public class AdjustreasonDto
 
     public string Code { get; set; } = "";
     public string FullName { get; set; } = "";
-    public DateTime? EntryDate { get; set; }
+    public DateTime? EntryDate { get; set; } = DateTime.Now;
 
     public bool IsActive { get; set; }
     public bool UsedForDispatchAdjust { get; set; }

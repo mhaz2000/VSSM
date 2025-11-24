@@ -1,0 +1,52 @@
+﻿@model VSSM.Application.DTOs.BaseEntities.UserHome.UserHomeDto
+
+@{
+    ViewData["Title"] = "مدیریت صفحه نخست کاربر ";
+}
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">مدیریت صفحه نخست کاربر</h5>
+    </div>
+
+    <div class="card-body">
+
+        <form asp-action="Save" method="post">
+
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">پیام ۱</label>
+                <div class="col-sm-10">
+                    <textarea asp-for="Message" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">پیام ۲</label>
+                <div class="col-sm-10">
+                    <textarea asp-for="Message2" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">پیام ۳</label>
+                <div class="col-sm-10">
+                    <textarea asp-for="Message3" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-success px-4">
+                    ذخیره
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success mt-3">
+        @TempData["Success"]
+    </div>
+}

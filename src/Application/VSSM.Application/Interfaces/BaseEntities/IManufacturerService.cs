@@ -1,4 +1,5 @@
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.ManItemClass;
 using VSSM.Application.DTOs.BaseEntities.Manufacturer;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
@@ -14,6 +15,8 @@ public interface IManufacturerService
         string sortField,
         string sortOrder,
         CancellationToken cancellationToken);
+
+    public Task<List<ManufacturerDropDownDto>> ManufacturerDropDown(long?id,CancellationToken cancellationToken);
 
     Task<ManufacturerDto> GetById(int id, CancellationToken cancellationToken);
     Task<bool> Update(ManufacturerDto dto, CancellationToken cancellationToken);

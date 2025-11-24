@@ -15,6 +15,9 @@ public class ManItemClassController : Controller
         _service = service;
     }
 
+    // -------------------------------------------------------------
+    // INDEX
+    // -------------------------------------------------------------
     public async Task<IActionResult> Index(
         CancellationToken cancellationToken,
         string? search = null,
@@ -31,77 +34,98 @@ public class ManItemClassController : Controller
             sortOrder,
             cancellationToken);
 
-        return View(list); 
+        return View(list);
     }
-    
+
+
+    // -------------------------------------------------------------
+    // NEW
+    // -------------------------------------------------------------
     public async Task<IActionResult> New()
     {
         var manufacturers = await _service.ManufacturerDropDown(CancellationToken.None);
 
-        var viewModel = new ManItemClassViewModel();
-        viewModel.Manufacturers = manufacturers
-            .Select(c => new SelectListItem
-            {
-                Value = c.ManufacturerId.ToString(),
-                Text = c.Name
-            })
-            .ToList();
+        var viewModel = new ManItemClassViewModel
+        {
+            ItemClasses = manufacturers
+                .Select(c => new SelectListItem
+                {
+                    Value = c.ItemsClassId.ToString(),
+                    Text = c.Name
+                })
+                .ToList()
+        };
 
-        return View("New", viewModel);   // 👈 return the filled viewmodel
+        return View("New", viewModel);
     }
 
-    public async Task<IActionResult> ManufacturerDropDown(CancellationToken cancellationToken)
-    {
-        var manufacturers = await _service.ManufacturerDropDown(cancellationToken);
-        return View("New", manufacturers);
-    }
 
+    // -------------------------------------------------------------
+    // EDIT
+    // -------------------------------------------------------------
     public async Task<IActionResult> Edit(int id)
     {
         var model = await _service.GetById(id, CancellationToken.None);
+        if (model == null)
+            return NotFound();
+
         var manufacturers = await _service.ManufacturerDropDown(CancellationToken.None);
 
         var viewModel = new ManItemClassViewModel
         {
-            ManItemClassId = model.ManufacturerId,
+            ManItemClassId = model.ManItemClassId,
             ItemClassCode = model.ItemClassCode,
-            ManufacturerId = model.ManufacturerId
+            ManufacturerIds = model.ManufacturerIds, // multi-select
+            ItemClasses = manufacturers
+                .Select(c => new SelectListItem
+                {
+                    Value = c.ItemsClassId.ToString(),
+                    Text = c.Name,
+                    Selected = model.ManufacturerIds.Any(m=>m == c.ItemsClassId)
+                })
+                .ToList()
         };
 
-        viewModel.Manufacturers = manufacturers
-            .Select(c => new SelectListItem
-            {
-                Value = c.ManufacturerId.ToString(),
-                Text = c.Name
-            })
-            .ToList();
-
-        return View("New", viewModel);   // ✔ same view
+        return View("New", viewModel);
     }
 
 
+    // -------------------------------------------------------------
+    // CREATE / UPDATE (POST)
+    // -------------------------------------------------------------
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ManItemClassViewModel model, CancellationToken cancellationToken)
     {
+        // Re-fill dropdown on failure
         if (!ModelState.IsValid)
+        {
+            var manufacturers = await _service.ManufacturerDropDown(CancellationToken.None);
+            model.ItemClasses = manufacturers
+                .Select(c => new SelectListItem
+                {
+                    Value = c.ItemsClassId.ToString(),
+                    Text = c.Name,
+                    Selected = model.ManufacturerIds.Any(m=>m == c.ItemsClassId)
+                })
+                .ToList();
+
             return View("New", model);
+        }
 
         var dto = new ManItemClassDto
         {
-            ManItemClassId = model.ManItemClassId.GetValueOrDefault(),
+            ManItemClassId = model.ManItemClassId,
             ItemClassCode = model.ItemClassCode,
-            ManufacturerId = model.ManufacturerId,
+            ManufacturerIds = model.ManufacturerIds  
         };
 
         if (model.ManItemClassId == null || model.ManItemClassId == 0)
         {
-            // Create
             await _service.Create(dto, cancellationToken);
         }
         else
         {
-            // Update
             await _service.Update(dto, cancellationToken);
         }
 
@@ -111,22 +135,18 @@ public class ManItemClassController : Controller
         return RedirectToAction("Index");
     }
 
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var deleted = await _service.Delete(id, cancellationToken);
 
-        if (deleted)
-        {
-            TempData["ToastMessage"] = "عملیات حذف با موفقیت انجام شد";
-            TempData["ToastType"] = "success";
-        }
-        else
-        {
-            TempData["ToastMessage"] = "رکورد مورد نظر یافت نشد";
-            TempData["ToastType"] = "error";
-        }
+        TempData["ToastMessage"] = deleted
+            ? "عملیات حذف با موفقیت انجام شد"
+            : "رکورد مورد نظر یافت نشد";
+
+        TempData["ToastType"] = deleted ? "success" : "error";
 
         return RedirectToAction("Index");
     }

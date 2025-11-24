@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,14 +17,45 @@ namespace VSSM.Application.Services.BaseEntities
     public class ItemService : IItemService
     {
         private readonly VSSMDbContext _dbContext;
-        public ItemService(VSSMDbContext dbContext)
+        private readonly IValidator<ItemCreateDto> _validator;
+        public ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> validator)
         {
             _dbContext = dbContext;
+            _validator = validator;
         }
 
-        public Task<int> Create(ItemCreateDto dto, CancellationToken cancellationToken)
+        public async Task<int> Create(ItemCreateDto dto, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            /* application layer validate*/
+            var result = await _validator.ValidateAsync(dto);
+            if (!result.IsValid)
+                throw new ValidationException(result.Errors);
+
+            /* dto to model*/
+            var model = new TblItem
+            {
+                ItemId = dto.ItemId,
+                ItemClassId = dto.ItemClassId,
+                Code = dto.Code,
+                EntryDate = DateTime.Now,
+                FullName = dto.FullName,
+                OrderId = dto.OrderId,
+                IsActive = dto.IsActive,
+                RequiresDiluent = dto.RequiresDiluent,
+                DiluentId = dto.DiluentId,
+                UniCode = dto.UniCode,
+                Volume = dto.Volume,
+                UserBelowZeroStore = dto.UserBelowZeroStore,
+                UserAboveZeroStore = dto.UserAboveZeroStore,
+                UseOrdinaryStore = dto.UseOrdinaryStore,
+                UnitPrice = dto.UnitPrice,
+                DayToWarmExpire = dto.DayToWarmExpire,
+                
+            };
+
+            await _dbContext.TblItems.AddAsync(model);
+            await _dbContext.SaveChangesAsync();
+            return model.ItemId;
         }
 
         public Task<List<ItemListDto>> GetAll(CancellationToken cancellationToken)
@@ -31,9 +63,34 @@ namespace VSSM.Application.Services.BaseEntities
             throw new NotImplementedException();
         }
 
-        public Task<ItemSelectDto> GetById(int id, CancellationToken cancellationToken)
+        public async Task<ItemSelectDto> GetById(int id, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var entity = await _dbContext.TblItems
+                                .AsNoTracking()
+                                .Where(x => x.ItemId == id)
+                                .FirstOrDefaultAsync(cancellationToken);
+
+            var dto = new ItemSelectDto
+            {
+                ItemId = id,
+                ItemClassId = entity.ItemClassId,
+                Code = entity.Code,
+                FullName = entity.FullName,
+                IsActive = entity.IsActive,
+                OrderId = entity.OrderId,
+                DayToWarmExpire = entity.DayToWarmExpire,
+                DiluentId = entity.DiluentId,
+                RequiresDiluent = entity.RequiresDiluent,
+                UniCode = entity.UniCode,
+                UnitPrice = entity.UnitPrice,
+                UseOrdinaryStore = entity.UseOrdinaryStore,
+                UserAboveZeroStore = entity.UserAboveZeroStore,
+                UserBelowZeroStore = entity.UserBelowZeroStore,
+                Volume = entity.Volume,
+                
+            };
+
+            return dto;
         }
 
         public async Task<PagingSearchOrderDto<ItemListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
@@ -86,9 +143,39 @@ namespace VSSM.Application.Services.BaseEntities
             };
         }
 
-        public Task<bool> Update(ItemCreateDto dto, CancellationToken cancellationToken)
+        public async Task<bool> Update(ItemCreateDto dto, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            /* application layer validate*/
+            var result = await _validator.ValidateAsync(dto);
+            if (!result.IsValid)
+                throw new ValidationException(result.Errors);
+
+
+            var entity = await _dbContext.TblItems
+                                .Where(x => x.ItemId == dto.ItemId)
+                                .FirstOrDefaultAsync(cancellationToken);
+
+            if (entity != null)
+            {
+                entity.ItemClassId = dto.ItemClassId;
+                entity.Code = dto.Code;
+                entity.EntryDate = DateTime.Now;
+                entity.FullName = dto.FullName;
+                entity.OrderId = dto.OrderId;
+                entity.IsActive = dto.IsActive;
+                entity.RequiresDiluent = dto.RequiresDiluent;
+                entity.DiluentId = dto.DiluentId;
+                entity.UniCode = dto.UniCode;
+                entity.Volume = dto.Volume;
+                entity.UserBelowZeroStore = dto.UserBelowZeroStore;
+                entity.UserAboveZeroStore = dto.UserAboveZeroStore;
+                entity.UseOrdinaryStore = dto.UseOrdinaryStore;
+                entity.UnitPrice = dto.UnitPrice;
+                entity.DayToWarmExpire = dto.DayToWarmExpire;
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
 
     }

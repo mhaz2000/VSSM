@@ -12,17 +12,19 @@
                 <div class="col-lg-3">
                     <div><h5> مدیریت کالا</h5></div>
                 </div>
-                <div class="col-lg-2">
-                </div>
-                <div class="col-lg-2">
+                
+                <div class="col-lg-4">
+                    <div class="form-group">
+                    <label class="form-label">نوع کالا</label>
                     <select class="form-control">
                         <option value="">-- انتخاب کنید --</option>
 
-                        @foreach (var itemType in ViewBag.ItemTypes)
+                        @foreach (var itemType in ViewBag.ItemClass)
                         {
-                            <option value="@itemType.Id">@itemType.Title</option>
+                            <option value="@itemType.Id">@itemType.Name</option>
                         }
                     </select>
+                    </div>
                 </div>
                 <form method="get">
                     <div class="col-lg-4">
@@ -49,11 +51,11 @@
                             <thead>
                                 <tr>
                                     @* <th>نوع کالا</th> *@
-                                    <th>کد</th>
-                                    <th>نام کامل</th>
+                                    <th><a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">کد</a></th>
+                                    <th><a href="?sortField=FullName&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">نام کامل</th>
                                     <th>کد بین المللی</th>
                                     <th>حلال</th>
-                                    <th>ترتیب نمایش در لیست</th>
+                                    <th><a href="?sortField=OrderId&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">ترتیب نمایش در لیست</a></th>
                                     <th>وضعیت</th>
                                     <th>عملیات</th>
                                 </tr>
@@ -72,7 +74,7 @@
                                             <td>@item.OrderInList</td>
                                             <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
                                             <td>
-                                                <a class="btn btn-primary btn-sm" asp-controller="ItemClass" asp-action="Edit" asp-route-id="@item.Id">ویرایش</a>
+                                                <a class="btn btn-primary btn-sm" asp-controller="Item" asp-action="Edit" asp-route-id="@item.Id">ویرایش</a>
                                             </td>
                                         </tr>
                                         i++;

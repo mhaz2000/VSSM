@@ -1,0 +1,215 @@
+﻿@model VSSM.Application.DTOs.BaseEntities.VoucherConfig.VoucherConfigDto
+
+@{
+    ViewData["Title"] = "تنظیمات چاپ ووچر و فاکتور";
+}
+
+<div class="card mt-4 shadow-lg border-0">
+    <div class="card-header bg-primary text-white p-3">
+        <h5 class="mb-0 fw-bold">⚙️ تنظیمات نمایش اقلام ووچر و فاکتور</h5>
+    </div>
+
+    <div class="card-body p-4">
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <strong>موفق!</strong> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <form asp-action="Edit" method="post">
+
+            <h6 class="text-primary pb-2 mb-3">سربرگ</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input asp-for="ShowRequestNumber" class="form-check-input" type="checkbox" id="ShowRequestNumber"/>
+                        <label asp-for="ShowRequestNumber" class="form-check-label" for="ShowRequestNumber">شماره درخواست</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input asp-for="ShowTransportMode" class="form-check-input" type="checkbox" id="ShowTransportMode"/>
+                        <label asp-for="ShowTransportMode" class="form-check-label" for="ShowTransportMode">طریقه حمل و نقل</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4"/>
+
+            <h6 class="text-primary pb-2 mb-3">جزئیات کالا ها</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input type="hidden" asp-for="ShowItem" value="true"/>
+                        <input asp-for="ShowItem" class="form-check-input" type="checkbox" disabled checked id="ShowItem"/>
+                        <label asp-for="ShowItem" class="form-check-label text-muted" for="ShowItem">کالا (اجباری)</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowManufacturer" class="form-check-input" type="checkbox" id="ShowManufacturer"/>
+                        <label asp-for="ShowManufacturer" class="form-check-label" for="ShowManufacturer">سازنده</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowItemCode" class="form-check-input" type="checkbox" id="ShowItemCode"/>
+                        <label asp-for="ShowItemCode" class="form-check-label" for="ShowItemCode">کد</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowPresentation" class="form-check-input" type="checkbox" id="ShowPresentation"/>
+                        <label asp-for="ShowPresentation" class="form-check-label" for="ShowPresentation">Presentation Type</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input type="hidden" asp-for="ShowBatchNumber" value="true"/>
+                        <input asp-for="ShowBatchNumber" class="form-check-input" type="checkbox" disabled checked id="ShowBatchNumber"/>
+                        <label asp-for="ShowBatchNumber" class="form-check-label text-muted" for="ShowBatchNumber">سری ساخت (اجباری)</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowExpiryDate" class="form-check-input" type="checkbox" id="ShowExpiryDate"/>
+                        <label asp-for="ShowExpiryDate" class="form-check-label" for="ShowExpiryDate">تاریخ انقضا</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowPackingType" class="form-check-input" type="checkbox" id="ShowPackingType"/>
+                        <label asp-for="ShowPackingType" class="form-check-label" for="ShowPackingType">نوع بسته‌بندی</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowPackageSize" class="form-check-input" type="checkbox" id="ShowPackageSize"/>
+                        <label asp-for="ShowPackageSize" class="form-check-label" for="ShowPackageSize">سایز بسته‌بندی</label>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input type="hidden" asp-for="ShowQuantity" value="true"/>
+                        <input asp-for="ShowQuantity" class="form-check-input" type="checkbox" disabled checked id="ShowQuantity"/>
+                        <label asp-for="ShowQuantity" class="form-check-label text-muted" for="ShowQuantity">دوز / تعداد (اجباری)</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowDoseVial" class="form-check-input" type="checkbox" id="ShowDoseVial"/>
+                        <label asp-for="ShowDoseVial" class="form-check-label" for="ShowDoseVial">دوز ویال</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowNumberOfVials" class="form-check-input" type="checkbox" id="ShowNumberOfVials"/>
+                        <label asp-for="ShowNumberOfVials" class="form-check-label" for="ShowNumberOfVials">تعداد ویال</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowStore" class="form-check-input" type="checkbox" id="ShowStore"/>
+                        <label asp-for="ShowStore" class="form-check-label" for="ShowStore">نام انبار</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowNotesLine" class="form-check-input" type="checkbox" id="ShowNotesLine"/>
+                        <label asp-for="ShowNotesLine" class="form-check-label" for="ShowNotesLine">ملاحظات (سطر کالا)</label>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                     <div class="form-check">
+                        <input asp-for="ShowUnitPrice" class="form-check-input" type="checkbox" id="ShowUnitPrice"/>
+                        <label asp-for="ShowUnitPrice" class="form-check-label" for="ShowUnitPrice">مبلغ واحد</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowTotalPriceLine" class="form-check-input" type="checkbox" id="ShowTotalPriceLine"/>
+                        <label asp-for="ShowTotalPriceLine" class="form-check-label" for="ShowTotalPriceLine">مبلغ کل (سطر کالا)</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowVvmtype" class="form-check-input" type="checkbox" id="ShowVvmtype"/>
+                        <label asp-for="ShowVvmtype" class="form-check-label" for="ShowVvmtype">نوع VVM</label>
+                    </div>
+                     <div class="form-check">
+                        <input asp-for="ShowVvmstage" class="form-check-input" type="checkbox" id="ShowVvmstage"/>
+                        <label asp-for="ShowVvmstage" class="form-check-label" for="ShowVvmstage">مرحله VVM</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowStageDelivery" class="form-check-input" type="checkbox" id="ShowStageDelivery"/>
+                        <label asp-for="ShowStageDelivery" class="form-check-label" for="ShowStageDelivery">Deliver VVM Stage</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4"/>
+
+            <h6 class="text-primary pb-2 mb-3">جزئیات محموله ارسالی</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input asp-for="ShowTotalPrice" class="form-check-input" type="checkbox" id="ShowTotalPrice"/>
+                        <label asp-for="ShowTotalPrice" class="form-check-label" for="ShowTotalPrice">مبلغ کل (محموله)</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowTotalWeight" class="form-check-input" type="checkbox" id="ShowTotalWeight"/>
+                        <label asp-for="ShowTotalWeight" class="form-check-label" for="ShowTotalWeight">وزن کل</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowTotalVolume" class="form-check-input" type="checkbox" id="ShowTotalVolume"/>
+                        <label asp-for="ShowTotalVolume" class="form-check-label" for="ShowTotalVolume">حجم کل</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowTotalExternalSize" class="form-check-input" type="checkbox" id="ShowTotalExternalSize"/>
+                        <label asp-for="ShowTotalExternalSize" class="form-check-label" for="ShowTotalExternalSize">حجم کل خارجی</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input asp-for="ShowPacksNumber" class="form-check-input" type="checkbox" id="ShowPacksNumber"/>
+                        <label asp-for="ShowPacksNumber" class="form-check-label" for="ShowPacksNumber">تعداد کل بسته‌ها</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowNotes" class="form-check-input" type="checkbox" id="ShowNotes"/>
+                        <label asp-for="ShowNotes" class="form-check-label" for="ShowNotes">ملاحظات (محموله)</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowSource" class="form-check-input" type="checkbox" id="ShowSource"/>
+                        <label asp-for="ShowSource" class="form-check-label" for="ShowSource">منابع</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="ShowIndicator" class="form-check-input" type="checkbox" id="ShowIndicator"/>
+                        <label asp-for="ShowIndicator" class="form-check-label" for="ShowIndicator">Freeze Indicator</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-4 mb-4"/>
+
+            <h6 class="text-primary pb-2 mb-3">محل امضا</h6>
+            <div class="row g-3">
+                
+                <div class="col-lg-12 mb-4">
+                    <div class="form-group">
+                        <label asp-for="FooterNotes" class="form-label fw-bold mb-2">توضیحات انتهای فاکتور</label>
+                        <textarea asp-for="FooterNotes" class="form-control" rows="3" placeholder="متن توضیحات در انتهای فاکتور"></textarea>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <label class="form-label fw-bold mb-2">عنوان جایگاه‌های امضا</label>
+                    <div class="row g-3">
+                        <div class="col-sm-3">
+                            <input asp-for="SignPlaceHolder1" class="form-control form-control-sm" placeholder="امضا ۱"/>
+                        </div>
+                        <div class="col-sm-3">
+                            <input asp-for="SignPlaceHolder2" class="form-control form-control-sm" placeholder="امضا ۲"/>
+                        </div>
+                        <div class="col-sm-3">
+                            <input asp-for="SignPlaceHolder3" class="form-control form-control-sm" placeholder="امضا ۳"/>
+                        </div>
+                        <div class="col-sm-3">
+                            <input asp-for="SignPlaceHolder4" class="form-control form-control-sm" placeholder="امضا ۴"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary px-5 fw-bold">
+                    <i class="bi bi-save me-1"></i> ذخیره
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<partial name="_ValidationScriptsPartial"/>

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Manufacturer;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.Manufacturer;
@@ -35,15 +36,29 @@ public class ManufacturerController : Controller
 
     public IActionResult New()
     {
-        return View(new ManufacturerViewModel());
+        var itemClasses = _manufacturerService.ManufacturerDropDown(null, CancellationToken.None).Result;
+        var model = new ManufacturerViewModel();
+        
+        model.ItemClasses.AddRange(itemClasses.Select(c=>new SelectListItem()
+        {
+            Value = c.ItemsClassId.ToString(),
+            Text = c.Name
+        }));
+
+        return View(model);
     }
 
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
+        // گرفتن تولیدکننده از سرویس
         var manufacturer = await _manufacturerService.GetById(id, cancellationToken);
         if (manufacturer == null)
             return NotFound();
 
+        // گرفتن لیست ItemClass‌ها برای نمایش در فرم
+        var itemClasses = await _manufacturerService.ManufacturerDropDown(manufacturer.ManufacturerId,cancellationToken);
+
+        // ساخت مدل ویو
         var model = new ManufacturerViewModel
         {
             ManufacturerId = manufacturer.ManufacturerId,
@@ -52,11 +67,22 @@ public class ManufacturerController : Controller
             EntryDate = manufacturer.EntryDate,
             ShowForVac = manufacturer.ShowForVac,
             ShowForOther = manufacturer.ShowForOther,
-            IsActive = manufacturer.IsActive
+            IsActive = manufacturer.IsActive,
         };
+
+        // افزودن ItemClass‌ها به مدل ویو
+        model.ItemClasses.AddRange(itemClasses.Select(c => new SelectListItem
+        {
+            Value = c.ItemsClassId.ToString(),
+            Text = c.Name
+        }));
+
+        // مقداردهی آیتم‌های انتخاب‌شده برای checkboxها
+        model.SelectedItemClassIds = itemClasses.Where(c => c.Selected).Select(c => c.ItemsClassId).ToList();
 
         return View("New", model);
     }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -75,7 +101,9 @@ public class ManufacturerController : Controller
             EntryDate = model.EntryDate,
             ShowForVac = model.ShowForVac,
             ShowForOther = model.ShowForOther,
-            IsActive = model.IsActive
+            IsActive = model.IsActive,
+            ItemClasses = model.SelectedItemClassIds.ToList()
+            
         };
 
         if (model.ManufacturerId == null || model.ManufacturerId == 0)

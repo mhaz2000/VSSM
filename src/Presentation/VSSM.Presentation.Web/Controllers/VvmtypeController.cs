@@ -73,7 +73,7 @@ public class VvmtypeController : Controller
                 Code = model.Code,
                 FullName = model.FullName,
                 CanUserChange = model.CanUserChange,
-                EntryDate = model.EntryDate,
+                EntryDate = DateTime.Now,
                 IsActive = model.IsActive
             };
 

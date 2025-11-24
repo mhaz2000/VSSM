@@ -64,21 +64,18 @@ formName = "ویرایش";
 
                         <div class="col-lg-6">
 
-                            <!-- 1. Code -->
                             <div class="form-group">
                                 <label class="form-label" for="Code">کد:</label>
                                 <input type="text" asp-for="Code" class="form-control" />
                             </div>
                             <span asp-validation-for="Code" class="text-danger d-block text-end"></span>
 
-                            <!-- 2. FullName -->
                             <div class="form-group">
                                 <label class="form-label" for="FullName">نام کامل:</label>
                                 <input type="text" asp-for="FullName" class="form-control" />
                             </div>
                             <span asp-validation-for="FullName" class="text-danger d-block text-end"></span>
 
-                            <!-- 3. CanUserChange (Checkbox) - Using Html.CheckBoxFor for nullable bool -->
                             <div class="form-group">
                                 <label class="form-label" for="CanUserChange">قابل تغییر توسط کاربر:</label>
                                 <div class="checkbox-container">
@@ -87,14 +84,6 @@ formName = "ویرایش";
                             </div>
                             <span asp-validation-for="CanUserChange" class="text-danger d-block text-end"></span>
 
-                            <!-- 4. EntryDate (Using text for flexibility with date formats) -->
-                            <div class="form-group">
-                                <label class="form-label" for="EntryDate">تاریخ ثبت:</label>
-                                <input type="text" asp-for="EntryDate" class="form-control" placeholder="YYYY/MM/DD" />
-                            </div>
-                            <span asp-validation-for="EntryDate" class="text-danger d-block text-end"></span>
-
-                            <!-- 5. IsActive (Checkbox) - Using Html.CheckBoxFor for nullable bool -->
                             <div class="form-group">
                                 <label class="form-label" for="IsActive">فعال:</label>
                                 <div class="checkbox-container">

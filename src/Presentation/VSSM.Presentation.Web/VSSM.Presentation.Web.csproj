@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\FiscalPeriod\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Views\Source\" />
   </ItemGroup>
 

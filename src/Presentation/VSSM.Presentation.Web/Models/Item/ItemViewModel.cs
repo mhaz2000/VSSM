@@ -2,7 +2,7 @@
 {
     public class ItemViewModel
     {
-        public int ItemId { get; set; }
+        public int? ItemId { get; set; }
 
         public int ItemClassId { get; set; }
 
@@ -32,7 +32,7 @@
 
         public float UnitPrice { get; set; }
 
-        public string UniCode { get; set; }
+        public string? UniCode { get; set; }
 
         public int OrderInList { get; set; }
 

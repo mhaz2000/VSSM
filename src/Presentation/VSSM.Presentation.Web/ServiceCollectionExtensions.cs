@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs.BaseEntities.AdjustReason;
 using VSSM.Application.DTOs.BaseEntities.CommercialName;
+using VSSM.Application.DTOs.BaseEntities.DosePerVial;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
+using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.DTOs.BaseEntities.Levels;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
@@ -51,6 +53,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IValidator<StoreTypeDto>, StoreTypeValidator>();
             services.AddScoped<IValidator<VvmstageDto>, VvmstageValidator>();
             services.AddScoped<IValidator<ItemClassCreateDto>, ItemClassCreateValidator>();
+            services.AddScoped<IValidator<ItemCreateDto>, ItemCreateValidator>();
             services.AddScoped<IValidator<CommercialNameDto>, CommercialNameValidator>();
             services.AddScoped<IValidator<AdjustreasonDto>, AdjustReasonValidator>();
             services.AddScoped<IValidator<LevelDto>, LevelValidator>();
@@ -60,12 +63,14 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IOwnershipService, OwnershipService>();
             services.AddScoped<IValidator<OwnershipEditDto>, OwnershipEditValidator>();
             services.AddScoped<IValidator<OwnershipCreateDto>, OwnershipCreateValidator>();
+            services.AddScoped<IValidator<DosePerVialCreateDto>, DosePerVialCreateValidator>();
             services.AddScoped<IPowerSourceService, PowerSourceService>();
             services.AddScoped<IEduTypeService, EduTypeService>();
             services.AddScoped<IJobTypeService, JobTypeService>();
             services.AddScoped<ITransportModeService, TransportModeService>();
             services.AddScoped<IReceivingModeService, ReceivingModeService>();
             services.AddScoped<IClimateService, ClimateService>();
+            services.AddScoped<IDosePerVialService, DosePerVialService>();
         }
     }
 

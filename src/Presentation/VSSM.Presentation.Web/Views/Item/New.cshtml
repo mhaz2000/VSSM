@@ -28,7 +28,7 @@
 
                             <div class="form-group col-md-4">
                                 <label class="form-label">نوع کالا</label>
-                                <select class="form-control">
+                                <select class="form-control" asp-for="ItemClassId">
                                     <option value="">-- انتخاب کنید --</option>
 
                                     @foreach (var itemType in ViewBag.ItemClass)

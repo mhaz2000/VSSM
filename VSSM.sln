@@ -23,8 +23,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSSM.Constants", "src\Domai
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSSM.Presentation.Web", "src\Presentation\VSSM.Presentation.Web\VSSM.Presentation.Web.csproj", "{C0E57CCF-CC7B-4C67-B482-C6DA14E2ECAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSSM.Infrastructure.Common", "VSSM.Infrastructure.Common\VSSM.Infrastructure.Common.csproj", "{47BA3D0B-951E-41EB-9F98-0C4B68BD86C3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,10 +53,6 @@ Global
 		{C0E57CCF-CC7B-4C67-B482-C6DA14E2ECAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0E57CCF-CC7B-4C67-B482-C6DA14E2ECAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0E57CCF-CC7B-4C67-B482-C6DA14E2ECAB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{47BA3D0B-951E-41EB-9F98-0C4B68BD86C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{47BA3D0B-951E-41EB-9F98-0C4B68BD86C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{47BA3D0B-951E-41EB-9F98-0C4B68BD86C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{47BA3D0B-951E-41EB-9F98-0C4B68BD86C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -70,7 +64,6 @@ Global
 		{CD4EA649-9A03-6115-3A1A-54036E6E57ED} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{6942F2AE-008F-4353-B827-C93A2FC7395A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{C0E57CCF-CC7B-4C67-B482-C6DA14E2ECAB} = {38ECED47-E74C-4E21-AD40-1CDE215375DA}
-		{47BA3D0B-951E-41EB-9F98-0C4B68BD86C3} = {27A6CFBD-C060-4280-BBB3-E843449FFDC4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A535A2F-AE1B-4363-BF82-AAE35B1777C9}

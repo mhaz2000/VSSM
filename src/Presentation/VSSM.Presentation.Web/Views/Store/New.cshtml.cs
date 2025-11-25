@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace VSSM.Presentation.Web.Views.Stores
+namespace VSSM.Presentation.Web.Views.Store
 {
     public class NewModel : PageModel
     {

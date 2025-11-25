@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Recipient;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Domain.Enums;
-using VSSM.Infrastructure.Common.Helper;
 using VSSM.Presentation.Web.Models.Recipient;
 
 namespace VSSM.Presentation.Web.Controllers

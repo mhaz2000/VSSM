@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VSSM.Application.DTOs.BaseEntities.DosePerVial;
 
-namespace VSSM.Application.DTOs.BaseEntities.ItemClass
+namespace VSSM.Application.DTOs.BaseEntities.DosePerVial
 {
     public class DosePerVialCreateValidator : AbstractValidator<DosePerVialCreateDto>
     {

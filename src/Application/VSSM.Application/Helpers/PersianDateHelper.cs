@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace VSSM.Infrastructure.Common.Helper
+namespace VSSM.Application.Helpers
 {
     public static class PersianDateHelper
     {

@@ -3,7 +3,7 @@ using VSSM.Application.DTOs.BaseEntities.RecipientConfiguration;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
-namespace VSSM.Application.Services
+namespace VSSM.Application.Services.BaseEntities
 {
     public class RecipientConfigurationService : IRecipientConfigurationService
     {

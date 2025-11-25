@@ -1,0 +1,108 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.MinMaxItem
+@model PagingSearchOrderDto<MinMaxItemListDto>
+
+@{
+    ViewData["Title"] = "مدیریت حداقل / حداکثر کالا";
+}
+
+<style>
+    .searchInput {
+        width: 400px !important;
+    }
+
+    .flexContainer {
+        display: flex;
+        justify-content: flex-end;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block flexContainer">
+
+                <form method="get">
+                    <div class="col-lg-4">
+                        <div class="input-group">
+                            <input class="form-control searchInput"
+                                   name="search"
+                                   value="@Model.SearchText"
+                                   placeholder="جستجو بر اساس نام  ..." />
+
+                            <div class="input-group-btn">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-search"></i> جستجو
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="col-lg-1">
+                    <a asp-controller="MinMaxItem"
+                       asp-action="New"
+                       class="btn btn-success">
+                        <i class="fa fa-plus-circle"></i> جدید
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-block">
+
+                        <table class="table table-bordered table-striped table-condensed text-center">
+                            <thead>
+                                <tr>
+
+                                    <th>نام کالا</th>
+                                    <th>گیرنده</th>
+                                    <th>سطح</th>
+                                    <th>تاریخ</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Items != null && Model.Items.Any())
+                                {
+                                    foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+
+                                            <td>@item.ItemName</td>
+                                            <td>@item.RecipientName</td>
+                                            <td>@item.TypeOfRoadId</td>
+                                            <td>@item.EntryDate</td>
+                                            <td>
+                                                <a class="btn btn-primary btn-sm"
+                                                   asp-action="New"
+                                                   asp-route-id="@item.MinMaxItemId">
+                                                    ویرایش
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" class="text-danger">
+                                            داده‌ای یافت نشد
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        <!-- اگر خواستی صفحه‌بندی هم مثل بقیه موجودیت‌ها اضافه کن -->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

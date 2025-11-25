@@ -1,0 +1,304 @@
+﻿@using VSSM.Presentation.Web.Models.MinMaxItem
+@model MinMaxItemViewModel
+
+@{
+    string formName = Model?.MinMaxItemId > 0 ? "ویرایش حداقل/حداکثر" : "ثبت حداقل/حداکثر";
+}
+
+<style>
+    .form-label {
+        width: 160px;
+        margin-left: 10px;
+        text-align: left;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-control, .form-select {
+        flex: 1;
+    }
+
+    .calc-box {
+        background: #f5f9ff;
+        border: 1px solid #d0d9f0;
+        width: 340px;
+        margin: 0 auto !important; /* center horizontally */
+    }
+
+    .calc-box {
+        background: #f5f9ff;
+        border: 1px solid #d0d9f0;
+        width: 320px;
+    }
+
+    .option-block {
+        background-color: #fff8d9;
+        border: 1px solid #eee1aa;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card mb-2">
+            <div class="card-block">
+                <h5>@formName</h5>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-block">
+
+                <form asp-action="Create" method="post" class="form-horizontal">
+
+                    <input type="hidden" asp-for="MinMaxItemId" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="col-lg-10">
+
+                        <!-- ITEM + RECIPIENT -->
+                        <div class="form-group">
+                            <span class="form-label">کالا:</span>
+                            <select asp-for="ItemId" asp-items="ViewBag.ItemList" class="form-select">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                            <span asp-validation-for="ItemId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="form-label">محل خدمت (گیرنده):</span>
+                            <select asp-for="RecipientId" asp-items="ViewBag.RecipientList" class="form-select">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+
+                        <!-- STOCK MIN/MAX -->
+                        <!-- BOX UNDER OPTIONS -->
+
+
+
+                        <hr />
+
+                        <h6 class="mb-2">نوع محاسبه برای تعیین حداکثر را انتخاب کنید</h6>
+
+                        <!-- OPTION 1 -->
+                        <div class="option-block">
+                            <div class="form-group">
+                                <input type="radio" class="form-check-input ms-2"
+                                       name="OrderLevel" value="1"
+                                       @(Model.OrderLevel == 1 ? "checked" : "") />
+                                <strong>گزینه ۱</strong>
+                            </div>
+                            <div class="help-text">
+                                حداکثر = (نحمن کل نیاز سالانه / تعداد ورودهای در سال) × ضریب + Safety Stock (درصد) + مدت زمان درخواست تا ورود محموله
+                                حداقل = مقدار Safety Stock
+                            </div>
+                            <div class="form-group">
+                                <span class="form-label">نیاز سالیانه:</span>
+                                <input asp-for="AnnualNeeds" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">تعداد ورودی ها در سال :</span>
+                                <input asp-for="NumberShipment" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">زمان بین درخواست و ورود محموله:</span>
+                                <input asp-for="LeadConsumption" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- OPTION 2 -->
+                        <div class="option-block">
+                            <div class="form-group">
+                                <input type="radio" class="form-check-input ms-2"
+                                       name="OrderLevel" value="2"
+                                       @(Model.OrderLevel == 2 ? "checked" : "") />
+                                <strong>گزینه ۲</strong>
+                            </div>
+                            <div class="help-text">
+                                حداکثر = ((جمعیت کل × درصد زیر یکسال) تعداد دور × فاکتور برت × درصد پوشش) / تعداد ورودی‌ها در سال) + Safety Stock (درصد) + مدت زمان درخواست تا ورود محموله
+                                حداقل = مقدار Safety Stock
+                            </div>
+                            <div class="form-group">
+                                <span class="form-label">جمعیت کل:</span>
+                                <input asp-for="TotalPop" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">درصد زیر یک سال:</span>
+                                <input asp-for="PercentUnder" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">تعداد دوز:</span>
+                                <input asp-for="NumDose" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">فاکتور پرت:</span>
+                                <input asp-for="Wastage" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">درصد پوشش:</span>
+                                <input asp-for="PercentCoverage" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">تعداد ورودی ها در سال :</span>
+                                <input asp-for="NumberShipment" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">سلامت موجودی(%) :</span>
+                                <input asp-for="PercentSafety" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">زمان بین درخواست و ورود محموله:</span>
+                                <input asp-for="LeadConsumption" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- OPTION 3 -->
+                        <div class="option-block">
+                            <div class="form-group">
+                                <input type="radio" class="form-check-input ms-2"
+                                       name="OrderLevel" value="3"
+                                       @(Model.OrderLevel == 3 ? "checked" : "") />
+                                <strong>گزینه ۳</strong>
+                            </div>
+                            <div class="help-text">
+                                تخمین دستی حداقل و حداکثر
+                            </div>
+                            <div class="form-group">
+                                <span class="form-label">موجودی حداقل  :</span>
+                                <input asp-for="Min" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label"> موجودی حداکثر :</span>
+                                <input asp-for="Max" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- ORDER LEVEL -->
+                        <div class="calc-box mt-3 p-3 rounded">
+
+                            <div class="form-group mb-2">
+                                <span class="form-label">حداقل موجودی:</span>
+                                <input asp-for="StockMin" class="form-control" />
+                            </div>
+
+                            <div class="form-group mb-2">
+                                <span class="form-label">حداکثر موجودی:</span>
+                                <input asp-for="StockMax" class="form-control" />
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <span class="form-label">سطح درخواست:</span>
+                                <input asp-for="OrderLevel" class="form-control" />
+                            </div>
+
+                            <button type="button" class="btn btn-info w-100" onclick="showCalcPopup()">
+                                محاسبه
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5">ذخیره</button>
+                            <a asp-action="Index" class="btn btn-primary px-5">لیست</a>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        function enableOnly(optionNumber) {
+
+            // Select input groups inside options
+            const opt1Inputs = document.querySelectorAll('.option1 input:not([type=radio])');
+            const opt2Inputs = document.querySelectorAll('.option2 input:not([type=radio])');
+            const opt3Inputs = document.querySelectorAll('.option3 input:not([type=radio])');
+
+            // First: enable all
+            [...opt1Inputs, ...opt2Inputs, ...opt3Inputs].forEach(x => x.disabled = false);
+
+            // Disable others based on selection
+            if (optionNumber === 1) {
+                opt2Inputs.forEach(x => x.disabled = true);
+                opt3Inputs.forEach(x => x.disabled = true);
+            }
+            else if (optionNumber === 2) {
+                opt1Inputs.forEach(x => x.disabled = true);
+                opt3Inputs.forEach(x => x.disabled = true);
+            }
+            else if (optionNumber === 3) {
+                opt1Inputs.forEach(x => x.disabled = true);
+                opt2Inputs.forEach(x => x.disabled = true);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // add CSS class markers
+            document.querySelectorAll('.option-block')[0].classList.add('option1');
+            document.querySelectorAll('.option-block')[1].classList.add('option2');
+            document.querySelectorAll('.option-block')[2].classList.add('option3');
+
+            // bind radio button change events
+            document.querySelector("input[name='OrderLevel'][value='1']")
+                ?.addEventListener("change", () => enableOnly(1));
+
+            document.querySelector("input[name='OrderLevel'][value='2']")
+                ?.addEventListener("change", () => enableOnly(2));
+
+            document.querySelector("input[name='OrderLevel'][value='3']")
+                ?.addEventListener("change", () => enableOnly(3));
+
+            // If editing → apply correct disabling
+            const selected = document.querySelector("input[name='OrderLevel']:checked");
+            if (selected) enableOnly(parseInt(selected.value));
+        });
+
+        function showCalcPopup() {
+
+            Swal.fire({
+                title: "در حال محاسبه...",
+                html: "لطفا منتظر بمانید",
+                icon: "info",
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // demo calculation delay
+            setTimeout(() => Swal.close(), 2000);
+        }
+
+    </script>
+
+}
+

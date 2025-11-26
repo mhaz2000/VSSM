@@ -4,7 +4,23 @@
 @{
     ViewData["Title"] = "مدیریت گیرنده‌ها";
 }
+<style>
+    .flex {
+        display: flex;
+    }
 
+    .reportbtn {
+        margin: 0 6px;
+    }
+
+    .reportbtm2 {
+        margin-left: 20px;
+    }
+
+    .reportbtm3 {
+        margin-right: 20px;
+    }
+</style>
 <div class="container-fluid">
     <div class="animated fadeIn">
 
@@ -14,11 +30,11 @@
                     <h5>مدیریت گیرنده‌ها</h5>
                 </div>
 
-                <div class="col-lg-3">
-                    <button type="button" class="btn btn-light" onclick="alert('در حال تولید');">
+                <div class="col-lg-3 flex">
+                    <button type="button" class="btn btn-light reportbtn" onclick="alert('در حال تولید');">
                         گزارش های مربوط به پایانه
                     </button>
-                    <button type="button" class="btn btn-light" onclick="alert('در حال تولید');">
+                    <button type="button" class="btn btn-light reportbtm2" onclick="alert('در حال تولید');">
                         اطلاعات تماسی گیرندگان
                     </button>
                 </div>
@@ -26,7 +42,7 @@
                 <form method="get">
                     <div class="col-lg-4">
                         <div class="input-group">
-                            <input type="text" name="search" value="@Model.SearchText" class="form-control" placeholder="جستجو بر اساس کد یا نام..." />
+                            <input type="text" name="search" value="@Model.SearchText" class="form-control reportbtm3" placeholder="جستجو بر اساس کد یا نام..." />
                             <div class="input-group-btn">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-search"></i> جستجو
@@ -56,7 +72,7 @@
                                     <th>طریقه حمل و نقل</th>
                                     <th>روش دریافت</th>
                                     <th>تاریخ شروع فعالیت</th>
-                             
+
                                     <th>
                                         <a href="?sortField=Year&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
                                             سال
@@ -87,7 +103,7 @@
                                             <td>@item.EntryDate</td>
                                             <td>@item.TransportModeName</td>
                                             <td>@item.ReceivingModeName</td>
-                                            <td>@item.StartUp</td>                             
+                                            <td>@item.StartUp</td>
                                             <td>@item.Year</td>
                                             <td>@item.Population</td>
                                             <td>@item.ChainLevel</td>

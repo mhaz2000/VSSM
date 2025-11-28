@@ -17,6 +17,7 @@ namespace VSSM.Presentation.Web.Controllers
         private readonly IOwnershipService _ownershipService;
         private readonly IPowerSourceService _powerSourceService;
         private readonly IRoadTypeService _roadTypeService;
+        private readonly IItemService _itemService;
 
         public RecipientController(
             IRecipientService recipientService,
@@ -25,7 +26,8 @@ namespace VSSM.Presentation.Web.Controllers
             IClimateService climateService,
             IOwnershipService ownershipService,
             IPowerSourceService powerSourceService,
-            IRoadTypeService roadTypeService)
+            IRoadTypeService roadTypeService,
+            IItemService itemService)
         {
             _recipientService = recipientService;
             _transportService = transportService;
@@ -34,6 +36,7 @@ namespace VSSM.Presentation.Web.Controllers
             _ownershipService = ownershipService;
             _powerSourceService = powerSourceService;
             _roadTypeService = roadTypeService;
+            _itemService = itemService;
         }
 
         // LIST
@@ -77,7 +80,7 @@ namespace VSSM.Presentation.Web.Controllers
                 ParentType = dto.ParentId.HasValue
                     ? (RecipientTypeEnum?)dto.ParentId.Value
                     : null,
-                StartUp = PersianDateHelper.ToStringDate(dto.StartUp),
+
                 Address1 = dto.Address1,
                 Address2 = dto.Address2,
                 PostalCode = dto.PostalCode,
@@ -120,7 +123,7 @@ namespace VSSM.Presentation.Web.Controllers
                     Year = model.Year,
                     Note = model.Note,
                     ParentId = model.ParentType.HasValue ? (int)model.ParentType.Value : (int?)null,
-                    StartUp = PersianDateHelper.ToDateTime(model.StartUp),
+                    StartUp = DateTime.Now,
                     ChainLevel = model.ChainLevel,
                     ReceivingModeId = model.ReceivingModeId,
                     Address1 = model.Address1,
@@ -157,7 +160,7 @@ namespace VSSM.Presentation.Web.Controllers
                     Year = model.Year,
                     Note = model.Note,
                     ParentId = model.ParentType.HasValue ? (int)model.ParentType.Value : (int?)null,
-                    StartUp = PersianDateHelper.ToDateTime(model.StartUp),
+                    StartUp = DateTime.Now,
                     ChainLevel = model.ChainLevel,
                     ReceivingModeId = model.ReceivingModeId,
                     Address1 = model.Address1,
@@ -194,6 +197,13 @@ namespace VSSM.Presentation.Web.Controllers
                     Value = x.TransportModeId.ToString(),
                     Text = x.FullName
                 }).ToList();
+
+            ViewBag.ItemList = (await _itemService.GetActives(token))
+             .Select(x => new SelectListItem
+             {
+                 Value = x.Id.ToString(),
+                 Text = x.FullName
+             }).ToList();
 
             ViewBag.ReceivingList = (await _receivingService.GetAllAsync(token))
                 .Select(x => new SelectListItem

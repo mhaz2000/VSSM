@@ -29,17 +29,13 @@ namespace VSSM.Presentation.Web.Models.Recipient
         [Display(Name = "روش دریافت")]
         public int? ReceivingModeId { get; set; }
 
-        public RecipientTypeEnum? ParentType { get; set; } // mapped to ParentId
-
-        // 👇 این را اضافه کن
-        [Display(Name = "تاریخ ثبت")]
-        [RegularExpression(@"^\d{2}/\d{2}/\d{2}$",
-            ErrorMessage = "فرمت تاریخ باید به صورت yy/MM/dd باشد (مثال: 03/01/24).")]
-        public string? StartUp { get; set; } // simple date input
+        public RecipientTypeEnum? ParentType { get; set; } // mapped to ParentId 
 
         public string? Address1 { get; set; }
         public string? Address2 { get; set; }
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "کد پستی باید 10 رقمی باشد")]
         public string? PostalCode { get; set; }
+
         public string? City { get; set; }
         public string? Province { get; set; }
         public string? Phone { get; set; }

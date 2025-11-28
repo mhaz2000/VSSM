@@ -2,7 +2,7 @@
 @model PagingSearchOrderDto<RecipientGetDto>
 
 @{
-    ViewData["Title"] = "مدیریت گیرنده‌ها";
+    ViewData["Title"] = "مدیریت گیرندگان";
 }
 <style>
     .flex {
@@ -21,41 +21,63 @@
         margin-right: 20px;
     }
 </style>
-<div class="container-fluid">
-    <div class="animated fadeIn">
 
+<div class="container-fluid">
+
+    <!-- Modal -->
+    <div class="modal fade" id="messageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">پیام سیستم</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    در حال تولید...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">باشه</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="animated fadeIn">
         <div class="card">
             <div class="card-block">
-                <div class="col-lg-3">
-                    <h5>مدیریت گیرنده‌ها</h5>
-                </div>
-
-                <div class="col-lg-3 flex">
-                    <button type="button" class="btn btn-light reportbtn" onclick="alert('در حال تولید');">
-                        گزارش های مربوط به پایانه
-                    </button>
-                    <button type="button" class="btn btn-light reportbtm2" onclick="alert('در حال تولید');">
-                        اطلاعات تماسی گیرندگان
-                    </button>
-                </div>
-
-                <form method="get">
-                    <div class="col-lg-4">
-                        <div class="input-group">
-                            <input type="text" name="search" value="@Model.SearchText" class="form-control reportbtm3" placeholder="جستجو بر اساس کد یا نام..." />
-                            <div class="input-group-btn">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-search"></i> جستجو
-                                </button>
-                            </div>
-                        </div>
+                <div class="row">
+                    <div class="col-lg-3">
+                        <h5>مدیریت گیرندگان</h5>
                     </div>
-                </form>
 
-                <div class="col-lg-1">
-                    <a class="btn btn-success" asp-controller="Recipient" asp-action="New">
-                        <i class="fa fa-plus-circle"></i> جدید
-                    </a>
+                    <div class="col-lg-3 flex">
+                        <button type="button" class="btn btn-light reportbtn" data-bs-toggle="modal" data-bs-target="#messageModal">
+                            گزارش های مربوط به پایانه
+                        </button>
+
+                        <button type="button" class="btn btn-light reportbtm2" data-bs-toggle="modal" data-bs-target="#messageModal">
+                            اطلاعات تماسی گیرندگان
+                        </button>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <form method="get">
+                            <div class="input-group">
+                                <input type="text" name="search" value="@Model.SearchText" class="form-control reportbtm3" placeholder="جستجو بر اساس کد یا نام..." />
+                                <div class="input-group-btn">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa fa-search"></i> جستجو
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-lg-2">
+                        <a class="btn btn-success" asp-controller="Recipient" asp-action="New">
+                            <i class="fa fa-plus-circle"></i> جدید
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -67,19 +89,6 @@
                         <table class="table table-bordered table-striped table-condensed text-center">
                             <thead>
                                 <tr>
-                                    <th>فعال است</th>
-                                    <th>آخرین ورود به سیستم</th> @* شما بعداً می‌توانید با فیلد مناسب جایگزین کنید *@
-                                    <th>طریقه حمل و نقل</th>
-                                    <th>روش دریافت</th>
-                                    <th>تاریخ شروع فعالیت</th>
-
-                                    <th>
-                                        <a href="?sortField=Year&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
-                                            سال
-                                        </a>
-                                    </th>
-                                    <th>جمعیت</th>
-                                    <th>سطح در زنجیره</th>
                                     <th>
                                         <a href="?sortField=FullName&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
                                             نام کامل
@@ -90,6 +99,9 @@
                                             کد
                                         </a>
                                     </th>
+                                    <th>فعال است</th>
+                                    <th>طریقه حمل و نقل</th>
+                                    <th>روش دریافت</th>
                                     <th>عملیات</th>
                                 </tr>
                             </thead>
@@ -99,16 +111,11 @@
                                     foreach (var item in Model.Items)
                                     {
                                         <tr>
-                                            <td>@(item.IsActive ? "✓" : "")</td>
-                                            <td>@item.EntryDate</td>
-                                            <td>@item.TransportModeName</td>
-                                            <td>@item.ReceivingModeName</td>
-                                            <td>@item.StartUp</td>
-                                            <td>@item.Year</td>
-                                            <td>@item.Population</td>
-                                            <td>@item.ChainLevel</td>
                                             <td>@item.FullName</td>
                                             <td>@item.Code</td>
+                                            <td>@(item.IsActive ? "✓" : "")</td>
+                                            <td>@item.TransportModeName</td>
+                                            <td>@item.ReceivingModeName</td>
                                             <td>
                                                 <a class="btn btn-primary btn-sm"
                                                    asp-controller="Recipient"
@@ -156,11 +163,21 @@
                                 </li>
                             </ul>
                         </nav>
-
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Optional: Add JavaScript to ensure modal works -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bootstrap modal should work automatically with data-bs-toggle and data-bs-target
+            console.log('Modal functionality loaded');
+        });
+    </script>
+}

@@ -77,9 +77,7 @@ namespace VSSM.Presentation.Web.Controllers
                 Note = dto.Note,
                 ChainLevel = dto.ChainLevel,
                 ReceivingModeId = dto.ReceivingModeId,
-                ParentType = dto.ParentId.HasValue
-                    ? (RecipientTypeEnum?)dto.ParentId.Value
-                    : null,
+                ParentType = dto.ParentId,
 
                 Address1 = dto.Address1,
                 Address2 = dto.Address2,
@@ -240,12 +238,11 @@ namespace VSSM.Presentation.Web.Controllers
                     Text = x.FullName
                 }).ToList();
 
-            ViewBag.ParentTypeList = Enum.GetValues(typeof(RecipientTypeEnum))
-                .Cast<RecipientTypeEnum>()
+            ViewBag.ParentTypeList = (await _recipientService.GetAll(token))
                 .Select(e => new SelectListItem
                 {
-                    Value = ((int)e).ToString(),
-                    Text = e.GetDisplayName()
+                    Value = e.RecipientId.ToString(),
+                    Text = e.FullName
                 })
                 .ToList();
         }

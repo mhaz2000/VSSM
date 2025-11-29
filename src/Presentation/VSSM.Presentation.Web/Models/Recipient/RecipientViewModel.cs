@@ -29,7 +29,7 @@ namespace VSSM.Presentation.Web.Models.Recipient
         [Display(Name = "روش دریافت")]
         public int? ReceivingModeId { get; set; }
 
-        public RecipientTypeEnum? ParentType { get; set; } // mapped to ParentId 
+        public int? ParentType { get; set; } 
 
         public string? Address1 { get; set; }
         public string? Address2 { get; set; }

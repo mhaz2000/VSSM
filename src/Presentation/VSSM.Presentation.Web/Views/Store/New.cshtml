@@ -11,6 +11,10 @@
         margin-left: 15px;
     }
 
+    .required-marker {
+        color: red;
+    }
+
     .form-group {
         display: flex;
         align-items: center;
@@ -64,21 +68,27 @@
 
                             <!-- Code -->
                             <div class="form-group">
-                                <label class="form-label">کد:</label>
+                                <span class="form-label">
+                                    <span class="required-marker">*</span> کد:
+                                </span>
                                 <input asp-for="Code" class="form-control bg-warning-subtle" />
                             </div>
                             <span class="text-danger" asp-validation-for="Code"></span>
 
                             <!-- Name -->
                             <div class="form-group">
-                                <label class="form-label">نام انبار:</label>
+                                <span class="form-label">
+                                    <span class="required-marker">*</span> نام انبار:
+                                </span>
                                 <input asp-for="Name" class="form-control bg-warning-subtle" />
                             </div>
                             <span class="text-danger" asp-validation-for="Name"></span>
 
                             <!-- Type -->
                             <div class="form-group">
-                                <label class="form-label">نوع درجه حرارت:</label>
+                                <span class="form-label">
+                                    <span class="required-marker">*</span> نوع درجه حرارت:
+                                </span>
                                 <select asp-for="TypeId"
                                         asp-items="ViewBag.StoreTypeList"
                                         class="form-select">

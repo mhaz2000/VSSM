@@ -43,5 +43,5 @@ public class UserViewModel
     [Display(Name = "تاریخ ثبت")]
     [RegularExpression(@"^\d{2}/\d{2}/\d{2}$",
         ErrorMessage = "فرمت تاریخ باید به صورت yy/MM/dd باشد (مثال: 03/01/24).")]
-    public string CourseDate { get; set; }
+    public string? CourseDate { get; set; }
 }

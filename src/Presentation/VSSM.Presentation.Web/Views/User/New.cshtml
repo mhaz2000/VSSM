@@ -11,6 +11,9 @@
         text-align: left;
     }
 
+    .required-marker {
+        color: red;
+    }
     .form-group {
         display: flex;
         align-items: center;
@@ -52,28 +55,36 @@
                  
 
                         <div class="form-group">
-                            <label class="form-label" for="Code">نام کاری:</label>
+                            <span class="form-label">
+                                <span class="required-marker">*</span> نام کاری:
+                            </span>
                             <input asp-for="UserName" class="form-control bg-warning-subtle" />
                             <span class="text-danger" asp-validation-for="UserName"></span>
                         </div>
 
                         <!-- Password -->
                         <div class="form-group">
-                            <label class="form-label">کلمه عبور:</label>
+                            <span class="form-label">
+                                <span class="required-marker">*</span> کلمه عبور:
+                            </span>
                             <span asp-validation-for="Password" class="text-danger"></span>
                             <input asp-for="Password" type="password" class="form-control bg-warning-subtle" />
                         </div>
 
                         <!-- First Name -->
                         <div class="form-group">
-                            <label class="form-label">نام:</label>
+                            <span class="form-label">
+                                <span class="required-marker">*</span> نام:
+                            </span>
                             <span asp-validation-for="FirstName" class="text-danger"></span>
                             <input asp-for="FirstName" class="form-control bg-warning-subtle" />
                         </div>
 
                         <!-- Last Name -->
                         <div class="form-group">
-                            <label class="form-label">نام خانوادگی:</label>
+                            <span class="form-label">
+                                <span class="required-marker">*</span> نام خانوادگی:
+                            </span>
                             <span asp-validation-for="LastName" class="text-danger"></span>
                             <input asp-for="LastName" class="form-control bg-warning-subtle" />
                         </div>
@@ -131,7 +142,9 @@
 
                         <!-- Permission Level -->
                         <div class="form-group">
-                            <label class="form-label">سطح دسترسی:</label>
+                            <span class="form-label">
+                                <span class="required-marker">*</span> سطح دسترسی:
+                            </span>
                             <span asp-validation-for="PermissionLevel" class="text-danger"></span>
                             <select asp-for="PermissionLevel" class="form-select" asp-items="ViewBag.PermissionList">
                                 <option value="">انتخاب کنید...</option>

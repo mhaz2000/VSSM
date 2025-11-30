@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers
@@ -36,7 +37,7 @@ namespace VSSM.Presentation.Web.Controllers
             var lastDayOfYear = new DateTime(today.Year, 12, 31);
     
             // تنظیم مقدار پیش‌فرض
-            model.SuggestedEndDate = lastDayOfYear;
+            model.SuggestedEndDate = lastDayOfYear.ToShamsi();
             
             return View(model);
         }

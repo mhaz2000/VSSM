@@ -3,6 +3,7 @@ using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using VSSM.Application.Helpers;
 
 namespace VSSM.Application.Services.BaseEntities
 {
@@ -21,11 +22,11 @@ namespace VSSM.Application.Services.BaseEntities
             {
                 StartDate = DateTime.Now,
                 FullName = dto.FullName,
-                SuggestedEndDate = dto.SuggestedEndDate,
+                SuggestedEndDate = dto.SuggestedEndDate.ToMiladi(),
                 EntryDate = DateTime.Now,
                 IsActive = dto.IsActive
             };
-            
+
             var lastOne = await _dbContext.TblFiscalPeriods.OrderByDescending(c => c.EntryDate).FirstOrDefaultAsync();
 
             if (lastOne != null)
@@ -55,7 +56,7 @@ namespace VSSM.Application.Services.BaseEntities
             }
             entity.StartDate = DateTime.Now;
             entity.FullName = dto.FullName;
-            entity.SuggestedEndDate = dto.SuggestedEndDate;
+            entity.SuggestedEndDate = dto.SuggestedEndDate.ToMiladi();
             entity.EntryDate = DateTime.Now;
             entity.IsActive = dto.IsActive;
 
@@ -74,7 +75,7 @@ namespace VSSM.Application.Services.BaseEntities
                 StartDate = entity.StartDate,
                 EndTime = entity.EndTime,
                 FullName = entity.FullName,
-                SuggestedEndDate = entity.SuggestedEndDate,
+                SuggestedEndDate = entity.SuggestedEndDate.HasValue ? entity.SuggestedEndDate.Value.ToShamsi() : string.Empty,
                 EntryDate = entity.EntryDate,
                 IsActive = entity.IsActive ?? false
             };
@@ -115,7 +116,7 @@ namespace VSSM.Application.Services.BaseEntities
                     FullName = x.FullName,
                     StartDate = x.StartDate,
                     EndTime = x.EndTime,
-                    SuggestedEndDate = x.SuggestedEndDate,
+                    SuggestedEndDate = x.SuggestedEndDate.HasValue ? x.SuggestedEndDate.Value.ToShamsi() : string.Empty,
                     EntryDate = x.EntryDate,
                     IsActive = x.IsActive ?? false
                 })

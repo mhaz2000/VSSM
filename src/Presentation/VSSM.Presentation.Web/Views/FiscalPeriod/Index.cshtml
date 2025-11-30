@@ -52,7 +52,7 @@ ViewData["Title"] = "مدیریت دوره‌های مالی";
                                 <td>@item.FullName</td>
                                 <td>@item.StartDate?.ToString("yyyy-MM-dd")</td>
                                 <td>@item.EndTime?.ToString("yyyy-MM-dd")</td>
-                                <td>@item.SuggestedEndDate?.ToString("yyyy-MM-dd")</td>
+                                <td>@item.SuggestedEndDate</td>
                                 <td>@(item.IsActive == true ? "فعال" : "غیرفعال")</td>
                                 <td>
                                     <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.FiscalPeriodId">ویرایش</a>

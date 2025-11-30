@@ -17,9 +17,9 @@ namespace VSSM.Application.DTOs.BaseEntities.FiscalPeriod
                 .GreaterThan(x => x.StartDate).WithMessage("تاریخ پایان باید بعد از تاریخ شروع باشد")
                 .When(x => x.EndTime.HasValue && x.StartDate.HasValue);
 
-            RuleFor(x => x.SuggestedEndDate)
-                .GreaterThan(x => x.StartDate).WithMessage("تاریخ پایان پیشنهادی باید بعد از تاریخ شروع باشد")
-                .When(x => x.SuggestedEndDate.HasValue && x.StartDate.HasValue);
+            //RuleFor(x => x.SuggestedEndDate)
+            //    .GreaterThan(x => x.StartDate).WithMessage("تاریخ پایان پیشنهادی باید بعد از تاریخ شروع باشد")
+            //    .When(x => x.SuggestedEndDate && x.StartDate.HasValue);
         }
     }
 }

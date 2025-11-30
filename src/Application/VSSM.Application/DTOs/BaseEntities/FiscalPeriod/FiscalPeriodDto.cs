@@ -6,7 +6,7 @@ public class FiscalPeriodDto
     public DateTime? StartDate { get; set; }
     public DateTime? EndTime { get; set; }
     public string FullName { get; set; }
-    public DateTime? SuggestedEndDate { get; set; }
+    public string SuggestedEndDate { get; set; }
     public DateTime? EntryDate { get; set; }
     public bool IsActive { get; set; } = true;
 }

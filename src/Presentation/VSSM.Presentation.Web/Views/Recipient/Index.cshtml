@@ -3,6 +3,11 @@
 
 @{
     ViewData["Title"] = "مدیریت گیرندگان";
+    int current = Model.Paging.Page;
+    int total = Model.Paging.TotalPages;
+
+    int start = Math.Max(1, current - 5);
+    int end = Math.Min(total, current + 5);
 }
 <style>
     .flex {
@@ -29,7 +34,7 @@
                 <div class="col-lg-3">
                     <h5>مدیریت گیرنده‌ها</h5>
                 </div>
-                <div class="col-lg-3 flex">
+                <div class="col-lg-4 flex">
                     <button type="button" class="btn btn-light reportbtn"
                             data-toggle="modal" data-target="#simpleModal">
                         گزارش های مربوط به پایانه
@@ -119,6 +124,59 @@
 
                         <nav>
                             <ul class="pagination">
+
+                                <!-- Previous -->
+                                <li class="page-item @(current == 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(current - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        قبلی
+                                    </a>
+                                </li>
+
+                                <!-- First Page -->
+                                @if (start > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=1&sortField=@Model.SortField&sortOrder=@Model.SortOrder">1</a>
+                                    </li>
+
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                }
+
+                                <!-- Middle Pages -->
+                                @for (int i = start; i <= end; i++)
+                                {
+                                    <li class="page-item @(current == i ? "active" : "")">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
+                                    </li>
+                                }
+
+                                <!-- Last Page -->
+                                @if (end < total)
+                                {
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=@total&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@total</a>
+                                    </li>
+                                }
+
+                                <!-- Next -->
+                                <li class="page-item @(current == total ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(current + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        بعدی
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </nav>
+
+                        @* <nav>
+                            <ul class="pagination">
                                 <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
                                     <a class="page-link"
                                        href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
@@ -143,7 +201,7 @@
                                     </a>
                                 </li>
                             </ul>
-                        </nav>
+                        </nav> *@
 
                     </div>
                 </div>

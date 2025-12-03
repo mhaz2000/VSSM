@@ -3,6 +3,11 @@
 
 @{
     ViewData["Title"] = "مدیریت کاربران";
+    int current = Model.Paging.Page;
+    int total = Model.Paging.TotalPages;
+
+    int start = Math.Max(1, current - 5);
+    int end = Math.Min(total, current + 5);
 }
 
 <div class="container-fluid">
@@ -112,24 +117,49 @@
                         <nav>
                             <ul class="pagination">
 
-                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
+                                <!-- Previous -->
+                                <li class="page-item @(current == 1 ? "disabled" : "")">
                                     <a class="page-link"
-                                       href="?page=@(Model.Paging.Page - 1)&search=@Model.SearchText">
+                                       href="?search=@Model.SearchText&page=@(current - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
                                         قبلی
                                     </a>
                                 </li>
 
-                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                                <!-- First Page -->
+                                @if (start > 1)
                                 {
-                                    <li class="page-item @(i == Model.Paging.Page ? "active" : "")">
+                                    <li class="page-item">
                                         <a class="page-link"
-                                           href="?page=@i&search=@Model.SearchText">@i</a>
+                                           href="?search=@Model.SearchText&page=1&sortField=@Model.SortField&sortOrder=@Model.SortOrder">1</a>
+                                    </li>
+
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                }
+
+                                <!-- Middle Pages -->
+                                @for (int i = start; i <= end; i++)
+                                {
+                                    <li class="page-item @(current == i ? "active" : "")">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
                                     </li>
                                 }
 
-                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
+                                <!-- Last Page -->
+                                @if (end < total)
+                                {
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=@total&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@total</a>
+                                    </li>
+                                }
+
+                                <!-- Next -->
+                                <li class="page-item @(current == total ? "disabled" : "")">
                                     <a class="page-link"
-                                       href="?page=@(Model.Paging.Page + 1)&search=@Model.SearchText">
+                                       href="?search=@Model.SearchText&page=@(current + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
                                         بعدی
                                     </a>
                                 </li>

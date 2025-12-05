@@ -39,7 +39,7 @@ public class ManufacturerController : Controller
         var itemClasses = _manufacturerService.ManufacturerDropDown(null, CancellationToken.None).Result;
         var model = new ManufacturerViewModel();
         
-        model.ItemClasses.AddRange(itemClasses.Select(c=>new SelectListItem()
+        model.Items.AddRange(itemClasses.Select(c=>new SelectListItem()
         {
             Value = c.ItemsClassId.ToString(),
             Text = c.Name
@@ -64,14 +64,13 @@ public class ManufacturerController : Controller
             ManufacturerId = manufacturer.ManufacturerId,
             Code = manufacturer.Code,
             FullName = manufacturer.FullName,
-            EntryDate = manufacturer.EntryDate,
             ShowForVac = manufacturer.ShowForVac,
             ShowForOther = manufacturer.ShowForOther,
             IsActive = manufacturer.IsActive,
         };
 
         // افزودن ItemClass‌ها به مدل ویو
-        model.ItemClasses.AddRange(itemClasses.Select(c => new SelectListItem
+        model.Items.AddRange(itemClasses.Select(c => new SelectListItem
         {
             Value = c.ItemsClassId.ToString(),
             Text = c.Name
@@ -98,7 +97,6 @@ public class ManufacturerController : Controller
             ManufacturerId = model.ManufacturerId.GetValueOrDefault(),
             Code = model.Code,
             FullName = model.FullName,
-            EntryDate = model.EntryDate,
             ShowForVac = model.ShowForVac,
             ShowForOther = model.ShowForOther,
             IsActive = model.IsActive,

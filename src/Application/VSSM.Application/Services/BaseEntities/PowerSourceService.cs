@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.PowerSource;
+using VSSM.Application.DTOs.BaseEntities.Store;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
@@ -108,5 +109,20 @@ public class PowerSourceService : IPowerSourceService
             SortField = sortField,
             SortOrder = sortOrder
         };
+    }
+
+    public async Task<List<PowerSourceGetDto>> GetAll(CancellationToken cancellationToken)
+    {
+
+        IQueryable<TblPowerSource> query = _db.TblPowerSources;
+        return await query.Select(x =>
+               new PowerSourceGetDto
+               {
+                   PowerSourceId = x.PowerSourceId,
+                   Code = x.Code,
+                   FullName = x.FullName,
+                   IsActive = x.IsActive ?? false
+               }
+            ).ToListAsync(cancellationToken);
     }
 }

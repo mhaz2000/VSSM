@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.PowerSource;
+using VSSM.Application.DTOs.BaseEntities.Store;
 
 namespace VSSM.Application.Interfaces.BaseEntities
 {
     public interface IPowerSourceService
     {
+        Task<List<PowerSourceGetDto>> GetAll(CancellationToken cancellationToken);
         public Task<PagingSearchOrderDto<PowerSourceGetDto>> GetPagedList(
        string? search, int page, int pageSize, string sortField, string sortOrder,
        CancellationToken token);

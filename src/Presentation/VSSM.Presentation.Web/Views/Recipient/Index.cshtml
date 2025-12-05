@@ -1,0 +1,231 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Recipient
+@model PagingSearchOrderDto<RecipientGetDto>
+
+@{
+    ViewData["Title"] = "مدیریت گیرندگان";
+    int current = Model.Paging.Page;
+    int total = Model.Paging.TotalPages;
+
+    int start = Math.Max(1, current - 5);
+    int end = Math.Min(total, current + 5);
+}
+<style>
+    .flex {
+        display: flex;
+    }
+
+    .reportbtn {
+        margin: 0 6px;
+    }
+
+    .reportbtm2 {
+        margin-left: 20px;
+    }
+
+    .reportbtm3 {
+        margin-right: 20px;
+    }
+</style>
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <h5>مدیریت گیرنده‌ها</h5>
+                </div>
+                <div class="col-lg-4 flex">
+                    <button type="button" class="btn btn-light reportbtn"
+                            data-toggle="modal" data-target="#simpleModal">
+                        گزارش های مربوط به پایانه
+                    </button>
+
+                    <button type="button" class="btn btn-light reportbtm2"
+                            data-toggle="modal" data-target="#simpleModal">
+                        اطلاعات تماسی گیرندگان
+                    </button>
+                </div>
+                <form method="get">
+                    <div class="col-lg-4">
+                        <div class="input-group">
+                            <input type="text" name="search" value="@Model.SearchText" class="form-control reportbtm3" placeholder="جستجو بر اساس کد یا نام..." />
+                            <div class="input-group-btn">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-search"></i> جستجو
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="col-lg-1">
+                    <a class="btn btn-success" asp-controller="Recipient" asp-action="New">
+                        <i class="fa fa-plus-circle"></i> جدید
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-block">
+                        <table class="table table-bordered table-striped table-condensed text-center">
+                            <thead>
+                                <tr>
+
+                                    <th>
+                                        <a href="?sortField=FullName&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
+                                            نام کامل
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
+                                            کد
+                                        </a>
+                                    </th>
+                                    <th>فعال است</th>
+                                    <th>طریقه حمل و نقل</th>
+                                    <th>روش دریافت</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Items.Any())
+                                {
+                                    foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.FullName</td>
+                                            <td>@item.Code</td>
+                                            <td>@(item.IsActive ? "✓" : "")</td>
+                                            <td>@item.TransportModeName</td>
+                                            <td>@item.ReceivingModeName</td>
+
+                                            <td>
+                                                <a class="btn btn-primary btn-sm"
+                                                   asp-controller="Recipient"
+                                                   asp-action="New"
+                                                   asp-route-id="@item.RecipientId">ویرایش</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="12" class="text-danger text-center">
+                                            داده‌ای یافت نشد
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        <nav>
+                            <ul class="pagination">
+
+                                <!-- Previous -->
+                                <li class="page-item @(current == 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(current - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        قبلی
+                                    </a>
+                                </li>
+
+                                <!-- First Page -->
+                                @if (start > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=1&sortField=@Model.SortField&sortOrder=@Model.SortOrder">1</a>
+                                    </li>
+
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                }
+
+                                <!-- Middle Pages -->
+                                @for (int i = start; i <= end; i++)
+                                {
+                                    <li class="page-item @(current == i ? "active" : "")">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
+                                    </li>
+                                }
+
+                                <!-- Last Page -->
+                                @if (end < total)
+                                {
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=@total&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@total</a>
+                                    </li>
+                                }
+
+                                <!-- Next -->
+                                <li class="page-item @(current == total ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(current + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        بعدی
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </nav>
+
+                        @* <nav>
+                            <ul class="pagination">
+                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        قبلی
+                                    </a>
+                                </li>
+
+                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                                {
+                                    <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        بعدی
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav> *@
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="modal fade" id="simpleModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">در حال تولید</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    این بخش در حال توسعه می‌باشد.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

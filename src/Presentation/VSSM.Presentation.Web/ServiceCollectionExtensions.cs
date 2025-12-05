@@ -6,6 +6,7 @@ using VSSM.Application.DTOs.BaseEntities.DosePerVial;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
+using VSSM.Application.DTOs.BaseEntities.ItemDoseAssignment;
 using VSSM.Application.DTOs.BaseEntities.Levels;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
 using VSSM.Application.DTOs.BaseEntities.Manufacturer;
@@ -19,6 +20,7 @@ using VSSM.Application.DTOs.BaseEntities.Vvmtype;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Services.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
+using VSSM.Presentation.Web.Controllers;
 
 namespace VSSM.Presentation.Web
 {
@@ -67,13 +69,22 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IValidator<OwnershipEditDto>, OwnershipEditValidator>();
             services.AddScoped<IValidator<OwnershipCreateDto>, OwnershipCreateValidator>();
             services.AddScoped<IValidator<DosePerVialCreateDto>, DosePerVialCreateValidator>();
+            services.AddScoped<IValidator<ItemDoseAssignmentCreateDto>, ItemDoseAssignmentCreateValidator>();
             services.AddScoped<IPowerSourceService, PowerSourceService>();
             services.AddScoped<IEduTypeService, EduTypeService>();
             services.AddScoped<IJobTypeService, JobTypeService>();
             services.AddScoped<ITransportModeService, TransportModeService>();
             services.AddScoped<IReceivingModeService, ReceivingModeService>();
             services.AddScoped<IClimateService, ClimateService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ISourceService, SourceService>();
+            services.AddScoped<IStoreService, StoreService>();
+            services.AddScoped<IPackService, PackService>();
+            services.AddScoped<IRecipientService, RecipientService>();
+            services.AddScoped<IRecipientConfigurationService, RecipientConfigurationService>();
             services.AddScoped<IDosePerVialService, DosePerVialService>();
+            services.AddScoped<IItemDoseAssignmentService, ItemDoseAssignmentService>();
+            services.AddScoped<IMinMaxItemService, MinMaxItemService>();
         }
     }
 

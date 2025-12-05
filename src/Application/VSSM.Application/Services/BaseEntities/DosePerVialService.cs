@@ -43,6 +43,22 @@ namespace VSSM.Application.Services.BaseEntities
             return model.DosePerVialId;
         }
 
+        public async Task<List<DosePerVialListDto>> GetActives(CancellationToken cancellationToken)
+        {
+            var items = await _dbContext.TblDosePerVials
+                                    .AsNoTracking()
+                                    .Where(c => c.IsActive == true)
+                                    .ToListAsync(cancellationToken);
+
+            var result = items.Select(x => new DosePerVialListDto
+            {
+                DosePerVialId = x.DosePerVialId,
+                NumDosePerVial = x.NumDosePerVial
+            }).ToList();
+
+            return result;
+        }
+
         public Task<List<DosePerVialListDto>> GetAll(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

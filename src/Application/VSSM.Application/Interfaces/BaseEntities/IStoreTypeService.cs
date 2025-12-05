@@ -1,10 +1,12 @@
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Store;
 using VSSM.Application.DTOs.BaseEntities.StoreType;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
 public interface IStoreTypeService
 {
+    Task<List<StoreTypeDto>> GetAll(CancellationToken cancellationToken);
     Task<int> Create(StoreTypeDto dto, CancellationToken cancellationToken);
     Task<PagingSearchOrderDto<StoreTypeDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
     Task<StoreTypeDto> GetById(int id, CancellationToken cancellationToken);

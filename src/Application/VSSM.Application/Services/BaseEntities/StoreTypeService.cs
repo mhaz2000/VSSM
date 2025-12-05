@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Store;
 using VSSM.Application.DTOs.BaseEntities.StoreType;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
@@ -28,7 +29,7 @@ public class StoreTypeService : IStoreTypeService
         {
             Code = dto.Code,
             FullName = dto.FullName,
-            EntryDate = dto.EntryDate ?? DateTime.Now, 
+            EntryDate = dto.EntryDate ?? DateTime.Now,
             IsActive = dto.IsActive,
             IsUserEditable = dto.IsUserEditable
         };
@@ -157,5 +158,22 @@ public class StoreTypeService : IStoreTypeService
         _dbContext.TblStoreTypes.Remove(entity);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    public async Task<List<StoreTypeDto>> GetAll(CancellationToken cancellationToken)
+    {
+
+        IQueryable<TblStoreType> query = _dbContext.TblStoreTypes;
+        return await query.Select(x =>
+               new StoreTypeDto
+               {
+                   StoreTypeId = x.StoreTypeId,
+                   Code = x.Code,
+                   FullName = x.FullName,
+                   EntryDate = x.EntryDate,
+                   IsActive = x.IsActive ?? false,
+                   IsUserEditable = x.IsUserEditable ?? false
+               }
+            ).ToListAsync(cancellationToken);
     }
 }

@@ -14,7 +14,6 @@ namespace VSSM.Application.Interfaces.BaseEntities
         Task<int> Create(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken);
         Task<bool> Update(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken);
         Task<List<ItemDoseAssignmentListDto>> GetAll(CancellationToken cancellationToken);
-        Task<List<ItemDoseAssignmentListDto>> GetActives(CancellationToken cancellationToken);
         Task<ItemDoseAssignmentSelectDto> GetById(int id, CancellationToken cancellationToken);
         Task<PagingSearchOrderDto<ItemDoseAssignmentListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
     }

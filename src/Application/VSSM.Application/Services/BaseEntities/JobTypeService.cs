@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.EduType;
 using VSSM.Application.DTOs.BaseEntities.JobType;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
@@ -109,6 +110,19 @@ namespace VSSM.Application.Services.BaseEntities
                 SortField = sortField,
                 SortOrder = sortOrder
             };
+        }
+        public async Task<List<JobTypeGetDto>> GetAll(CancellationToken cancellationToken)
+        {
+
+            var query = _db.TblJobTypes;
+            return await query.Select(x =>
+                   new JobTypeGetDto
+                   {
+                       JobTypeId = x.JobTypeId,
+                       FullName = x.FullName,
+                       IsActive = x.IsActive ?? false
+                   }
+                ).ToListAsync(cancellationToken);
         }
     }
 }

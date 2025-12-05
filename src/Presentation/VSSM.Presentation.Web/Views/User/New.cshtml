@@ -1,0 +1,196 @@
+﻿@model UserViewModel
+
+@{
+    string formName = Model.UserId > 0 ? "ویرایش کاربر" : "ثبت کاربر جدید";
+}
+
+<style>
+    .form-label {
+        width: 130px;
+        margin-left: 15px;
+        text-align: left;
+    }
+
+    .required-marker {
+        color: red;
+    }
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        direction: rtl;
+    }
+
+    .form-check {
+        margin-right: 30px !important;
+    }
+
+    .card {
+        direction: rtl;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <h5>@formName</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-block p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <form asp-action="Create" method="post" class="form-horizontal">
+
+                    <input type="hidden" asp-for="UserId" />
+
+                    <div class="col-lg-6">
+
+                   
+
+                 
+
+                        <div class="form-group">
+                            <span class="form-label">
+                                <span class="required-marker">*</span> نام کاری:
+                            </span>
+                            <input asp-for="UserName" class="form-control bg-warning-subtle" />
+                            <span class="text-danger" asp-validation-for="UserName"></span>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-group">
+                            <span class="form-label">
+                                <span class="required-marker">*</span> کلمه عبور:
+                            </span>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                            <input asp-for="Password" type="password" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <!-- First Name -->
+                        <div class="form-group">
+                            <span class="form-label">
+                                <span class="required-marker">*</span> نام:
+                            </span>
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                            <input asp-for="FirstName" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="form-group">
+                            <span class="form-label">
+                                <span class="required-marker">*</span> نام خانوادگی:
+                            </span>
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                            <input asp-for="LastName" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">ایمیل</label>
+                            <input type="text" asp-for="Email" class="form-control bg-warning-subtle" />
+           
+                        </div>
+
+                        <!-- Phone 1 -->
+                        <div class="form-group">
+                            <label class="form-label">تلفن:</label>
+                            <input asp-for="Phone1" class="form-control" />
+                        </div>
+
+                        <!-- Phone 2 -->
+                        <div class="form-group">
+                            <label class="form-label">فکس:</label>
+                            <input asp-for="Phone2" class="form-control" />
+                        </div>
+
+                        <!-- Identity Number -->
+                        <div class="form-group">
+                            <label class="form-label">شماره شناسنامه:</label>
+                            <input asp-for="Idnumber" class="form-control" />
+                        </div>
+
+                        <!-- Recipient -->
+                        <div class="form-group">
+                            <label class="form-label">گیرنده:</label>
+                            <select asp-for="RecipientId" class="form-select" asp-items="ViewBag.RecipientList">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+
+                        </div>
+
+                        <!-- EduType -->
+                        <div class="form-group">
+                            <label class="form-label">تحصیلات:</label>
+                            <select asp-for="CodeEdu" class="form-select" asp-items="ViewBag.EduList">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+
+                        </div>
+
+                        <!-- JobType -->
+                        <div class="form-group">
+                            <label class="form-label">شغل:</label>
+                            <select asp-for="CodeJob" class="form-select" asp-items="ViewBag.JobList">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+
+                        </div>
+
+                        <!-- Permission Level -->
+                        <div class="form-group">
+                            <span class="form-label">
+                                <span class="required-marker">*</span> سطح دسترسی:
+                            </span>
+                            <span asp-validation-for="PermissionLevel" class="text-danger"></span>
+                            <select asp-for="PermissionLevel" class="form-select" asp-items="ViewBag.PermissionList">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+
+                        </div>
+
+                        <!-- Is Admin -->
+                        <div class="form-group">
+                            <label class="form-label">مدیر سیستم:</label>
+                            <div class="form-check">
+                                <input type="checkbox" asp-for="IsAdmin" class="form-check-input" />
+                                <label class="form-check-label">فعال</label>
+                            </div>
+                        </div>
+
+                        <!-- Course -->
+                        <div class="form-group">
+                            <label class="form-label">دوره آموزشی:</label>
+                            <input asp-for="Course" class="form-control" />
+                        </div>
+
+                        <!-- Persian Date -->
+                        <!-- DATE -->
+                        <div class="form-group">
+                            <span class="form-label">تاریخ ثبت (روز/ماه/سال):</span>
+                            <input asp-for="CourseDate" class="form-control" placeholder="مثال: 03/01/24" />
+                            <span asp-validation-for="CourseDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5">ثبت</button>
+                            <a asp-action="Index" class="btn btn-primary px-5">لیست</a>
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

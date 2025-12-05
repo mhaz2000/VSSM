@@ -16,4 +16,24 @@ public static class DateTimeHelper
 
         return shamsiDate;
     }
+
+    public static DateTime? ToMiladi(this string date)
+    {
+        DateTime? miladiDate = null;
+
+        if (!string.IsNullOrWhiteSpace(date))
+        {
+            date = DigitHelper.ToEnglishNumber(date);
+
+            var parts = date.Split('/');
+            int year = int.Parse(parts[0]);
+            int month = int.Parse(parts[1]);
+            int day = int.Parse(parts[2]);
+
+            PersianCalendar pc = new PersianCalendar();
+            miladiDate = pc.ToDateTime(year, month, day, 0, 0, 0, 0);
+        }
+
+        return miladiDate;
+    }
 }

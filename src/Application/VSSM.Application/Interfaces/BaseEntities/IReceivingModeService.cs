@@ -1,10 +1,12 @@
 ﻿using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.ReceivingMode;
+using VSSM.Application.DTOs.BaseEntities.TransportMode;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
 public interface IReceivingModeService
 {
+   
     public Task CreateAsync(CreateReceivingModeDto dto, CancellationToken cancellationToken);
     public Task<List<ReceivingModeDto>> GetAllAsync(CancellationToken cancellationToken);
     public Task<ReceivingModeDto> GetByIdAsync(int id, CancellationToken cancellationToken);

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.DTOs.BaseEntities.RoadType;
+using VSSM.Application.DTOs.BaseEntities.TransportMode;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 using ValidationException = FluentValidation.ValidationException;
@@ -153,6 +154,20 @@ namespace VSSM.Application.Services.BaseEntities
                 SortField = sortField,
                 SortOrder = sortOrder
             };
+        }
+        public async Task<List<RoadTypeGetDto>> GetAll(CancellationToken cancellationToken)
+        {
+
+            var query = _dbContext.TblRoadTypes;
+            return await query.Select(x =>
+                   new RoadTypeGetDto
+                   {
+                       RoadTypeId = x.RoadTypeId,
+                       Code = x.Code,
+                       FullName = x.FullName,
+                       IsActive = x.IsActive ?? false
+                   }
+                ).ToListAsync(cancellationToken);
         }
     }
 }

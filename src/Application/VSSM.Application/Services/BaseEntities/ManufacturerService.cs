@@ -26,7 +26,6 @@ public class ManufacturerService : IManufacturerService
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
         
-
         var entity = new TblManufacturer
         {
             Code = dto.Code,
@@ -40,13 +39,13 @@ public class ManufacturerService : IManufacturerService
         await _dbContext.TblManufacturers.AddAsync(entity, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var itemClasses = dto.ItemClasses.Select(c => new TblManItemClass()
+        var items = dto.ItemClasses.Select(c => new TblManItemClass()
         {
             ManufacturerId = entity.ManufacturerId,
             ItemClassId = c
         });
 
-        _dbContext.TblManItemClasses.AddRange(itemClasses);
+        _dbContext.TblManItemClasses.AddRange(items);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return entity.ManufacturerId;
@@ -113,7 +112,7 @@ public class ManufacturerService : IManufacturerService
 
     public async Task<List<ManufacturerDropDownDto>> ManufacturerDropDown(long? id,CancellationToken cancellationToken)
     {
-        var allItemClasses = await _dbContext.TblItemsClasses
+        var allItemClasses = await _dbContext.TblItems
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
@@ -134,7 +133,7 @@ public class ManufacturerService : IManufacturerService
             var isExist = thisIdClasses.FirstOrDefault(c => c.ItemClassId == itemClass.ItemClassId);
             result.Add( new ManufacturerDropDownDto
             {
-                ItemsClassId =itemClass.ItemClassId,
+                ItemsClassId =itemClass.ItemId,
                 Name = itemClass.FullName,
                 Selected = isExist is not null 
             });
@@ -178,7 +177,6 @@ public class ManufacturerService : IManufacturerService
 
         entity.Code = dto.Code;
         entity.FullName = dto.FullName;
-        entity.EntryDate = dto.EntryDate;
         entity.ShowForVac = dto.ShowForVac;
         entity.ShowForOther = dto.ShowForOther;
         entity.IsActive = dto.IsActive;

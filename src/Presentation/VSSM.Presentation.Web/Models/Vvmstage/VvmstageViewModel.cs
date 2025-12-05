@@ -10,5 +10,5 @@ public class VvmstageViewModel
 
     public DateTime? EntryDate { get; set; }
 
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
 }

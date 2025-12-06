@@ -13,7 +13,7 @@ namespace VSSM.Presentation.Web.Models.Manufacturer
         public bool IsActive { get; set; }
 
         // لیست همه آیتم‌ها برای نمایش
-        public List<SelectListItem> ItemClasses { get; set; } = new();
+        public List<SelectListItem> Items { get; set; } = new();
 
         // آیتم‌هایی که کاربر انتخاب کرده
         public List<int> SelectedItemClassIds { get; set; } = new();

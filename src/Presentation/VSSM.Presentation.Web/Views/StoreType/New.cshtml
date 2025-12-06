@@ -10,7 +10,7 @@ formName = "ویرایش";
     /* Styling copied directly from the sample */
     .form-label {
         text-align: left;
-        width: 130px;
+        width: 150px;
         margin-left: 15px;
     }
 
@@ -86,7 +86,7 @@ formName = "ویرایش";
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" width=150>
                                 <label class="form-label" for="IsUserEditable">قابل ویرایش توسط کاربر:</label>
                                 <div class="checkbox-container">
                                     @Html.CheckBoxFor(m => m.IsUserEditable, new { @class = "form-check-input" })
@@ -103,7 +103,6 @@ formName = "ویرایش";
                             </div>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>

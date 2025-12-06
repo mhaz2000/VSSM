@@ -49,8 +49,7 @@ namespace VSSM.Presentation.Web.Controllers
                 CommercialNameId = commercialName.CommercialNameId,
                 FullName = commercialName.FullName,
                 Code = commercialName.Code,
-                IsActive = commercialName.IsActive,
-                EntryDate = commercialName.EntryDate
+                IsActive = commercialName.IsActive
             };
 
             return View("New", model); 
@@ -71,7 +70,7 @@ namespace VSSM.Presentation.Web.Controllers
                 FullName = model.FullName,
                 Code = model.Code,
                 IsActive = model.IsActive,
-                EntryDate = model.EntryDate
+                EntryDate = DateTime.Now
             };
 
             if (model.CommercialNameId == null || model.CommercialNameId == 0)

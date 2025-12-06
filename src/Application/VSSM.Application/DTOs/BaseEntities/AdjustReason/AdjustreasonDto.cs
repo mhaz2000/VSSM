@@ -1,3 +1,5 @@
+using VSSM.Application.Helpers;
+
 namespace VSSM.Application.DTOs.BaseEntities.AdjustReason;
 
 public class AdjustreasonDto
@@ -7,7 +9,7 @@ public class AdjustreasonDto
     public string Code { get; set; } = "";
     public string FullName { get; set; } = "";
     public DateTime? EntryDate { get; set; } = DateTime.Now;
-
+    public string EntryShamsiDate => EntryDate.HasValue ? EntryDate.Value.ToShamsi() : string.Empty;
     public bool IsActive { get; set; }
     public bool UsedForDispatchAdjust { get; set; }
     public bool UserForArrivalAdjust { get; set; }

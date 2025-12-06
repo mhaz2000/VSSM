@@ -50,8 +50,8 @@ ViewData["Title"] = "مدیریت دوره‌های مالی";
                             {
                             <tr>
                                 <td>@item.FullName</td>
-                                <td>@item.StartDate?.ToString("yyyy-MM-dd")</td>
-                                <td>@item.EndTime?.ToString("yyyy-MM-dd")</td>
+                                <td>@item.StartDateShamsiDate</td>
+                                <td>@item.EndTimeShamsiDate</td>
                                 <td>@item.SuggestedEndDate</td>
                                 <td>@(item.IsActive == true ? "فعال" : "غیرفعال")</td>
                                 <td>

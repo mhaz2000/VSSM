@@ -1,9 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
+using VSSM.Application.DTOs.BaseEntities.Item;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
-using Microsoft.EntityFrameworkCore;
-using VSSM.Application.Helpers;
 
 namespace VSSM.Application.Services.BaseEntities
 {
@@ -141,5 +142,22 @@ namespace VSSM.Application.Services.BaseEntities
             await _dbContext.SaveChangesAsync(cancellationToken);
             return true;
         }
+
+        public async Task<List<FiscalPeriodDto>> GetActives(CancellationToken cancellationToken)
+        {
+            var items = await _dbContext.TblFiscalPeriods
+                                    .AsNoTracking()
+                                    .Where(c => c.IsActive == true)
+                                    .ToListAsync(cancellationToken);
+
+            var result = items.Select(x => new FiscalPeriodDto
+            {
+                FiscalPeriodId = x.FiscalPeriodId,
+                FullName = x.FullName
+            }).ToList();
+
+            return result;
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
 using VSSM.Application.DTOs.BaseEntities.Manufacturer;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -25,7 +26,7 @@ public class ManufacturerService : IManufacturerService
         var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
-        
+
 
         var entity = new TblManufacturer
         {
@@ -111,7 +112,7 @@ public class ManufacturerService : IManufacturerService
         };
     }
 
-    public async Task<List<ManufacturerDropDownDto>> ManufacturerDropDown(long? id,CancellationToken cancellationToken)
+    public async Task<List<ManufacturerDropDownDto>> ManufacturerDropDown(long? id, CancellationToken cancellationToken)
     {
         var allItemClasses = await _dbContext.TblItemsClasses
             .AsNoTracking()
@@ -121,28 +122,28 @@ public class ManufacturerService : IManufacturerService
         if (id is not null)
         {
             thisIdClasses = await _dbContext.TblManItemClasses
-                .Where(c=>c.ManufacturerId == id)
+                .Where(c => c.ManufacturerId == id)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
-            
-            
+
+
         }
 
         List<ManufacturerDropDownDto> result = new();
         foreach (var itemClass in allItemClasses)
         {
             var isExist = thisIdClasses.FirstOrDefault(c => c.ItemClassId == itemClass.ItemClassId);
-            result.Add( new ManufacturerDropDownDto
+            result.Add(new ManufacturerDropDownDto
             {
-                ItemsClassId =itemClass.ItemClassId,
+                ItemsClassId = itemClass.ItemClassId,
                 Name = itemClass.FullName,
-                Selected = isExist is not null 
+                Selected = isExist is not null
             });
         }
 
         return result;
     }
-    
+
     public async Task<ManufacturerDto> GetById(int id, CancellationToken cancellationToken)
     {
         var entity = await _dbContext.TblManufacturers
@@ -185,9 +186,9 @@ public class ManufacturerService : IManufacturerService
 
         var allThisItemClasses =
             await _dbContext.TblManItemClasses.Where(c => c.ManufacturerId == dto.ManufacturerId).ToListAsync();
-        
+
         _dbContext.TblManItemClasses.RemoveRange(allThisItemClasses);
-        
+
         var itemClasses = dto.ItemClasses.Select(c => new TblManItemClass()
         {
             ManufacturerId = entity.ManufacturerId,
@@ -212,4 +213,21 @@ public class ManufacturerService : IManufacturerService
         await _dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
+
+    public async Task<List<ManufacturerDto>> GetActives(CancellationToken cancellationToken)
+    {
+        var items = await _dbContext.TblManufacturers
+                                .AsNoTracking()
+                                .Where(c => c.IsActive == true)
+                                .ToListAsync(cancellationToken);
+
+        var result = items.Select(x => new ManufacturerDto
+        {
+            ManufacturerId = x.ManufacturerId,
+            FullName = x.FullName
+        }).ToList();
+
+        return result;
+    }
+
 }

@@ -18,6 +18,7 @@ using VSSM.Application.DTOs.BaseEntities.StoreUsageWarning;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
 using VSSM.Application.DTOs.BaseEntities.Vvmtype;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web.Controllers;
@@ -85,6 +86,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IDosePerVialService, DosePerVialService>();
             services.AddScoped<IItemDoseAssignmentService, ItemDoseAssignmentService>();
             services.AddScoped<IMinMaxItemService, MinMaxItemService>();
+            services.AddScoped<IArrivalService, ArrivalService>();
         }
     }
 

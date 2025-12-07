@@ -1,0 +1,124 @@
+﻿@using VSSM.Application.DTOs.Arrivals
+@model IList<ArrivalListDto>
+
+@{
+    ViewData["Title"] = "مدیریت ورودها";
+    var status = (ArrivalStatusFilter)(ViewBag.Status ?? ArrivalStatusFilter.Draft);
+    string search = ViewBag.Search as string;
+}
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card mb-2">
+            <div class="card-block">
+
+                <form method="get">
+                    <div class="row d-flex align-items-center">
+
+                        <div class="col-lg-3">
+                            <select name="status" class="form-select">
+                                <option value="1" @(status == ArrivalStatusFilter.Draft ? "selected" : "")>پیش‌نویس</option>
+                                <option value="2" @(status == ArrivalStatusFilter.Confirmed ? "selected" : "")>تایید شده</option>
+                                <option value="3" @(status == ArrivalStatusFilter.All ? "selected" : "")>همه</option>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <input class="form-control"
+                                   name="search"
+                                   value="@search"
+                                   placeholder="Search only by: Report number, purchase order, Date of arrival, Bidding Number, Total Price" />
+                        </div>
+
+                        <div class="col-lg-2 text-left">
+                            <button type="submit" class="btn btn-primary w-75">جستجو</button>
+                        </div>
+
+                        <div class="col-lg-2 text-left">
+                            <a class="btn btn-success w-75" asp-action="New">+ جدید</a>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-block">
+
+                <table class="table table-bordered table-striped text-center" id="arrivalTable">
+                    <thead>
+                        <tr>
+                            <th>تاریخ</th>
+                            <th>دوره فعالیت</th>
+                            <th>شماره گزارش</th>
+                            <th>Bidding Number</th>
+                            <th>حجم کل (لیتر)</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                var statusTitle = item.IsCancelled == true ? "حذف شده"
+                                    : item.IsConfirmed == true ? "تایید شده"
+                                    : item.IsDrafted == true ? "پیش‌نویس"
+                                    : "";
+
+                                <tr data-id="@item.ArrivalId" class="arrival-row">
+                                    <td>@item.DateString</td>
+                                    <td>@item.FiscalPeriodName</td>
+                                    <td>@item.ReportNumber</td>
+                                    <td>@item.BiddingNumber</td>
+                                    <td>@item.TotalVolume</td>
+                                    <td>@statusTitle</td>
+                                    <td>
+                                        <a asp-action="New"
+                                           asp-route-id="@item.ArrivalId"
+                                           class="btn btn-sm btn-primary">
+                                            مشاهده / ویرایش
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-danger">رکوردی یافت نشد.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <button type="button" class="btn btn-secondary mt-3" onclick="showPrintPopup()">
+                    چاپ
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // دابل کلیک روی ردیف = رفتن به صفحه ویرایش
+        $(document).on('dblclick', '.arrival-row', function () {
+            var id = $(this).data('id');
+            if (id) {
+                window.location = '@Url.Action("New", "Arrival")' + '?id=' + id;
+            }
+        });
+
+        function showPrintPopup() {
+            alert('در حال تولید...');
+            // اگر SweetAlert داری، می‌توانی مشابه قبل Swal.fire استفاده کنی
+        }
+    </script>
+}

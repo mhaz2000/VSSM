@@ -87,6 +87,9 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IItemDoseAssignmentService, ItemDoseAssignmentService>();
             services.AddScoped<IMinMaxItemService, MinMaxItemService>();
             services.AddScoped<IArrivalService, ArrivalService>();
+            services.AddScoped<IUseService, UseService>();
+            services.AddScoped<IItemDetailsService, ItemDetailService>();
+            services.AddScoped<IPackingTypeService, PackingTypeService>();
         }
     }
 

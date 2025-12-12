@@ -1,47 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace VSSM.Presentation.Web.Models.Arrival
+﻿namespace VSSM.Presentation.Web.Models.Arrival
 {
     public class ArrivalLineViewModel
     {
         public int? ArrivalLineId { get; set; }
-
-        [Display(Name = "کالا")]
-        [Required(ErrorMessage = "کالا الزامی است.")]
         public int? ItemId { get; set; }
-
-        [Display(Name = "سازنده")]
-        public int? ManufacturerId { get; set; }
-
-        [Display(Name = "انبار")]
-        [Required(ErrorMessage = "انبار الزامی است.")]
         public int? StoreId { get; set; }
-
-        [Display(Name = "دوز بر ویال")]
+        public int? CommertialNameId { get; set; }
+        public int? ArrivalId { get; set; }
         public int? DosePerVialId { get; set; }
+        public int? ManufacturerId { get; set; }
+        public int? PackingTypeId { get; set; }
+        public int? UseId { get; set; }
+        public int? VvmTypeId { get; set; }
+        public int? VvmStageId { get; set; }
 
-        [Display(Name = "تعداد دوز")]
-        [Required(ErrorMessage = "تعداد الزامی است.")]
+        public string? BatchNum { get; set; }
+        public string? ExpiryDate { get; set; }      // string (از datepicker)
+        public string? ProductionDate { get; set; }  // string
+        public int? ItemDetailId { get; set; }
         public int? Quantity { get; set; }
-
-        [Display(Name = "تعداد ویال")]
         public int? NumVials { get; set; }
-
-        [Display(Name = "حجم واحد (لیتر)")]
         public float? UnitVolume { get; set; }
-
-        [Display(Name = "حجم کل (لیتر)")]
         public float? TotalVolume { get; set; }
-
-        [Display(Name = "سری ساخت")]
-        public string BatchNum { get; set; }
-
-        [Display(Name = "تاریخ انقضا")]
-        public string ExpiryDateString { get; set; }
-
-        [Display(Name = "تاریخ تولید")]
-        public string ProductionDateString { get; set; }
-
-        public string Note { get; set; }
+        public float? PackageSize { get; set; }
+        public string? Note { get; set; }
     }
+
+
 }

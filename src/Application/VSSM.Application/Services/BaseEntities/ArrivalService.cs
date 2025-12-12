@@ -1,243 +1,259 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using VSSM.Application.DTOs.Arrivals;
+using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Domain.Enums;
 using VSSM.Infrastructure.Data.Models;
 
-namespace VSSM.Application.Services
+namespace VSSM.Application.Services.BaseEntities
 {
     public class ArrivalService : IArrivalService
     {
-        private readonly VSSMDbContext _ctx;
+        private readonly VSSMDbContext _db;
 
-        public ArrivalService(VSSMDbContext ctx)
+        public ArrivalService(VSSMDbContext db)
         {
-            _ctx = ctx;
+            _db = db;
         }
 
-        public async Task<IList<ArrivalListDto>> GetList(
-            string search,
-            ArrivalStatusFilter status,
+        /* =========================
+           GRID
+        ========================= */
+        public async Task<PagingSearchOrderDto<ArrivalListDto>> GetPagedList(
+            string? search,
+            int? fiscalPeriodId,
+            int statusFilter,
             int page,
             int pageSize,
             CancellationToken token)
         {
-            var q = _ctx.TblArrivals.AsQueryable();
+            var query = _db.TblArrivals.AsQueryable();
 
-            // فیلتر وضعیت
-            switch (status)
-            {
-                case ArrivalStatusFilter.Draft:
-                    q = q.Where(a => a.IsDrafted == true && a.IsCancelled != true);
-                    break;
-                case ArrivalStatusFilter.Confirmed:
-                    q = q.Where(a => a.IsConfirmed == true && a.IsCancelled != true);
-                    break;
-                case ArrivalStatusFilter.All:
-                default:
-                    q = q.Where(a => a.IsCancelled != true);
-                    break;
-            }
-
-            // جستجو (ReportNumber, OrderNumber, Date, BiddingNumber, TotalPrice)
             if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(x => x.ReportNumber.Contains(search));
+
+            if (fiscalPeriodId.HasValue)
+                query = query.Where(x => x.FiscalPeriodId == fiscalPeriodId);
+
+            if (statusFilter == 1) // Draft
+                query = query.Where(x => x.IsDrafted == true && x.IsCancelled != true);
+            else if (statusFilter == 2) // Confirmed
+                query = query.Where(x => x.IsConfirmed == true && x.IsCancelled != true);
+
+            var paging = new PagingModel
             {
-                search = search.Trim();
-                q = q.Where(a =>
-                    (a.ReportNumber ?? "").Contains(search) ||
-                    (a.BiddingNumber ?? "").Contains(search) ||
-                    (a.OrderNumber ?? "").Contains(search));
-            }
-
-            q = q
-                .OrderByDescending(a => a.Date)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize);
-
-            var list = await q
-                .ToListAsync(token);
-
-            return list.Select(a => new ArrivalListDto
-            {
-                ArrivalId = a.ArrivalId,
-                DateString = a.Date?.ToString("yyyy/MM/dd"),
-                ReportNumber = a.ReportNumber,
-                BiddingNumber = a.BiddingNumber,
-                TotalVolume = a.TotalVolume,
-                IsConfirmed = a.IsConfirmed,
-                IsDrafted = a.IsDrafted,
-                IsCancelled = a.IsCancelled,
-            }).ToList();
-        }
-
-        public async Task<ArrivalDto> GetById(int id, CancellationToken token)
-        {
-            var entity = await _ctx.TblArrivals
-                .Include(a => a.TblArrivalLines)
-                .FirstOrDefaultAsync(a => a.ArrivalId == id, token);
-
-            if (entity == null) return null;
-
-            var dto = new ArrivalDto
-            {
-                ArrivalId = entity.ArrivalId,
-                DateString = entity.Date?.ToString("yyyy/MM/dd"),
-                ReportNumber = entity.ReportNumber,
-                BiddingNumber = entity.BiddingNumber,
-                SourceId = entity.SourceId,
-                FiscalPeriodId = entity.FiscalPeriodId,
-                PackedVolume = entity.PackedVolume,
-                TotalWeight = entity.TotalWeight,
-                TotalVolume = entity.TotalVolume,
-                Note = entity.Note,
-                IsConfirmed = entity.IsConfirmed,
-                IsDrafted = entity.IsDrafted,
-                IsCancelled = entity.IsCancelled,
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = await query.CountAsync(token)
             };
 
-            dto.Lines = entity.TblArrivalLines
-                .Where(l => l.TotalVolume != null) // یا هر شرطی خواستی
-                .Select(l => new ArrivalLineDto
+            var list = await query
+                .OrderByDescending(x => x.Date)
+                .Skip(paging.Skip)
+                .Take(paging.PageSize)
+                .Select(x => new ArrivalListDto
                 {
-                    ArrivalLineId = l.ArrivalLineId,
-                    ItemId = l.ItemId,
-                    ManufacturerId = l.ManufacturerId,
-                    StoreId = l.StoreId,
-                    DosePerVialId = l.DosePerVialId,
-                    NumVials = l.NumVials,
-                    Quantity = l.Quantity,
-                    UnitVolume = l.UnitVolume,
-                    TotalVolume = l.TotalVolume,
-                    BatchNum = l.BatchNum,
-                    Note = l.Note,
-                    ExpiryDateString = l.ExpiryDate?.ToString("yyyy/MM/dd"),
-                    ProductionDateString = l.ProductionDate?.ToString("yyyy/MM/dd"),
+                    ArrivalId = x.ArrivalId,
+                    Date = x.Date,
+                    TotalVolume = x.TotalVolume,
+                    IsConfirmed = x.IsConfirmed,
+                    IsDrafted = x.IsDrafted,
+                    IsCancelled = x.IsCancelled,
+                    SourceName = x.SourceId != null
+                        ? _db.TblSources.Where(s => s.SourceId == x.SourceId).Select(s => s.FullName).FirstOrDefault()
+                        : null,
+                    FiscalPeriodName = x.FiscalPeriodId != null
+                        ? _db.TblFiscalPeriods.Where(f => f.FiscalPeriodId == x.FiscalPeriodId).Select(f => f.FullName).FirstOrDefault()
+                        : null
                 })
-                .ToList();
+                .ToListAsync(token);
 
-            return dto;
+            return new PagingSearchOrderDto<ArrivalListDto>
+            {
+                Items = list,
+                Paging = paging,
+                SearchText = search,
+                SortField = "Date",
+                SortOrder = "desc"
+            };
         }
 
-        public async Task<int> Save(ArrivalCreateEditDto dto, CancellationToken token)
+        /* =========================
+           GET BY ID
+        ========================= */
+        public async Task<ArrivalGetDto?> GetById(int id, CancellationToken token)
         {
-            TblArrival entity;
+            var arrival = await _db.TblArrivals
+                .Include(x => x.TblArrivalLines)
+                .FirstOrDefaultAsync(x => x.ArrivalId == id, token);
 
-            bool isNew = !dto.ArrivalId.HasValue || dto.ArrivalId.Value == 0;
+            if (arrival == null) return null;
 
-            if (isNew)
+            return new ArrivalGetDto
             {
-                entity = new TblArrival
-                {
-                    EntryDate = DateTime.UtcNow,
-                    IsCancelled = false,
-                    IsConfirmed = false,
-                    IsDrafted = true
-                };
-                _ctx.TblArrivals.Add(entity);
-            }
-            else
-            {
-                entity = await _ctx.TblArrivals
-                    .Include(a => a.TblArrivalLines)
-                    .FirstOrDefaultAsync(a => a.ArrivalId == dto.ArrivalId.Value, token);
-
-                if (entity == null)
-                    throw new Exception("Arrival not found");
-            }
-
-            // تبدیل DateString → DateTime (میلادی)
-            if (!string.IsNullOrWhiteSpace(dto.DateString) &&
-                DateTime.TryParse(dto.DateString, out var d))
-            {
-                entity.Date = d;
-            }
-
-            entity.ReportNumber = dto.ReportNumber;
-            entity.BiddingNumber = dto.BiddingNumber;
-            entity.SourceId = dto.SourceId;
-            entity.FiscalPeriodId = dto.FiscalPeriodId;
-            entity.PackedVolume = dto.PackedVolume;
-            entity.TotalWeight = dto.TotalWeight;
-            entity.TotalVolume = dto.TotalVolume;
-            entity.Note = dto.Note;
-
-            // وضعیت
-            if (dto.Confirm)
-            {
-                entity.IsConfirmed = true;
-                entity.IsDrafted = false;
-                entity.ConfirmationTime = DateTime.UtcNow;
-            }
-            else if (dto.SaveAsDraft)
-            {
-                entity.IsDrafted = true;
-                entity.IsConfirmed = false;
-            }
-
-            // لاین‌ها: مدل ساده — فعلاً همه را حذف و دوباره درج کن
-            if (!isNew)
-            {
-                _ctx.TblArrivalLines.RemoveRange(entity.TblArrivalLines);
-            }
-
-            foreach (var line in dto.Lines)
-            {
-                DateTime? exp = null;
-                if (!string.IsNullOrWhiteSpace(line.ExpiryDateString) &&
-                    DateTime.TryParse(line.ExpiryDateString, out var e))
-                    exp = e;
-
-                DateTime? prod = null;
-                if (!string.IsNullOrWhiteSpace(line.ProductionDateString) &&
-                    DateTime.TryParse(line.ProductionDateString, out var p))
-                    prod = p;
-
-                entity.TblArrivalLines.Add(new TblArrivalLine
-                {
-                    ItemId = line.ItemId,
-                    ManufacturerId = line.ManufacturerId,
-                    StoreId = line.StoreId,
-                    DosePerVialId = line.DosePerVialId,
-                    NumVials = line.NumVials,
-                    Quantity = line.Quantity,
-                    UnitVolume = line.UnitVolume,
-                    TotalVolume = line.TotalVolume,
-                    BatchNum = line.BatchNum,
-                    Note = line.Note,
-                    ExpiryDate = exp,
-                    ProductionDate = prod,
-                    EntryDate = DateTime.UtcNow
-                });
-            }
-
-            await _ctx.SaveChangesAsync(token);
-
-            return entity.ArrivalId;
+                ArrivalId = arrival.ArrivalId,
+                Date = arrival.Date,
+                ReportNumber = arrival.ReportNumber,
+                SourceId = arrival.SourceId,
+                FiscalPeriodId = arrival.FiscalPeriodId,
+                EntryDate = arrival.EntryDate,
+                IsConfirmed = arrival.IsConfirmed,
+                IsDrafted = arrival.IsDrafted,
+                IsCancelled = arrival.IsCancelled,
+                PackedVolume = arrival.PackedVolume,
+                TotalWeight = arrival.TotalWeight,
+                TotalVolume = arrival.TotalVolume,
+                Note = arrival.Note,
+                Frzindc = arrival.Frzindc,
+                FrzindcNok = arrival.FrzindcNok,
+                Lines = arrival.TblArrivalLines
+                    .Where(l => l.ArrivalId == arrival.ArrivalId)
+                    .Select(l => new ArrivalLineDto
+                    {
+                        ArrivalLineId = l.ArrivalLineId,
+                        ArrivalId = l.ArrivalId,
+                        ItemId = l.ItemId,
+                        BatchNum = l.BatchNum,
+                        CommertialNameId = l.CommertialNameId,
+                        DosePerVialId = l.DosePerVialId,
+                        ExpiryDate = l.ExpiryDate,
+                        ProductionDate = l.ProductionDate,
+                        ItemDetailId = l.ItemDetailId,
+                        ManufacturerId = l.ManufacturerId,
+                        Note = l.Note,
+                        NumVials = l.NumVials,
+                        PackageSize = l.PackageSize,
+                        PackingTypeId = l.PackingTypeId,
+                        Quantity = l.Quantity,
+                        StoreId = l.StoreId,
+                        TotalVolume = l.TotalVolume,
+                        UnitVolume = l.UnitVolume,
+                        UseId = l.UseId,
+                        VvmStageId = l.VvmstageId,
+                        VvmTypeId = l.VvmtypeId
+                    }).ToList()
+            };
         }
 
-        public async Task<bool> Delete(int id, CancellationToken token)
+        /* =========================
+           CREATE HEADER ONLY
+        ========================= */
+        public async Task<int> Create(ArrivalCreateDto dto, CancellationToken token)
         {
-            var entity = await _ctx.TblArrivals.FirstOrDefaultAsync(a => a.ArrivalId == id, token);
-            if (entity == null) return false;
+            var arrival = new TblArrival
+            {
+                Date = dto.Date,
+                ReportNumber = dto.ReportNumber,
+                SourceId = dto.SourceId,
+                FiscalPeriodId = dto.FiscalPeriodId,
+                EntryDate = DateTime.Now,
+                IsDrafted = true,
+                IsConfirmed = false,
+                IsCancelled = false,
+                PackedVolume = dto.PackedVolume,
+                TotalWeight = dto.TotalWeight,
+                TotalVolume = dto.TotalVolume,
+                Note = dto.Note,
+                Frzindc = dto.Frzindc,
+                FrzindcNok = dto.FrzindcNok
+            };
 
-            entity.IsCancelled = true;
-            await _ctx.SaveChangesAsync(token);
-            return true;
+            _db.TblArrivals.Add(arrival);
+            await _db.SaveChangesAsync(token);
+            return arrival.ArrivalId;
         }
 
-        public async Task<bool> DeleteLine(int lineId, CancellationToken token)
+        /* =========================
+           ADD LINE (INCREMENTAL)
+        ========================= */
+        public async Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token)
         {
-            var line = await _ctx.TblArrivalLines.FirstOrDefaultAsync(l => l.ArrivalLineId == lineId, token);
-            if (line == null) return false;
+            var line = new TblArrivalLine
+            {
+                ArrivalId = arrivalId,
+                ItemId = dto.ItemId,
+                BatchNum = dto.BatchNum,
+                CommertialNameId = dto.CommertialNameId,
+                DosePerVialId = dto.DosePerVialId,
+                ExpiryDate = dto.ExpiryDate,
+                ProductionDate = dto.ProductionDate,
+                ItemDetailId = dto.ItemDetailId,
+                ManufacturerId = dto.ManufacturerId,
+                Note = dto.Note,
+                NumVials = dto.NumVials,
+                PackageSize = dto.PackageSize,
+                PackingTypeId = dto.PackingTypeId,
+                Quantity = dto.Quantity,
+                StoreId = dto.StoreId,
+                UnitVolume = dto.UnitVolume,
+                TotalVolume = dto.TotalVolume,
+                UseId = dto.UseId,
+                VvmstageId = dto.VvmStageId,
+                VvmtypeId = dto.VvmTypeId,
+                EntryDate = DateTime.Now
+            };
 
-            _ctx.TblArrivalLines.Remove(line);
-            await _ctx.SaveChangesAsync(token);
-            return true;
+            _db.TblArrivalLines.Add(line);
+
+            // update header total volume
+            var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
+            arrival.TotalVolume = await _db.TblArrivalLines
+                .Where(x => x.ArrivalId == arrivalId)
+                .SumAsync(x => x.TotalVolume ?? 0, token);
+
+            await _db.SaveChangesAsync(token);
+        }
+
+        /* =========================
+           CONFIRM
+        ========================= */
+        public async Task Confirm(int arrivalId, CancellationToken token)
+        {
+            var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
+            if (arrival == null) return;
+
+            arrival.IsConfirmed = true;
+            arrival.IsDrafted = false;
+            arrival.ConfirmationTime = DateTime.Now;
+
+            await _db.SaveChangesAsync(token);
+        }
+
+        /* =========================
+           DRAFT
+        ========================= */
+        public async Task SetDraft(int arrivalId, CancellationToken token)
+        {
+            var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
+            if (arrival == null) return;
+
+            arrival.IsDrafted = true;
+            arrival.IsConfirmed = false;
+
+            await _db.SaveChangesAsync(token);
+        }
+
+        /* =========================
+           DELETE WHOLE ARRIVAL
+        ========================= */
+        public async Task Cancel(int id, CancellationToken token)
+        {
+            var arrival = await _db.TblArrivals.FindAsync(new object[] { id }, token);
+            if (arrival == null) return;
+
+            arrival.IsCancelled = true;
+            await _db.SaveChangesAsync(token);
+        }
+
+        /* =========================
+           DELETE ONE LINE
+        ========================= */
+        public async Task CancelLine(int arrivalLineId, CancellationToken token)
+        {
+            var line = await _db.TblArrivalLines.FindAsync(new object[] { arrivalLineId }, token);
+            if (line == null) return;
+
+            _db.TblArrivalLines.Remove(line);
+            await _db.SaveChangesAsync(token);
         }
     }
 }

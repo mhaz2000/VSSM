@@ -1,10 +1,11 @@
-﻿@using VSSM.Application.DTOs.Arrivals
-@model IList<ArrivalListDto>
+﻿@using VSSM.Application.DTOs.BaseEntities.Arrival
+@model PagingSearchOrderDto<ArrivalListDto>
 
 @{
     ViewData["Title"] = "مدیریت ورودها";
-    var status = (ArrivalStatusFilter)(ViewBag.Status ?? ArrivalStatusFilter.Draft);
-    string search = ViewBag.Search as string;
+    var status = (int)(ViewBag.Status ?? 1);
+    int? selectedPeriod = ViewBag.SelectedPeriodId as int?;
+    int currentStatus = ViewBag.Status is int ? (int)ViewBag.Status : 1;
 }
 
 <div class="container-fluid">
@@ -12,76 +13,82 @@
 
         <div class="card mb-2">
             <div class="card-block">
-
                 <form method="get">
-                    <div class="row d-flex align-items-center">
+                    <div class="row align-items-center">
 
                         <div class="col-lg-3">
-                            <select name="status" class="form-select">
-                                <option value="1" @(status == ArrivalStatusFilter.Draft ? "selected" : "")>پیش‌نویس</option>
-                                <option value="2" @(status == ArrivalStatusFilter.Confirmed ? "selected" : "")>تایید شده</option>
-                                <option value="3" @(status == ArrivalStatusFilter.All ? "selected" : "")>همه</option>
+                            <input class="form-control"
+                                   name="search"
+                                   value="@Model.SearchText"
+                                   placeholder="شماره گزارش..." />
+                        </div>
+
+                        <div class="col-lg-3">
+                            <select name="fiscalPeriodId" class="form-select" asp-items="ViewBag.PeriodList">
+                                <option value="">دوره فعالیت</option>
                             </select>
                         </div>
 
-                        <div class="col-lg-4">
-                            <input class="form-control"
-                                   name="search"
-                                   value="@search"
-                                   placeholder="Search only by: Report number, purchase order, Date of arrival, Bidding Number, Total Price" />
+                        <div class="col-lg-3">
+                            <select name="status" class="form-select">
+                                <option value="1" selected="@(currentStatus == 1)">پیش‌نویس</option>
+                                <option value="2" selected="@(currentStatus == 2)">تایید شده</option>
+                                <option value="3" selected="@(currentStatus == 3)">همه</option>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-1 text-left">
+                            <button type="submit" class="btn btn-primary w-100">جستجو</button>
                         </div>
 
                         <div class="col-lg-2 text-left">
-                            <button type="submit" class="btn btn-primary w-75">جستجو</button>
-                        </div>
-
-                        <div class="col-lg-2 text-left">
-                            <a class="btn btn-success w-75" asp-action="New">+ جدید</a>
+                            <a class="btn btn-success w-100" asp-action="New">+ جدید</a>
                         </div>
 
                     </div>
                 </form>
-
             </div>
         </div>
 
         <div class="card">
             <div class="card-block">
 
-                <table class="table table-bordered table-striped text-center" id="arrivalTable">
+                <table class="table table-bordered table-striped table-condensed text-center">
                     <thead>
                         <tr>
-                            <th>تاریخ</th>
+                            <th>منبع</th>
                             <th>دوره فعالیت</th>
-                            <th>شماره گزارش</th>
-                            <th>Bidding Number</th>
+                            <th>تاریخ ورود</th>
                             <th>حجم کل (لیتر)</th>
                             <th>وضعیت</th>
                             <th>عملیات</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model != null && Model.Any())
+                        @if (Model != null && Model.Items.Any())
                         {
-                            foreach (var item in Model)
+                            foreach (var item in Model.Items)
                             {
-                                var statusTitle = item.IsCancelled == true ? "حذف شده"
-                                    : item.IsConfirmed == true ? "تایید شده"
-                                    : item.IsDrafted == true ? "پیش‌نویس"
-                                    : "";
+                                var statusText = item.IsCancelled == true ? "حذف شده"
+                                : item.IsConfirmed == true ? "تایید شده"
+                                : item.IsDrafted == true ? "پیش‌نویس" : "نامشخص";
 
-                                <tr data-id="@item.ArrivalId" class="arrival-row">
-                                    <td>@item.DateString</td>
+                                <tr ondblclick="onRowDblClick(@item.ArrivalId, '@statusText')">
+                                    <td>@item.SourceName</td>
                                     <td>@item.FiscalPeriodName</td>
-                                    <td>@item.ReportNumber</td>
-                                    <td>@item.BiddingNumber</td>
+                                    <td>@item.Date?.ToString("yyyy/MM/dd")</td>
                                     <td>@item.TotalVolume</td>
-                                    <td>@statusTitle</td>
+                                    <td>@statusText</td>
                                     <td>
-                                        <a asp-action="New"
-                                           asp-route-id="@item.ArrivalId"
-                                           class="btn btn-sm btn-primary">
-                                            مشاهده / ویرایش
+                                        <a class="btn btn-primary btn-sm"
+                                           asp-action="New"
+                                           asp-route-id="@item.ArrivalId">
+                                            ویرایش
+                                        </a>
+                                        <a class="btn btn-danger btn-sm"
+                                           asp-action="Cancel"
+                                           asp-route-id="@item.ArrivalId">
+                                            حذف
                                         </a>
                                     </td>
                                 </tr>
@@ -96,9 +103,36 @@
                     </tbody>
                 </table>
 
-                <button type="button" class="btn btn-secondary mt-3" onclick="showPrintPopup()">
-                    چاپ
-                </button>
+                @*分页*@
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
+                            <a class="page-link"
+                               href="?search=@Model.SearchText&status=@status&page=@(Model.Paging.Page - 1)">
+                                قبلی
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                        {
+                            <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
+                                <a class="page-link"
+                                   href="?search=@Model.SearchText&status=@status&page=@i">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
+                            <a class="page-link"
+                               href="?search=@Model.SearchText&status=@status&page=@(Model.Paging.Page + 1)">
+                                بعدی
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <button type="button" class="btn btn-secondary mt-2" onclick="showPrintPopup()">چاپ</button>
 
             </div>
         </div>
@@ -108,17 +142,17 @@
 
 @section Scripts {
     <script>
-        // دابل کلیک روی ردیف = رفتن به صفحه ویرایش
-        $(document).on('dblclick', '.arrival-row', function () {
-            var id = $(this).data('id');
-            if (id) {
-                window.location = '@Url.Action("New", "Arrival")' + '?id=' + id;
+        function onRowDblClick(id, statusText) {
+            // اگر تایید شده است فقط حالت readonly (مثلاً یک Action دیگر مثل Details)
+            if (statusText === "تایید شده") {
+                window.location.href = '@Url.Action("Edit", "Arrival")' + '?id=' + id; // اگر Details داشتی، تغییر بده
+            } else {
+                window.location.href = '@Url.Action("Edit", "Arrival")' + '/' + id;
             }
-        });
+        }
 
         function showPrintPopup() {
-            alert('در حال تولید...');
-            // اگر SweetAlert داری، می‌توانی مشابه قبل Swal.fire استفاده کنی
+            alert("در حال تولید...");
         }
     </script>
 }

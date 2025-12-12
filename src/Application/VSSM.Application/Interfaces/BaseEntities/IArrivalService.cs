@@ -1,28 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VSSM.Application.DTOs.Arrivals;
-using VSSM.Domain.Enums;
-
+﻿using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Arrival;
 
 namespace VSSM.Application.Interfaces.BaseEntities
 {
     public interface IArrivalService
     {
-        Task<IList<ArrivalListDto>> GetList(
-            string search,
-            ArrivalStatusFilter status,
-            int page,
-            int pageSize,
-            CancellationToken token);
-
-        Task<ArrivalDto> GetById(int id, CancellationToken token);
-
-        Task<int> Save(ArrivalCreateEditDto dto, CancellationToken token);
-
-        Task<bool> Delete(int id, CancellationToken token);          // IsCancelled = true
-        Task<bool> DeleteLine(int lineId, CancellationToken token);  // IsCancelled روی Line (در این مدل یعنی حذف واقعی)
+        Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token);
+        Task Cancel(int id, CancellationToken token);
+        Task CancelLine(int arrivalLineId, CancellationToken token);
+        Task Confirm(int arrivalId, CancellationToken token);
+        Task<int> Create(ArrivalCreateDto dto, CancellationToken token);
+        Task<ArrivalGetDto?> GetById(int id, CancellationToken token);
+        Task<PagingSearchOrderDto<ArrivalListDto>> GetPagedList(string? search, int? fiscalPeriodId, int statusFilter, int page, int pageSize, CancellationToken token);
+        Task SetDraft(int arrivalId, CancellationToken token);
     }
 }

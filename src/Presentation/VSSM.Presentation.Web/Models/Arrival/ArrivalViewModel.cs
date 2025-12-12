@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace VSSM.Presentation.Web.Models.Arrival
@@ -8,16 +9,11 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public int? ArrivalId { get; set; }
 
         [Display(Name = "تاریخ ورود")]
-        [Required(ErrorMessage = "تاریخ ورود الزامی است.")]
-        public string DateString { get; set; }   // رشته؛ از datepicker
+        [Required(ErrorMessage = "تاریخ ورود اجباری است.")]
+        public string? Date { get; set; } // string – بعداً به DateTime تبدیل می‌کنیم
 
         [Display(Name = "شماره گزارش")]
-        [Required(ErrorMessage = "شماره گزارش الزامی است.")]
         public string ReportNumber { get; set; }
-
-        [Display(Name = "Bidding Number")]
-        [Required(ErrorMessage = "Bidding Number الزامی است.")]
-        public string BiddingNumber { get; set; }
 
         [Display(Name = "منبع")]
         [Required(ErrorMessage = "منبع را انتخاب کنید.")]
@@ -27,24 +23,33 @@ namespace VSSM.Presentation.Web.Models.Arrival
         [Required(ErrorMessage = "دوره فعالیت را انتخاب کنید.")]
         public int? FiscalPeriodId { get; set; }
 
-        [Display(Name = "حجم بسته (لیتر)")]
+        // فقط نمایش
+        public DateTime? EntryDate { get; set; }
+
+        public bool IsConfirmed { get; set; }
+        public bool IsCancelled { get; set; }
+        public bool IsDrafted { get; set; }
+
+        [Display(Name = "حجم بسته")]
         public float? PackedVolume { get; set; }
 
-        [Display(Name = "وزن کل (کیلوگرم)")]
+        [Display(Name = "وزن کل")]
         public float? TotalWeight { get; set; }
 
         [Display(Name = "حجم کل (لیتر)")]
         public float? TotalVolume { get; set; }
 
-        public string Note { get; set; }
+        [Display(Name = "ملاحظات")]
+        public string? Note { get; set; }
 
-        public bool IsConfirmed { get; set; }
-        public bool IsDrafted { get; set; }
-        public bool IsCancelled { get; set; }
+        [Display(Name = "تشخیص دهنده سرما")]
+        public int? Frzindc { get; set; }
 
-        // برای سوییچ تقویم
-        public bool UsePersianDate { get; set; }
+        [Display(Name = "تشخیص دهنده سرما غیر معتبر")]
+        public int? FrzindcNok { get; set; }
 
         public List<ArrivalLineViewModel> Lines { get; set; } = new();
+        public ArrivalLineViewModel NewLine { get; set; } = new();
     }
+
 }

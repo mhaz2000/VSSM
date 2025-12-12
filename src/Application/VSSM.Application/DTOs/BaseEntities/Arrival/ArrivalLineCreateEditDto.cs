@@ -1,37 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VSSM.Application.DTOs.Arrivals
+namespace VSSM.Application.DTOs.BaseEntities.Arrival
 {
-    public class ArrivalLineCreateEditDto
+    public class ArrivalCreateDto
     {
-        public int? ArrivalLineId { get; set; } // null برای ردیف جدید
-
-        public int? ItemId { get; set; }
-        public int? ManufacturerId { get; set; }
-        public int? StoreId { get; set; }
-        public int? DosePerVialId { get; set; }
-        public int? NumVials { get; set; }
-        public int? Quantity { get; set; }
-        public float? UnitVolume { get; set; }
-        public float? TotalVolume { get; set; }
-        public string BatchNum { get; set; }
-        public string Note { get; set; }
-
-        public string ExpiryDateString { get; set; }
-        public string ProductionDateString { get; set; }
-    }
-
-    public class ArrivalCreateEditDto
-    {
-        public int? ArrivalId { get; set; }
-
-        public string DateString { get; set; }           // yyyy/MM/dd (میلادی به صورت رشته)
+        public DateTime Date { get; set; }
         public string ReportNumber { get; set; }
-        public string BiddingNumber { get; set; }
 
-        public int? SourceId { get; set; }
-        public int? FiscalPeriodId { get; set; }
+        public int SourceId { get; set; }
+        public int FiscalPeriodId { get; set; }
+
+        public bool IsConfirmed { get; set; }
+        public bool IsDrafted { get; set; }
+        public bool IsCancelled { get; set; }
 
         public float? PackedVolume { get; set; }
         public float? TotalWeight { get; set; }
@@ -39,9 +21,14 @@ namespace VSSM.Application.DTOs.Arrivals
 
         public string Note { get; set; }
 
-        public bool SaveAsDraft { get; set; }
-        public bool Confirm { get; set; }
+        public int? Frzindc { get; set; }
+        public int? FrzindcNok { get; set; }
 
-        public List<ArrivalLineCreateEditDto> Lines { get; set; } = new();
+        public List<ArrivalLineDto> Lines { get; set; } = new();
+    }
+
+    public class ArrivalEditDto : ArrivalCreateDto
+    {
+        public int ArrivalId { get; set; }
     }
 }

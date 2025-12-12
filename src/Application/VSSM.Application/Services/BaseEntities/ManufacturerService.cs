@@ -223,6 +223,7 @@ public class ManufacturerService : IManufacturerService
 
         var result = items.Select(x => new ManufacturerDto
         {
+
             ManufacturerId = x.ManufacturerId,
             FullName = x.FullName
         }).ToList();

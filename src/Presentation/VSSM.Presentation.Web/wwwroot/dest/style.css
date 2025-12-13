@@ -4932,18 +4932,20 @@ header.navbar {
     line-height: 1.5; }
   header.navbar .dropdown-item {
     min-width: 180px; }
-  header.navbar a.navbar-brand {
-    display: inline-block;
-    width: 155px;
-    height: 55px;
-    padding: 8px 16px;
-    padding: 0.5rem 1rem;
-    background-color: #fff;
-    background-image: url("../img/coreui-logotyp.png");
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: 70px auto;
-    border-bottom: 1px solid #cfd8dc; }
+    header.navbar a.navbar-brand {
+        display: inline-block;
+        width: 155px;
+        height: 55px;
+        padding: 8px 16px;
+        padding: 0.5rem 1rem;
+        background-color: #fff;
+        /*background-image: url("../img/coreui-logotyp.png");*/
+        background-image: url("../img/VSSMLogo.png");
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: 40px auto;
+        border-bottom: 1px solid #cfd8dc;
+    }
 
 header.navbar .navbar-brand {
   margin-left: 0; }

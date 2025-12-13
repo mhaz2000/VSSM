@@ -165,6 +165,7 @@ namespace VSSM.Presentation.Web.Controllers
 
         public async Task<IActionResult> Edit(int id, CancellationToken token)
         {
+            await LoadDropDowns(token);
             var dto = await _arrivalService.GetById(id, token);
             if (dto == null) return NotFound();
 

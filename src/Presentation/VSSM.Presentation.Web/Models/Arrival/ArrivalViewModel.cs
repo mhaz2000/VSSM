@@ -13,6 +13,7 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public string? Date { get; set; } // string – بعداً به DateTime تبدیل می‌کنیم
 
         [Display(Name = "شماره گزارش")]
+        [Required(ErrorMessage = "شماره گزارش اجباری است.")]
         public string ReportNumber { get; set; }
 
         [Display(Name = "منبع")]
@@ -31,12 +32,15 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public bool IsDrafted { get; set; }
 
         [Display(Name = "حجم بسته")]
+        [Required(ErrorMessage = "حجم بسته را انتخاب کنید.")]
         public float? PackedVolume { get; set; }
 
         [Display(Name = "وزن کل")]
+        [Required(ErrorMessage = "وزن کل را انتخاب کنید.")]
         public float? TotalWeight { get; set; }
 
         [Display(Name = "حجم کل (لیتر)")]
+        [Required(ErrorMessage = "حجم کل (لیتر) را انتخاب کنید.")]
         public float? TotalVolume { get; set; }
 
         [Display(Name = "ملاحظات")]

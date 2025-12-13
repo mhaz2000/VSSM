@@ -122,27 +122,42 @@
 
                         <!-- شماره گزارش -->
                         <div class="form-group">
-                            <span class="form-label">شماره گزارش:</span>
+                            <span class="form-label">
+                                <span class="required-star">*</span>
+                                شماره گزارش:
+                            </span>
                             <input asp-for="ReportNumber" class="form-control" />
                             <span asp-validation-for="ReportNumber" class="text-danger"></span>
                         </div>
 
                         <!-- حجم بسته -->
                         <div class="form-group">
-                            <span class="form-label">حجم بسته:</span>
+                            <span class="form-label">
+                                <span class="required-star">*</span>
+                                حجم بسته:
+                            </span>
                             <input asp-for="PackedVolume" class="form-control" />
+                            <span asp-validation-for="PackedVolume" class="text-danger"></span>
                         </div>
 
                         <!-- وزن کل -->
                         <div class="form-group">
-                            <span class="form-label">وزن کل:</span>
+                            <span class="form-label">
+                                <span class="required-star">*</span>
+                                وزن کل:
+                            </span>
                             <input asp-for="TotalWeight" class="form-control" />
+                            <span asp-validation-for="TotalWeight" class="text-danger"></span>
                         </div>
 
                         <!-- حجم کل لیتر (خلاصه) -->
                         <div class="form-group">
-                            <span class="form-label">حجم کل (لیتر):</span>
+                            <span class="form-label">
+                                <span class="required-star">*</span>
+                                حجم کل (لیتر):
+                            </span>
                             <input asp-for="TotalVolume" class="form-control" />
+                            <span asp-validation-for="TotalVolume" class="text-danger"></span>
                         </div>
 
                         <!-- تشخیص دهنده سرما -->
@@ -212,13 +227,17 @@
 
                                 <!-- دوز بر ویال -->
                                 <div class="form-group">
-                                    <span class="form-label">دوز بر ویال:</span>
+                                    <span class="form-label">
+                                        <span class="required-star">*</span>
+                                        دوز بر ویال
+                                    </span>
                                     <select asp-for="NewLine.DosePerVialId"
                                             asp-items="ViewBag.DosePerVialList"
                                             class="form-select"
                                             id="DosePerVialId">
                                         <option value="">انتخاب کنید...</option>
                                     </select>
+                                    <span asp-validation-for="NewLine.DosePerVialId" class="text-danger"></span>
                                 </div>
 
                                 <!-- تعداد (الزامی) -->
@@ -317,8 +336,12 @@
 
                                 <!-- سری ساخت -->
                                 <div class="form-group">
-                                    <span class="form-label">سری ساخت:</span>
+                                    <span class="form-label">
+                                        <span class="required-star">*</span>
+                                        سری ساخت: 
+                                    </span>
                                     <input asp-for="NewLine.BatchNum" class="form-control" />
+                                    <span asp-validation-for="NewLine.BatchNum" class="text-danger"></span>
                                 </div>
 
 
@@ -328,8 +351,12 @@
                                     <input type="text" asp-for="NewLine.ProductionDate" class="form-control" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="NewLine.ExpiryDate">تاریخ انقضا:</label>
+                                    <span class="form-label">
+                                        <span class="required-star">*</span>
+                                         تاریخ انقضا:
+                                    </span>
                                     <input type="text" asp-for="NewLine.ExpiryDate" class="form-control" />
+                                    <span asp-validation-for="NewLine.ExpiryDate" class="text-danger"></span>
                                 </div>
 
 
@@ -397,6 +424,7 @@
                                     <th>تعداد ویال</th>
                                     <th>حجم کل (لیتر)</th>
                                     <th>انبار</th>
+                                    <th>انقضا</th>
                                     <th>عملیات</th>
                                 </tr>
                             </thead>
@@ -414,6 +442,7 @@
                                             <td>@line.NumVials</td>
                                             <td>@line.TotalVolume</td>
                                             <td>@line.StoreId</td>
+                                            <td>@line.ExpiryDate</td>
                                             <td>
                                                 <button type="submit"
                                                         name="command"
@@ -445,9 +474,9 @@
                         <button type="submit" name="command" value="confirm" class="btn btn-success px-4 mx-2">
                             تایید
                         </button>
-                        <button type="submit" name="command" value="deleteAll" class="btn btn-danger px-4">
+                        @*    <button type="submit" name="command" value="deleteAll" class="btn btn-danger px-4">
                             حذف کل ورود
-                        </button>
+                        </button> *@
                         <a asp-action="Index" class="btn btn-primary px-4 mx-2">بازگشت به لیست</a>
                     </div>
 

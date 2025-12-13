@@ -52,6 +52,7 @@ namespace VSSM.Application.Services.BaseEntities
                 .Take(paging.PageSize)
                 .Select(x => new ArrivalListDto
                 {
+                    ReportNumber = x.ReportNumber,
                     ArrivalId = x.ArrivalId,
                     Date = x.Date,
                     TotalVolume = x.TotalVolume,

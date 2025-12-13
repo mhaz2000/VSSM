@@ -3,6 +3,7 @@
     public class ArrivalListDto
     {
         public int ArrivalId { get; set; }
+        public string ReportNumber { get; set; }
         public DateTime? Date { get; set; }
 
         public string SourceName { get; set; }

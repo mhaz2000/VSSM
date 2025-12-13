@@ -1,4 +1,5 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.Arrival
+@using VSSM.Application.Helpers
 @model PagingSearchOrderDto<ArrivalListDto>
 
 @{
@@ -60,6 +61,7 @@
                             <th>دوره فعالیت</th>
                             <th>تاریخ ورود</th>
                             <th>حجم کل (لیتر)</th>
+                            <th>شماره گزارش</th>
                             <th>وضعیت</th>
                             <th>عملیات</th>
                         </tr>
@@ -76,8 +78,9 @@
                                 <tr ondblclick="onRowDblClick(@item.ArrivalId, '@statusText')">
                                     <td>@item.SourceName</td>
                                     <td>@item.FiscalPeriodName</td>
-                                    <td>@item.Date?.ToString("yyyy/MM/dd")</td>
+                                    <td>@item.Date.Value.ToShamsi()</td>
                                     <td>@item.TotalVolume</td>
+                                    <td>@item.ReportNumber</td>
                                     <td>@statusText</td>
                                     <td>
 
@@ -144,7 +147,7 @@
                     </ul>
                 </nav>
 
-                <button type="button" class="btn btn-secondary mt-2" onclick="showPrintPopup()">چاپ</button>
+             
 
             </div>
         </div>
@@ -163,8 +166,6 @@
             }
         }
 
-        function showPrintPopup() {
-            alert("در حال تولید...");
-        }
+      
     </script>
 }

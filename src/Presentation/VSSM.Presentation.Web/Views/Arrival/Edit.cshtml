@@ -79,90 +79,106 @@
                     <div class="col-lg-12">
 
 
+                        <fieldset disabled>
+
+                            <div class="form-group">
+                                <span class="form-label">
+                                    <span class="required-star">*</span>
+                                    تاریخ ورود:
+                                </span>
+
+                                <input type="text" asp-for="Date" class="form-control" readonly />
+                                <span asp-validation-for="Date" class="text-danger"></span>
+                            </div>
 
 
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-star">*</span>
-                                تاریخ ورود:
-                            </span>
+                            <!-- دوره فعالیت (الزامی) -->
+                            <div class="form-group">
+                                <span class="form-label">
+                                    <span class="required-star">*</span>
+                                    دوره فعالیت:
+                                </span>
+                                <select asp-for="FiscalPeriodId"
+                                        asp-items="ViewBag.FiscalPeriodList"
+                                        class="form-select">
+                                    <option value="">انتخاب کنید...</option>
+                                </select>
+                                <span asp-validation-for="FiscalPeriodId" class="text-danger"></span>
+                            </div>
 
-                            <input type="text" asp-for="Date" class="form-control" />
-                            <span asp-validation-for="Date" class="text-danger"></span>
-                        </div>
+                            <!-- منبع (الزامی) -->
+                            <div class="form-group">
+                                <span class="form-label">
+                                    <span class="required-star">*</span>
+                                    منبع:
+                                </span>
+                                <select asp-for="SourceId"
+                                        asp-items="ViewBag.SourceList"
+                                        class="form-select">
+                                    <option value="">انتخاب کنید...</option>
+                                </select>
+                                <span asp-validation-for="SourceId" class="text-danger"></span>
+                            </div>
 
+                            <!-- شماره گزارش -->
+                            <div class="form-group">
+                                <span class="form-label">
+                                    <span class="required-star">*</span>
+                                    شماره گزارش:
+                                </span>
+                                <input asp-for="ReportNumber" class="form-control" />
+                                <span asp-validation-for="ReportNumber" class="text-danger"></span>
+                            </div>
 
-                        <!-- دوره فعالیت (الزامی) -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-star">*</span>
-                                دوره فعالیت:
-                            </span>
-                            <select asp-for="FiscalPeriodId"
-                                    asp-items="ViewBag.FiscalPeriodList"
-                                    class="form-select">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                            <span asp-validation-for="FiscalPeriodId" class="text-danger"></span>
-                        </div>
+                            <!-- حجم بسته -->
+                            <div class="form-group">
+                                <span class="form-label">
+                                    <span class="required-star">*</span>
+                                    حجم بسته:
+                                </span>
+                                <input asp-for="PackedVolume" class="form-control" />
+                                <span asp-validation-for="PackedVolume" class="text-danger"></span>
+                            </div>
 
-                        <!-- منبع (الزامی) -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-star">*</span>
-                                منبع:
-                            </span>
-                            <select asp-for="SourceId"
-                                    asp-items="ViewBag.SourceList"
-                                    class="form-select">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                            <span asp-validation-for="SourceId" class="text-danger"></span>
-                        </div>
+                            <!-- وزن کل -->
+                            <div class="form-group">
+                                <span class="form-label">
+                                    <span class="required-star">*</span>
+                                    وزن کل:
+                                </span>
+                                <input asp-for="TotalWeight" class="form-control" />
+                                <span asp-validation-for="TotalWeight" class="text-danger"></span>
+                            </div>
 
-                        <!-- شماره گزارش -->
-                        <div class="form-group">
-                            <span class="form-label">شماره گزارش:</span>
-                            <input asp-for="ReportNumber" class="form-control" />
-                            <span asp-validation-for="ReportNumber" class="text-danger"></span>
-                        </div>
+                            <!-- حجم کل لیتر (خلاصه) -->
+                            <div class="form-group">
+                                <span class="form-label">
+                                    <span class="required-star">*</span>
+                                    حجم کل (لیتر):
+                                </span>
+                                <input asp-for="TotalVolume" class="form-control" />
+                                <span asp-validation-for="TotalVolume" class="text-danger"></span>
 
-                        <!-- حجم بسته -->
-                        <div class="form-group">
-                            <span class="form-label">حجم بسته:</span>
-                            <input asp-for="PackedVolume" class="form-control" />
-                        </div>
+                            </div>
 
-                        <!-- وزن کل -->
-                        <div class="form-group">
-                            <span class="form-label">وزن کل:</span>
-                            <input asp-for="TotalWeight" class="form-control" />
-                        </div>
+                            <!-- تشخیص دهنده سرما -->
+                            <div class="form-group">
+                                <span class="form-label">تشخیص دهنده سرما:</span>
+                                <input asp-for="Frzindc" class="form-control" />
+                            </div>
 
-                        <!-- حجم کل لیتر (خلاصه) -->
-                        <div class="form-group">
-                            <span class="form-label">حجم کل (لیتر):</span>
-                            <input asp-for="TotalVolume" class="form-control" />
-                        </div>
+                            <!-- تشخیص دهنده سرما غیر معتبر -->
+                            <div class="form-group">
+                                <span class="form-label">تشخیص دهنده سرما غیر معتبر:</span>
+                                <input asp-for="FrzindcNok" class="form-control" />
+                            </div>
 
-                        <!-- تشخیص دهنده سرما -->
-                        <div class="form-group">
-                            <span class="form-label">تشخیص دهنده سرما:</span>
-                            <input asp-for="Frzindc" class="form-control" />
-                        </div>
-
-                        <!-- تشخیص دهنده سرما غیر معتبر -->
-                        <div class="form-group">
-                            <span class="form-label">تشخیص دهنده سرما غیر معتبر:</span>
-                            <input asp-for="FrzindcNok" class="form-control" />
-                        </div>
-
-                        <!-- ملاحظات -->
-                        <div class="form-group">
-                            <span class="form-label">ملاحظات:</span>
-                            <textarea asp-for="Note" class="form-control"></textarea>
-                        </div>
-
+                            <!-- ملاحظات -->
+                            <div class="form-group">
+                                <span class="form-label">ملاحظات:</span>
+                                <textarea asp-for="Note" class="form-control"></textarea>
+                            </div>
+                        </fieldset>
                     </div>
 
 
@@ -181,9 +197,10 @@
                                     <th>نام تجاری</th>
                                     <th>سری ساخت</th>
                                     <th>تعداد</th>
-                                    <th>تعداد ویال</th>
+                                    <th>دوز بر ویال</th>
                                     <th>حجم کل (لیتر)</th>
                                     <th>انبار</th>
+                                    <th>انقضا</th>
                                     <th>عملیات</th>
                                 </tr>
                             </thead>
@@ -201,6 +218,8 @@
                                             <td>@line.NumVials</td>
                                             <td>@line.TotalVolume</td>
                                             <td>@line.StoreId</td>
+                                            <td>@line.ExpiryDate</td>
+
                                             <td>
                                                 <button type="submit"
                                                         name="command"
@@ -226,11 +245,10 @@
 
                     <!-- دکمه‌های اصلی فرم -->
                     <div class="text-center mt-4 mb-2">
-                        <button type="submit" name="command" value="confirm" class="btn btn-success px-4 mx-2">
-                            تایید
-                        </button>
                         <a asp-action="Index" class="btn btn-primary px-4 mx-2">بازگشت به لیست</a>
                     </div>
+
+                    <button type="button" class="btn btn-secondary mt-2" onclick="showPrintPopup()">چاپ</button>
 
                 </form>
 
@@ -252,6 +270,9 @@
             if (dose > 0) {
                 $("#NumVials").val(Math.floor(qty / dose));
             }
+        }
+                function showPrintPopup() {
+            alert("در حال تولید...");
         }
 
             $(document).ready(function () {

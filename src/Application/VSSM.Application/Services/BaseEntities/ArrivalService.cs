@@ -19,8 +19,7 @@ namespace VSSM.Application.Services.BaseEntities
            GRID
         ========================= */
         public async Task<PagingSearchOrderDto<ArrivalListDto>> GetPagedList(
-            string? search,
-            int? fiscalPeriodId,
+            string? search,          
             int statusFilter,
             int page,
             int pageSize,
@@ -30,9 +29,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(x => x.ReportNumber.Contains(search));
-
-            if (fiscalPeriodId.HasValue)
-                query = query.Where(x => x.FiscalPeriodId == fiscalPeriodId);
+ 
 
             if (statusFilter == 1) // Draft
                 query = query.Where(x => x.IsDrafted == true && x.IsCancelled != true);
@@ -256,5 +253,33 @@ namespace VSSM.Application.Services.BaseEntities
             _db.TblArrivalLines.Remove(line);
             await _db.SaveChangesAsync(token);
         }
+
+        public async Task<List<ArrivalCopyDto>> GetForCopy(
+     string? reportNumber,
+     CancellationToken token)
+        {
+            var query = _db.TblArrivals
+                .Where(x => x.IsCancelled != true); // ⬅ only cancelled excluded
+
+            if (!string.IsNullOrWhiteSpace(reportNumber))
+            {
+                query = query.Where(x => x.ReportNumber.Contains(reportNumber));
+            }
+
+            return await query
+                .OrderByDescending(x => x.EntryDate)
+                .Select(x => new ArrivalCopyDto
+                {
+                    ArrivalId = x.ArrivalId,
+                    DisplayText =
+                        _db.TblFiscalPeriods
+                            .Where(f => f.FiscalPeriodId == x.FiscalPeriodId)
+                            .Select(f => f.FullName)
+                            .FirstOrDefault()
+                        + " - " + x.ReportNumber
+                })
+                .ToListAsync(token);
+        }
+
     }
 }

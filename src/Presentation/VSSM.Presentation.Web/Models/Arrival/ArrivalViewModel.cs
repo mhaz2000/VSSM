@@ -40,8 +40,7 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public float? TotalWeight { get; set; }
 
         [Display(Name = "حجم کل (لیتر)")]
-        [Required(ErrorMessage = "حجم کل (لیتر) را انتخاب کنید.")]
-        public float? TotalVolume { get; set; }
+        public float? TotalVolume => CalculateTotalVolume();
 
         [Display(Name = "ملاحظات")]
         public string? Note { get; set; }
@@ -54,6 +53,13 @@ namespace VSSM.Presentation.Web.Models.Arrival
 
         public List<ArrivalLineViewModel> Lines { get; set; } = new();
         public ArrivalLineViewModel NewLine { get; set; } = new();
+
+        private float? CalculateTotalVolume()
+        {
+            var lines = Lines.Sum(z => z.TotalVolume);
+            var newLine = NewLine.TotalVolume;
+            return lines + newLine;
+        }
     }
 
 }

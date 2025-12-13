@@ -153,11 +153,9 @@
                         <!-- حجم کل لیتر (خلاصه) -->
                         <div class="form-group">
                             <span class="form-label">
-                                <span class="required-star">*</span>
                                 حجم کل (لیتر):
                             </span>
-                            <input asp-for="TotalVolume" class="form-control" />
-                            <span asp-validation-for="TotalVolume" class="text-danger"></span>
+                            <input asp-for="TotalVolume" class="form-control" readonly />
                         </div>
 
                         <!-- تشخیص دهنده سرما -->
@@ -179,6 +177,9 @@
                         </div>
 
                     </div>
+
+
+
 
 
 
@@ -338,7 +339,7 @@
                                 <div class="form-group">
                                     <span class="form-label">
                                         <span class="required-star">*</span>
-                                        سری ساخت: 
+                                        سری ساخت:
                                     </span>
                                     <input asp-for="NewLine.BatchNum" class="form-control" />
                                     <span asp-validation-for="NewLine.BatchNum" class="text-danger"></span>
@@ -353,7 +354,7 @@
                                 <div class="form-group">
                                     <span class="form-label">
                                         <span class="required-star">*</span>
-                                         تاریخ انقضا:
+                                        تاریخ انقضا:
                                     </span>
                                     <input type="text" asp-for="NewLine.ExpiryDate" class="form-control" />
                                     <span asp-validation-for="NewLine.ExpiryDate" class="text-danger"></span>
@@ -494,6 +495,15 @@
     <script src="~/js/persian-datepicker.js"></script>
     <script>
         // محاسبه تعداد ویال = تعداد / دوز بر ویال (فعلاً ساده، اگر دوز را به صورت عدد داری)
+        function recalcNumVials() {
+            var qty = parseFloat($("#Quantity").val()) || 0;
+            var dose = parseFloat($("#DosePerVialId option:selected").text()) || 0; // اگر متن عددی است
+            if (dose > 0) {
+                $("#NumVials").val(Math.floor(qty / dose));
+            }
+        }
+
+
         function recalcNumVials() {
             var qty = parseFloat($("#Quantity").val()) || 0;
             var dose = parseFloat($("#DosePerVialId option:selected").text()) || 0; // اگر متن عددی است

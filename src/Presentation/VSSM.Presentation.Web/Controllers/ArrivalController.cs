@@ -55,7 +55,6 @@ namespace VSSM.Presentation.Web.Controllers
 
         public async Task<IActionResult> Index(
             string? search,
-            int? fiscalPeriodId,
             int status = 1, // 1 Draft, 2 Confirmed, 3 All
             int page = 1,
             int pageSize = 10,
@@ -63,25 +62,15 @@ namespace VSSM.Presentation.Web.Controllers
         {
             ViewBag.Status = status;
 
-            ViewBag.PeriodList = (await _fiscalService.GetActives(token))
-                .Select(x => new SelectListItem
-                {
-                    Value = x.FiscalPeriodId.ToString(),
-                    Text = x.FullName
-                })
-                .ToList();
-
-            ViewBag.SelectedPeriodId = fiscalPeriodId;
 
             var list = await _arrivalService.GetPagedList(
                 search,
-                fiscalPeriodId,
                 status,
                 page,
                 pageSize,
                 token);
 
-            return View(list);
+            return View("Index", list);
         }
 
         public async Task<IActionResult> New(int? id, CancellationToken token)
@@ -389,7 +378,15 @@ namespace VSSM.Presentation.Web.Controllers
                 return View("New", model);
             }
 
-            await _arrivalService.Confirm(model.ArrivalId.Value, token);
+            if (!model.ArrivalId.HasValue)
+            {
+                return await AddLine(model, token);
+            }
+            else
+            {
+                await _arrivalService.Confirm(model.ArrivalId.Value, token);
+            }
+
 
             TempData["ToastMessage"] = "ورود تایید شد";
             TempData["ToastType"] = "success";
@@ -473,5 +470,162 @@ namespace VSSM.Presentation.Web.Controllers
                 .Select(x => new SelectListItem { Value = x.PackingTypeId.ToString(), Text = x.FullName })
                 .ToList();
         }
+        public async Task<IActionResult> Copy(string? reportNumber, CancellationToken token)
+        {
+            await LoadDropDowns(token);
+            ViewBag.Arrivals = (await _arrivalService.GetForCopy(reportNumber, token))
+                .Select(x => new SelectListItem
+                {
+                    Value = x.ArrivalId.ToString(),
+                    Text = x.DisplayText
+                })
+                .ToList();
+
+            ViewBag.Search = reportNumber;
+            return View();
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> CopyConfirm(int arrivalId, CancellationToken token)
+        {
+            await LoadDropDowns(token);
+            var dto = await _arrivalService.GetById(arrivalId, token);
+            if (dto == null) return NotFound();
+
+            var vm = new ArrivalViewModel
+            {
+                ArrivalId = null,                // ❌ important
+                Date = dto.Date.Value.ToShamsi(),
+                ReportNumber = dto.ReportNumber,
+                SourceId = dto.SourceId,
+                FiscalPeriodId = dto.FiscalPeriodId,
+                Note = $"{dto.ReportNumber} کپی ورودی شماره ",
+                PackedVolume = dto.PackedVolume,
+                TotalWeight = dto.TotalWeight,
+                TotalVolume = dto.TotalVolume,
+                IsDrafted = true,               // ⬅ always draft after copy
+                IsConfirmed = false,
+                IsCancelled = false,
+
+                Lines = dto.Lines.Select(l => new ArrivalLineViewModel
+                {
+                    ArrivalLineId = null,
+                    ArrivalId = null,
+                    BatchNum = l.BatchNum,
+                    CommertialNameId = l.CommertialNameId,
+                    DosePerVialId = l.DosePerVialId,
+                    ExpiryDate = l.ExpiryDate.HasValue ? DateTimeHelper.ToShamsi(l.ExpiryDate.Value) : "",
+                    ProductionDate = l.ProductionDate.HasValue ? DateTimeHelper.ToShamsi(l.ProductionDate.Value) : "",
+                    ItemDetailId = l.ItemDetailId,
+                    ItemId = l.ItemId,
+                    ManufacturerId = l.ManufacturerId,
+                    Note = l.Note,
+                    NumVials = l.NumVials,
+                    PackageSize = l.PackageSize,
+                    PackingTypeId = l.PackingTypeId,
+                    Quantity = l.Quantity,
+                    StoreId = l.StoreId,
+                    TotalVolume = l.TotalVolume,
+                    UnitVolume = l.UnitVolume,
+                    UseId = l.UseId,
+                    VvmStageId = l.VvmStageId,
+                    VvmTypeId = l.VvmTypeId
+                }).ToList()
+            };
+
+            ModelState.Remove(nameof(ArrivalViewModel.ArrivalId));
+            await AddLineForCopy(vm, token);
+            ViewBag.Status = 1;
+            return await Index(null);
+
+        }
+
+        private async Task<IActionResult> AddLineForCopy(ArrivalViewModel model, CancellationToken token)
+        {
+
+
+
+
+            // Ensure Arrival exists (create draft header if first time)
+            if (!model.ArrivalId.HasValue || model.ArrivalId == 0)
+            {
+                var createDto = new ArrivalCreateDto
+                {
+                    Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
+                    ReportNumber = model.ReportNumber,
+                    SourceId = model.SourceId.Value,
+                    FiscalPeriodId = model.FiscalPeriodId.Value,
+
+                    IsConfirmed = false,
+                    IsDrafted = true,
+                    IsCancelled = false,
+
+                    PackedVolume = model.PackedVolume,
+                    TotalWeight = model.TotalWeight,
+                    Note = model.Note,
+                    Frzindc = model.Frzindc,
+                    FrzindcNok = model.FrzindcNok,
+
+                    Lines = new List<ArrivalLineDto>()
+                };
+
+                var newId = await _arrivalService.Create(createDto, token);
+                model.ArrivalId = newId;
+            }
+
+            foreach (var line in model.Lines)
+            {
+
+                // Map NewLine -> ArrivalLineDto
+                var expiry = string.IsNullOrWhiteSpace(model.NewLine.ExpiryDate)
+                    ? (DateTime?)null
+                    : DateTimeHelper.ToMiladi(model.NewLine.ExpiryDate);
+
+                var prod = string.IsNullOrWhiteSpace(model.NewLine.ProductionDate)
+                    ? (DateTime?)null
+                    : DateTimeHelper.ToMiladi(model.NewLine.ProductionDate);
+
+                var lineDto = new ArrivalLineDto
+                {
+                    ArrivalId = model.ArrivalId.Value,
+                    BatchNum = line.BatchNum,
+                    CommertialNameId = line.CommertialNameId,
+                    DosePerVialId = line.DosePerVialId,
+
+                    ExpiryDate = expiry,
+                    ProductionDate = prod,
+
+                    ItemDetailId = line.ItemDetailId,
+                    ItemId = line.ItemId,
+                    ManufacturerId = line.ManufacturerId,
+
+                    Note = line.Note,
+                    NumVials = line.NumVials,
+
+                    PackageSize = line.PackageSize,
+                    PackingTypeId = line.PackingTypeId,
+
+                    Quantity = line.Quantity,
+                    StoreId = line.StoreId,
+
+                    UnitVolume = line.UnitVolume,
+                    TotalVolume = line.TotalVolume,
+
+                    UseId = line.UseId,
+                    VvmStageId = line.VvmStageId,
+                    VvmTypeId = line.VvmTypeId
+                };
+                await _arrivalService.AddLine(model.ArrivalId.Value, lineDto, token);
+            }
+
+
+            TempData["ToastMessage"] = "کالا اضافه شد";
+            TempData["ToastType"] = "success";
+
+            // Redirect to edit mode (and NewLine will be empty again)
+            return RedirectToAction("New", new { id = model.ArrivalId.Value });
+        }
+
     }
 }

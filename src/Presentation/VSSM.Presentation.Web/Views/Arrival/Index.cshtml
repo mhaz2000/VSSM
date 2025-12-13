@@ -5,7 +5,6 @@
 @{
     ViewData["Title"] = "مدیریت ورودها";
     var status = (int)(ViewBag.Status ?? 1);
-    int? selectedPeriod = ViewBag.SelectedPeriodId as int?;
     int currentStatus = ViewBag.Status is int ? (int)ViewBag.Status : 1;
 }
 <style>

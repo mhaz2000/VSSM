@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Levels;
+using VSSM.Application.DTOs.BaseEntities.Recipient;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
@@ -156,5 +157,25 @@ namespace VSSM.Application.Services.BaseEntities
             await _dbContext.SaveChangesAsync(cancellationToken);
             return true;
         }
+
+        public async Task<List<LevelDto>> GetAll(CancellationToken cancellationToken)
+        {
+            var query = _dbContext.TblLevels;
+            return await query.Select(entity =>
+                   new LevelDto
+                   {
+                       LevelId = entity.LevelId,
+                       ShipCount = entity.ShipCount,
+                       SafetyStockPercentage = entity.SafetyStockPercentage,
+                       SafetyStockMonth = entity.SafetyStockMonth,
+                       Note = entity.Note,
+                       MaxDay = entity.MaxDay
+                       
+
+                   }
+                ).ToListAsync(cancellationToken);
+        }
+
+        
     }
 }

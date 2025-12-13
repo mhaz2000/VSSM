@@ -7,7 +7,12 @@
     int? selectedPeriod = ViewBag.SelectedPeriodId as int?;
     int currentStatus = ViewBag.Status is int ? (int)ViewBag.Status : 1;
 }
+<style>
+    .w-full {
+        width: 100%;
+    }
 
+</style>
 <div class="container-fluid">
     <div class="animated fadeIn">
 
@@ -16,21 +21,16 @@
                 <form method="get">
                     <div class="row align-items-center">
 
-                        <div class="col-lg-3">
+                        <div class="col-lg-6">
                             <input class="form-control"
                                    name="search"
                                    value="@Model.SearchText"
                                    placeholder="شماره گزارش..." />
                         </div>
 
-                        <div class="col-lg-3">
-                            <select name="fiscalPeriodId" class="form-select" asp-items="ViewBag.PeriodList">
-                                <option value="">دوره فعالیت</option>
-                            </select>
-                        </div>
 
-                        <div class="col-lg-3">
-                            <select name="status" class="form-select">
+                        <div class="col-lg-4">
+                            <select name="status" class="form-select w-full">
                                 <option value="1" selected="@(currentStatus == 1)">پیش‌نویس</option>
                                 <option value="2" selected="@(currentStatus == 2)">تایید شده</option>
                                 <option value="3" selected="@(currentStatus == 3)">همه</option>
@@ -41,7 +41,7 @@
                             <button type="submit" class="btn btn-primary w-100">جستجو</button>
                         </div>
 
-                        <div class="col-lg-2 text-left">
+                        <div class="col-lg-1 text-left">
                             <a class="btn btn-success w-100" asp-action="New">+ جدید</a>
                         </div>
 
@@ -80,11 +80,23 @@
                                     <td>@item.TotalVolume</td>
                                     <td>@statusText</td>
                                     <td>
-                                        <a class="btn btn-primary btn-sm"
-                                           asp-action="New"
-                                           asp-route-id="@item.ArrivalId">
-                                            ویرایش
-                                        </a>
+
+                                        @if (item.IsConfirmed == true)
+                                        {
+                                            <a class="btn btn-primary btn-sm"
+                                               asp-action="Edit"
+                                               asp-route-id="@item.ArrivalId">
+                                                مشاهده
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-primary btn-sm"
+                                               asp-action="New"
+                                               asp-route-id="@item.ArrivalId">
+                                                ویرایش
+                                            </a>
+                                        }
                                         <a class="btn btn-danger btn-sm"
                                            asp-action="Cancel"
                                            asp-route-id="@item.ArrivalId">

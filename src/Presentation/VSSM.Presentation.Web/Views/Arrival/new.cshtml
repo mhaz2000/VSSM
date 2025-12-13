@@ -42,6 +42,10 @@
         text-align: center;
     }
 
+    .allign-text {
+        margin-top: 10px;
+    }
+
     .calc-box {
         background: #f5f9ff;
         border: 1px solid #d0d9f0;
@@ -72,7 +76,7 @@
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                     <!-- ================== بخش هدر ورود ================== -->
-                    <div class="col-lg-10">
+                    <div class="col-lg-12">
 
 
 
@@ -161,7 +165,7 @@
 
                     </div>
 
-                    <hr />
+
 
                     <!-- ================== بخش جزییات کالا (ArrivalLine) ================== -->
 
@@ -368,7 +372,7 @@
                         </div> *@
 
                         <!-- دکمه افزودن کالا به گرید -->
-                        <div class="text-center mt-3">
+                        <div class="text-center mt-3 allign-text">
                             <button type="submit" name="command" value="addLine" class="btn btn-secondary px-4">
                                 افزودن کالا
                             </button>
@@ -376,11 +380,11 @@
 
                     </div>
 
-                    <hr />
+
 
                     <!-- ================== گرید خطوط موجود ================== -->
 
-                    <div class="col-lg-12">
+                    <div class="col-lg-12 allign-text">
                         <h6 class="mb-2">لیست اقلام این ورود</h6>
 
                         <table class="table table-bordered table-striped table-condensed lines-table">

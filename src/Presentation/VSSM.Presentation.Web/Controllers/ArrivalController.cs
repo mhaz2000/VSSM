@@ -165,7 +165,62 @@ namespace VSSM.Presentation.Web.Controllers
 
         public async Task<IActionResult> Edit(int id, CancellationToken token)
         {
-            return await New(id, token);
+            var dto = await _arrivalService.GetById(id, token);
+            if (dto == null) return NotFound();
+
+            var model = new ArrivalViewModel
+            {
+                ArrivalId = dto.ArrivalId,
+                Date = dto.Date.HasValue ? DateTimeHelper.ToShamsi(dto.Date.Value) : "",
+                ReportNumber = dto.ReportNumber,
+                SourceId = dto.SourceId,
+                FiscalPeriodId = dto.FiscalPeriodId,
+                EntryDate = dto.EntryDate,
+                IsConfirmed = dto.IsConfirmed ?? false,
+                IsDrafted = dto.IsDrafted ?? false,
+                IsCancelled = dto.IsCancelled ?? false,
+                PackedVolume = dto.PackedVolume,
+                TotalWeight = dto.TotalWeight,
+                TotalVolume = dto.TotalVolume,
+                Note = dto.Note,
+                Frzindc = dto.Frzindc,
+                FrzindcNok = dto.FrzindcNok,
+                Lines = dto.Lines.Select(l => new ArrivalLineViewModel
+                {
+                    ArrivalLineId = l.ArrivalLineId,
+                    ArrivalId = l.ArrivalId,
+
+                    BatchNum = l.BatchNum,
+                    CommertialNameId = l.CommertialNameId,
+                    DosePerVialId = l.DosePerVialId,
+
+                    ExpiryDate = l.ExpiryDate.HasValue ? DateTimeHelper.ToShamsi(l.ExpiryDate.Value) : "",
+                    ProductionDate = l.ProductionDate.HasValue ? DateTimeHelper.ToShamsi(l.ProductionDate.Value) : "",
+
+                    ItemDetailId = l.ItemDetailId,
+                    ItemId = l.ItemId,
+                    ManufacturerId = l.ManufacturerId,
+
+                    Note = l.Note,
+                    NumVials = l.NumVials,
+                    PackageSize = l.PackageSize,
+                    PackingTypeId = l.PackingTypeId,
+
+                    Quantity = l.Quantity,
+                    StoreId = l.StoreId,
+
+                    TotalVolume = l.TotalVolume,
+                    UnitVolume = l.UnitVolume,
+
+                    UseId = l.UseId,
+                    VvmStageId = l.VvmStageId,
+                    VvmTypeId = l.VvmTypeId
+                }).ToList(),
+
+                NewLine = new ArrivalLineViewModel()
+            };
+            ViewBag.IsReadOnly = model.IsConfirmed;
+            return View(model);
         }
 
         // MAIN POST: all buttons submit here

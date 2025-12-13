@@ -60,7 +60,7 @@
                             <tr>
                                 <td>@item.Code</td>
                                 <td>@item.FullName</td>
-                                <td>@(item.EntryDate?.ToString("yyyy/MM/dd") ?? "-")</td>
+                                <td>@(item.EntryShamsiDate ?? "-")</td>
                                 <td>@(item.IsActive ? "بله" : "خیر")</td>
                                 <td>
                                     <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.AdjustReasonId">ویرایش</a>

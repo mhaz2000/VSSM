@@ -2,10 +2,17 @@
 @model VSSM.Presentation.Web.Models.Manufacturer.ManufacturerViewModel
 
 @{
-string formName = Model != null && Model.ManufacturerId > 0 ? "ویرایش" : "ثبت";
+string formName = "ثبت";
+if (Model != null && Model.ManufacturerId > 0)
+formName = "ویرایش";
 }
 
 <style>
+    /* راست‌چین کلی صفحه */
+    body, .container-fluid {
+        direction: rtl;
+    }
+
     .form-label {
         text-align: left;
         width: 130px;
@@ -19,122 +26,205 @@ string formName = Model != null && Model.ManufacturerId > 0 ? "ویرایش" : "
         direction: rtl;
     }
 
-    .form-control {
+    .form-control, .form-select {
         flex: 1;
-    }
-
-    .form-check-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-        direction: rtl;
-    }
-    
-    .form-check-input {
-        margin-right: 10px; 
-    }
-
-    .checkbox-container {
-        max-height: 250px;
-        overflow-y: auto;
-        border: 1px solid #ced4da;
-        border-radius: .375rem;
-        padding: 10px;
-        background: #fff;
     }
 
     .card {
         direction: rtl;
+    }
+
+    /* چک‌باکس‌ها */
+    .checkbox-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        margin: 0 !important; /* Reset default */
+        margin-right: 15px !important;
+    }
+
+    /* چک‌باکس‌های اسکرول دار */
+    .custom-scroll-checklist {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ced4da;
+        border-radius: 0.5rem;
+        padding: 10px;
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .custom-checkbox {
+        display: flex;
+        align-items: center;
+        position: relative;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 0.35rem;
+        transition: background 0.2s;
+    }
+
+    .custom-checkbox:hover {
+        background-color: #f1f1f1;
+    }
+
+    .custom-checkbox input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .checkmark {
+        height: 20px;
+        width: 20px;
+        background-color: #eee;
+        border-radius: 4px;
+        margin-left: 10px;
+        flex-shrink: 0;
+        border: 1px solid #ccc;
+    }
+
+    .custom-checkbox input:checked ~ .checkmark {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .checkmark::after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    .custom-checkbox input:checked ~ .checkmark::after {
+        display: block;
+    }
+
+    .custom-checkbox .checkmark::after {
+        left: 6px;
+        top: 2px;
+        width: 6px;
+        height: 12px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .checkbox-text {
+        flex: 1;
+        text-align: right;
+    }
+
+    .btn {
+        margin-right: 5px;
     }
 </style>
 
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5>@formName سازنده</h5>
+        <!-- عنوان فرم -->
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <h5>@formName سازنده</h5>
+                </div>
             </div>
         </div>
 
+        <!-- فرم اصلی -->
         <div class="card">
-            <div class="card-body">
+            <div class="card-block">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                <form asp-controller="Manufacturer" asp-action="Create" method="post">
+                <form asp-controller="Manufacturer" asp-action="Create" method="post" class="form-horizontal">
                     <input type="hidden" asp-for="ManufacturerId" />
 
                     <div class="col-lg-6">
 
+                        <!-- Code -->
                         <div class="form-group">
                             <label class="form-label" for="Code">کد:</label>
                             <input type="text" asp-for="Code" class="form-control" />
-                            <span asp-validation-for="Code" class="text-danger"></span>
                         </div>
+                        <span asp-validation-for="Code" class="text-danger d-block text-end"></span>
 
+                        <!-- FullName -->
                         <div class="form-group">
                             <label class="form-label" for="FullName">نام کامل:</label>
                             <input type="text" asp-for="FullName" class="form-control" />
-                            <span asp-validation-for="FullName" class="text-danger"></span>
                         </div>
+                        <span asp-validation-for="FullName" class="text-danger d-block text-end"></span>
 
+                        <hr />
+
+                        <!-- ShowForVac -->
                         <div class="form-group">
-                            <label class="form-label" for="EntryDate">تاریخ ورود:</label>
-                            <input type="date" asp-for="EntryDate" class="form-control" />
-                            <span asp-validation-for="EntryDate" class="text-danger"></span>
-                        </div>
-
-                        <hr class="my-4"/>
-
-                        <div class="form-check-group">
-                            <input type="checkbox" asp-for="ShowForVac" class="form-check-input" />
                             <label class="form-label" for="ShowForVac">نمایش برای VAC:</label>
-                        </div>
-
-                        <div class="form-check-group">
-                            <input type="checkbox" asp-for="ShowForOther" class="form-check-input" />
-                            <label class="form-label" for="ShowForOther">نمایش برای سایر:</label>
-                        </div>
-
-                        <div class="form-check-group">
-                            <input type="checkbox" asp-for="IsActive" class="form-check-input" />
-                            <label class="form-label" for="IsActive">فعال:</label>
-                        </div>
-
-                        <hr class="my-4"/>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">نوع کالا:</label>
                             <div class="checkbox-container">
-                                @foreach (var item in Model.ItemClasses)
-                                {
-                                bool isChecked = Model.SelectedItemClassIds != null && Model.SelectedItemClassIds.Contains(int.Parse(item.Value));
+                                @Html.CheckBoxFor(m => m.ShowForVac, new { @class = "form-check-input" })
+                            </div>
+                        </div>
+                        <span asp-validation-for="ShowForVac" class="text-danger d-block text-end"></span>
 
-                                <div class="form-check form-check-reverse"> <label class="form-check-label" for="chk_@item.Value"> @item.Text
-                                    </label>
-                                    <input class="form-check-input"
-                                           type="checkbox"
+                        <!-- ShowForOther -->
+                        <div class="form-group">
+                            <label class="form-label" for="ShowForOther">نمایش برای سایر:</label>
+                            <div class="checkbox-container">
+                                @Html.CheckBoxFor(m => m.ShowForOther, new { @class = "form-check-input" })
+                            </div>
+                        </div>
+                        <span asp-validation-for="ShowForOther" class="text-danger d-block text-end"></span>
+
+                        <!-- IsActive -->
+                        <div class="form-group">
+                            <label class="form-label" for="IsActive">فعال:</label>
+                            <div class="checkbox-container">
+                                @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+                            </div>
+                        </div>
+                        <span asp-validation-for="IsActive" class="text-danger d-block text-end"></span>
+
+                        <hr />
+
+                        <!-- ItemClasses (چک‌باکس اسکرول دار) -->
+                        <div class="form-group">
+                            <label class="form-label fw-bold">نوع کالا:</label>
+                            <div class="custom-scroll-checklist">
+                                @foreach (var item in Model.Items)
+                                {
+                                bool isChecked = Model.SelectedItemClassIds != null &&
+                                Model.SelectedItemClassIds.Contains(int.Parse(item.Value));
+
+                                <label class="custom-checkbox">
+                                    <input type="checkbox"
                                            name="SelectedItemClassIds"
                                            value="@item.Value"
-                                           id="chk_@item.Value"
-                                           @(isChecked ? "checked" : "") /> </div>
+                                           @(isChecked ? "checked" : "") />
+                                    <span class="checkmark"></span>
+                                    <span class="checkbox-text">@item.Text</span>
+                                </label>
                                 }
                             </div>
-                            <small class="text-muted d-block mt-1">
-                                برای انتخاب چند مورد کافیست تیک‌ها را بزنید، نیازی به نگه داشتن Ctrl نیست.
-                            </small>
-                            <span asp-validation-for="SelectedItemClassIds" class="text-danger"></span>
                         </div>
+                        <span asp-validation-for="SelectedItemClassIds" class="text-danger d-block text-end"></span>
 
-                        <div class="mt-4 text-start">
+                        <!-- دکمه‌ها -->
+                        <div class="text-center mt-4 align-middle">
                             <button type="submit" class="btn btn-success px-5">@formName</button>
                             <a class="btn btn-primary px-5" asp-controller="Manufacturer" asp-action="Index">لیست</a>
                         </div>
 
                     </div>
                 </form>
-
             </div>
         </div>
+
     </div>
 </div>

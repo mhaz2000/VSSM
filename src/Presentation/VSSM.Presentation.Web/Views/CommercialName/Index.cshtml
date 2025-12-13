@@ -41,7 +41,7 @@ ViewData["Title"] = "مدیریت نام‌های تجاری";
                                 <th>شناسه</th>
                                 <th>نام کامل</th>
                                 <th>کد</th>
-                                <th>فعال؟</th>
+                                <th>فعال</th>
                                 <th>تاریخ ورود</th>
                                 <th>عملیات</th>
                             </tr>
@@ -56,7 +56,7 @@ ViewData["Title"] = "مدیریت نام‌های تجاری";
                                 <td>@item.FullName</td>
                                 <td>@item.Code</td>
                                 <td>@(item.IsActive == true ? "بله" : "خیر")</td>
-                                <td>@item.EntryDate?.ToString("yyyy/MM/dd")</td>
+                                <td>@item.EntryShamsiDate</td>
                                 <td>
                                     <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.CommercialNameId">ویرایش</a>
 

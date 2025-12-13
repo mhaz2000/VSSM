@@ -59,14 +59,13 @@ ViewData["Title"] = "مدیریت تولید کنندگان";
                                 <td>@manufacturer.ManufacturerId</td>
                                 <td>@manufacturer.Code</td>
                                 <td>@manufacturer.FullName</td>
-                                <td>@manufacturer.EntryDate?.ToString("yyyy/MM/dd")</td> @* Format the date for display *@
+                                <td>@manufacturer.EntryShamsiDate</td>
                                 <td>@(manufacturer.ShowForVac ? "بله" : "خیر")</td>
                                 <td>@(manufacturer.ShowForOther ? "بله" : "خیر")</td>
                                 <td>@(manufacturer.IsActive ? "فعال" : "غیرفعال")</td>
                                 <td>
                                     <a class="btn btn-primary btn-sm" asp-controller="Manufacturer" asp-action="Edit" asp-route-id="@manufacturer.ManufacturerId">ویرایش</a>
 
-                                    @* NOTE: Using confirm() here to match the structure of the provided sample, but a custom modal is generally preferred in modern web apps. *@
                                     <form asp-controller="Manufacturer" asp-action="Delete" asp-route-id="@manufacturer.ManufacturerId" method="post" style="display:inline;">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('آیا مطمئن هستید می‌خواهید حذف کنید؟');">حذف</button>
@@ -84,15 +83,12 @@ ViewData["Title"] = "مدیریت تولید کنندگان";
                             </tbody>
                         </table>
 
-                        <!-- Pagination -->
                         <nav class="mt-2">
                             <ul class="pagination justify-content-center">
-                                @* Previous Page Link *@
                                 <li class="page-item @(Model.Paging.Page <= 1 ? "disabled" : "")">
                                     <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
                                 </li>
 
-                                @* Page Number Links *@
                                 @for (int i = 1; i <= Model.Paging.TotalPages; i++)
                                 {
                                 <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
@@ -100,7 +96,6 @@ ViewData["Title"] = "مدیریت تولید کنندگان";
                                 </li>
                                 }
 
-                                @* Next Page Link *@
                                 <li class="page-item @(Model.Paging.Page >= Model.Paging.TotalPages ? "disabled" : "")">
                                     <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
                                 </li>

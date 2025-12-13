@@ -1,3 +1,5 @@
+using VSSM.Application.Helpers;
+
 namespace VSSM.Application.DTOs.BaseEntities.CommercialName;
 
 public class CommercialNameDto
@@ -10,5 +12,6 @@ public class CommercialNameDto
 
     public bool IsActive { get; set; }
 
-    public DateTime? EntryDate { get; set; }
+    public DateTime? EntryDate { get; set; } = DateTime.Now;
+    public string EntryShamsiDate => EntryDate.HasValue ? EntryDate.Value.ToShamsi() : string.Empty;
 }

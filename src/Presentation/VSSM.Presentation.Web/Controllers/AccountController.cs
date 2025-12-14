@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using VSSM.Presentation.Web.Models.Account;
 
 namespace VSSM.Presentation.Web.Controllers
 {
@@ -12,28 +16,41 @@ namespace VSSM.Presentation.Web.Controllers
 
 
         [HttpPost]
-        public IActionResult Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            // نمونه تستی
+            if (model.UserName == "admin" && model.Password == "123")
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, "Admin User"),
+                    new Claim("UserId", "1"),
+                    new Claim("UserType", "Admin")
+                };
 
-            // TODO: اعتبارسنجی یوزر و پسورد
-            // اگر درست بود:
-            // SignIn...
 
-            return RedirectToAction("Index", "Home");
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+
+
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+
+                return RedirectToAction("Index", "Home");
+            }
+
+
+            ViewBag.Error = "نام کاربری یا رمز عبور اشتباه است";
+            return View(model);
         }
 
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            // TODO: SignOut...
-
+            await HttpContext.SignOutAsync();
             return RedirectToAction("Login");
         }
 
     }
 
-    public class LoginViewModel
-    {
-    }
+    
 }

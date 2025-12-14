@@ -32,7 +32,6 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public bool IsDrafted { get; set; }
 
         [Display(Name = "حجم بسته")]
-        [Required(ErrorMessage = "حجم بسته را انتخاب کنید.")]
         public float? PackedVolume { get; set; }
 
         [Display(Name = "وزن کل")]

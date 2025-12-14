@@ -133,21 +133,17 @@
                             <!-- حجم بسته -->
                             <div class="form-group">
                                 <span class="form-label">
-                                    <span class="required-star">*</span>
                                     حجم بسته:
                                 </span>
                                 <input asp-for="PackedVolume" class="form-control" />
-                                <span asp-validation-for="PackedVolume" class="text-danger"></span>
                             </div>
 
                             <!-- وزن کل -->
                             <div class="form-group">
                                 <span class="form-label">
-                                    <span class="required-star">*</span>
                                     وزن کل:
                                 </span>
                                 <input asp-for="TotalWeight" class="form-control" />
-                                <span asp-validation-for="TotalWeight" class="text-danger"></span>
                             </div>
 
                             <!-- حجم کل لیتر (خلاصه) -->
@@ -211,7 +207,7 @@
                                     {
                                         var line = Model.Lines[i];
                                         <tr>
-                                            <td>@line.ItemId</td> @* یا نام کالا اگر در DTO آورده‌ای *@
+                                            <td>@line.ItemDetailId</td> @* یا نام کالا اگر در DTO آورده‌ای *@
                                             <td>@line.CommertialNameId</td>
                                             <td>@line.BatchNum</td>
                                             <td>@line.Quantity</td>

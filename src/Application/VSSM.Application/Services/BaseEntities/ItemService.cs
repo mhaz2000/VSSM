@@ -50,7 +50,7 @@ namespace VSSM.Application.Services.BaseEntities
                 UseOrdinaryStore = dto.UseOrdinaryStore,
                 UnitPrice = dto.UnitPrice,
                 DayToWarmExpire = dto.DayToWarmExpire,
-                
+
             };
 
             await _dbContext.TblItems.AddAsync(model);
@@ -68,7 +68,8 @@ namespace VSSM.Application.Services.BaseEntities
             var result = items.Select(x => new ItemListDto
             {
                 Id = x.ItemId,
-                FullName = x.FullName
+                FullName = x.FullName,
+                ItemClassId = x.ItemClassId
             }).ToList();
 
             return result;
@@ -103,7 +104,7 @@ namespace VSSM.Application.Services.BaseEntities
                 UserAboveZeroStore = entity.UserAboveZeroStore,
                 UserBelowZeroStore = entity.UserBelowZeroStore,
                 Volume = entity.Volume,
-                
+
             };
 
             return dto;

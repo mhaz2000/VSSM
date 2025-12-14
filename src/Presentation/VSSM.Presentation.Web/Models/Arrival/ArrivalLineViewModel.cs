@@ -7,7 +7,8 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public int? ArrivalLineId { get; set; }
     
         public int? ItemId { get; set; }
- 
+        public int? ItemDetailId { get; set; }
+
         public int? StoreId { get; set; }
         public int? CommertialNameId { get; set; }
         public int? ArrivalId { get; set; }
@@ -23,7 +24,7 @@ namespace VSSM.Presentation.Web.Models.Arrival
  
         public string? ExpiryDate { get; set; }      // string (از datepicker)
         public string? ProductionDate { get; set; }  // string
-        public int? ItemDetailId { get; set; }
+
  
         public int? Quantity { get; set; }
         public int? NumVials { get; set; }

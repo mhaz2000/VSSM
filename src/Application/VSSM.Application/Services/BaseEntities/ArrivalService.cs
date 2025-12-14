@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -19,7 +20,7 @@ namespace VSSM.Application.Services.BaseEntities
            GRID
         ========================= */
         public async Task<PagingSearchOrderDto<ArrivalListDto>> GetPagedList(
-            string? search,          
+            string? search,
             int statusFilter,
             int page,
             int pageSize,
@@ -29,7 +30,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(x => x.ReportNumber.Contains(search));
- 
+
 
             if (statusFilter == 1) // Draft
                 query = query.Where(x => x.IsDrafted == true && x.IsCancelled != true);
@@ -281,5 +282,23 @@ namespace VSSM.Application.Services.BaseEntities
                 .ToListAsync(token);
         }
 
+        public async Task AddToTotal(int? id, float total)
+        {
+            (await _db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == id)).TotalVolume += total;
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task SubtractionToTotal(int lineId, int arrivalId)
+        {
+            (await _db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == arrivalId)).TotalVolume -= _db.TblArrivalLines.FirstOrDefault(z => z.ArrivalLineId == lineId).TotalVolume;
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task Delete(int id)
+        {
+            var entity = await _db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == id);
+            _db.TblArrivals.Remove(entity);
+            await _db.SaveChangesAsync();
+        }
     }
 }

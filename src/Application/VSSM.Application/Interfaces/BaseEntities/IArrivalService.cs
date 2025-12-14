@@ -5,6 +5,9 @@ namespace VSSM.Application.Interfaces.BaseEntities
 {
     public interface IArrivalService
     {
+        Task Delete(int id);
+        Task AddToTotal(int? id, float total);
+        Task SubtractionToTotal(int lineId, int arrivalId);
         Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token);
         Task Cancel(int id, CancellationToken token);
         Task CancelLine(int arrivalLineId, CancellationToken token);

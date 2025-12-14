@@ -22,6 +22,7 @@ namespace VSSM.Presentation.Web.Controllers
         private readonly IItemDetailsService _itemDetailService;
         private readonly IUseService _useService;
         private readonly IPackingTypeService _packingTypeService;
+        private readonly IItemClassService _itemClassService;
 
         public ArrivalController(
             IArrivalService arrivalService,
@@ -36,7 +37,8 @@ namespace VSSM.Presentation.Web.Controllers
             ICommercialNameService commercialNameService,
             IItemDetailsService itemDetailService,
             IUseService useService,
-            IPackingTypeService packingTypeService)
+            IPackingTypeService packingTypeService,
+            IItemClassService itemClassService)
         {
             _arrivalService = arrivalService;
             _sourceService = sourceService;
@@ -51,6 +53,7 @@ namespace VSSM.Presentation.Web.Controllers
             _itemDetailService = itemDetailService;
             _useService = useService;
             _packingTypeService = packingTypeService;
+            _itemClassService = itemClassService;
         }
 
         public async Task<IActionResult> Index(
@@ -96,6 +99,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             var model = new ArrivalViewModel
             {
+                TotalVolume = dto.TotalVolume,
                 ArrivalId = dto.ArrivalId,
                 Date = dto.Date.HasValue ? DateTimeHelper.ToShamsi(dto.Date.Value) : "",
                 ReportNumber = dto.ReportNumber,
@@ -106,7 +110,7 @@ namespace VSSM.Presentation.Web.Controllers
                 IsDrafted = dto.IsDrafted ?? false,
                 IsCancelled = dto.IsCancelled ?? false,
                 PackedVolume = dto.PackedVolume,
-                TotalWeight = dto.TotalWeight, 
+                TotalWeight = dto.TotalWeight,
                 Note = dto.Note,
                 Frzindc = dto.Frzindc,
                 FrzindcNok = dto.FrzindcNok,
@@ -159,6 +163,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             var model = new ArrivalViewModel
             {
+                TotalVolume = dto.TotalVolume,
                 ArrivalId = dto.ArrivalId,
                 Date = dto.Date.HasValue ? DateTimeHelper.ToShamsi(dto.Date.Value) : "",
                 ReportNumber = dto.ReportNumber,
@@ -209,6 +214,12 @@ namespace VSSM.Presentation.Web.Controllers
             };
             ViewBag.IsReadOnly = model.IsConfirmed;
             return View(model);
+        }
+        public async Task<IActionResult> Delete(int id, CancellationToken token)
+        {
+            await _arrivalService.Delete(id);
+            return await Index(null);
+
         }
 
         // MAIN POST: all buttons submit here
@@ -265,7 +276,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             // Validate NewLine minimum required (yellow fields)
             if (model.NewLine == null ||
-                !model.NewLine.ItemId.HasValue ||
+ 
                 !model.NewLine.StoreId.HasValue ||
                 !model.NewLine.Quantity.HasValue)
             {
@@ -283,7 +294,7 @@ namespace VSSM.Presentation.Web.Controllers
                     ReportNumber = model.ReportNumber,
                     SourceId = model.SourceId.Value,
                     FiscalPeriodId = model.FiscalPeriodId.Value,
-
+                    TotalVolume = model.TotalVolume,
                     IsConfirmed = false,
                     IsDrafted = true,
                     IsCancelled = false,
@@ -342,6 +353,7 @@ namespace VSSM.Presentation.Web.Controllers
             };
 
             await _arrivalService.AddLine(model.ArrivalId.Value, lineDto, token);
+            await _arrivalService.AddToTotal(model.ArrivalId.Value, model.NewLine.TotalVolume.Value);
 
             TempData["ToastMessage"] = "کالا اضافه شد";
             TempData["ToastType"] = "success";
@@ -410,7 +422,9 @@ namespace VSSM.Presentation.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteLine(int id, int arrivalId, CancellationToken token)
         {
+            _arrivalService.SubtractionToTotal(id, arrivalId);
             await _arrivalService.CancelLine(id, token);
+
 
             TempData["ToastMessage"] = "سطر حذف شد";
             TempData["ToastType"] = "success";
@@ -467,6 +481,10 @@ namespace VSSM.Presentation.Web.Controllers
             ViewBag.PackingTypeList = (await _packingTypeService.GetActives(token))
                 .Select(x => new SelectListItem { Value = x.PackingTypeId.ToString(), Text = x.FullName })
                 .ToList();
+
+            ViewBag.ItemClassList = (await _itemClassService.GetActives(token))
+             .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+             .ToList();
         }
         public async Task<IActionResult> Copy(string? reportNumber, CancellationToken token)
         {
@@ -483,7 +501,8 @@ namespace VSSM.Presentation.Web.Controllers
             return View();
         }
 
-
+ 
+       
         [HttpPost]
         public async Task<IActionResult> CopyConfirm(int arrivalId, CancellationToken token)
         {
@@ -622,6 +641,30 @@ namespace VSSM.Presentation.Web.Controllers
 
             // Redirect to edit mode (and NewLine will be empty again)
             return RedirectToAction("New", new { id = model.ArrivalId.Value });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetItemsByClass(int classId, CancellationToken token)
+        {
+            var list = (await _itemService.GetActives(token)).Where(z => z.ItemClassId == classId);
+
+            return Json(list.Select(x => new
+            {
+                id = x.Id,
+                text = x.FullName,
+            }));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetVvmStages(int vvmTypeId, CancellationToken token)
+        {
+            var stages = await _vvmstageService.GetActives(token);
+
+            return Json(stages.Select(x => new
+            {
+                id = x.VvmstageId,
+                text = x.FullName
+            }));
         }
 
     }

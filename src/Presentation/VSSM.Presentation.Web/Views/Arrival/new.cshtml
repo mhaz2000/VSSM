@@ -10,6 +10,19 @@
 }
 
 <style>
+
+    .pale-green-btn {
+        background-color: #e8f5e9; /* سبز خیلی کمرنگ */
+        border: 1px solid #a5d6a7;
+        color: #2e7d32;
+    }
+
+        .pale-green-btn:hover {
+            background-color: #dcedc8;
+            border-color: #81c784;
+            color: #1b5e20;
+        }
+
     .form-label {
         width: 140px;
         margin-left: 10px;
@@ -190,32 +203,27 @@
 
                             <div class="col-lg-6">
 
-                                <!-- کالا (الزامی) -->
+                                <!-- نوع کالا -->
                                 <div class="form-group">
-                                    <span class="form-label">
-                                        <span class="required-star">*</span>
-                                        نوع کالا:
-                                    </span>
-                                    <select asp-for="NewLine.ItemId"
-                                            asp-items="ViewBag.ItemList"
+                                    <span class="form-label">نوع کالا:</span>
+                                    <select id="ItemClassId"
+                                            asp-items="ViewBag.itemClassList"
                                             class="form-select">
                                         <option value="">انتخاب کنید...</option>
                                     </select>
-                                    <span asp-validation-for="NewLine.ItemId" class="text-danger"></span>
                                 </div>
 
+                                <!-- کالا -->
                                 <div class="form-group">
-                                    <span class="form-label">
-                                        <span class="required-star">*</span>
-                                        کالا:
-                                    </span>
-                                    <select asp-for="NewLine.ItemDetailId"
-                                            asp-items="ViewBag.ItemDetailList"
-                                            class="form-select">
-                                        <option value="">انتخاب کنید...</option>
+                                    <span class="form-label">کالا:</span>
+                                    <select id="ItemId"
+                                            asp-for="NewLine.ItemId"
+                                            class="form-select"
+                                            disabled>
+                                        <option value="">ابتدا نوع کالا را انتخاب کنید</option>
                                     </select>
-                                    <span asp-validation-for="NewLine.ItemDetailId" class="text-danger"></span>
                                 </div>
+
 
                                 <!-- نام تجاری -->
                                 <div class="form-group">
@@ -309,6 +317,7 @@
                                 </div>
 
                                 <!-- نوع VVM -->
+                                <!-- نوع VVM -->
                                 <div class="form-group">
                                     <span class="form-label">نوع VVM:</span>
                                     <select asp-for="NewLine.VvmTypeId"
@@ -323,12 +332,13 @@
                                 <div class="form-group">
                                     <span class="form-label">مرحله VVM:</span>
                                     <select asp-for="NewLine.VvmStageId"
-                                            asp-items="ViewBag.VvmStageList"
                                             class="form-select"
-                                            id="VvmStageId">
-                                        <option value="">انتخاب کنید...</option>
+                                            id="VvmStageId"
+                                            disabled>
+                                        <option value="">ابتدا نوع VVM را انتخاب کنید</option>
                                     </select>
                                 </div>
+
 
                                 <!-- نوع بسته -->
                                 <div class="form-group">
@@ -412,10 +422,14 @@
 
                         <!-- دکمه افزودن کالا به گرید -->
                         <div class="text-center mt-3 allign-text">
-                            <button type="submit" name="command" value="addLine" class="btn btn-secondary px-4">
+                            <button type="submit"
+                                    name="command"
+                                    value="addLine"
+                                    class="btn btn-light px-4 pale-green-btn">
                                 افزودن کالا
                             </button>
                         </div>
+
 
                     </div>
 
@@ -447,7 +461,7 @@
                                     {
                                         var line = Model.Lines[i];
                                         <tr>
-                                            <td>@line.ItemDetailId</td> @* یا نام کالا اگر در DTO آورده‌ای *@
+                                            <td>@line.ItemId</td> @* یا نام کالا اگر در DTO آورده‌ای *@
                                             <td>@line.CommertialNameId</td>
                                             <td>@line.BatchNum</td>
                                             <td>@line.Quantity</td>
@@ -505,16 +519,77 @@
     <script src="~/js/persian-date.js"></script>
     <script src="~/js/persian-datepicker.js"></script>
     <script>
-        // محاسبه تعداد ویال = تعداد / دوز بر ویال (فعلاً ساده، اگر دوز را به صورت عدد داری)
-        function recalcNumVials() {
-            var qty = parseFloat($("#Quantity").val()) || 0;
-            var dose = parseFloat($("#DosePerVialId option:selected").text()) || 0; // اگر متن عددی است
-            if (dose > 0) {
-                $("#NumVials").val(Math.floor(qty / dose));
-            }
-        }
+            $(function () {
 
+            const $itemClass = $("#ItemClassId");
+            const $item = $("#ItemId");
 
+            // تغییر نوع کالا
+            $itemClass.on("change", function () {
+
+                const classId = $(this).val();
+
+                // reset
+                $item.prop("disabled", true);
+                $item.empty();
+
+                if (!classId) {
+                    $item.append('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
+                    return;
+                }
+
+                // load filtered items
+                $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
+                    .done(function (data) {
+
+                        $item.append('<option value="">انتخاب کنید...</option>');
+
+                        data.forEach(x => {
+                            $item.append(
+                                `<option value="${x.id}">${x.text}</option>`
+                            );
+                        });
+
+                        $item.prop("disabled", false);
+                    });
+            });
+
+        });
+
+             $(function () {
+
+            const $type = $("#VvmTypeId");
+            const $stage = $("#VvmStageId");
+
+            $type.on("change", function () {
+
+                const typeId = $(this).val();
+
+                // reset stage
+                $stage.prop("disabled", true);
+                $stage.empty();
+
+                if (!typeId) {
+                    $stage.append('<option value="">ابتدا نوع VVM را انتخاب کنید</option>');
+                    return;
+                }
+
+                $.getJSON("/Arrival/GetVvmStages", { vvmTypeId: typeId })
+                    .done(function (data) {
+
+                        $stage.append('<option value="">انتخاب کنید...</option>');
+
+                        data.forEach(x => {
+                            $stage.append(
+                                `<option value="${x.id}">${x.text}</option>`
+                            );
+                        });
+
+                        $stage.prop("disabled", false);
+                    });
+            });
+
+        });
         function recalcNumVials() {
             var qty = parseFloat($("#Quantity").val()) || 0;
             var dose = parseFloat($("#DosePerVialId option:selected").text()) || 0; // اگر متن عددی است

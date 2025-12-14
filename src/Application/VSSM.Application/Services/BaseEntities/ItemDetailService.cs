@@ -28,7 +28,8 @@ namespace VSSM.Application.Services.BaseEntities
             var result = items.Select(x => new ItemDetailListDto
             {
                 Id = x.ItemDetailId,
-                Name = x.PackageSize,
+                Name = x.UnitVolume,
+                itemid = x.ItemId,
 
 
             }).ToList();

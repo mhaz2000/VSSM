@@ -10,5 +10,6 @@ namespace VSSM.Application.DTOs.BaseEntities.ItemDetail
     {
         public int Id { get; set; }
         public float?  Name { get; set; }
+        public int? itemid { get; set; }
     }
 }

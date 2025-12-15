@@ -19,6 +19,8 @@ namespace VSSM.Application.Interfaces.BaseEntities
         
          Task<bool> Update(UserEditDto dto, CancellationToken token);
         
-           Task<bool> Delete(int id, CancellationToken token);
+         Task<bool> Delete(int id, CancellationToken token);
+
+         Task<UserEditDto> GetByUsername(string username, CancellationToken token);
     }
 }

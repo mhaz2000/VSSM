@@ -184,5 +184,29 @@ public class UserService : IUserService
         };
     }
 
+    public async Task<UserEditDto> GetByUsername(string username, CancellationToken token)
+    {
+        var x = await _db.TblUsers.FirstOrDefaultAsync(u => u.UserName == username, token);
+        if (x == null) return null;
 
+        return new UserEditDto
+        {
+            UserId = x.UserId,
+            UserName = x.UserName,
+            Password = x.Password,
+            FirstName = x.FirstName,
+            LastName = x.LastName,
+            Email = x.Email,
+            Idnumber = x.Idnumber,
+            Phone1 = x.Phone1,
+            Phone2 = x.Phone2,
+            RecipientId = x.RecipientId,
+            PermissionLevel = x.PermissionLevel,
+            CodeEdu = x.CodeEdu,
+            CodeJob = x.CodeJob,
+            IsAdmin = x.IsAdmin ?? false,
+            Course = x.Course,
+            CourseDate = x.CourseDate
+        };
+    }
 }

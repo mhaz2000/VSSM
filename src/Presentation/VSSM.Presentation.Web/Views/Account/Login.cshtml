@@ -39,6 +39,10 @@
                         </div>
                         </form>
                     </div>
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger">@ViewBag.Error</div>
+                    }
                 </div>
                 <div class="card card-inverse card-primary p-y-3" style="width:44%">
                     <div class="card-block text-xs-center">

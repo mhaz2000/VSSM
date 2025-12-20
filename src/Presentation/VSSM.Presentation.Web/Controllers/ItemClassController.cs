@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -7,7 +8,8 @@ using VSSM.Presentation.Web.Models.ItemClass;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class ItemClassController : Controller
+    [Authorize]
+    public class ItemClassController : BaseController
     {
         private readonly IItemClassService _itemClassService;
         public ItemClassController(IItemClassService itemClassService)

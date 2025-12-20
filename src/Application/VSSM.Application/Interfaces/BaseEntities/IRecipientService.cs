@@ -16,6 +16,7 @@ namespace VSSM.Application.Interfaces.BaseEntities
             CancellationToken token);
 
         Task<RecipientEditDto> GetById(int id, CancellationToken token);
+        Task<int?> GetChainLevelById(int id, CancellationToken token);
 
         Task<int> Create(RecipientCreateDto dto, CancellationToken token);
 

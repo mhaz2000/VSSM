@@ -1,0 +1,164 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model VSSM.Presentation.Web.Models.Adjustment.AdjustmentViewModel
+
+@{
+string formName = "ثبت";
+if (Model != null && Model.AdjustmentId > 0)
+formName = "ویرایش";
+}
+
+<style>
+    body, .container-fluid { direction: rtl; }
+    .form-label { text-align: left; width: 150px; margin-left: 15px; }
+    .form-group { display: flex; align-items: center; margin-bottom: 10px; direction: rtl; }
+    .form-control, .form-select { flex: 1; }
+    .card { direction: rtl; }
+    .btn { margin-right: 5px; }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <!-- Title -->
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-4">
+                    <h5>@formName تعدیل</h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="card">
+            <div class="card-block">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <form asp-controller="Adjustment"
+                      asp-action="Create"
+                      method="post"
+                      class="form-horizontal">
+
+                    <input type="hidden" asp-for="AdjustmentId" />
+
+                    <div class="col-lg-6">
+
+                        <!-- Dropdown ItemClass -->
+                        <div class="form-group col-md-4">
+                            <label class="form-label">نوع کالا</label>
+                            <select class="form-control" asp-for="ItemClassId">
+                                <option value="">-- انتخاب کنید --</option>
+
+                                @foreach (var itemType in ViewBag.ItemClass)
+                                {
+                                <option value="@itemType.Id">@itemType.Name</option>
+                                }
+                            </select>
+                        </div>
+
+
+                        <hr />
+
+                        <!-- Date -->
+                        <div class="form-group">
+                            <label class="form-label">تاریخ:</label>
+                            <input type="date" asp-for="Date" class="form-control" />
+                        </div>
+                        <span asp-validation-for="Date" class="text-danger d-block text-end"></span>
+
+                        <!-- Note -->
+                        <div class="form-group">
+                            <label class="form-label">توضیحات:</label>
+                            <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+                        </div>
+                        <span asp-validation-for="Note" class="text-danger d-block text-end"></span>
+
+                        <hr />
+
+                        <!-- Old Quantity (readonly) -->
+                        <div class="form-group">
+                            <label class="form-label">مقدار قبلی:</label>
+                            <input type="number"
+                                   id="OldQuantity"
+                                   class="form-control"
+                                   value="@(Model.OldQuantity > 0 ? Model.OldQuantity : 0)"
+                                   readonly />
+                        </div>
+
+                        <!-- New Quantity -->
+                        <div class="form-group">
+                            <label class="form-label">مقدار جدید:</label>
+                            <input type="number"
+                                   asp-for="NewQuantity"
+                                   id="NewQuantity"
+                                   class="form-control" />
+                        </div>
+                        <span asp-validation-for="NewQuantity" class="text-danger d-block text-end"></span>
+
+                        <hr />
+
+                        <!-- Difference (readonly) -->
+                        <div class="form-group">
+                            <label class="form-label">اختلاف (جدید - قبلی):</label>
+                            <input type="number" id="QuantityDifference" class="form-control" readonly />
+                        </div>
+
+                        <hr />
+
+                        <!-- Adjustment Reason -->
+                        <div class="form-group">
+                            <label class="form-label">دلیل تعدیل:</label>
+                            <input type="number"
+                                   asp-for="AdjustmentreasonId"
+                                   class="form-control"
+                                   placeholder="شناسه دلیل تعدیل" />
+                        </div>
+                        <span asp-validation-for="AdjustmentreasonId" class="text-danger d-block text-end"></span>
+
+                        <!-- Item Detail Store -->
+                        <div class="form-group">
+                            <label class="form-label">جزئیات کالا:</label>
+                            <input type="number"
+                                   asp-for="ItemDetailStoreId"
+                                   class="form-control" />
+                        </div>
+                        <span asp-validation-for="ItemDetailStoreId" class="text-danger d-block text-end"></span>
+
+                        <hr />
+
+                        <!-- Buttons -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5">
+                                @formName
+                            </button>
+
+                            <a class="btn btn-primary px-5"
+                               asp-controller="Adjustment"
+                               asp-action="Index">
+                                لیست
+                            </a>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function updateDifference() {
+        var oldQty = parseFloat(document.getElementById("OldQuantity").value) || 0;
+        var newQty = parseFloat(document.getElementById("NewQuantity").value) || 0;
+        document.getElementById("QuantityDifference").value = newQty - oldQty;
+    }
+
+    document.getElementById("NewQuantity").addEventListener("input", updateDifference);
+
+    // آپدیت اولیه هنگام بارگذاری صفحه
+    updateDifference();
+</script>
+}

@@ -1,0 +1,157 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model PagingSearchOrderDto<VSSM.Application.DTOs.BaseEntities.Adjustments.AdjustmentDto>
+
+@{
+ViewData["Title"] = "مدیریت تعدیلات";
+}
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <!-- Search & Create -->
+        <div class="card">
+            <div class="card-block d-flex align-items-center">
+
+                <div class="col-lg-3">
+                    <h5>تعدیلات</h5>
+                </div>
+
+                <div class="col-lg-4"></div>
+
+                <form method="get" class="col-lg-4">
+                    <div class="input-group">
+                        <input type="text"
+                               name="search"
+                               value="@Model.SearchText"
+                               class="form-control"
+                               placeholder="جستجو...">
+
+                        <div class="input-group-btn">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-search"></i> جستجو
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="col-lg-1 ms-auto">
+                    <a class="btn btn-success"
+                       asp-controller="Adjustment"
+                       asp-action="New">
+                        <i class="fa fa-plus-circle"></i> جدید
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body p-0">
+
+                        <table class="table table-bordered table-striped table-condensed text-center mb-0">
+                            <thead>
+                            <tr>
+                                <th>شناسه</th>
+                                <th>تاریخ</th>
+                                <th>تاریخ ثبت</th>
+                                <th>توضیحات</th>
+                                <th>مقدار قبلی</th>
+                                <th>مقدار جدید</th>
+                                <th>عملیات</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            @if (Model.Items != null && Model.Items.Any())
+                            {
+                            foreach (var item in Model.Items)
+                            {
+                            <tr>
+                                <td>@item.AdjustmentId</td>
+                                <td>@item.Date</td>
+                                <td>@item.EntryDate</td>
+                                <td>@item.Note</td>
+                                <td>@item.OldQuantity</td>
+                                <td>@item.NewQuantity</td>
+                                <td>
+                                    <a class="btn btn-primary btn-sm"
+                                       asp-controller="Adjustment"
+                                       asp-action="Edit"
+                                       asp-route-id="@item.AdjustmentId">
+                                        ویرایش
+                                    </a>
+
+                                    <form asp-controller="Adjustment"
+                                          asp-action="Delete"
+                                          asp-route-id="@item.AdjustmentId"
+                                          method="post"
+                                          style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm"
+                                                onclick="return confirm('آیا از حذف این رکورد مطمئن هستید؟');">
+                                            حذف
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            }
+                            }
+                            else
+                            {
+                            <tr>
+                                <td colspan="7"
+                                    class="text-center text-danger">
+                                    داده‌ای یافت نشد
+                                </td>
+                            </tr>
+                            }
+                            </tbody>
+                        </table>
+
+                        <!-- Paging -->
+                        <nav class="mt-2">
+                            <ul class="pagination justify-content-center">
+
+                                <li class="page-item @(Model.Paging.Page <= 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        قبلی
+                                    </a>
+                                </li>
+
+                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                                {
+                                <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        @i
+                                    </a>
+                                </li>
+                                }
+
+                                <li class="page-item @(Model.Paging.Page >= Model.Paging.TotalPages ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        بعدی
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </nav>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // در صورت نیاز
+</script>
+}

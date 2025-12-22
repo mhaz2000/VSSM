@@ -1,4 +1,6 @@
-﻿@{
+﻿@using VSSM.Presentation.Web.Models.Account
+@model LoginViewModel
+@{
     Layout = "_AuthLayout";
 }
 
@@ -9,23 +11,24 @@
             <div class="card-group ">
                 <div class="card p-a-2">
                     <div class="card-block">
+                        <form method="post" asp-action="Login">
                         <h1>ورود</h1>
                         <p class="text-muted">وارد حساب کاربری خود شوید</p>
                         <div class="input-group m-b-1">
                             <span class="input-group-addon">
                                 <i class="icon-user"></i>
                             </span>
-                            <input type="text" class="form-control en" placeholder="نام کاربری">
+                                <input type="text" class="form-control en" placeholder="نام کاربری" asp-for="UserName">
                         </div>
                         <div class="input-group m-b-2">
                             <span class="input-group-addon">
                                 <i class="icon-lock"></i>
                             </span>
-                            <input type="password" class="form-control en" placeholder="رمز ورود">
+                                <input type="password" class="form-control en" placeholder="رمز ورود" asp-for="Password">
                         </div>
                         <div class="row">
                             <div class="col-xs-6">
-                                <button type="button" class="btn btn-primary p-x-2">
+                                <button type="submit" class="btn btn-primary p-x-2">
                                     <i class="icon-login"></i>
                                     ورود
                                 </button>
@@ -34,16 +37,23 @@
                                 <button type="button" class="btn btn-link p-x-0">فراموشی رمز ورود</button>
                             </div>
                         </div>
+                        </form>
                     </div>
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger">@ViewBag.Error</div>
+                    }
                 </div>
                 <div class="card card-inverse card-primary p-y-3" style="width:44%">
                     <div class="card-block text-xs-center">
                         <div>
-                            <br />
+                            <img src="~/img/VSSMLogo.gif" width="80px" height="80px" />
+                            <br /><br /><br />
                             <h4>سامانه مدیریت، نگهداری و توزیع واکسن</h4>
                             <br />
                             <h5>Vaccination Supplies Stock Management </h5>
-                            <h4>VSSM</h4>
+                            @* <h4>VSSM</h4> *@
+                            
                         </div>
                     </div>
                 </div>

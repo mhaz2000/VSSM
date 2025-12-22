@@ -1,4 +1,6 @@
-﻿public class UserCreateDto
+﻿using Microsoft.EntityFrameworkCore.Metadata;
+
+public class UserCreateDto
 {
     public string UserName { get; set; }
     public string Password { get; set; }
@@ -19,4 +21,6 @@
 
     public string Course { get; set; }
     public DateTime? CourseDate { get; set; }
+
+    public string FullName => FirstName + " " + LastName; 
 }

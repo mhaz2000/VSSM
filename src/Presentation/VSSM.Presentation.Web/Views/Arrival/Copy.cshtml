@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "کپی ورود";
+}
+
+<style>
+    .select-height {
+        height: 35.9766px !important;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-block p-4">
+
+            <h5 class="mb-3">کپی ورود</h5>
+            <div class="row g-3">
+            <!-- SEARCH -->
+           
+                <div class="row col-sm-6 mb-3">
+                     <form method="get" asp-action="Copy" >
+                    <div class="col-sm-6">
+                        <input class="form-control"
+                               name="reportNumber"
+                               value="@ViewBag.Search"
+                               placeholder="شماره گزارش را وارد کنید..." />
+                    </div>
+                    <div class="col-sm-3">
+                        <button class="btn btn-primary w-100">جستجو</button>
+                    </div>
+                    </form>
+                </div>
+             
+
+            <!-- SELECT + COPY -->
+         
+                <div class="row col-sm-6">
+                       <form method="post" asp-action="CopyConfirm">
+                    <div class="col-sm-6">
+                        <select name="arrivalId"
+                                class="form-select w-100 select-height"
+                                required>
+                            <option value="">انتخاب کنید...</option>
+                            @foreach (var item in ViewBag.Arrivals)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-sm-3">
+                        <button class="btn btn-success w-100">
+                            کپی
+                        </button>
+                    </div>
+            </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

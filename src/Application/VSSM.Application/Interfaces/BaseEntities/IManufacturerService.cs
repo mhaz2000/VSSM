@@ -1,4 +1,5 @@
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
 using VSSM.Application.DTOs.BaseEntities.Manufacturer;
 
@@ -6,6 +7,7 @@ namespace VSSM.Application.Interfaces.BaseEntities;
 
 public interface IManufacturerService
 {
+    Task<List<ManufacturerDto>> GetActives(CancellationToken cancellationToken);
     Task<int> Create(ManufacturerDto dto, CancellationToken cancellationToken);
 
     Task<PagingSearchOrderDto<ManufacturerDto>> GetPagedList(

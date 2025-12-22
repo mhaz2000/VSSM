@@ -1,5 +1,6 @@
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Levels;
+using VSSM.Application.DTOs.BaseEntities.Recipient;
 
 namespace VSSM.Application.Interfaces.BaseEntities
 {
@@ -24,5 +25,7 @@ namespace VSSM.Application.Interfaces.BaseEntities
 
         // Delete a level by ID
         Task<bool> Delete(int id, CancellationToken cancellationToken);
+
+        Task<List<LevelDto>> GetAll(CancellationToken cancellationToken);
     }
 }

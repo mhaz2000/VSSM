@@ -1,9 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Presentation.Web.Models.Account;
 
 namespace VSSM.Presentation.Web.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly IUserService _userService;
+        public AccountController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -12,28 +23,49 @@ namespace VSSM.Presentation.Web.Controllers
 
 
         [HttpPost]
-        public IActionResult Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
-            // TODO: اعتبارسنجی یوزر و پسورد
-            // اگر درست بود:
-            // SignIn...
+            var user = await _userService.GetByUsername(model.UserName.Trim(), CancellationToken.None);
+
+            if (user == null)
+            {
+                ViewBag.Error = "کاربر یافت نشد";
+                return View(model);
+            }
+
+            if (user.Password != model.Password.Trim())
+            {
+                ViewBag.Error = "رمز عبور اشتباه است";
+                return View(model);
+            }
+
+            var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.FullName),
+                    new Claim("UserId", user.UserId.ToString()),
+                    new Claim("UserRole", user.IsAdmin ? "Admin" : "User"),
+                    new Claim("RecipientId", user.RecipientId.GetValueOrDefault().ToString()),
+                    new Claim("Level", user.PermissionLevel.GetValueOrDefault().ToString())
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
             return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            // TODO: SignOut...
-
+            await HttpContext.SignOutAsync();
             return RedirectToAction("Login");
         }
 
     }
 
-    public class LoginViewModel
-    {
-    }
+    
 }

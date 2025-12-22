@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs.BaseEntities.Adjustments;
 using VSSM.Application.DTOs.BaseEntities.AdjustReason;
@@ -35,6 +36,12 @@ namespace VSSM.Presentation.Web
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options => { options.LoginPath = "/Account/Login"; });
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.LoginPath = "/Account/Login";
+            });
 
             services.AddScoped<IItemClassService, ItemClassService>();
             services.AddScoped<ILevelService, LevelService>();
@@ -91,6 +98,10 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IDosePerVialService, DosePerVialService>();
             services.AddScoped<IItemDoseAssignmentService, ItemDoseAssignmentService>();
             services.AddScoped<IMinMaxItemService, MinMaxItemService>();
+            services.AddScoped<IArrivalService, ArrivalService>();
+            services.AddScoped<IUseService, UseService>();
+            services.AddScoped<IItemDetailsService, ItemDetailService>();
+            services.AddScoped<IPackingTypeService, PackingTypeService>();
         }
     }
 

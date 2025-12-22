@@ -1,0 +1,117 @@
+﻿@{
+    ViewData["Title"] = "فرم ثبت";
+}
+
+<style>
+    .page-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #1e4db7;
+        border-bottom: 2px solid #1e4db7;
+        padding-bottom: 8px;
+        margin-bottom: 20px;
+        text-align: right;
+    }
+
+    .search-box {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 4px;
+        direction: rtl;
+    }
+
+    .search-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+        .search-row label {
+            min-width: 80px;
+            font-weight: 600;
+        }
+
+        .search-row input,
+        .search-row select {
+            flex: 1;
+        }
+
+    .search-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .result-box {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        background: #fff;
+        direction: rtl;
+    }
+
+    .result-item {
+        background: #f5f5f5;
+        padding: 10px;
+        border: 1px solid #ccc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+    }
+
+    .btn-add {
+        margin-top: 15px;
+        float: left;
+    }
+</style>
+
+<div class="container-fluid">
+
+    <!-- TITLE -->
+    <div class="page-title">
+        فرم ثبت
+    </div>
+
+    <!-- SEARCH AREA -->
+    <div class="search-box">
+
+        <div class="search-row">
+
+            <span class="text-muted">
+                جست و جو توسط تاریخ و شماره و ...
+            </span>
+        </div>
+
+        <div class="search-row">
+            <button class="btn btn-secondary">جستجو</button>
+            <input type="text" class="form-control" placeholder="جستجو..." />
+        </div>
+
+        <div class="search-row">
+            <select class="form-select">
+                <option>ورودی: تاریخ | شماره گزارش | منبع | دوره فعالیت</option>
+            </select>
+        </div>
+
+        <button class="btn btn-light btn-add">
+            کپی ورودی
+        </button>
+        <div style="clear:both"></div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-box">
+        <div class="result-item">
+            <span>
+                ورودی: تاریخ: آذر 1493 | شماره گزارش: شماره گزارش | منبع: 100 واحدی
+            </span>
+            <button class="btn btn-sm btn-outline-primary">
+                مشاهده
+            </button>
+        </div>
+    </div>
+
+</div>

@@ -1,20 +1,24 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using VSSM.Presentation.Web.Models;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class HomeController : Controller
+    [Authorize]
+    public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
 
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
+            
         }
 
         public IActionResult Index()
         {
+            ViewBag.CurrentUserName = CurrentUserFullName;
             return View();
         }
 
@@ -28,5 +32,11 @@ namespace VSSM.Presentation.Web.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        public IActionResult UnderConstrauction()
+        {
+            return View();
+        }
+
     }
 }

@@ -81,7 +81,7 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                         @* <img src="img/avatars/6.jpg" class="img-avatar" alt="admin@bootstrapmaster.com"> *@
-                        <span class="hidden-md-down">مدیر سیستم</span>
+                        <span class="hidden-md-down">@ViewBag.CurrentUserName</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right">
                         <div class="dropdown-header text-xs-center">
@@ -91,7 +91,7 @@
                         <a class="dropdown-item" href="#"><i class="fa fa-wrench"></i> تنظیمات</a>
                         <!--<a class="dropdown-item" href="#"><i class="fa fa-usd"></i> Payments<span class="tag tag-default">42</span></a>-->
                         <div class="divider"></div>
-                        <a class="dropdown-item" href="#"><i class="fa fa-lock"></i> خروج</a>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Logout"><i class="fa fa-lock"></i> خروج</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -209,7 +209,7 @@
 
                             </ul>
                         </li>
-                   
+
                         <li class="nav-item">
                             <a class="nav-link" href="components-social-buttons.html">انتقال گیرنده </a>
                         </li>
@@ -242,6 +242,34 @@
                             <a class="nav-link" asp-controller="MinMaxItem" asp-action="Index"> مقدار حداقل و حداثر برای کالاها</a>
                         </li>
 
+                    </ul>
+                </li>
+
+                <li class="nav-item nav-dropdown">
+                    <a class="nav-link nav-dropdown-toggle" href="#">ورودی ها</a>
+                    <ul class="nav-dropdown-items">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">مدیریت ورودی</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">مشاهده محموله های رسیده</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">موجودی اولیه</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">موجودی اولیه</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Arrival"
+                               asp-action="Copy">
+                                کپی ورودی
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">انتقال کالا بین انبار</a>
+                        </li>
                     </ul>
                 </li>
                 <li class="nav-item nav-dropdown">
@@ -277,7 +305,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#" id="latestLink">تازه ها</a>
                         </li>
-                        <div id="message" style="margin-top:10px; color:blue;"></div>
+                        @* <div id="message" style="margin-top:10px; color:blue;"></div> *@
                     </ul>
                 </li>
 
@@ -285,7 +313,7 @@
                     <a class="nav-link" href="components-forms.html"> ورود در نقش مدیر سیستم</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="components-forms.html"> خروج</a>
+                    <a class="nav-link" asp-controller="Account" asp-action="Logout"> خروج</a>
                 </li>
 
             </ul>

@@ -1,0 +1,170 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Arrival
+@using VSSM.Application.Helpers
+@model PagingSearchOrderDto<ArrivalListDto>
+
+@{
+    ViewData["Title"] = "مدیریت ورودها";
+    var status = (int)(ViewBag.Status ?? 1);
+    int currentStatus = ViewBag.Status is int ? (int)ViewBag.Status : 1;
+}
+<style>
+    .w-full {
+        width: 100%;
+    }
+
+</style>
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card mb-2">
+            <div class="card-block">
+                <form method="get">
+                    <div class="row align-items-center">
+
+                        <div class="col-lg-6">
+                            <input class="form-control"
+                                   name="search"
+                                   value="@Model.SearchText"
+                                   placeholder="شماره گزارش..." />
+                        </div>
+
+
+                        <div class="col-lg-4">
+                            <select name="status" class="form-select w-full">
+                                <option value="1" selected="@(currentStatus == 1)">پیش‌نویس</option>
+                                <option value="2" selected="@(currentStatus == 2)">تایید شده</option>
+                                <option value="3" selected="@(currentStatus == 3)">همه</option>
+                            </select>
+                        </div>
+
+                        <div class="col-lg-1 text-left">
+                            <button type="submit" class="btn btn-primary w-100">جستجو</button>
+                        </div>
+
+                        <div class="col-lg-1 text-left">
+                            <a class="btn btn-success w-100" asp-action="New">+ جدید</a>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-block">
+
+                <table class="table table-bordered table-striped table-condensed text-center">
+                    <thead>
+                        <tr>
+                            <th>منبع</th>
+                            <th>دوره فعالیت</th>
+                            <th>تاریخ ورود</th>
+                            <th>حجم کل (لیتر)</th>
+                            <th>شماره گزارش</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Items.Any())
+                        {
+                            foreach (var item in Model.Items)
+                            {
+                                var statusText = item.IsCancelled == true ? "حذف شده"
+                                : item.IsConfirmed == true ? "تایید شده"
+                                : item.IsDrafted == true ? "پیش‌نویس" : "نامشخص";
+
+                                <tr ondblclick="onRowDblClick(@item.ArrivalId, '@statusText')">
+                                    <td>@item.SourceName</td>
+                                    <td>@item.FiscalPeriodName</td>
+                                    <td>@item.Date.Value.ToShamsi()</td>
+                                    <td>@item.TotalVolume</td>
+                                    <td>@item.ReportNumber</td>
+                                    <td>@statusText</td>
+                                    <td>
+
+                                        @if (item.IsConfirmed == true)
+                                        {
+                                            <a class="btn btn-primary btn-sm"
+                                               asp-action="Edit"
+                                               asp-route-id="@item.ArrivalId">
+                                                مشاهده
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-primary btn-sm"
+                                               asp-action="New"
+                                               asp-route-id="@item.ArrivalId">
+                                                ویرایش
+                                            </a>
+                                        }
+                                        <a class="btn btn-danger btn-sm"
+                                           asp-action="Delete"
+                                           asp-route-id="@item.ArrivalId">
+                                            حذف
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-danger">رکوردی یافت نشد.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @*分页*@
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
+                            <a class="page-link"
+                               href="?search=@Model.SearchText&status=@status&page=@(Model.Paging.Page - 1)">
+                                قبلی
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                        {
+                            <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
+                                <a class="page-link"
+                                   href="?search=@Model.SearchText&status=@status&page=@i">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
+                            <a class="page-link"
+                               href="?search=@Model.SearchText&status=@status&page=@(Model.Paging.Page + 1)">
+                                بعدی
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function onRowDblClick(id, statusText) {
+            // اگر تایید شده است فقط حالت readonly (مثلاً یک Action دیگر مثل Details)
+            if (statusText === "تایید شده") {
+                window.location.href = '@Url.Action("Edit", "Arrival")' + '?id=' + id; // اگر Details داشتی، تغییر بده
+            } else {
+                window.location.href = '@Url.Action("Edit", "Arrival")' + '/' + id;
+            }
+        }
+
+
+    </script>
+}

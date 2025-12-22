@@ -1,10 +1,12 @@
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
+using VSSM.Application.DTOs.BaseEntities.Item;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
 public interface IFiscalPeriodService
 {
+    Task<List<FiscalPeriodDto>> GetActives(CancellationToken cancellationToken);
     Task<int> Create(FiscalPeriodDto dto, CancellationToken cancellationToken);
     Task<bool> Update(FiscalPeriodDto dto, CancellationToken cancellationToken);
     Task<FiscalPeriodDto?> GetById(int id, CancellationToken cancellationToken);

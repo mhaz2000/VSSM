@@ -18,6 +18,7 @@ namespace VSSM.Presentation.Web.Controllers
         private readonly IPowerSourceService _powerSourceService;
         private readonly IRoadTypeService _roadTypeService;
         private readonly IItemService _itemService;
+        private readonly ILevelService _levelService;
 
         public RecipientController(
             IRecipientService recipientService,
@@ -27,7 +28,8 @@ namespace VSSM.Presentation.Web.Controllers
             IOwnershipService ownershipService,
             IPowerSourceService powerSourceService,
             IRoadTypeService roadTypeService,
-            IItemService itemService)
+            IItemService itemService,
+            ILevelService levelService)
         {
             _recipientService = recipientService;
             _transportService = transportService;
@@ -37,6 +39,7 @@ namespace VSSM.Presentation.Web.Controllers
             _powerSourceService = powerSourceService;
             _roadTypeService = roadTypeService;
             _itemService = itemService;
+            _levelService = levelService;
         }
 
         // LIST
@@ -245,6 +248,25 @@ namespace VSSM.Presentation.Web.Controllers
                     Text = e.FullName
                 })
                 .ToList();
+
+            ViewBag.LevelList = (await _levelService.GetAll(token))
+             .Select(e => new SelectListItem
+             {
+                 Value = e.LevelId.ToString(),
+                 Text = e.ShipCount.ToString()
+             })
+             .ToList();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is RecipientController controller &&
+                   EqualityComparer<ILevelService>.Default.Equals(_levelService, controller._levelService);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_levelService);
         }
     }
 }

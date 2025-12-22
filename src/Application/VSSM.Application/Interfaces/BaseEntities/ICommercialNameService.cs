@@ -1,10 +1,12 @@
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.CommercialName;
+using VSSM.Application.DTOs.BaseEntities.DosePerVial;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
 public interface ICommercialNameService
 {
+    public Task<List<CommercialNameDto>> GetActives(CancellationToken cancellationToken);
     Task<int> Create(CommercialNameDto dto, CancellationToken cancellationToken);
 
     Task<PagingSearchOrderDto<CommercialNameDto>> GetPagedList(

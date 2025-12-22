@@ -52,6 +52,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             var result = items.Select(x => new DosePerVialListDto
             {
+                
                 DosePerVialId = x.DosePerVialId,
                 NumDosePerVial = x.NumDosePerVial
             }).ToList();

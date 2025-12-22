@@ -10,9 +10,11 @@ namespace VSSM.Presentation.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IUserService _userService;
-        public AccountController(IUserService userService)
+        private readonly IRecipientService _recipientService;
+        public AccountController(IUserService userService, IRecipientService recipientService)
         {
             _userService = userService;
+            _recipientService = recipientService;
         }
 
         [HttpGet]
@@ -42,13 +44,15 @@ namespace VSSM.Presentation.Web.Controllers
                 return View(model);
             }
 
+            var chainLevel = await _recipientService.GetChainLevelById(user.RecipientId.GetValueOrDefault(), CancellationToken.None);
+
             var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.FullName),
                     new Claim("UserId", user.UserId.ToString()),
                     new Claim("UserRole", user.IsAdmin ? "Admin" : "User"),
                     new Claim("RecipientId", user.RecipientId.GetValueOrDefault().ToString()),
-                    new Claim("Level", user.PermissionLevel.GetValueOrDefault().ToString())
+                    new Claim("Level", chainLevel.GetValueOrDefault().ToString())
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

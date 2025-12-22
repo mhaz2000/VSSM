@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemDoseAssignment;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -8,7 +9,8 @@ using VSSM.Presentation.Web.Models.ItemDoseAssignment;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class ItemDoseAssignmentController : Controller
+    [Authorize]
+    public class ItemDoseAssignmentController : BaseController
     {
         private readonly IItemService _itemService;
         private readonly IItemClassService _itemClassService;

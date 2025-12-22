@@ -223,5 +223,17 @@ namespace VSSM.Application.Services.BaseEntities
                    }
                 ).ToListAsync(cancellationToken);
         }
+
+        public async Task<int?> GetChainLevelById(int id, CancellationToken token)
+        {
+            var reci = await _db.TblRecipients
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.RecipientId == id, token);
+
+            if (reci == null)
+                throw new Exception("Recipient not found.");
+
+            return reci.ChainLevel;
+        }
     }
 }

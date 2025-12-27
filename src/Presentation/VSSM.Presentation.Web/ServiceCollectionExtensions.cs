@@ -35,9 +35,6 @@ namespace VSSM.Presentation.Web
                 options.UseSqlServer(configuration.GetConnectionString("VSSMDbConnectionStrings")));
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options => { options.LoginPath = "/Account/Login"; });
-
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
                 options.LoginPath = "/Account/Login";

@@ -6,10 +6,6 @@ public class AdjustmentDtoValidator : AbstractValidator<AdjustmentDto>
 {
     public AdjustmentDtoValidator()
     {
-        RuleFor(x => x.Date)
-            .NotEmpty()
-            .WithMessage("وارد کردن تاریخ الزامی است");
-
         RuleFor(x => x.Note)
             .MaximumLength(500)
             .WithMessage("توضیحات نباید بیشتر از 500 کاراکتر باشد");

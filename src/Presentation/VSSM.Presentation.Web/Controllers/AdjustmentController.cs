@@ -10,11 +10,13 @@ public class AdjustmentController : BaseController
 {
     private readonly IAdjustmentService _adjustmentService;
     private readonly IItemClassService _itemClassService; 
-
-    public AdjustmentController(IAdjustmentService adjustmentService, IItemClassService itemClassService)
+    private readonly IItemService _itemService;
+    
+    public AdjustmentController(IAdjustmentService adjustmentService, IItemClassService itemClassService, IItemService itemService)
     {
         _adjustmentService = adjustmentService;
         _itemClassService = itemClassService;
+        _itemService = itemService;
     }
 
     // ---------- Index ----------
@@ -77,6 +79,8 @@ public class AdjustmentController : BaseController
     {
         var list = await _itemClassService.GetActives(cancellationToken);
         ViewBag.ItemClass = list;
+        var itemList = await _itemService.GetActives(cancellationToken);
+        ViewBag.ItemGroups = itemList;
     }
 
     [HttpPost]

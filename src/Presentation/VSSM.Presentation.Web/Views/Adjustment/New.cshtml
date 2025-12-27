@@ -2,24 +2,12 @@
 @model VSSM.Presentation.Web.Models.Adjustment.AdjustmentViewModel
 
 @{
-string formName = "ثبت";
-if (Model != null && Model.AdjustmentId > 0)
-formName = "ویرایش";
+string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "ثبت";
 }
-
-<style>
-    body, .container-fluid { direction: rtl; }
-    .form-label { text-align: left; width: 150px; margin-left: 15px; }
-    .form-group { display: flex; align-items: center; margin-bottom: 10px; direction: rtl; }
-    .form-control, .form-select { flex: 1; }
-    .card { direction: rtl; }
-    .btn { margin-right: 5px; }
-</style>
 
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <!-- Title -->
         <div class="card">
             <div class="card-block">
                 <div class="col-lg-4">
@@ -28,7 +16,6 @@ formName = "ویرایش";
             </div>
         </div>
 
-        <!-- Form -->
         <div class="card">
             <div class="card-block">
 
@@ -43,98 +30,85 @@ formName = "ویرایش";
 
                     <div class="col-lg-6">
 
-                        <!-- Dropdown ItemClass -->
-                        <div class="form-group col-md-4">
+                        <!-- Item Class -->
+                        <div class="form-group">
                             <label class="form-label">نوع کالا</label>
-                            <select class="form-control" asp-for="ItemClassId">
+                            <select class="form-control" asp-for="ItemClassId" id="ItemClassId">
                                 <option value="">-- انتخاب کنید --</option>
-
-                                @foreach (var itemType in ViewBag.ItemClass)
+                                @foreach (var item in ViewBag.ItemClass)
                                 {
-                                <option value="@itemType.Id">@itemType.Name</option>
+                                <option value="@item.Id"
+                                        selected="@(Model?.ItemClassId == item.Id)">
+                                    @item.Name
+                                </option>
                                 }
                             </select>
                         </div>
 
+                        <!-- Item Group -->
+                        <div class="form-group">
+                            <label class="form-label">گروه کالا</label>
+                            <select class="form-control" asp-for="ItemGroupId" id="ItemGroupId" disabled>
+                                <option value="">-- انتخاب کنید --</option>
+                                @foreach (var item in ViewBag.ItemGroups)
+                                {
+                                <option value="@item.Id"
+                                        data-itemclassid="@item.ItemClassId"
+                                        selected="@(Model?.ItemGroupId == item.Id)">
+                                    @item.FullName
+                                </option>
+                                }
+                            </select>
+                        </div>
 
                         <hr />
 
-                        <!-- Date -->
+                        <!-- Old Quantity -->
                         <div class="form-group">
-                            <label class="form-label">تاریخ:</label>
-                            <input type="date" asp-for="Date" class="form-control" />
-                        </div>
-                        <span asp-validation-for="Date" class="text-danger d-block text-end"></span>
-
-                        <!-- Note -->
-                        <div class="form-group">
-                            <label class="form-label">توضیحات:</label>
-                            <textarea asp-for="Note" class="form-control" rows="3"></textarea>
-                        </div>
-                        <span asp-validation-for="Note" class="text-danger d-block text-end"></span>
-
-                        <hr />
-
-                        <!-- Old Quantity (readonly) -->
-                        <div class="form-group">
-                            <label class="form-label">مقدار قبلی:</label>
+                            <label class="form-label">مقدار قبلی</label>
                             <input type="number"
+                                   asp-for="OldQuantity"
                                    id="OldQuantity"
                                    class="form-control"
-                                   value="@(Model.OldQuantity > 0 ? Model.OldQuantity : 0)"
                                    readonly />
                         </div>
 
                         <!-- New Quantity -->
                         <div class="form-group">
-                            <label class="form-label">مقدار جدید:</label>
+                            <label class="form-label">مقدار جدید</label>
                             <input type="number"
                                    asp-for="NewQuantity"
                                    id="NewQuantity"
                                    class="form-control" />
                         </div>
-                        <span asp-validation-for="NewQuantity" class="text-danger d-block text-end"></span>
 
-                        <hr />
-
-                        <!-- Difference (readonly) -->
+                        <!-- Difference -->
                         <div class="form-group">
-                            <label class="form-label">اختلاف (جدید - قبلی):</label>
-                            <input type="number" id="QuantityDifference" class="form-control" readonly />
-                        </div>
-
-                        <hr />
-
-                        <!-- Adjustment Reason -->
-                        <div class="form-group">
-                            <label class="form-label">دلیل تعدیل:</label>
+                            <label class="form-label">اختلاف</label>
                             <input type="number"
-                                   asp-for="AdjustmentreasonId"
+                                   id="QuantityDifference"
                                    class="form-control"
-                                   placeholder="شناسه دلیل تعدیل" />
+                                   readonly />
                         </div>
-                        <span asp-validation-for="AdjustmentreasonId" class="text-danger d-block text-end"></span>
-
-                        <!-- Item Detail Store -->
-                        <div class="form-group">
-                            <label class="form-label">جزئیات کالا:</label>
-                            <input type="number"
-                                   asp-for="ItemDetailStoreId"
-                                   class="form-control" />
-                        </div>
-                        <span asp-validation-for="ItemDetailStoreId" class="text-danger d-block text-end"></span>
 
                         <hr />
 
-                        <!-- Buttons -->
+                        <!-- Note -->
+                        <div class="form-group">
+                            <label class="form-label">توضیحات</label>
+                            <textarea asp-for="Note"
+                                      class="form-control"
+                                      rows="3"></textarea>
+                        </div>
+
+                        <hr />
+
                         <div class="text-center mt-4">
                             <button type="submit" class="btn btn-success px-5">
                                 @formName
                             </button>
 
-                            <a class="btn btn-primary px-5"
-                               asp-controller="Adjustment"
-                               asp-action="Index">
+                            <a class="btn btn-primary px-5" asp-action="Index">
                                 لیست
                             </a>
                         </div>
@@ -150,15 +124,47 @@ formName = "ویرایش";
 
 @section Scripts {
 <script>
-    function updateDifference() {
-        var oldQty = parseFloat(document.getElementById("OldQuantity").value) || 0;
-        var newQty = parseFloat(document.getElementById("NewQuantity").value) || 0;
-        document.getElementById("QuantityDifference").value = newQty - oldQty;
+    const itemClass = document.getElementById("ItemClassId");
+    const itemGroup = document.getElementById("ItemGroupId");
+    const oldQty = document.getElementById("OldQuantity");
+    const newQty = document.getElementById("NewQuantity");
+    const diff = document.getElementById("QuantityDifference");
+
+    function filterItemGroups() {
+        const classId = itemClass.value;
+        let hasItem = false;
+
+        Array.from(itemGroup.options).forEach(opt => {
+            const optClassId = opt.getAttribute("data-itemclassid");
+
+            if (!optClassId) return;
+
+            if (optClassId === classId) {
+                opt.style.display = "block";
+                hasItem = true;
+            } else {
+                opt.style.display = "none";
+            }
+        });
+
+        itemGroup.disabled = !classId || !hasItem;
+        if (!itemGroup.disabled && !itemGroup.value) {
+            itemGroup.selectedIndex = 0;
+        }
     }
 
-    document.getElementById("NewQuantity").addEventListener("input", updateDifference);
+    function updateDifference() {
+        const oldVal = parseFloat(oldQty.value) || 0;
+        const newVal = parseFloat(newQty.value) || 0;
+        diff.value = newVal - oldVal;
+    }
 
-    // آپدیت اولیه هنگام بارگذاری صفحه
-    updateDifference();
+    itemClass.addEventListener("change", filterItemGroups);
+    newQty.addEventListener("input", updateDifference);
+
+    document.addEventListener("DOMContentLoaded", function () {
+        filterItemGroups();
+        updateDifference();
+    });
 </script>
 }

@@ -3,17 +3,14 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>سامانه مدیریت نگهداری و توزیع واکسن</title>
+    <title>سامانه مدیریت، نگهداری و توزیع واکسن</title>
     <link href="~/css/font-awesome.min.css" rel="stylesheet">
     <link href="~/css/simple-line-icons.css" rel="stylesheet">
     <!-- Main styles for this application -->
     <link href="~/dest/style.css" rel="stylesheet">
     <link href="~/toastify/toast.css" rel="stylesheet" />
     <style>
-        .container-fluid {
-            padding: 0px 0px !important;
-        }
-
+        
         .card {
             margin-bottom: 0px !important;
             border: 0px !important;
@@ -26,8 +23,7 @@
         .table th, tr {
             text-align: center !important
         }
-    </style>
-    <style>
+    
         .form-label {
             text-align: left;
             width: 130px;
@@ -66,7 +62,7 @@
 </head>
 <body class="navbar-fixed sidebar-nav fixed-nav">
     <header class="navbar">
-        <div class="container-fluid">
+        <div class="container">
             <button class="navbar-toggler mobile-toggler hidden-lg-up" type="button">&#9776;</button>
             <a class="navbar-brand" href="#"></a>
             <ul class="nav navbar-nav hidden-md-down">
@@ -75,9 +71,9 @@
                 </li>
             </ul>
             <ul class="nav navbar-nav pull-left hidden-md-down">
-                <li class="nav-item">
+                @* <li class="nav-item">
                     <a class="nav-link aside-toggle" href="#"><i class="icon-bell"></i><span class="tag tag-pill tag-danger">5</span></a>
-                </li>
+                </li> *@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                         @* <img src="img/avatars/6.jpg" class="img-avatar" alt="admin@bootstrapmaster.com"> *@
@@ -106,7 +102,7 @@
         <nav class="sidebar-nav">
             <ul class="nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="index.html"><i class="icon-speedometer"></i> داشبورد </a>
+                    <a class="nav-link" asp-controller="Home" asp-action="Index"><i class="icon-speedometer"></i> داشبورد </a>
                 </li>
 
                 <li class="nav-item nav-dropdown">

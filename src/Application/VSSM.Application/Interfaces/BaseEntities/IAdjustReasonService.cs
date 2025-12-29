@@ -16,4 +16,5 @@ public interface IAdjustReasonService
     Task<AdjustreasonDto?> GetById(int id, CancellationToken cancellationToken);
     Task<bool> Update(AdjustreasonDto dto, CancellationToken cancellationToken);
     Task<bool> Delete(int id, CancellationToken cancellationToken);
+    Task<List<AdjustreasonDto>> GetActives(CancellationToken cancellationToken);
 }

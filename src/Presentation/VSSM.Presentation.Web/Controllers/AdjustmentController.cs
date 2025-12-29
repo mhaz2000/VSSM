@@ -9,14 +9,19 @@ namespace VSSM.Presentation.Web.Controllers;
 public class AdjustmentController : BaseController
 {
     private readonly IAdjustmentService _adjustmentService;
-    private readonly IItemClassService _itemClassService; 
+    private readonly IItemClassService _itemClassService;
     private readonly IItemService _itemService;
-    
-    public AdjustmentController(IAdjustmentService adjustmentService, IItemClassService itemClassService, IItemService itemService)
+    private readonly IArrivalService _arrivalService;
+    private readonly IAdjustReasonService _adjustReasonService;
+
+    public AdjustmentController(IAdjustmentService adjustmentService, IItemClassService itemClassService,
+        IItemService itemService, IArrivalService arrivalService, IAdjustReasonService adjustReasonService)
     {
         _adjustmentService = adjustmentService;
         _itemClassService = itemClassService;
         _itemService = itemService;
+        _arrivalService = arrivalService;
+        _adjustReasonService = adjustReasonService;
     }
 
     // ---------- Index ----------
@@ -52,6 +57,7 @@ public class AdjustmentController : BaseController
 
         return View(model);
     }
+
     // ---------- Edit ----------
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
@@ -61,26 +67,35 @@ public class AdjustmentController : BaseController
 
         await PrepareDropdown(cancellationToken);
 
+        var arrivalLine = await _arrivalService.GetArrivalLineById(adjustment.ArrivalLineId.Value);
+        var item = await _itemService.GetById(arrivalLine.ItemId.Value, cancellationToken);
         var model = new AdjustmentViewModel
         {
             AdjustmentId = adjustment.AdjustmentId,
             Date = adjustment.Date,
             Note = adjustment.Note,
-            OldQuantity = adjustment.OldQuantity,
-            NewQuantity = adjustment.NewQuantity,
+            OldQuantity = adjustment.NewQuantity,
+            NewQuantity = 0,
             AdjustmentreasonId = adjustment.AdjustmentreasonId,
-            ItemDetailStoreId = adjustment.ItemDetailStoreId
+            ItemDetailStoreId = adjustment.ItemDetailStoreId,
+            ItemId = arrivalLine.ItemId,
+            ArrivalLineId = arrivalLine.ArrivalId,
+            ItemClassId = item.ItemClassId
         };
 
         return View("New", model);
     }
-    
+
     private async Task PrepareDropdown(CancellationToken cancellationToken)
     {
         var list = await _itemClassService.GetActives(cancellationToken);
         ViewBag.ItemClass = list;
         var itemList = await _itemService.GetActives(cancellationToken);
         ViewBag.ItemGroups = itemList;
+        var arrivalLines = await _arrivalService.GetArrivalLines(CurrentUserId!.Value);
+        ViewBag.ArrivalLines = arrivalLines;
+        var adjustReasons = await _adjustReasonService.GetActives(cancellationToken);
+        ViewBag.AdjustReasons = adjustReasons;
     }
 
     [HttpPost]
@@ -96,14 +111,14 @@ public class AdjustmentController : BaseController
 
         var dto = new AdjustmentDto
         {
-            Date = model.Date,
+            Date = DateTime.Now,
             Note = model.Note,
             AdjustmentreasonId = model.AdjustmentreasonId,
             NewQuantity = model.NewQuantity,
             OldQuantity = model.OldQuantity,
             ArrivalLineId = model.ArrivalLineId,
             DispatchLineId = model.DispatchLineId,
-            EnteredById = model.EnteredById,
+            EnteredById = CurrentUserId,
             FiscalPeriodId = model.FiscalPeriodId,
             ItemDetailStoreId = model.ItemDetailStoreId
         };

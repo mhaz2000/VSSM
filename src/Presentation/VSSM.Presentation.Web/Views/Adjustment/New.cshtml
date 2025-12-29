@@ -33,7 +33,9 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                         <!-- Item Class -->
                         <div class="form-group">
                             <label class="form-label">نوع کالا</label>
-                            <select class="form-control" asp-for="ItemClassId" id="ItemClassId">
+                            <select class="form-control"
+                                    asp-for="ItemClassId"
+                                    id="ItemClassId">
                                 <option value="">-- انتخاب کنید --</option>
                                 @foreach (var item in ViewBag.ItemClass)
                                 {
@@ -48,14 +50,36 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                         <!-- Item Group -->
                         <div class="form-group">
                             <label class="form-label">گروه کالا</label>
-                            <select class="form-control" asp-for="ItemGroupId" id="ItemGroupId" disabled>
+                            <select class="form-control"
+                                    asp-for="ItemId"
+                                    id="ItemGroupId"
+                                    disabled>
                                 <option value="">-- انتخاب کنید --</option>
                                 @foreach (var item in ViewBag.ItemGroups)
                                 {
                                 <option value="@item.Id"
                                         data-itemclassid="@item.ItemClassId"
-                                        selected="@(Model?.ItemGroupId == item.Id)">
+                                        selected="@(Model?.ItemId == item.Id)">
                                     @item.FullName
+                                </option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- ArrivalLines -->
+                        <div class="form-group">
+                            <label class="form-label">کالا</label>
+                            <select class="form-control"
+                                    asp-for="ArrivalLineId"
+                                    id="ArrivalLineId"
+                                    disabled>
+                                <option value="">-- انتخاب کنید --</option>
+                                @foreach (var item in ViewBag.ArrivalLines)
+                                {
+                                <option value="@item.ArrivalLineId"
+                                        data-itemid="@item.ItemId"
+                                        selected="@(Model?.ArrivalLineId == item.ArrivalLineId)">
+                                    @item.DropDownText
                                 </option>
                                 }
                             </select>
@@ -93,6 +117,30 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
 
                         <hr />
 
+                        <div class="form-group">
+                            <label class="form-label">توجه:</label>
+                            <label class="form-control">عدد منفی فعلی موجودی فعلی را کاهش داده و عدد مثبت موجودی فعلی را افزایش میدهد. اضاف کردن موجودی فعلی را با توجه بیشتر انجام دهید.</label>
+                        </div>
+
+                        <hr />
+
+                        <!-- Adjustreason -->
+                        <div class="form-group">
+                            <label class="form-label">نوع کالا</label>
+                            <select class="form-control"
+                                    asp-for="AdjustmentreasonId"
+                                    id="AdjustmentreasonId">
+                                <option value="">-- انتخاب کنید --</option>
+                                @foreach (var item in ViewBag.AdjustReasons)
+                                {
+                                <option value="@item.AdjustReasonId"
+                                        selected="@(Model?.AdjustmentreasonId == item.AdjustReasonId)">
+                                    @item.FullName
+                                </option>
+                                }
+                            </select>
+                        </div>
+
                         <!-- Note -->
                         <div class="form-group">
                             <label class="form-label">توضیحات</label>
@@ -102,7 +150,7 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                         </div>
 
                         <hr />
-
+                        
                         <div class="text-center mt-4">
                             <button type="submit" class="btn btn-success px-5">
                                 @formName
@@ -126,17 +174,18 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
 <script>
     const itemClass = document.getElementById("ItemClassId");
     const itemGroup = document.getElementById("ItemGroupId");
+    const arrivalLine = document.getElementById("ArrivalLineId");
+
     const oldQty = document.getElementById("OldQuantity");
     const newQty = document.getElementById("NewQuantity");
     const diff = document.getElementById("QuantityDifference");
 
-    function filterItemGroups() {
+    function filterItemGroups(initialLoad = false) {
         const classId = itemClass.value;
         let hasItem = false;
 
         Array.from(itemGroup.options).forEach(opt => {
             const optClassId = opt.getAttribute("data-itemclassid");
-
             if (!optClassId) return;
 
             if (optClassId === classId) {
@@ -148,8 +197,20 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
         });
 
         itemGroup.disabled = !classId || !hasItem;
-        if (!itemGroup.disabled && !itemGroup.value) {
-            itemGroup.selectedIndex = 0;
+
+        if (!initialLoad) {
+            itemGroup.value = "";
+            arrivalLine.value = "";
+            arrivalLine.disabled = true;
+        }
+    }
+
+    function toggleArrivalLines() {
+        const hasGroup = itemGroup.value && itemGroup.value !== "";
+        arrivalLine.disabled = !hasGroup;
+
+        if (!hasGroup) {
+            arrivalLine.value = "";
         }
     }
 
@@ -159,11 +220,13 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
         diff.value = newVal - oldVal;
     }
 
-    itemClass.addEventListener("change", filterItemGroups);
+    itemClass.addEventListener("change", () => filterItemGroups(false));
+    itemGroup.addEventListener("change", toggleArrivalLines);
     newQty.addEventListener("input", updateDifference);
 
     document.addEventListener("DOMContentLoaded", function () {
-        filterItemGroups();
+        filterItemGroups(true);
+        toggleArrivalLines(); // حالت Edit
         updateDifference();
     });
 </script>

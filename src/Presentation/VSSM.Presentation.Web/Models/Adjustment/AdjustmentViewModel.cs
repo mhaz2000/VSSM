@@ -12,13 +12,12 @@ public class AdjustmentViewModel
     public int? ArrivalLineId { get; set; }
     public int? DispatchLineId { get; set; }
     public int? ItemDetailStoreId { get; set; }
-    public int? ItemGroupId { get; set; }
+    public int? ItemId { get; set; }
     public int? OldQuantity { get; set; }
     public int? NewQuantity { get; set; }
     public int? EnteredById { get; set; }
     public DateTime? EntryDate { get; set; }
     public DateTime? Date { get; set; }
     public string EntryShamsiDate => Date.HasValue ? Date.Value.ToShamsi() : string.Empty;
-    public string Note { get; set; } = "";
-    public List<SelectListItem> Items { get; set; } = new();
+    public string? Note { get; set; } = "";
 }

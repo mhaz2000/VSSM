@@ -11,13 +11,13 @@ public partial class TblItemDetailStore
 
     public int? ItemDetailId { get; set; }
 
-    public int? StoreId { get; set; }
+    public int? StoreId { get; set; } //TODO: 
 
     public long? CurrentStock { get; set; }
 
     public DateTime? EntryDate { get; set; }
 
-    public int? VvmstageId { get; set; }
+    public int? VvmstageId { get; set; } // TODO: -1
 
     public virtual TblItemDetail ItemDetail { get; set; }
 }

@@ -17,5 +17,7 @@ namespace VSSM.Application.Interfaces.BaseEntities
         Task<PagingSearchOrderDto<ArrivalListDto>> GetPagedList(string? search, int statusFilter, int page, int pageSize, CancellationToken token);
         Task SetDraft(int arrivalId, CancellationToken token);
         public Task<List<ArrivalCopyDto>> GetForCopy(string? reportNumber, CancellationToken token);
+        Task<List<ArrivalLineDto>> GetArrivalLines(int userId);
+        Task<ArrivalLineDto> GetArrivalLineById(int id);
     }
 }

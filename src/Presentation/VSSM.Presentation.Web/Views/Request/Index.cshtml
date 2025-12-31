@@ -19,7 +19,7 @@
                     <div><h5> مدیریت درخواست ها</h5></div>
                 </div>
 
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                 </div>
                 <form method="get">
                     <div class="col-lg-4">
@@ -32,7 +32,7 @@
                     </div>
                 </form>
                 <div class="col-lg-1">
-                    <a type="submit" class="btn btn btn-success" asp-controller="ItemClass" asp-action="New"><i class="fa fa-plus-circle"></i> ثبت درخواست</a>
+                    <a type="submit" class="btn btn btn-success" asp-controller="Request" asp-action="New"><i class="fa fa-plus-circle"></i> ثبت درخواست</a>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                             <thead>
                                 <tr>
                                     @* <th>ردیف</th> *@
-                                    <th>>شماره درخواست</th>
+                                    <th>شماره درخواست</th>
                                     <th>تاریخ</th>
                                     <th>وضعیت</th>
                                     <th>Entred By</th>
@@ -62,13 +62,15 @@
                                     {
                                         <tr>
                                             @* <td>@i</td> *@
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
+                                            <td>@item.RequestStatus</td>
+                                            <td>@item.SendDate.Value.ToString("yyyy/MM/dd")</td>
+                                            <td>@item.RequestStatus</td>
+                                            <td>@item.EnteredBy</td>
+                                            <td>@item.ConfirmDate.Value.ToString("yyyy/MM/dd")</td>
                                             <td>
-                                                <a class="btn btn-danger btn-sm" asp-controller="ItemClass" asp-action="Edit" asp-route-id="@item.Id">حذف</a>
+                                                @if (item.RequestStatus == 0){
+                                                    <a class="btn btn-danger btn-sm" asp-controller="ItemClass" asp-action="Edit" asp-route-id="@item.Id">حذف</a>
+                                                }
                                             </td>
                                         </tr>
                                         i++;

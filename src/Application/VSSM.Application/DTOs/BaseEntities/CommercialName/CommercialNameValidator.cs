@@ -14,8 +14,5 @@ namespace VSSM.Application.DTOs.BaseEntities.CommercialName;
                 .NotEmpty().WithMessage("کد الزامی است")
                 .MaximumLength(50).WithMessage("کد نمی‌تواند بیش از 50 کاراکتر باشد");
 
-            RuleFor(x => x.EntryDate)
-                .LessThanOrEqualTo(DateTime.Now).WithMessage("تاریخ ورود نمی‌تواند در آینده باشد")
-                .When(x => x.EntryDate.HasValue);
         }
     }

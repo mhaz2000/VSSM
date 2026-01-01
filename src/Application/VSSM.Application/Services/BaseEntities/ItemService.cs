@@ -195,5 +195,26 @@ namespace VSSM.Application.Services.BaseEntities
             return true;
         }
 
+        public async Task<List<ItemListDto>> GetItemsByClassId(int classItemId)
+        {
+            var items = await _dbContext.TblItems
+                .AsNoTracking()
+                .Where(item => item.ItemClassId == classItemId)
+                .Select(item => new ItemListDto()
+                {
+                    Id = item.ItemId,
+                    ItemClassId = item.ItemClassId,
+                    FullName = item.FullName,
+                    Code = item.Code,
+                    UniCode = item.UniCode,
+                    OrderInList = item.OrderId.GetValueOrDefault(),
+                    IsActive = item.IsActive.GetValueOrDefault(),
+                    DiluentId = item.DiluentId,
+                    DiluentName = string.Empty
+                }).ToListAsync();
+
+            return items;
+
+        }
     }
 }

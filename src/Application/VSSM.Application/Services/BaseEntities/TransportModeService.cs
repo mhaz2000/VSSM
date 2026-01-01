@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.PowerSource;
 using VSSM.Application.DTOs.BaseEntities.TransportMode;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -147,5 +149,16 @@ public class TransportModeService : ITransportModeService
 
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
+    }
+
+    public async Task<List<TransportModeDto>> GetActiveTransportModes(CancellationToken cancellationToken)
+    {
+        var transportModes = await GetAllAsync(cancellationToken);
+
+        transportModes = transportModes
+            .Where(TransportMode => TransportMode.IsActive == true)
+            .ToList();
+
+        return transportModes;
     }
 }

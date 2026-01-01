@@ -7,7 +7,9 @@ using System.Threading;
 using VSSM.Application.Common.Extensions;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemClass;
+using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Shared;
 using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.Item;
 using VSSM.Presentation.Web.Models.ItemClass;
@@ -19,10 +21,12 @@ namespace VSSM.Presentation.Web.Controllers
     {
         private readonly IItemService _itemService;
         private readonly IItemClassService _itemClassService;
-        public ItemController(IItemService itemService, IItemClassService itemClassService)
+        private readonly IItemDetailsService _itemDetailsService;
+        public ItemController(IItemService itemService, IItemClassService itemClassService, IItemDetailsService itemDetailsService)
         {
             _itemService = itemService;
             _itemClassService = itemClassService;
+            _itemDetailsService = itemDetailsService;
         }
 
         public async Task<IActionResult> Index(CancellationToken cancellationToken, string? search,
@@ -116,7 +120,7 @@ namespace VSSM.Presentation.Web.Controllers
                 DayToWarmExpire = item.DayToWarmExpire.GetValueOrDefault(),
                 DiluentId = item.DiluentId.GetValueOrDefault(),
                 UserAboveZeroStore = item.UserAboveZeroStore.GetValueOrDefault(),
-                
+
             };
 
             await PrepareDropdown(cancellationToken);
@@ -129,6 +133,48 @@ namespace VSSM.Presentation.Web.Controllers
             var list = await _itemClassService.GetActives(cancellationTOken);
 
             ViewBag.ItemClass = list;
+        }
+
+        [HttpGet("GetItems/{classItemId:required:int}")]
+        public async Task<IActionResult> GetItems(int classItemId)
+        {
+            var apiResult = new ApiResult<List<ItemListDto>>();
+
+            try
+            {
+                var items = await _itemService.GetItemsByClassId(classItemId);
+
+                apiResult.Success = true;
+                apiResult.Message = string.Empty;
+                apiResult.Result = items;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+            return Json(apiResult);
+        }
+
+        [HttpGet("GetItemDetails/{itemId:required:int}")]
+        public async Task<IActionResult> GetItemDetails(int itemId)
+        {
+            var apiResult = new ApiResult<List<ItemFullDetailsDto>>();
+
+            try
+            {
+                var itemDetails = await _itemDetailsService.GetItemDetailsAsync(itemId, CancellationToken.None);
+
+                apiResult.Success = true;
+                apiResult.Message = string.Empty;
+                apiResult.Result = itemDetails;
+            }
+            catch (Exception ex)
+            {
+            }
+
+            return Json(apiResult);
         }
     }
 }

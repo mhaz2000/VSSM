@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Views\Shipment\" />
     <Folder Include="Views\Source\" />
   </ItemGroup>
 

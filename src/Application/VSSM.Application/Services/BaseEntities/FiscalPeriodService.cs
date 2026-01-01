@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.Helpers;
@@ -158,6 +159,5 @@ namespace VSSM.Application.Services.BaseEntities
 
             return result;
         }
-
     }
 }

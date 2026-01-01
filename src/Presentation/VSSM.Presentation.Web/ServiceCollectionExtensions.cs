@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using VSSM.Application.DTOs.BaseEntities.Adjustments;
 using VSSM.Application.DTOs.BaseEntities.AdjustReason;
 using VSSM.Application.DTOs.BaseEntities.CommercialName;
 using VSSM.Application.DTOs.BaseEntities.DosePerVial;
@@ -20,10 +19,8 @@ using VSSM.Application.DTOs.BaseEntities.StoreUsageWarning;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
 using VSSM.Application.DTOs.BaseEntities.Vvmtype;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Interfaces.RequestEntities;
 using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
-using VSSM.Application.Services.RequestEntities;
 using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web.Controllers;
 
@@ -33,8 +30,9 @@ namespace VSSM.Presentation.Web
     {
         public static void AddServiceCollectionExtension(this IServiceCollection services, IConfiguration configuration)
         {
+
             services.AddDbContext<VSSMDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("VSSMDbConnectionStrings")));
+                                    options.UseSqlServer(configuration.GetConnectionString("VSSMDbConnectionStrings")));
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
@@ -68,8 +66,6 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IValidator<StoreTypeDto>, StoreTypeValidator>();
             services.AddScoped<IValidator<VvmstageDto>, VvmstageValidator>();
             services.AddScoped<IValidator<ItemClassCreateDto>, ItemClassCreateValidator>();
-            services.AddScoped<IValidator<AdjustmentDto>, AdjustmentDtoValidator>();
-            services.AddScoped<IAdjustmentService, AdjustmentService>();
             services.AddScoped<IValidator<ItemCreateDto>, ItemCreateValidator>();
             services.AddScoped<IValidator<CommercialNameDto>, CommercialNameValidator>();
             services.AddScoped<IValidator<AdjustreasonDto>, AdjustReasonValidator>();
@@ -101,7 +97,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IUseService, UseService>();
             services.AddScoped<IItemDetailsService, ItemDetailService>();
             services.AddScoped<IPackingTypeService, PackingTypeService>();
-            services.AddScoped<IRequestService, RequestService>();
+            services.AddScoped<IDispatchService, DispatchService>();
         }
     }
 

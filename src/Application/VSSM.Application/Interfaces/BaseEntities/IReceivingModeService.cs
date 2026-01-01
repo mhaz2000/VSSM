@@ -18,4 +18,5 @@ public interface IReceivingModeService
         string sortOrder,
         CancellationToken cancellationToken);
     public Task UpdateAsync(UpdateReceivingModeDto dto, CancellationToken cancellationToken);
+    Task<IEnumerable<ReceivingModeDto>> GetActiveReceivingModesAsync(CancellationToken cancellationToken);
 }

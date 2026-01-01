@@ -1,6 +1,6 @@
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
-using VSSM.Application.DTOs.BaseEntities.Item;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
@@ -12,7 +12,5 @@ public interface IFiscalPeriodService
     Task<FiscalPeriodDto?> GetById(int id, CancellationToken cancellationToken);
     Task<PagingSearchOrderDto<FiscalPeriodDto>> GetPagedList(
         string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
-
     Task<bool> Delete(int id, CancellationToken cancellationToken);
-    
 }

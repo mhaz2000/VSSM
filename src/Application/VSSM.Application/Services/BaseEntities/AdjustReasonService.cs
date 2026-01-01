@@ -177,4 +177,24 @@ public class AdjustReasonService : IAdjustReasonService
         await _dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
+
+    public async Task<List<AdjustreasonDto>> GetActives(CancellationToken cancellationToken)
+    {
+        var adjustreasons = await _dbContext.TblAdjustreasons.Where(c => c.IsActive == true).ToListAsync(cancellationToken);
+
+        return adjustreasons.Select(c => new AdjustreasonDto()
+        {
+            AdjustReasonId = c.AdjustreasonId,
+            Code = c.Code,
+            FullName = c.FullName,
+            EntryDate = c.EntryDate,
+            IsActive = c.IsActive ?? false,
+            UsedForDispatchAdjust = c.UsedForDispatchAdjust ?? false,
+            UserForArrivalAdjust = c.UserForArrivalAdjust ?? false,
+            UsedForStockAdjust = c.UsedForStockAdjust ?? false,
+            IsWaste = c.IsWaste ?? false,
+            ApplicationForStockSubtraction = c.ApplicationForStockSubtraction ?? false,
+            ApplicationForStockAddition = c.ApplicationForStockAddition ?? false
+        }).ToList();
+    }
 }

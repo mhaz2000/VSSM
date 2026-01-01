@@ -30,7 +30,7 @@ public class CommercialNameService : ICommercialNameService
             FullName = dto.FullName,
             Code = dto.Code,
             IsActive = dto.IsActive,
-            EntryDate = dto.EntryDate
+            EntryDate = DateTime.Now
         };
 
         await _dbContext.TblCommercialNames.AddAsync(entity, cancellationToken);

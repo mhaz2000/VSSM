@@ -4,11 +4,11 @@
 
 <!-- Breadcrumb -->
 <ol class="breadcrumb">
-    <li class="breadcrumb-item">خانه</li>
+    @* <li class="breadcrumb-item">خانه</li>
     <li class="breadcrumb-item">
         <a href="#">مدیریت</a>
-    </li>
-    <li class="breadcrumb-item active">داشبرد</li>
+    </li> *@
+    <li class="breadcrumb-item active">داشبورد</li>
 
     <!-- Breadcrumb Menu-->
     @* <li class="breadcrumb-menu">
@@ -23,22 +23,75 @@
 <div class="container-fluid">
 
     <div class="animated fadeIn">
+
+        <div class="row">
+            <div class="col-xs-6 col-lg-3">
+                <div class="card">
+                    <div class="card-block p-a-1 clearfix">
+                        <i class="fa fa-bell bg-danger p-a-1 font-2xl m-r-1 pull-left"></i>
+                        <div class="h4 text-danger m-b-0 m-t-h">پیام ها</div>
+                        <br />
+                        <div class="text-muted text-uppercase font-weight-bold font">2</div>
+                    </div>
+                    <div class="card-footer p-x-1">
+                        <a class="font-weight-bold font-sm btn-block text-muted" href="#"> ارسال پیام </a>
+                    </div>
+                </div>
+            </div>
+           
+            <div class="col-md-3 col-sm-6">
+                <div class="social-box twitter">
+                    <div class="h2 p-y-1">پیش نویس</div>
+                    <ul>
+                        <li>
+                            <strong>2</strong>
+                            <span class="text-muted text-uppercase font-weight-bold font-sm">ورودی</span>
+                        </li>
+                        <li>
+                            <strong>1</strong>
+                            <span class="text-muted text-uppercase font-weight-bold font-sm">ارسالی</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-block">
+                        <div class="h4 m-a-0">تقاضای تعدیل (ورودی)</div>
+                        <div class="p-b-2">2</div>
+                        <progress class="progress progress-xs progress-warning" value="100" max="100">100%</progress>
+                        <small class="text-muted text-uppercase font-weight-bold font-sm">درخواست تعدیلی وجود ندارد</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-block">
+                        <div class="h4 m-a-0">محموله رسیده</div>
+                        <div class="p-b-2">2</div>
+                        <progress class="progress progress-xs progress-success" value="100" max="100">100%</progress>
+                        <small class="text-muted text-uppercase font-weight-bold font-sm">محموله جدیدی وجود ندارد</small>
+                    </div>
+                </div>
+            </div>
+            <!--/col-->
+        </div>
+        <br />
         <div class="row">
             <div class="col-sm-6 col-lg-3">
                 <div class="card card-inverse card-primary">
                     <div class="card-block p-b-0">
                         <div class="btn-group pull-left">
-                            <button type="button" class="btn btn-transparent active dropdown-toggle p-a-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="icon-settings"></i>
+                            <button type="button" class="btn btn-transparent active p-a-0 pull-left">
+                                <i class="icon-camera"></i>
                             </button>
-                            <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                            </div>
                         </div>
-                        <h4 class="m-b-0">9.823</h4>
-                        <p>کاربر آنلاین</p>
+                        <h4 class="m-b-0">9</h4>
+                        <p>کالاهای نزدیک به منقضی شدن</p>
                     </div>
                     <div class="chart-wrapper p-x-1" style="height:70px;">
                         <canvas id="card-chart1" class="chart" height="70"></canvas>
@@ -51,10 +104,10 @@
                 <div class="card card-inverse card-info">
                     <div class="card-block p-b-0">
                         <button type="button" class="btn btn-transparent active p-a-0 pull-left">
-                            <i class="icon-location-pin"></i>
+                            <i class="icon-arrow-up-circle"></i>
                         </button>
-                        <h4 class="m-b-0">9.823</h4>
-                        <p>کاربر آنلاین</p>
+                        <h4 class="m-b-0">14</h4>
+                        <p>کالاهای بالای حداکثر</p>
                     </div>
                     <div class="chart-wrapper p-x-1" style="height:70px;">
                         <canvas id="card-chart2" class="chart" height="70"></canvas>
@@ -66,18 +119,11 @@
             <div class="col-sm-6 col-lg-3">
                 <div class="card card-inverse card-warning">
                     <div class="card-block p-b-0">
-                        <div class="btn-group pull-left">
-                            <button type="button" class="btn btn-transparent active dropdown-toggle p-a-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="icon-settings"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                            </div>
-                        </div>
-                        <h4 class="m-b-0">9.823</h4>
-                        <p>کاربر آنلاین</p>
+                        <button type="button" class="btn btn-transparent active p-a-0 pull-left">
+                            <i class="icon-arrow-down-circle"></i>
+                        </button>
+                        <h4 class="m-b-0">7</h4>
+                        <p>کالاهای زیر حداقل</p>
                     </div>
                     <div class="chart-wrapper" style="height:70px;">
                         <canvas id="card-chart3" class="chart" height="70"></canvas>
@@ -89,18 +135,11 @@
             <div class="col-sm-6 col-lg-3">
                 <div class="card card-inverse card-danger">
                     <div class="card-block p-b-0">
-                        <div class="btn-group pull-left">
-                            <button type="button" class="btn btn-transparent active dropdown-toggle p-a-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="icon-settings"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                            </div>
-                        </div>
-                        <h4 class="m-b-0">9.823</h4>
-                        <p>کاربر آنلاین</p>
+                        <button type="button" class="btn btn-transparent active p-a-0 pull-left">
+                            <i class="icon-arrow-down-circle"></i>
+                        </button>
+                        <h4 class="m-b-0">8</h4>
+                        <p>کالاهای زیر سطح درخواست</p>
                     </div>
                     <div class="chart-wrapper p-x-1" style="height:70px;">
                         <canvas id="card-chart4" class="chart" height="70"></canvas>

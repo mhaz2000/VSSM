@@ -18,7 +18,7 @@ namespace VSSM.Presentation.Web.Controllers
 
         public IActionResult Index()
         {
-            ViewBag.CurrentUserName = CurrentUserFullName;
+            
             return View();
         }
 

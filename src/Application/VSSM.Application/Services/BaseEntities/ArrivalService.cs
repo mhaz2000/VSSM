@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
@@ -61,7 +62,8 @@ namespace VSSM.Application.Services.BaseEntities
                         ? _db.TblSources.Where(s => s.SourceId == x.SourceId).Select(s => s.FullName).FirstOrDefault()
                         : null,
                     FiscalPeriodName = x.FiscalPeriodId != null
-                        ? _db.TblFiscalPeriods.Where(f => f.FiscalPeriodId == x.FiscalPeriodId).Select(f => f.FullName).FirstOrDefault()
+                        ? _db.TblFiscalPeriods.Where(f => f.FiscalPeriodId == x.FiscalPeriodId).Select(f => f.FullName)
+                            .FirstOrDefault()
                         : null
                 })
                 .ToListAsync(token);
@@ -161,46 +163,6 @@ namespace VSSM.Application.Services.BaseEntities
             return arrival.ArrivalId;
         }
 
-        /* =========================
-           ADD LINE (INCREMENTAL)
-        ========================= */
-        public async Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token)
-        {
-            var line = new TblArrivalLine
-            {
-                ArrivalId = arrivalId,
-                ItemId = dto.ItemId,
-                BatchNum = dto.BatchNum,
-                CommertialNameId = dto.CommertialNameId,
-                DosePerVialId = dto.DosePerVialId,
-                ExpiryDate = dto.ExpiryDate,
-                ProductionDate = dto.ProductionDate,
-                ItemDetailId = dto.ItemDetailId,
-                ManufacturerId = dto.ManufacturerId,
-                Note = dto.Note,
-                NumVials = dto.NumVials,
-                PackageSize = dto.PackageSize,
-                PackingTypeId = dto.PackingTypeId,
-                Quantity = dto.Quantity,
-                StoreId = dto.StoreId,
-                UnitVolume = dto.UnitVolume,
-                TotalVolume = dto.TotalVolume,
-                UseId = dto.UseId,
-                VvmstageId = dto.VvmStageId,
-                VvmtypeId = dto.VvmTypeId,
-                EntryDate = DateTime.Now
-            };
-
-            _db.TblArrivalLines.Add(line);
-
-            // update header total volume
-            var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
-            arrival.TotalVolume = await _db.TblArrivalLines
-                .Where(x => x.ArrivalId == arrivalId)
-                .SumAsync(x => x.TotalVolume ?? 0, token);
-
-            await _db.SaveChangesAsync(token);
-        }
 
         /* =========================
            CONFIRM
@@ -256,8 +218,8 @@ namespace VSSM.Application.Services.BaseEntities
         }
 
         public async Task<List<ArrivalCopyDto>> GetForCopy(
-     string? reportNumber,
-     CancellationToken token)
+            string? reportNumber,
+            CancellationToken token)
         {
             var query = _db.TblArrivals
                 .Where(x => x.IsCancelled != true); // ⬅ only cancelled excluded
@@ -290,7 +252,8 @@ namespace VSSM.Application.Services.BaseEntities
 
         public async Task SubtractionToTotal(int lineId, int arrivalId)
         {
-            (await _db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == arrivalId)).TotalVolume -= _db.TblArrivalLines.FirstOrDefault(z => z.ArrivalLineId == lineId).TotalVolume;
+            (await _db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == arrivalId)).TotalVolume -=
+                _db.TblArrivalLines.FirstOrDefault(z => z.ArrivalLineId == lineId).TotalVolume;
             await _db.SaveChangesAsync();
         }
 
@@ -299,6 +262,139 @@ namespace VSSM.Application.Services.BaseEntities
             var entity = await _db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == id);
             _db.TblArrivals.Remove(entity);
             await _db.SaveChangesAsync();
+        }
+
+        /* =========================
+   ADD LINE (INCREMENTAL)
+========================= */
+        public async Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token)
+        {
+            var line = new TblArrivalLine
+            {
+                ArrivalId = arrivalId,
+                ItemId = dto.ItemId,
+                BatchNum = dto.BatchNum,
+                CommertialNameId = dto.CommertialNameId,
+                DosePerVialId = dto.DosePerVialId,
+                ExpiryDate = dto.ExpiryDate,
+                ProductionDate = dto.ProductionDate,
+                ItemDetailId = dto.ItemDetailId,
+                ManufacturerId = dto.ManufacturerId,
+                Note = dto.Note,
+                NumVials = dto.NumVials,
+                PackageSize = dto.PackageSize,
+                PackingTypeId = dto.PackingTypeId,
+                Quantity = dto.Quantity,
+                StoreId = dto.StoreId,
+                UnitVolume = dto.UnitVolume,
+                TotalVolume = dto.TotalVolume,
+                UseId = dto.UseId,
+                VvmstageId = dto.VvmStageId,
+                VvmtypeId = dto.VvmTypeId,
+                EntryDate = DateTime.Now
+            };
+
+            _db.TblArrivalLines.Add(line);
+
+            // update header total volume
+            var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
+            arrival.TotalVolume = await _db.TblArrivalLines
+                .Where(x => x.ArrivalId == arrivalId)
+                .SumAsync(x => x.TotalVolume ?? 0, token);
+
+            await _db.SaveChangesAsync(token);
+        }
+
+public async Task<List<ArrivalLineDto>> GetArrivalLines(int userId)
+{
+    var lines = await _db.TblArrivalLines
+        .Where(l => l.UseId == userId)
+        .Select(l => new
+        {
+            Line = l,
+            Item = _db.TblItems.FirstOrDefault(i => i.ItemId == l.ItemId),
+            Manufacturer = _db.TblManufacturers.FirstOrDefault(m => m.ManufacturerId == l.ManufacturerId),
+            Store = _db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
+            DoseVial = _db.TblDosePerVials.FirstOrDefault(d => d.DosePerVialId == l.DosePerVialId)
+        })
+        .AsNoTracking()
+        .ToListAsync();
+
+    var result = lines.Select(x =>
+    {
+        var l = x.Line;
+
+        return new ArrivalLineDto
+        {
+            ArrivalLineId = l.ArrivalLineId,
+            ArrivalId = l.ArrivalId,
+            ItemId = l.ItemId,
+            BatchNum = l.BatchNum,
+            CommertialNameId = l.CommertialNameId,
+            DosePerVialId = l.DosePerVialId,
+            ExpiryDate = l.ExpiryDate,
+            ProductionDate = l.ProductionDate,
+            ItemDetailId = l.ItemDetailId,
+            ManufacturerId = l.ManufacturerId,
+            Note = l.Note,
+            NumVials = l.NumVials,
+            PackageSize = l.PackageSize,
+            PackingTypeId = l.PackingTypeId,
+            Quantity = l.Quantity,
+            StoreId = l.StoreId,
+            TotalVolume = l.TotalVolume,
+            UnitVolume = l.UnitVolume,
+            UseId = l.UseId,
+            VvmStageId = l.VvmstageId,
+            VvmTypeId = l.VvmtypeId,
+            DropDownText = string.Format(
+                "کالا: {0} | سازنده: {1} | تاریخ انقضا: {2} | سری ساخت: {3} | انبار: {4} | دوز بر ویال: {5} | مقدار موجود: {6}",
+                x.Item != null ? x.Item.FullName : "",
+                x.Manufacturer != null ? x.Manufacturer.FullName : "",
+                l.ExpiryDate != null ? l.ExpiryDate.Value.ToShamsi() : "",
+                l.BatchNum,
+                x.Store != null ? x.Store.Name : "",
+                x.DoseVial != null ? x.DoseVial.NumDosePerVial : "",
+                l.Quantity
+            )
+        };
+    }).ToList();
+
+    return result;
+}
+
+
+
+        public async Task<ArrivalLineDto> GetArrivalLineById(int id)
+        {
+            var line = await _db.TblArrivalLines.FirstOrDefaultAsync(c => c.ArrivalLineId == id);
+
+            var dto = new ArrivalLineDto
+            {
+                ArrivalLineId = line.ArrivalLineId,
+                ArrivalId = line.ArrivalId,
+                ItemId = line.ItemId,
+                BatchNum = line.BatchNum,
+                CommertialNameId = line.CommertialNameId,
+                DosePerVialId = line.DosePerVialId,
+                ExpiryDate = line.ExpiryDate,
+                ProductionDate = line.ProductionDate,
+                ItemDetailId = line.ItemDetailId,
+                ManufacturerId = line.ManufacturerId,
+                Note = line.Note,
+                NumVials = line.NumVials,
+                PackageSize = line.PackageSize,
+                PackingTypeId = line.PackingTypeId,
+                Quantity = line.Quantity,
+                StoreId = line.StoreId,
+                TotalVolume = line.TotalVolume,
+                UnitVolume = line.UnitVolume,
+                UseId = line.UseId,
+                VvmStageId = line.VvmstageId,
+                VvmTypeId = line.VvmtypeId
+            };
+
+            return dto;
         }
     }
 }

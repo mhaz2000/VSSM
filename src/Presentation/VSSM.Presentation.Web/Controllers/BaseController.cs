@@ -25,6 +25,8 @@ namespace VSSM.Presentation.Web.Controllers
                     User.FindFirst("RecipientId")?.Value, out var rid) ? rid : null;
                 CurrentUserLevel = int.TryParse(
                     User.FindFirst("Level")?.Value, out var l) ? l : null;
+
+                ViewBag.CurrentUserName = CurrentUserFullName;
             }
 
             base.OnActionExecuting(context);

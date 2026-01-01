@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace VSSM.Application.DTOs.BaseEntities.ItemDetail
 {
-    public class ItemDetailListDto
+    public class ItemDetailsDto
     {
         public int Id { get; set; }
         public float?  Name { get; set; }

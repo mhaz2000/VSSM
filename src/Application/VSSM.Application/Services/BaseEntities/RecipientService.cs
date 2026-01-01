@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.Recipient;
 using VSSM.Application.DTOs.BaseEntities.TransportMode;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -234,6 +235,22 @@ namespace VSSM.Application.Services.BaseEntities
                 throw new Exception("Recipient not found.");
 
             return reci.ChainLevel;
+        }
+
+        public async Task<List<RecipientGetDto>> GetActiveRecipients(CancellationToken token)
+        {
+            var recipients = await _db.TblRecipients
+                .AsNoTracking()
+                .Where(recipient => recipient.IsActive == true)
+                .Select(recipient => new RecipientGetDto()
+                {
+                    RecipientId = recipient.RecipientId,
+                    Code = recipient.Code,
+                    FullName = recipient.FullName,
+                    IsActive = recipient.IsActive ?? false,
+                }).ToListAsync(token);
+
+            return recipients;
         }
     }
 }

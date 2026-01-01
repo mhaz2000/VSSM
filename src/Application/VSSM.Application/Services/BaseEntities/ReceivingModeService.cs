@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.ReceivingMode;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -132,5 +133,16 @@ public class ReceivingModeService : IReceivingModeService
 
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
+    }
+
+    public async Task<IEnumerable<ReceivingModeDto>> GetActiveReceivingModesAsync(CancellationToken cancellationToken)
+    {
+        var receivingModes = await GetAllAsync(cancellationToken);
+
+        receivingModes = receivingModes
+            .Where(receivingMode => receivingMode.IsActive == true)
+            .ToList();
+
+        return receivingModes;
     }
 }

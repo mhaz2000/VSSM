@@ -97,6 +97,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IUseService, UseService>();
             services.AddScoped<IItemDetailsService, ItemDetailService>();
             services.AddScoped<IPackingTypeService, PackingTypeService>();
+            services.AddScoped<IDispatchService, DispatchService>();
         }
     }
 

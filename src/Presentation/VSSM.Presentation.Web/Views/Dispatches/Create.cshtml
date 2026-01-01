@@ -1,0 +1,222 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
+@model CreateDispatcheDto
+
+@section Styles {
+    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
+}
+
+<style>
+    .form-label {
+        text-align: left;
+        width: 130px;
+        margin-left: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        direction: rtl;
+    }
+
+    .form-control, .form-select {
+        flex: 1;
+    }
+
+    .card {
+        direction: rtl;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <h5>ثبت ارسال</h5>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-block">
+
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="col-lg-6">
+
+                        <div class="form-group">
+                            <label class="form-label">تاریخ:</label>
+                            <input asp-for="Date" id="Date" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">شماره درخواست:</label>
+                            <input asp-for="RequestNum" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">گیرنده:</label>
+                            <select asp-for="ReceiverId" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                                @foreach (var r in ViewBag.Recipients)
+                                {
+                                    <option value="@r.RecipientId">@r.FullName</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">طریقه حمل:</label>
+                            <select asp-for="TransportModeId" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                                @foreach (var t in ViewBag.TransportModes)
+                                {
+                                    <option value="@t.TransportModeId">@t.FullName</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">ملاحظات:</label>
+                            <textarea asp-for="Note" class="form-control rounded-3" rows="4"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">روش دریافت:</label>
+                            <select asp-for="ReceivingModeId" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                                @foreach (var r in ViewBag.ReceivingModes)
+                                {
+                                    <option value="@r.ReceivingModeId">@r.FullName</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">تشخیص سرما:</label>
+                            <input asp-for="AirwaryWillReference" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <hr />
+
+                        <div class="form-group">
+                            <label class="form-label">نوع کالا:</label>
+                            <select id="itemClassSelect" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                                @foreach (var c in ViewBag.ItemClasses)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">کالا:</label>
+                            <select id="itemSelect" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                            </select>
+                        </div>
+
+                        <table class="table table-bordered table-striped mt-3" id="itemDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th>Batch</th>
+                                    <th>تولید</th>
+                                    <th>انقضا</th>
+                                    <th>حجم</th>
+                                    <th>قیمت</th>
+                                    <th>وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center">کالایی انتخاب نشده</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5">ثبت</button>
+                            <a asp-action="Index" class="btn btn-primary px-5">لیست</a>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="~/js/persian-date.js"></script>
+    <script src="~/js/persian-datepicker.js"></script>
+
+    <script>
+        $('#Date').pDatepicker({
+            format: "YYYY/MM/DD",
+            autoClose: true
+        });
+
+        $('#itemClassSelect').change(function () {
+
+            let classId = $(this).val();
+            let itemSelect = $('#itemSelect');
+
+            itemSelect.empty().append('<option>در حال بارگذاری...</option>');
+
+            if (!classId) {
+                itemSelect.html('<option>انتخاب کنید</option>');
+                return;
+            }
+
+            $.get('/GetItems/' + classId, function (res) {
+                itemSelect.empty().append('<option>انتخاب کنید</option>');
+                if (res.success) {
+                    res.result.forEach(i => {
+                        itemSelect.append(`<option value="${i.id}">${i.name}</option>`);
+                    });
+                }
+            });
+        });
+
+        $('#itemSelect').change(function () {
+
+            let itemId = $(this).val();
+            let tbody = $('#itemDetailsTable tbody');
+            tbody.empty();
+
+            if (!itemId) {
+                tbody.append('<tr><td colspan="6" class="text-center">کالایی انتخاب نشده</td></tr>');
+                return;
+            }
+
+            $.get('/GetItemDetails/' + itemId, function (res) {
+                if (res.success && res.result.length > 0) {
+                    res.result.forEach(d => {
+                        tbody.append(`
+                            <tr>
+                                <td>${d.batchNumber ?? '-'}</td>
+                                <td>${formatDate(d.productionDate)}</td>
+                                <td>${formatDate(d.expiryDate)}</td>
+                                <td>${d.unitVolume ?? '-'}</td>
+                                <td>${d.unitPrice ?? '-'}</td>
+                                <td>${d.isConfirmed ? '✔' : '✖'}</td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    tbody.append('<tr><td colspan="6" class="text-center">اطلاعاتی یافت نشد</td></tr>');
+                }
+            });
+        });
+
+        function formatDate(d) {
+            if (!d) return '-';
+            return new Date(d).toLocaleDateString('fa-IR');
+        }
+    </script>
+}

@@ -10,6 +10,7 @@ namespace VSSM.Application.Interfaces.BaseEntities
 {
     public interface IItemDetailsService
     {
-        public Task<List<ItemDetailListDto>> GetActives(CancellationToken cancellationToken);
+        public Task<List<ItemDetailsDto>> GetActives(CancellationToken cancellationToken);
+        Task<List<ItemFullDetailsDto>> GetItemDetailsAsync(int itemId, CancellationToken cancellationToken);
     }
 }

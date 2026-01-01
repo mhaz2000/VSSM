@@ -1,4 +1,5 @@
 ﻿using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.PowerSource;
 using VSSM.Application.DTOs.BaseEntities.TransportMode;
 
@@ -18,4 +19,5 @@ public interface ITransportModeService
         string sortOrder,
         CancellationToken cancellationToken);
     Task UpdateAsync(UpdateTransportModeDto dto, CancellationToken cancellationToken);
+    Task<List<TransportModeDto>> GetActiveTransportModes(CancellationToken cancellationToken);
 }

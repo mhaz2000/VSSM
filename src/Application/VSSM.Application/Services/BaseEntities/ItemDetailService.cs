@@ -1,10 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VSSM.Application.DTOs.BaseEntities.DosePerVial;
 using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
@@ -19,13 +13,13 @@ namespace VSSM.Application.Services.BaseEntities
         {
             _db = db;
         }
-        public async Task<List<ItemDetailListDto>> GetActives(CancellationToken cancellationToken)
+        public async Task<List<ItemDetailsDto>> GetActives(CancellationToken cancellationToken)
         {
             var items = await _db.TblItemDetails
                                   .AsNoTracking()
                                   .ToListAsync(cancellationToken);
 
-            var result = items.Select(x => new ItemDetailListDto
+            var result = items.Select(x => new ItemDetailsDto
             {
                 Id = x.ItemDetailId,
                 Name = x.UnitVolume,
@@ -37,6 +31,26 @@ namespace VSSM.Application.Services.BaseEntities
             return result;
         }
 
+        public async Task<List<ItemFullDetailsDto>> GetItemDetailsAsync(int itemId, CancellationToken cancellationToken)
+        {
+            var itemDetails = await _db.TblItemDetails
+                .AsNoTracking()
+                .Where(x => x.ItemId == itemId)
+                .Select(x => new ItemFullDetailsDto
+                {
+                    ItemDetailId = x.ItemDetailId,
+                    ItemId = x.ItemId,
+                    BatchNumber = x.BatchNumber,
+                    ExpiryDate = x.ExpiryDate,
+                    UnitPrice = x.UnitPrice,
+                    ProductionDate = x.ProductionDate,
+                    UnitVolume = x.UnitVolume,
+                    EntryDate = x.EntryDate,
+                    IsConfirmed = x.IsConfirmed
+                })
+                .ToListAsync(cancellationToken);
 
+            return itemDetails;
+        }
     }
 }

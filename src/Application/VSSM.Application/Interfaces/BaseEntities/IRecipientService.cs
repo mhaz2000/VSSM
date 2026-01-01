@@ -1,4 +1,5 @@
 ﻿using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.Recipient;
 using VSSM.Application.DTOs.BaseEntities.TransportMode;
 
@@ -17,9 +18,8 @@ namespace VSSM.Application.Interfaces.BaseEntities
 
         Task<RecipientEditDto> GetById(int id, CancellationToken token);
         Task<int?> GetChainLevelById(int id, CancellationToken token);
-
         Task<int> Create(RecipientCreateDto dto, CancellationToken token);
-
         Task<bool> Update(RecipientEditDto dto, CancellationToken token);
+        Task<List<RecipientGetDto>> GetActiveRecipients(CancellationToken token);
     }
 }

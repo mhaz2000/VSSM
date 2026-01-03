@@ -19,8 +19,10 @@ using VSSM.Application.DTOs.BaseEntities.StoreUsageWarning;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
 using VSSM.Application.DTOs.BaseEntities.Vvmtype;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Interfaces.RequestEntities;
 using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
+using VSSM.Application.Services.RequestEntities;
 using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web.Controllers;
 
@@ -98,6 +100,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IItemDetailsService, ItemDetailService>();
             services.AddScoped<IPackingTypeService, PackingTypeService>();
             services.AddScoped<IDispatchService, DispatchService>();
+            services.AddScoped<IRequestService, RequestService>();
         }
     }
 

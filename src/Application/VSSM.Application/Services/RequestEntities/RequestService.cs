@@ -20,6 +20,27 @@ namespace VSSM.Application.Services.RequestEntities
         {
             _dbContext = dbContext;
         }
+
+        public async Task<int> Create(RequestCreateDto dto, CancellationToken token)
+        {
+            var req = new TblRequest
+            {
+                ConfirmDate = dto.ConfirmDate,
+                EnteredBy = dto.EnteredBy,
+                FiscalPeriodId = dto.FiscalPeriodId,
+                Note = dto.Note,
+                ReceiverId = dto.ReceiverId,
+                RequestNumber = dto.RequestNumber,
+                SendDate = dto.SendDate,
+                SenderId = dto.SenderId,
+                Status = dto.Status,
+            };
+
+            _dbContext.TblRequests.Add(req);
+            await _dbContext.SaveChangesAsync(token);
+            return req.Id;
+        }
+
         public async Task<PagingSearchOrderDto<RequestListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = page, PageSize = pageSize };

@@ -14,6 +14,8 @@ namespace VSSM.Application.Interfaces.RequestEntities
     {
         Task<PagingSearchOrderDto<RequestListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
         Task<int> Create(RequestCreateDto dto, CancellationToken token);
+        Task AddLine(int requestId, RequestLineDto dto, CancellationToken token);
+        Task<RequestGetDto?> GetById(int id, CancellationToken token);
 
     }
 }

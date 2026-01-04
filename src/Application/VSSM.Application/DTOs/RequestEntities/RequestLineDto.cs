@@ -8,6 +8,7 @@ namespace VSSM.Application.DTOs.RequestEntities
 {
     public class RequestLineDto
     {
+        public int Id { get; set; }
         public int? RequestId { get; set; }
 
         public int? ItemId { get; set; }

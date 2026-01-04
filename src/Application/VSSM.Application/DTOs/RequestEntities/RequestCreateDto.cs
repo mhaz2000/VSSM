@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
+using VSSM.Domain.Enums;
 
 namespace VSSM.Application.DTOs.RequestEntities
 {
@@ -15,7 +16,7 @@ namespace VSSM.Application.DTOs.RequestEntities
 
         public DateOnly? SendDate { get; set; }
 
-        public int? Status { get; set; }
+        public RequestStatusEnum Status { get; set; }
 
         public int? ReceiverId { get; set; }
 

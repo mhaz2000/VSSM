@@ -2,7 +2,7 @@
 {
     public class RequestViewModel
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public int? EnteredBy { get; set; } = null;
         public DateOnly? SendDate { get; set; }
         public string RequestNumber { get; set; }

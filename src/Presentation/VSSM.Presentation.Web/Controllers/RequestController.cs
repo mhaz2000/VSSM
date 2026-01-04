@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NuGet.Common;
+using System.Collections.Generic;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.DTOs.RequestEntities;
 using VSSM.Application.Helpers;
@@ -9,6 +10,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces.RequestEntities;
 using VSSM.Application.Services.BaseEntities;
 using VSSM.Application.Services.RequestEntities;
+using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.Arrival;
 using VSSM.Presentation.Web.Models.Request;
 
@@ -43,26 +45,89 @@ namespace VSSM.Presentation.Web.Controllers
             return View(listModel);
 
         }
-        public async Task<IActionResult> New(CancellationToken token)
+        public async Task<IActionResult> New(int? id, CancellationToken token)
         {
             await LoadDropDowns(token);
-            return View();
+            // Create mode
+            if (id == null || id == 0)
+            {
+                var vm = new RequestViewModel
+                {
+                    RequestLines = new List<RequestLinesViewModel>(),
+                    NewLine = new RequestLinesViewModel()
+                };
+                return View(vm);
+            }
+
+            // Edit mode
+            var dto = await _requestService.GetById(id.Value, token);
+            if (dto == null) return NotFound();
+
+            var model = new RequestViewModel
+            {
+                ConfirmDate = dto.ConfirmDate,
+                EnteredBy = dto.EnteredBy,
+                Id = dto.Id,
+                RequestNumber = dto.RequestNumber,
+                RequestStatus = dto.RequestStatus,
+                SendDate = dto.SendDate,
+                RequestLines = dto.RequestLines.Select(r => new RequestLinesViewModel
+                {
+                    Id = r.Id,
+                    RequestId = r.RequestId,
+                    Anncount = r.Anncount,
+                    Arivcount = r.Arivcount,
+                    Confirmcount = r.Confirmcount,
+                    Currentcount = r.Currentcount,
+                    DosePerVialId = r.DosePerVialId,
+                    Forperiod = r.Forperiod,
+                    ItemClassId = r.ItemClassId,
+                    ItemId = r.ItemId,
+                    Note = r.Note,
+                    Offercount = r.Offercount,
+                    Reqcount = r.Reqcount,
+                    Usedcount = r.Usedcount
+                }).ToList(),
+
+                NewLine = new RequestLinesViewModel()
+            };
+
+            return View(model);
+
+        }
+
+        public async Task<IActionResult> Create(RequestViewModel model, string command, CancellationToken token) 
+        {
+            await LoadDropDowns(token);
+
+            if (model.Id.HasValue)
+            {
+                var existing = await _requestService.GetById(model.Id.Value, token);
+                if (existing.RequestStatus == (int)RequestStatusEnum.Confirmed)
+                {
+                    TempData["ToastMessage"] = "این ورود تایید شده است و امکان ویرایش ندارد";
+                    TempData["ToastType"] = "error";
+                    return RedirectToAction("Edit", new { id = model.Id.Value });
+                }
+            }
+
+            return await AddLine(model, token);
         }
 
         private async Task<IActionResult> AddLine(RequestViewModel model, CancellationToken token)
         {
-            if (model.Id == 0)
+            if (!model.Id.HasValue || model.Id == 0)
             {
                 var createDto = new RequestCreateDto
                 {
-                    Status = 0,
-                    SenderId = model.Id,
+                    Status = RequestStatusEnum.Label,
+                    SenderId = CurrentUserRecipientId,
                     ConfirmDate = DateOnly.FromDateTime(DateTime.Now),
                     EnteredBy = model.EnteredBy,
                     FiscalPeriodId = 0,
-                    Note = "",
-                    RequestNumber = "1",
-                    ReceiverId = 1,
+                    Note = "تست",
+                    RequestNumber = "111111",
+                    ReceiverId = CurrentUserRecipientId,
                     SendDate = DateOnly.FromDateTime(DateTime.Now),
 
                     Lines = new List<RequestLineDto>()
@@ -72,12 +137,23 @@ namespace VSSM.Presentation.Web.Controllers
                 model.Id = newId;
             }
 
-
             var lineDto = new RequestLineDto
             {
-                
+                Anncount = model.NewLine.Anncount,
+                Arivcount = model.NewLine.Arivcount,
+                Reqcount = model.NewLine.Reqcount,
+                Confirmcount = model.NewLine.Confirmcount,
+                Currentcount = model.NewLine.Currentcount,
+                Offercount = model.NewLine.Offercount,
+                Usedcount = model.NewLine.Usedcount,
+                Forperiod = model.NewLine.Forperiod,
+                ItemId = model.NewLine.ItemId,
+                DosePerVialId = model.NewLine.Forperiod,
+                Note = model.NewLine.Note,
+                RequestId = model.Id,
             };
 
+            await _requestService.AddLine(model.Id.Value, lineDto, token);
 
             TempData["ToastMessage"] = "کالا اضافه شد";
             TempData["ToastType"] = "success";
@@ -124,7 +200,15 @@ namespace VSSM.Presentation.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetItemDetailsByItem(int itemId, CancellationToken token)
         {
-            return null;
+            return Json(new
+            {
+                anncount = 0,
+                arivcount = 0,
+                confirmcount = 0,
+                currentcount = 0,
+                offercount = 0,
+                usedcount = 0
+            });
         }
 
     }

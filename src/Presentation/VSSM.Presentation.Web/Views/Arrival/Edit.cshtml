@@ -109,7 +109,6 @@
                             <!-- منبع (الزامی) -->
                             <div class="form-group">
                                 <span class="form-label">
-                                    <span class="required-star">*</span>
                                     منبع:
                                 </span>
                                 <select asp-for="SourceId"
@@ -123,7 +122,6 @@
                             <!-- شماره گزارش -->
                             <div class="form-group">
                                 <span class="form-label">
-                                    <span class="required-star">*</span>
                                     شماره گزارش:
                                 </span>
                                 <input asp-for="ReportNumber" class="form-control" />
@@ -133,28 +131,27 @@
                             <!-- حجم بسته -->
                             <div class="form-group">
                                 <span class="form-label">
-                                    حجم بسته:
+                                    حجم بسته(لیتر):
                                 </span>
                                 <input asp-for="PackedVolume" class="form-control" />
+
                             </div>
 
                             <!-- وزن کل -->
                             <div class="form-group">
                                 <span class="form-label">
-                                    وزن کل:
+                                    وزن کل (کیلوگرم):
                                 </span>
                                 <input asp-for="TotalWeight" class="form-control" />
+
                             </div>
 
                             <!-- حجم کل لیتر (خلاصه) -->
                             <div class="form-group">
                                 <span class="form-label">
-                                    <span class="required-star">*</span>
                                     حجم کل (لیتر):
                                 </span>
-                                <input asp-for="TotalVolume" class="form-control" />
-                                <span asp-validation-for="TotalVolume" class="text-danger"></span>
-
+                                <input asp-for="TotalVolume" class="form-control" readonly />
                             </div>
 
                             <!-- تشخیص دهنده سرما -->

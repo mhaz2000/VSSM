@@ -13,11 +13,9 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public string? Date { get; set; } // string – بعداً به DateTime تبدیل می‌کنیم
 
         [Display(Name = "شماره گزارش")]
-        [Required(ErrorMessage = "شماره گزارش اجباری است.")]
-        public string ReportNumber { get; set; }
+        public string? ReportNumber { get; set; }
 
         [Display(Name = "منبع")]
-        [Required(ErrorMessage = "منبع را انتخاب کنید.")]
         public int? SourceId { get; set; }
 
         [Display(Name = "دوره فعالیت")]
@@ -53,7 +51,7 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public List<ArrivalLineViewModel> Lines { get; set; } = new();
         public ArrivalLineViewModel NewLine { get; set; } = new();
 
-       
+
     }
 
 }

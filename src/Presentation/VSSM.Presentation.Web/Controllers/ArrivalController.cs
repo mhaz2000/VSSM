@@ -123,8 +123,8 @@ namespace VSSM.Presentation.Web.Controllers
                     CommertialNameId = l.CommertialNameId,
                     DosePerVialId = l.DosePerVialId,
 
-                    ExpiryDate = l.ExpiryDate.HasValue ? DateTimeHelper.ToShamsi(l.ExpiryDate.Value) : "",
-                    ProductionDate = l.ProductionDate.HasValue ? DateTimeHelper.ToShamsi(l.ProductionDate.Value) : "",
+                    ExpiryDate = l.ExpiryDate.Value,
+                    ProductionDate = l.ProductionDate.Value,
 
                     ItemDetailId = l.ItemDetailId,
                     ItemId = l.ItemId,
@@ -187,8 +187,8 @@ namespace VSSM.Presentation.Web.Controllers
                     CommertialNameId = l.CommertialNameId,
                     DosePerVialId = l.DosePerVialId,
 
-                    ExpiryDate = l.ExpiryDate.HasValue ? DateTimeHelper.ToShamsi(l.ExpiryDate.Value) : "",
-                    ProductionDate = l.ProductionDate.HasValue ? DateTimeHelper.ToShamsi(l.ProductionDate.Value) : "",
+                    ExpiryDate = l.ExpiryDate.Value,
+                    ProductionDate = l.ProductionDate.Value,
 
                     ItemDetailId = l.ItemDetailId,
                     ItemId = l.ItemId,
@@ -313,13 +313,9 @@ namespace VSSM.Presentation.Web.Controllers
             }
 
             // Map NewLine -> ArrivalLineDto
-            var expiry = string.IsNullOrWhiteSpace(model.NewLine.ExpiryDate)
-                ? (DateTime?)null
-                : DateTimeHelper.ToMiladi(model.NewLine.ExpiryDate);
+            var expiry = model.NewLine.ExpiryDate;
 
-            var prod = string.IsNullOrWhiteSpace(model.NewLine.ProductionDate)
-                ? (DateTime?)null
-                : DateTimeHelper.ToMiladi(model.NewLine.ProductionDate);
+            var prod = model.NewLine.ProductionDate;
 
             var lineDto = new ArrivalLineDto
             {
@@ -446,7 +442,7 @@ namespace VSSM.Presentation.Web.Controllers
                 .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName })
                 .ToList();
 
-            ViewBag.StoreList = (await _storeService.GetAll(token))
+            ViewBag.StoreList = (await _storeService.GetAll(token)).Where(z => z.RecipientId == CurrentUserId)
                 .Select(x => new SelectListItem { Value = x.StoreId.ToString(), Text = x.FullName })
                 .ToList();
 
@@ -454,9 +450,9 @@ namespace VSSM.Presentation.Web.Controllers
                 .Select(x => new SelectListItem { Value = x.ManufacturerId.ToString(), Text = x.FullName })
                 .ToList();
 
-            ViewBag.DosePerVialList = (await _dosePerVialService.GetActives(token))
+            ViewBag.DosePerVialList = (await _dosePerVialService.GetActives(token)).OrderBy(z => z.NumDosePerVial)
                 .Select(x => new SelectListItem
-                    { Value = x.DosePerVialId.ToString(), Text = x.NumDosePerVial.ToString() })
+                { Value = x.DosePerVialId.ToString(), Text = x.NumDosePerVial.ToString() })
                 .ToList();
 
             ViewBag.VvmtypeList = (await _vvmtypeService.GetActives(token))
@@ -532,8 +528,8 @@ namespace VSSM.Presentation.Web.Controllers
                     BatchNum = l.BatchNum,
                     CommertialNameId = l.CommertialNameId,
                     DosePerVialId = l.DosePerVialId,
-                    ExpiryDate = l.ExpiryDate.HasValue ? DateTimeHelper.ToShamsi(l.ExpiryDate.Value) : "",
-                    ProductionDate = l.ProductionDate.HasValue ? DateTimeHelper.ToShamsi(l.ProductionDate.Value) : "",
+                    ExpiryDate = l.ExpiryDate.Value,
+                    ProductionDate = l.ProductionDate.Value,
                     ItemDetailId = l.ItemDetailId,
                     ItemId = l.ItemId,
                     ManufacturerId = l.ManufacturerId,
@@ -572,7 +568,7 @@ namespace VSSM.Presentation.Web.Controllers
                     IsConfirmed = false,
                     IsDrafted = true,
                     IsCancelled = false,
-                    
+
                     PackedVolume = model.PackedVolume,
                     TotalWeight = model.TotalWeight,
                     Note = model.Note,
@@ -589,13 +585,9 @@ namespace VSSM.Presentation.Web.Controllers
             foreach (var line in model.Lines)
             {
                 // Map NewLine -> ArrivalLineDto
-                var expiry = string.IsNullOrWhiteSpace(model.NewLine.ExpiryDate)
-                    ? (DateTime?)null
-                    : DateTimeHelper.ToMiladi(model.NewLine.ExpiryDate);
+                var expiry = model.NewLine.ExpiryDate;
 
-                var prod = string.IsNullOrWhiteSpace(model.NewLine.ProductionDate)
-                    ? (DateTime?)null
-                    : DateTimeHelper.ToMiladi(model.NewLine.ProductionDate);
+                var prod = model.NewLine.ProductionDate;
 
                 var lineDto = new ArrivalLineDto
                 {

@@ -51,7 +51,6 @@ public partial class TblArrival
 
     public int? SenderId { get; set; }
 
-    //TODO: 
     public int? ReceiverId { get; set; }
 
     public int? DispatchId { get; set; }

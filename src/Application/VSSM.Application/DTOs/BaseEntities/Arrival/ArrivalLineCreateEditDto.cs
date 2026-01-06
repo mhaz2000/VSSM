@@ -25,6 +25,7 @@ namespace VSSM.Application.DTOs.BaseEntities.Arrival
         public int? FrzindcNok { get; set; }
 
         public List<ArrivalLineDto> Lines { get; set; } = new();
+        public int UserRecipientId { get; set; }
     }
 
     public class ArrivalEditDto : ArrivalCreateDto

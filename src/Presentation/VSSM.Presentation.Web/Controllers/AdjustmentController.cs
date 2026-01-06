@@ -13,15 +13,17 @@ public class AdjustmentController : BaseController
     private readonly IItemService _itemService;
     private readonly IArrivalService _arrivalService;
     private readonly IAdjustReasonService _adjustReasonService;
+    private readonly IItemDetailStoreService _detailStoreService;
 
     public AdjustmentController(IAdjustmentService adjustmentService, IItemClassService itemClassService,
-        IItemService itemService, IArrivalService arrivalService, IAdjustReasonService adjustReasonService)
+        IItemService itemService, IArrivalService arrivalService, IAdjustReasonService adjustReasonService, IItemDetailStoreService detailStoreService)
     {
         _adjustmentService = adjustmentService;
         _itemClassService = itemClassService;
         _itemService = itemService;
         _arrivalService = arrivalService;
         _adjustReasonService = adjustReasonService;
+        _detailStoreService = detailStoreService;
     }
 
     // ---------- Index ----------
@@ -67,7 +69,10 @@ public class AdjustmentController : BaseController
 
         await PrepareDropdown(cancellationToken);
 
-        var arrivalLine = await _arrivalService.GetArrivalLineById(adjustment.ArrivalLineId.Value);
+        var itemDetailStores = await _detailStoreService.GetById(adjustment.ItemDetailStoreId ?? -1);
+        var arrivalLine =
+            await _arrivalService.GetArrivalLineByStoreIdAndItemDetailId((long)itemDetailStores.StoreId.Value,
+                (long)itemDetailStores.ItemDetailId);
         var item = await _itemService.GetById(arrivalLine.ItemId.Value, cancellationToken);
         var model = new AdjustmentViewModel
         {

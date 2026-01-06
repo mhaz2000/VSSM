@@ -28,19 +28,28 @@ public class AdjustmentService : IAdjustmentService
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
+        var arrival = await _dbContext.TblArrivalLines.FirstOrDefaultAsync(c => c.ArrivalLineId == dto.ArrivalLineId);
+        if (arrival is null)
+        {
+            throw new Exception("یافت نشد.");
+        }
+        var fiscalPeriod = await _dbContext.TblFiscalPeriods.FirstOrDefaultAsync(c => c.IsActive == true);
+        var itemDetailStore = await _dbContext.TblItemDetailStores.FirstOrDefaultAsync(c =>
+            c.ItemDetailId == arrival.ItemDetailId && c.StoreId == arrival.StoreId);
+        
         var entity = new TblAdjustment
         {
-            EntryDate = DateTime.Now,
-            Date = dto.Date,
-            Note = dto.Note,
             AdjustmentreasonId = dto.AdjustmentreasonId,
+            FiscalPeriodId = fiscalPeriod is null ? -1 : fiscalPeriod.FiscalPeriodId,
+            ArrivalLineId = -1,
+            DispatchLineId = -1,
+            ItemDetailStoreId = itemDetailStore is null ? -1 : itemDetailStore.ItemDetailStoreId,
+            OldQuantity = itemDetailStore is null ? 0 :  Convert.ToInt32(itemDetailStore.CurrentStock??0),
             NewQuantity = dto.NewQuantity,
-            OldQuantity = dto.OldQuantity,
-            ArrivalLineId = dto.ArrivalLineId,
-            DispatchLineId = dto.DispatchLineId,
+            EntryDate = DateTime.Now,
+            Date = DateTime.Now,
             EnteredById = dto.EnteredById,
-            FiscalPeriodId = dto.FiscalPeriodId,
-            ItemDetailStoreId = dto.ItemDetailStoreId
+            Note = dto.Note,
         };
 
         await _dbContext.TblAdjustments.AddAsync(entity, cancellationToken);
@@ -74,24 +83,24 @@ public class AdjustmentService : IAdjustmentService
             );
         }
 
-        query = sortField switch
-        {
-            "Date" => sortOrder == "asc"
-                ? query.OrderBy(x => x.Date)
-                : query.OrderByDescending(x => x.Date),
-
-            "EntryDate" => sortOrder == "asc"
-                ? query.OrderBy(x => x.EntryDate)
-                : query.OrderByDescending(x => x.EntryDate),
-
-            "NewQuantity" => sortOrder == "asc"
-                ? query.OrderBy(x => x.NewQuantity)
-                : query.OrderByDescending(x => x.NewQuantity),
-
-            _ => sortOrder == "asc"
-                ? query.OrderBy(x => x.AdjustmentId)
-                : query.OrderByDescending(x => x.AdjustmentId)
-        };
+        // query = sortField switch
+        // {
+        //     "Date" => sortOrder == "asc"
+        //         ? query.OrderBy(x => x.Date)
+        //         : query.OrderByDescending(x => x.Date),
+        //
+        //     "EntryDate" => sortOrder == "asc"
+        //         ? query.OrderBy(x => x.EntryDate)
+        //         : query.OrderByDescending(x => x.EntryDate),
+        //
+        //     "NewQuantity" => sortOrder == "asc"
+        //         ? query.OrderBy(x => x.NewQuantity)
+        //         : query.OrderByDescending(x => x.NewQuantity),
+        //
+        //     _ => sortOrder == "asc"
+        //         ? query.OrderBy(x => x.AdjustmentId)
+        //         : query.OrderByDescending(x => x.AdjustmentId)
+        // };
 
         paging.TotalItems =
             await query.CountAsync(cancellationToken);

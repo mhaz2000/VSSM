@@ -15,6 +15,7 @@ public class AdjustmentDto
     public int? EnteredById { get; set; }
     public DateTime? EntryDate { get; set; }
     public DateTime? Date { get; set; }
+    public string Type { get; set; }
     public string EntryShamsiDate => Date.HasValue ? Date.Value.ToShamsi() : string.Empty;
     public string Note { get; set; } = "";
 }

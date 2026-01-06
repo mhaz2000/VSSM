@@ -7,7 +7,7 @@ using VSSM.Presentation.Web.Models.Arrival;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class ArrivalController : Controller
+    public class ArrivalController : BaseController
     {
         private readonly IArrivalService _arrivalService;
         private readonly ISourceService _sourceService;
@@ -215,11 +215,11 @@ namespace VSSM.Presentation.Web.Controllers
             ViewBag.IsReadOnly = model.IsConfirmed;
             return View(model);
         }
+
         public async Task<IActionResult> Delete(int id, CancellationToken token)
         {
             await _arrivalService.Delete(id);
             return await Index(null);
-
         }
 
         // MAIN POST: all buttons submit here
@@ -276,7 +276,6 @@ namespace VSSM.Presentation.Web.Controllers
 
             // Validate NewLine minimum required (yellow fields)
             if (model.NewLine == null ||
- 
                 !model.NewLine.StoreId.HasValue ||
                 !model.NewLine.Quantity.HasValue)
             {
@@ -304,6 +303,7 @@ namespace VSSM.Presentation.Web.Controllers
                     Note = model.Note,
                     Frzindc = model.Frzindc,
                     FrzindcNok = model.FrzindcNok,
+                    UserRecipientId = CurrentUserRecipientId ?? 0,
 
                     Lines = new List<ArrivalLineDto>()
                 };
@@ -455,7 +455,8 @@ namespace VSSM.Presentation.Web.Controllers
                 .ToList();
 
             ViewBag.DosePerVialList = (await _dosePerVialService.GetActives(token))
-                .Select(x => new SelectListItem { Value = x.DosePerVialId.ToString(), Text = x.NumDosePerVial.ToString() })
+                .Select(x => new SelectListItem
+                    { Value = x.DosePerVialId.ToString(), Text = x.NumDosePerVial.ToString() })
                 .ToList();
 
             ViewBag.VvmtypeList = (await _vvmtypeService.GetActives(token))
@@ -483,9 +484,10 @@ namespace VSSM.Presentation.Web.Controllers
                 .ToList();
 
             ViewBag.ItemClassList = (await _itemClassService.GetActives(token))
-             .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
-             .ToList();
+                .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+                .ToList();
         }
+
         public async Task<IActionResult> Copy(string? reportNumber, CancellationToken token)
         {
             await LoadDropDowns(token);
@@ -501,8 +503,7 @@ namespace VSSM.Presentation.Web.Controllers
             return View();
         }
 
- 
-       
+
         [HttpPost]
         public async Task<IActionResult> CopyConfirm(int arrivalId, CancellationToken token)
         {
@@ -512,7 +513,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             var vm = new ArrivalViewModel
             {
-                ArrivalId = null,                // ❌ important
+                ArrivalId = null, // ❌ important
                 Date = dto.Date.Value.ToShamsi(),
                 ReportNumber = dto.ReportNumber,
                 SourceId = dto.SourceId,
@@ -520,7 +521,7 @@ namespace VSSM.Presentation.Web.Controllers
                 Note = $"{dto.ReportNumber} کپی ورودی شماره ",
                 PackedVolume = dto.PackedVolume,
                 TotalWeight = dto.TotalWeight,
-                IsDrafted = true,               // ⬅ always draft after copy
+                IsDrafted = true, // ⬅ always draft after copy
                 IsConfirmed = false,
                 IsCancelled = false,
 
@@ -554,15 +555,10 @@ namespace VSSM.Presentation.Web.Controllers
             await AddLineForCopy(vm, token);
             ViewBag.Status = 1;
             return await Index(null);
-
         }
 
         private async Task<IActionResult> AddLineForCopy(ArrivalViewModel model, CancellationToken token)
         {
-
-
-
-
             // Ensure Arrival exists (create draft header if first time)
             if (!model.ArrivalId.HasValue || model.ArrivalId == 0)
             {
@@ -576,13 +572,13 @@ namespace VSSM.Presentation.Web.Controllers
                     IsConfirmed = false,
                     IsDrafted = true,
                     IsCancelled = false,
-
+                    
                     PackedVolume = model.PackedVolume,
                     TotalWeight = model.TotalWeight,
                     Note = model.Note,
                     Frzindc = model.Frzindc,
                     FrzindcNok = model.FrzindcNok,
-
+                    UserRecipientId = CurrentUserRecipientId ?? 0,
                     Lines = new List<ArrivalLineDto>()
                 };
 
@@ -592,7 +588,6 @@ namespace VSSM.Presentation.Web.Controllers
 
             foreach (var line in model.Lines)
             {
-
                 // Map NewLine -> ArrivalLineDto
                 var expiry = string.IsNullOrWhiteSpace(model.NewLine.ExpiryDate)
                     ? (DateTime?)null
@@ -666,6 +661,5 @@ namespace VSSM.Presentation.Web.Controllers
                 text = x.FullName
             }));
         }
-
     }
 }

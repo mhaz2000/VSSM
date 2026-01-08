@@ -18,4 +18,7 @@ public class AdjustmentDto
     public string Type { get; set; }
     public string EntryShamsiDate => Date.HasValue ? Date.Value.ToShamsi() : string.Empty;
     public string Note { get; set; } = "";
+    public string ItemFullName { get; set; }
+    public string ItemClassFullName { get; set; }
+    public string AdjustreasonTitle { get; set; }
 }

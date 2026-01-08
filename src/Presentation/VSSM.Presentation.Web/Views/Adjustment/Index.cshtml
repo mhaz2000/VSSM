@@ -8,112 +8,105 @@ ViewData["Title"] = "مدیریت تعدیلات";
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <!-- Search & Create -->
-        <div class="card">
-            <div class="card-block d-flex align-items-center">
+        <!-- Header: Title + Search + New Button -->
+        <div class="row mb-3 align-items-center">
+            <!-- عنوان صفحه -->
+            <div class="col-md-4 col-12 mb-2 mb-md-0">
+                <h5 class="mb-0">تعدیلات</h5>
+            </div>
 
-                <div class="col-lg-3">
-                    <h5>تعدیلات</h5>
-                </div>
-
-                <div class="col-lg-4"></div>
-
-                <form method="get" class="col-lg-4">
+            <!-- جستجو -->
+            <div class="col-md-5 col-12 mb-2 mb-md-0">
+                <form method="get">
                     <div class="input-group">
                         <input type="text"
                                name="search"
                                value="@Model.SearchText"
                                class="form-control"
                                placeholder="جستجو...">
-
-                        <div class="input-group-btn">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fa fa-search"></i> جستجو
-                            </button>
-                        </div>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fa fa-search"></i> جستجو
+                        </button>
                     </div>
                 </form>
+            </div>
 
-                <div class="col-lg-1 ms-auto">
-                    <a class="btn btn-success"
-                       asp-controller="Adjustment"
-                       asp-action="New">
-                        <i class="fa fa-plus-circle"></i> جدید
-                    </a>
-                </div>
+            <!-- دکمه ایجاد جدید -->
+            <div class="col-md-3 col-12 text-md-end">
+                <a class="btn btn-success"
+                   asp-controller="Adjustment"
+                   asp-action="New">
+                    <i class="fa fa-plus-circle"></i> جدید
+                </a>
             </div>
         </div>
 
         <!-- Table -->
         <div class="row">
-            <div class="col-lg-12">
+            <div class="col-12">
                 <div class="card">
                     <div class="card-body p-0">
 
-                        <table class="table table-bordered table-striped table-condensed text-center mb-0">
-                            <thead>
-                            <tr>
-                                <th>شناسه</th>
-                                <th>تاریخ</th>
-                                <th>تاریخ ثبت</th>
-                                <th>توضیحات</th>
-                                <th>مقدار قبلی</th>
-                                <th>مقدار جدید</th>
-                                <th>عملیات</th>
-                            </tr>
-                            </thead>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped text-center mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>کالا</th>
+                                    <th>گروه کالا</th>
+                                    <th>مقدار جدید</th>
+                                    <th>دلایل تعدیل</th>
+                                    <th>عملیات</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @if (Model.Items != null && Model.Items.Any())
+                                {
+                                foreach (var item in Model.Items)
+                                {
+                                <tr>
+                                    <td>@item.ItemFullName</td>
+                                    <td>@item.ItemClassFullName</td>
+                                    <td>@item.NewQuantity</td>
+                                    <td>@item.AdjustreasonTitle</td>
+                                    <td>
+                                        <a class="btn btn-primary btn-sm"
+                                           asp-controller="Adjustment"
+                                           asp-action="Edit"
+                                           asp-route-id="@item.AdjustmentId">
+                                            ویرایش
+                                        </a>
 
-                            <tbody>
-                            @if (Model.Items != null && Model.Items.Any())
-                            {
-                            foreach (var item in Model.Items)
-                            {
-                            <tr>
-                                <td>@item.AdjustmentId</td>
-                                <td>@item.Date</td>
-                                <td>@item.EntryDate</td>
-                                <td>@item.Note</td>
-                                <td>@item.OldQuantity</td>
-                                <td>@item.NewQuantity</td>
-                                <td>
-                                    <a class="btn btn-primary btn-sm"
-                                       asp-controller="Adjustment"
-                                       asp-action="Edit"
-                                       asp-route-id="@item.AdjustmentId">
-                                        ویرایش
-                                    </a>
-
-                                    <form asp-controller="Adjustment"
-                                          asp-action="Delete"
-                                          asp-route-id="@item.AdjustmentId"
-                                          method="post"
-                                          style="display:inline;">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit"
-                                                class="btn btn-danger btn-sm"
-                                                onclick="return confirm('آیا از حذف این رکورد مطمئن هستید؟');">
-                                            حذف
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            }
-                            }
-                            else
-                            {
-                            <tr>
-                                <td colspan="7"
-                                    class="text-center text-danger">
-                                    داده‌ای یافت نشد
-                                </td>
-                            </tr>
-                            }
-                            </tbody>
-                        </table>
+                                        <form asp-controller="Adjustment"
+                                              asp-action="Delete"
+                                              asp-route-id="@item.AdjustmentId"
+                                              method="post"
+                                              style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="btn btn-danger btn-sm"
+                                                    onclick="return confirm('آیا از حذف این رکورد مطمئن هستید؟');">
+                                                حذف
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                }
+                                }
+                                else
+                                {
+                                <tr>
+                                    <td colspan="5" class="text-center text-danger">
+                                        داده‌ای یافت نشد
+                                    </td>
+                                </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
 
                         <!-- Paging -->
                         <nav class="mt-2">
-                            <ul class="pagination justify-content-center">
+                            <ul class="pagination justify-content-center mb-0">
 
                                 <li class="page-item @(Model.Paging.Page <= 1 ? "disabled" : "")">
                                     <a class="page-link"
@@ -152,6 +145,6 @@ ViewData["Title"] = "مدیریت تعدیلات";
 
 @section Scripts {
 <script>
-    // در صورت نیاز
+    // جاوااسکریپت اضافی در صورت نیاز
 </script>
 }

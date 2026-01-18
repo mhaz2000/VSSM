@@ -59,4 +59,6 @@ public partial class TblUser
     public DateTime? CourseDate { get; set; }
 
     public DateTime? Lastlogin { get; set; }
+
+    public virtual ICollection<TblRequest> TblRequests { get; set; } = new List<TblRequest>();
 }

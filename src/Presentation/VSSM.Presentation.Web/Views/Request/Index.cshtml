@@ -32,7 +32,7 @@
                     </div>
                 </form>
                 <div class="col-lg-1">
-                    <a type="submit" class="btn btn btn-success" asp-controller="Request" asp-action="New"><i class="fa fa-plus-circle"></i> ثبت درخواست</a>
+                        <a type="submit" class="btn btn btn-success" asp-controller="Request" asp-action="New"><i class="fa fa-plus-circle"></i> ثبت درخواست</a>
                 </div>
             </div>
         </div>
@@ -49,7 +49,7 @@
                                     <th>شماره درخواست</th>
                                     <th>تاریخ</th>
                                     <th>وضعیت</th>
-                                    <th>Entred By</th>
+                                    <th>ثبت شده توسط</th>
                                     <th>تاریخ تایید</th>
                                     <th>عملیات</th>
                                 </tr>
@@ -62,14 +62,15 @@
                                     {
                                         <tr>
                                             @* <td>@i</td> *@
-                                            <td>@item.RequestStatus</td>
-                                            <td>@item.SendDate.Value.ToString("yyyy/MM/dd")</td>
-                                            <td>@item.RequestStatus</td>
-                                            <td>@item.EnteredBy</td>
-                                            <td>@item.ConfirmDate.Value.ToString("yyyy/MM/dd")</td>
+                                            <td>@item.RequestNumber</td>
+                                            <td>@item.SendDate.Value.ToShamsi()</td>
+                                            <td>@item.Status.GetDisplayName()</td>
+                                            <td>@item.EnteredByName</td>
+                                            <td>@item.ConfirmDate.Value.ToShamsi()</td>
                                             <td>
+                                                <a class="btn btn-outline-primary btn-sm" asp-controller="Request" asp-action="New" asp-route-id="@item.Id">مشاهده</a>
                                                 @if (item.RequestStatus == 0){
-                                                    <a class="btn btn-danger btn-sm" asp-controller="ItemClass" asp-action="Edit" asp-route-id="@item.Id">حذف</a>
+                                                    <a class="btn btn-outline-danger btn-sm" asp-controller="Request" asp-action="DeleteRequest" asp-route-id="@item.Id">حذف</a>
                                                 }
                                             </td>
                                         </tr>
@@ -84,6 +85,8 @@
                                 }
                             </tbody>
                         </table>
+                        @if (total > 10)
+                         {
                         <nav>
                             <ul class="pagination">
 
@@ -136,6 +139,7 @@
 
                             </ul>
                         </nav>
+                        }
                     </div>
                 </div>
             </div>

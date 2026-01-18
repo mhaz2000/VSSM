@@ -23,7 +23,7 @@ public partial class TblMinMaxItem
 
     public long? AnnualNeeds { get; set; }
 
- 
+    public long? MaxCalculateOption { get; set; }
 
     public long? NumberShipment { get; set; }
 

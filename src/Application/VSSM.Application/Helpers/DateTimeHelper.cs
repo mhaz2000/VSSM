@@ -17,6 +17,20 @@ public static class DateTimeHelper
         return shamsiDate;
     }
 
+    public static string ToShamsi(this DateOnly date)
+    {
+        var d = new DateTime(date, new TimeOnly());
+        PersianCalendar pc = new PersianCalendar();
+
+        int year = pc.GetYear(d);
+        int month = pc.GetMonth(d);
+        int day = pc.GetDayOfMonth(d);
+
+        var shamsiDate = $"{year:0000}/{month:00}/{day:00}";
+
+        return shamsiDate;
+    }
+
     public static DateTime? ToMiladi(this string date)
     {
         DateTime? miladiDate = null;

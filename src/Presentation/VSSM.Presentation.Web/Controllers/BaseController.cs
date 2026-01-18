@@ -9,6 +9,7 @@ namespace VSSM.Presentation.Web.Controllers
         protected string? CurrentUserRole { get; private set; }
         protected string? CurrentUserFullName { get; private set; }
         protected int? CurrentUserRecipientId { get; private set; }
+        protected int? CurrentUserRecipientParentId { get; private set; }
         protected int? CurrentUserLevel { get; private set; }
 
         public override void OnActionExecuting(
@@ -23,6 +24,8 @@ namespace VSSM.Presentation.Web.Controllers
                 CurrentUserFullName = User.Identity?.Name;
                 CurrentUserRecipientId = int.TryParse(
                     User.FindFirst("RecipientId")?.Value, out var rid) ? rid : null;
+                CurrentUserRecipientParentId = int.TryParse(
+                    User.FindFirst("RecipientParentId")?.Value, out var ridPid) ? rid : null;
                 CurrentUserLevel = int.TryParse(
                     User.FindFirst("Level")?.Value, out var l) ? l : null;
 

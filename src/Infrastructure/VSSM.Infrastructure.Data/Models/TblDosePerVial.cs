@@ -14,4 +14,8 @@ public partial class TblDosePerVial
     public DateTime? EntryDate { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual ICollection<TblItemDoseAssignment> TblItemDoseAssignments { get; set; } = new List<TblItemDoseAssignment>();
+
+    public virtual ICollection<TblRequestLine> TblRequestLines { get; set; } = new List<TblRequestLine>();
 }

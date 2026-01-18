@@ -66,4 +66,8 @@ public partial class TblRecipient
     public bool? HasInternet { get; set; }
 
     public long? DistanceTime { get; set; }
+
+    public virtual ICollection<TblRequest> TblRequestReceivers { get; set; } = new List<TblRequest>();
+
+    public virtual ICollection<TblRequest> TblRequestSenders { get; set; } = new List<TblRequest>();
 }

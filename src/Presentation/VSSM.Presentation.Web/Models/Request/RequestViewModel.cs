@@ -6,6 +6,7 @@
         public int? EnteredBy { get; set; } = null;
         public DateOnly? SendDate { get; set; }
         public string RequestNumber { get; set; }
+        public string? Note { get; set; }
         public DateOnly? ConfirmDate { get; set; }
         public int? RequestStatus { get; set; }
 

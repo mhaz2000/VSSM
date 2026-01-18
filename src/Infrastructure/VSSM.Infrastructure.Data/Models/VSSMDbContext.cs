@@ -483,13 +483,9 @@ public partial class VSSMDbContext : DbContext
 
         modelBuilder.Entity<TblClimate>(entity =>
         {
-            //entity
-            //    .HasNoKey()
-            //    .ToTable("tblClimate");
-
-            entity.HasKey(e => e.ClimateId).HasName("PK_TransportModes");
-
-            entity.ToTable("tblClimate");
+            entity
+                .HasNoKey()
+                .ToTable("tblClimate");
 
             entity.Property(e => e.ClimateId)
                 .ValueGeneratedOnAdd()
@@ -760,6 +756,10 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.UniCode)
                 .HasMaxLength(150)
                 .HasColumnName("uniCode");
+
+            entity.HasOne(d => d.ItemClass).WithMany(p => p.TblItems)
+                .HasForeignKey(d => d.ItemClassId)
+                .HasConstraintName("FK_tblItems_tblItemsClass");
         });
 
         modelBuilder.Entity<TblItemDetail>(entity =>
@@ -815,6 +815,14 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.DoseId).HasColumnName("DoseID");
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.ItemId).HasColumnName("ItemID");
+
+            entity.HasOne(d => d.Dose).WithMany(p => p.TblItemDoseAssignments)
+                .HasForeignKey(d => d.DoseId)
+                .HasConstraintName("FK_tblItemDoseAssignments_tblDosePerVials");
+
+            entity.HasOne(d => d.Item).WithMany(p => p.TblItemDoseAssignments)
+                .HasForeignKey(d => d.ItemId)
+                .HasConstraintName("FK_tblItemDoseAssignments_tblItems");
         });
 
         modelBuilder.Entity<TblItemsClass>(entity =>
@@ -859,12 +867,11 @@ public partial class VSSMDbContext : DbContext
 
         modelBuilder.Entity<TblLevel>(entity =>
         {
-            entity.HasKey(e => e.LevelId);
-            entity.ToTable("tblLevels");
+            entity
+                .HasNoKey()
+                .ToTable("tblLevels");
 
-            entity.Property(e => e.LevelId)
-                .HasColumnName("LevelID")
-                .ValueGeneratedOnAdd(); 
+            entity.Property(e => e.LevelId).HasColumnName("LevelID");
         });
 
         modelBuilder.Entity<TblManItemClass>(entity =>
@@ -1162,6 +1169,18 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.RequestNumber).HasMaxLength(100);
             entity.Property(e => e.SenderId).HasColumnName("SenderID");
             entity.Property(e => e.Status).HasColumnName("status");
+
+            entity.HasOne(d => d.EnteredByNavigation).WithMany(p => p.TblRequests)
+                .HasForeignKey(d => d.EnteredBy)
+                .HasConstraintName("FK_tblRequest_tblUsers");
+
+            entity.HasOne(d => d.Receiver).WithMany(p => p.TblRequestReceivers)
+                .HasForeignKey(d => d.ReceiverId)
+                .HasConstraintName("FK_tblRequest_tblRecipients2");
+
+            entity.HasOne(d => d.Sender).WithMany(p => p.TblRequestSenders)
+                .HasForeignKey(d => d.SenderId)
+                .HasConstraintName("FK_tblRequest_tblRecipients");
         });
 
         modelBuilder.Entity<TblRequest1>(entity =>
@@ -1193,6 +1212,18 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.Reqcount).HasColumnName("reqcount");
             entity.Property(e => e.RequestId).HasColumnName("RequestID");
             entity.Property(e => e.Usedcount).HasColumnName("usedcount");
+
+            entity.HasOne(d => d.DosePerVial).WithMany(p => p.TblRequestLines)
+                .HasForeignKey(d => d.DosePerVialId)
+                .HasConstraintName("FK_tblRequestLine_tblDosePerVials");
+
+            entity.HasOne(d => d.Item).WithMany(p => p.TblRequestLines)
+                .HasForeignKey(d => d.ItemId)
+                .HasConstraintName("FK_tblRequestLine_tblItems");
+
+            entity.HasOne(d => d.Request).WithMany(p => p.TblRequestLines)
+                .HasForeignKey(d => d.RequestId)
+                .HasConstraintName("FK_tblRequestLine_tblRequest");
         });
 
         modelBuilder.Entity<TblRequestLine1>(entity =>

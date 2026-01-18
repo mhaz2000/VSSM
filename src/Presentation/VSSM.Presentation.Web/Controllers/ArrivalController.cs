@@ -422,7 +422,7 @@ namespace VSSM.Presentation.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteLine(int id, int arrivalId, CancellationToken token)
         {
-            _arrivalService.SubtractionToTotal(id, arrivalId);
+            await _arrivalService.SubtractionToTotal(id, arrivalId);
             await _arrivalService.CancelLine(id, token);
 
 

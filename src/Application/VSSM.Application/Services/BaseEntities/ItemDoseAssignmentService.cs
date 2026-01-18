@@ -98,9 +98,9 @@ namespace VSSM.Application.Services.BaseEntities
                 {
                     ItemDoseAssignmentId = x.ItemDoseAssignmentId,
                     ItemId = x.ItemId.GetValueOrDefault(),
+                    ItemName = x.Item.FullName,
                     DoseId = x.ItemDoseAssignmentId,
                     DoseNum = 0,
-                    ItemName = "",
                     VialPerDoseCm3 = x.ItemDoseAssignmentId
                 })
                 .ToListAsync(cancellationToken);

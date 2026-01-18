@@ -42,4 +42,10 @@ public partial class TblItem
     public int? OrderId { get; set; }
 
     public int? PresentationId { get; set; }
+
+    public virtual TblItemsClass ItemClass { get; set; }
+
+    public virtual ICollection<TblItemDoseAssignment> TblItemDoseAssignments { get; set; } = new List<TblItemDoseAssignment>();
+
+    public virtual ICollection<TblRequestLine> TblRequestLines { get; set; } = new List<TblRequestLine>();
 }

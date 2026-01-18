@@ -16,4 +16,8 @@ public partial class TblItemDoseAssignment
     public float? VialPerDoseCm3 { get; set; }
 
     public DateTime? EntryDate { get; set; }
+
+    public virtual TblDosePerVial Dose { get; set; }
+
+    public virtual TblItem Item { get; set; }
 }

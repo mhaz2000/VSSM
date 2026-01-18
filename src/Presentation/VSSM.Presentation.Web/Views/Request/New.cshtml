@@ -33,9 +33,9 @@
                             
                                 <!-- نوع کالا -->
                                 <div class="form-group col-md-6">
-                                    <span class="form-label">نوع کالا:</span>
-                                    <select id="ItemClassId"
-                                            asp-items="ViewBag.itemClassList"
+                                    <span class="form-label">نوع کالا :</span>
+                                <select id="ItemClassId" asp-for="NewLine.ItemClassId"
+                                            asp-items="ViewBag.itemClassList" required
                                             class="form-select">
                                         <option value="">انتخاب کنید...</option>
                                     </select>
@@ -43,9 +43,9 @@
 
                                 <!-- کالا -->
                             <div class="form-group col-md-6">
-                                    <span class="form-label">کالا:</span>
-                                    <select id="ItemId"
-                                            class="form-select"
+                                    <span class="form-label">کالا :</span>
+                                <select id="ItemId" asp-for="NewLine.ItemId"
+                                        class="form-select" required
                                             disabled>
                                         <option value="">ابتدا نوع کالا را انتخاب کنید</option>
                                     </select>
@@ -55,40 +55,40 @@
                                 <span class="form-label">
                                     مقدار مجاز : 
                                 </span>
-                                <input type="text" class="form-control" asp-for="NewLine.Anncount" id="anncount" disabled />
+                                <input type="text" class="form-control disabled" asp-for="NewLine.Anncount" id="anncount"  />
                             </div>
                             <div class="form-group col-md-6">
                                 <span class="form-label">
                                     تعداد موجودی انبار :
                                 </span>
-                                <input type="text" class="form-control" asp-for="NewLine.Currentcount" id="currentcount" disabled />
+                                <input type="text" class="form-control disabled" asp-for="NewLine.Currentcount" id="currentcount" />
                             </div>
 
                             <div class="form-group col-md-6">
                                 <span class="form-label">
                                     مقدار ورودی :
                                 </span>
-                                <input type="text" class="form-control" asp-for="NewLine.Arivcount" id="arivcount" disabled />
+                                <input type="text" class="form-control disabled" asp-for="NewLine.Arivcount" id="arivcount" />
                             </div>
                             <div class="form-group col-md-6">
                                 <span class="form-label">
                                     تعداد مصرف شده :
                                 </span>
-                                <input type="text" class="form-control" asp-for="NewLine.Usedcount" id="usedcount" disabled />
+                                <input type="text" class="form-control disabled" asp-for="NewLine.Usedcount" id="usedcount" />
                             </div>
 
                             <div class="form-group col-md-6">
                                 <span class="form-label">
                                     سلامت موجودی (ماه) :
                                 </span>
-                                <input type="text" class="form-control" asp-for="NewLine.InventoryHealth" id="inventoryHealth" disabled />
+                                <input type="text" class="form-control disabled" asp-for="NewLine.InventoryHealth" id="inventoryHealth" />
                             </div>
                             <div class="form-group col-md-6">
                                 <span class="form-label">
                                     زمان بین درخواست و ورود محموله (روز) :
                                 </span>
-                                <input type="text" class="form-control" asp-for="NewLine.TimeBetweenRequestAndArrival" 
-                                                                            id="timeBetweenRequestAndArrival" disabled />
+                                <input type="text" class="form-control disabled" asp-for="NewLine.TimeBetweenRequestAndArrival"
+                                       id="timeBetweenRequestAndArrival"  />
                             </div>
 
                             <div class="form-group col-md-6">
@@ -104,7 +104,7 @@
                                 <span class="form-label">
                                     تعداد پیشنهادی :
                                 </span>
-                                <input type="text" class="form-control" asp-for="NewLine.Offercount" id="offercount" disabled />
+                                <input type="text" class="form-control disabled" asp-for="NewLine.Offercount" id="offercount" />
                             </div>
                             <div class="form-group col-md-6">
                                 <span class="form-label">
@@ -130,7 +130,9 @@
                             </div>
                         </div>
                         
-                        <div class="row col-lg-12"><hr /></div>
+
+
+                        <div class="row col-lg-12"><br /></div>
 
                         <div class="col-lg-12 allign-text">
                             <table class="table table-bordered table-striped table-condensed lines-table">
@@ -166,7 +168,7 @@
                                                     <button type="submit"
                                                             name="command"
                                                             value="deleteLine_@line.Id"
-                                                            class="btn btn-danger btn-sm">
+                                                            class="btn btn-outline-danger btn-sm">
                                                         حذف
                                                     </button>
                                                 </td>
@@ -184,14 +186,35 @@
                                 </tbody>
                             </table>
                         </div>
-
+                        
+                        <div class="row col-lg-12">
+                            <div class="form-group col-md-6">
+                                <span class="form-label">
+                                    ملاحظات :
+                                </span>
+                                <input type="text" class="form-control" asp-for="Note" id="note" />
+                            </div>
+                        </div>
+                        <div class="row col-lg-12"><br /></div>
+                        <div class="card-block">
+                            <div class="row col-lg-2"></div>
+                            <button type="submit"
+                                    name="command"
+                                    value="StatusSent" class="btn btn-outline-primary">
+                                لطفا ارسال نمایید
+                            </button>
+                            <button type="button" name="command"
+                                    value="StatusDraft" class="btn btn-warning">
+                                پیش نویس
+                            </button>
+                            <button type="button" name="command"
+                                    value="StatusDelete" class="btn btn-danger">
+                                حذف
+                            </button>
+                            <a type="button" class="btn btn-primary px-5" asp-action="Index">مشاهده لیست</a>
+                        </div>
                     </form>
-                    <div class="card-block">
-                        <button type="button" class="btn btn-outline-primary">لطفا ارسال نمایید</button>
-                        <button type="button" class="btn btn-warning">پیش نویس</button>
-                        <button type="button" class="btn btn-outline-danger">حذف</button>
-                        <a type="button" class="btn btn-primary px-5" asp-action="Index">مشاهده لیست</a>
-                    </div>
+                    
                 </div>
             </div>
         </div>

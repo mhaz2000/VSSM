@@ -274,5 +274,27 @@ namespace VSSM.Presentation.Web.Controllers
             });
         }
 
+
+
+
+        public async Task<IActionResult> ReceivedRequests(CancellationToken cancellationToken, string? search,
+                                                int page = 1,
+                                                int pageSize = 10,
+                                                string sortField = "Orders",
+                                                string sortOrder = "desc")
+        {
+            var listModel = await _requestService.GetPagedList(search,
+                                                                    page,
+                                                                    pageSize,
+                                                                    sortField,
+                                                                    sortOrder,
+                                                                    CurrentUserRecipientId.GetValueOrDefault(),
+                                                                    cancellationToken);
+
+
+            return View(listModel);
+
+        }
+
     }
 }

@@ -13,15 +13,17 @@ public class AdjustmentController : BaseController
     private readonly IItemService _itemService;
     private readonly IArrivalService _arrivalService;
     private readonly IAdjustReasonService _adjustReasonService;
+    private readonly IItemDetailStoreService _detailStoreService;
 
     public AdjustmentController(IAdjustmentService adjustmentService, IItemClassService itemClassService,
-        IItemService itemService, IArrivalService arrivalService, IAdjustReasonService adjustReasonService)
+        IItemService itemService, IArrivalService arrivalService, IAdjustReasonService adjustReasonService, IItemDetailStoreService detailStoreService)
     {
         _adjustmentService = adjustmentService;
         _itemClassService = itemClassService;
         _itemService = itemService;
         _arrivalService = arrivalService;
         _adjustReasonService = adjustReasonService;
+        _detailStoreService = detailStoreService;
     }
 
     // ---------- Index ----------
@@ -39,6 +41,7 @@ public class AdjustmentController : BaseController
             pageSize,
             sortField,
             sortOrder,
+            CurrentUserId.Value,
             cancellationToken);
 
         return View(adjustments);
@@ -67,7 +70,10 @@ public class AdjustmentController : BaseController
 
         await PrepareDropdown(cancellationToken);
 
-        var arrivalLine = await _arrivalService.GetArrivalLineById(adjustment.ArrivalLineId.Value);
+        var itemDetailStores = await _detailStoreService.GetById(adjustment.ItemDetailStoreId ?? -1);
+        var arrivalLine =
+            await _arrivalService.GetArrivalLineByStoreIdAndItemDetailId((long)itemDetailStores.StoreId.Value,
+                (long)itemDetailStores.ItemDetailId);
         var item = await _itemService.GetById(arrivalLine.ItemId.Value, cancellationToken);
         var model = new AdjustmentViewModel
         {
@@ -92,8 +98,8 @@ public class AdjustmentController : BaseController
         ViewBag.ItemClass = list;
         var itemList = await _itemService.GetActives(cancellationToken);
         ViewBag.ItemGroups = itemList;
-        var arrivalLines = await _arrivalService.GetArrivalLines(CurrentUserId!.Value);
-        ViewBag.ArrivalLines = arrivalLines;
+        var itemDetailStores = await _detailStoreService.GetActives(CurrentUserRecipientId.Value);
+        ViewBag.ItemDetailStores = itemDetailStores;
         var adjustReasons = await _adjustReasonService.GetActives(cancellationToken);
         ViewBag.AdjustReasons = adjustReasons;
     }

@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using VSSM.Application.DTOs.BaseEntities.Adjustments;
 using VSSM.Application.DTOs.BaseEntities.AdjustReason;
 using VSSM.Application.DTOs.BaseEntities.CommercialName;
 using VSSM.Application.DTOs.BaseEntities.DosePerVial;
@@ -99,7 +100,10 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IUseService, UseService>();
             services.AddScoped<IItemDetailsService, ItemDetailService>();
             services.AddScoped<IPackingTypeService, PackingTypeService>();
+            services.AddScoped<IAdjustmentService, AdjustmentService>();
+            services.AddScoped<IValidator<AdjustmentDto>, AdjustmentDtoValidator>();
             services.AddScoped<IDispatchService, DispatchService>();
+            services.AddScoped<IItemDetailStoreService, ItemDetailStoreService>();
             services.AddScoped<IRequestService, RequestService>();
         }
     }

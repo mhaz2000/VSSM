@@ -60,7 +60,8 @@ namespace VSSM.Application.Services.BaseEntities
             var result = items.Select(x => new ItemClassListDto
             {
                 Id = x.ItemClassId,
-                Name = x.FullName
+                Name = x.FullName,
+                Code = x.Code
             }).ToList();
 
             return result;

@@ -155,7 +155,8 @@ namespace VSSM.Application.Services.BaseEntities
                 TotalVolume = dto.TotalVolume,
                 Note = dto.Note,
                 Frzindc = dto.Frzindc,
-                FrzindcNok = dto.FrzindcNok
+                FrzindcNok = dto.FrzindcNok,
+                ReceiverId = dto.UserRecipientId
             };
 
             _db.TblArrivals.Add(arrival);
@@ -305,69 +306,101 @@ namespace VSSM.Application.Services.BaseEntities
             await _db.SaveChangesAsync(token);
         }
 
-public async Task<List<ArrivalLineDto>> GetArrivalLines(int userId)
-{
-    var lines = await _db.TblArrivalLines
-        .Where(l => l.UseId == userId)
-        .Select(l => new
+        public async Task<List<ArrivalLineDto>> GetArrivalLines(int userRecipientId)
         {
-            Line = l,
-            Item = _db.TblItems.FirstOrDefault(i => i.ItemId == l.ItemId),
-            Manufacturer = _db.TblManufacturers.FirstOrDefault(m => m.ManufacturerId == l.ManufacturerId),
-            Store = _db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
-            DoseVial = _db.TblDosePerVials.FirstOrDefault(d => d.DosePerVialId == l.DosePerVialId)
-        })
-        .AsNoTracking()
-        .ToListAsync();
+            var lines = await _db.TblArrivalLines
+                .Where(l => _db.TblArrivals
+                    .Any(a => a.ReceiverId == userRecipientId && a.ArrivalId == l.ArrivalId))
+                .Select(l => new
+                {
+                    Line = l,
+                    Item = _db.TblItems.FirstOrDefault(i => i.ItemId == l.ItemId),
+                    Manufacturer = _db.TblManufacturers.FirstOrDefault(m => m.ManufacturerId == l.ManufacturerId),
+                    Store = _db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
+                    DoseVial = _db.TblDosePerVials.FirstOrDefault(d => d.DosePerVialId == l.DosePerVialId)
+                })
+                .AsNoTracking()
+                .ToListAsync();
 
-    var result = lines.Select(x =>
-    {
-        var l = x.Line;
+            var result = lines.Select(x =>
+            {
+                var l = x.Line;
 
-        return new ArrivalLineDto
-        {
-            ArrivalLineId = l.ArrivalLineId,
-            ArrivalId = l.ArrivalId,
-            ItemId = l.ItemId,
-            BatchNum = l.BatchNum,
-            CommertialNameId = l.CommertialNameId,
-            DosePerVialId = l.DosePerVialId,
-            ExpiryDate = l.ExpiryDate,
-            ProductionDate = l.ProductionDate,
-            ItemDetailId = l.ItemDetailId,
-            ManufacturerId = l.ManufacturerId,
-            Note = l.Note,
-            NumVials = l.NumVials,
-            PackageSize = l.PackageSize,
-            PackingTypeId = l.PackingTypeId,
-            Quantity = l.Quantity,
-            StoreId = l.StoreId,
-            TotalVolume = l.TotalVolume,
-            UnitVolume = l.UnitVolume,
-            UseId = l.UseId,
-            VvmStageId = l.VvmstageId,
-            VvmTypeId = l.VvmtypeId,
-            DropDownText = string.Format(
-                "کالا: {0} | سازنده: {1} | تاریخ انقضا: {2} | سری ساخت: {3} | انبار: {4} | دوز بر ویال: {5} | مقدار موجود: {6}",
-                x.Item != null ? x.Item.FullName : "",
-                x.Manufacturer != null ? x.Manufacturer.FullName : "",
-                l.ExpiryDate != null ? l.ExpiryDate.Value.ToShamsi() : "",
-                l.BatchNum,
-                x.Store != null ? x.Store.Name : "",
-                x.DoseVial != null ? x.DoseVial.NumDosePerVial : "",
-                l.Quantity
-            )
-        };
-    }).ToList();
+                return new ArrivalLineDto
+                {
+                    ArrivalLineId = l.ArrivalLineId,
+                    ArrivalId = l.ArrivalId,
+                    ItemId = l.ItemId,
+                    BatchNum = l.BatchNum,
+                    CommertialNameId = l.CommertialNameId,
+                    DosePerVialId = l.DosePerVialId,
+                    ExpiryDate = l.ExpiryDate,
+                    ProductionDate = l.ProductionDate,
+                    ItemDetailId = l.ItemDetailId,
+                    ManufacturerId = l.ManufacturerId,
+                    Note = l.Note,
+                    NumVials = l.NumVials,
+                    PackageSize = l.PackageSize,
+                    PackingTypeId = l.PackingTypeId,
+                    Quantity = l.Quantity,
+                    StoreId = l.StoreId,
+                    TotalVolume = l.TotalVolume,
+                    UnitVolume = l.UnitVolume,
+                    UseId = l.UseId,
+                    VvmStageId = l.VvmstageId,
+                    VvmTypeId = l.VvmtypeId,
+                    DropDownText = string.Format(
+                        "کالا: {0} | سازنده: {1} | تاریخ انقضا: {2} | سری ساخت: {3} | انبار: {4} | دوز بر ویال: {5} | مقدار موجود: {6}",
+                        x.Item != null ? x.Item.FullName : "",
+                        x.Manufacturer != null ? x.Manufacturer.FullName : "",
+                        l.ExpiryDate != null ? l.ExpiryDate.Value.ToShamsi() : "",
+                        l.BatchNum,
+                        x.Store != null ? x.Store.Name : "",
+                        x.DoseVial != null ? x.DoseVial.NumDosePerVial : "",
+                        l.Quantity
+                    )
+                };
+            }).ToList();
 
-    return result;
-}
-
+            return result;
+        }
 
 
         public async Task<ArrivalLineDto> GetArrivalLineById(int id)
         {
             var line = await _db.TblArrivalLines.FirstOrDefaultAsync(c => c.ArrivalLineId == id);
+
+            var dto = new ArrivalLineDto
+            {
+                ArrivalLineId = line.ArrivalLineId,
+                ArrivalId = line.ArrivalId,
+                ItemId = line.ItemId,
+                BatchNum = line.BatchNum,
+                CommertialNameId = line.CommertialNameId,
+                DosePerVialId = line.DosePerVialId,
+                ExpiryDate = line.ExpiryDate,
+                ProductionDate = line.ProductionDate,
+                ItemDetailId = line.ItemDetailId,
+                ManufacturerId = line.ManufacturerId,
+                Note = line.Note,
+                NumVials = line.NumVials,
+                PackageSize = line.PackageSize,
+                PackingTypeId = line.PackingTypeId,
+                Quantity = line.Quantity,
+                StoreId = line.StoreId,
+                TotalVolume = line.TotalVolume,
+                UnitVolume = line.UnitVolume,
+                UseId = line.UseId,
+                VvmStageId = line.VvmstageId,
+                VvmTypeId = line.VvmtypeId
+            };
+
+            return dto;
+        }
+
+        public async Task<ArrivalLineDto> GetArrivalLineByStoreIdAndItemDetailId(long storeId, long itemDetailId)
+        {
+            var line = await _db.TblArrivalLines.FirstOrDefaultAsync(c => c.StoreId == storeId && c.ItemDetailId == itemDetailId);
 
             var dto = new ArrivalLineDto
             {

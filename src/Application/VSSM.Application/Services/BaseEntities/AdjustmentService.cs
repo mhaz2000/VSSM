@@ -28,19 +28,23 @@ public class AdjustmentService : IAdjustmentService
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
+        var fiscalPeriod = await _dbContext.TblFiscalPeriods.FirstOrDefaultAsync(c => c.IsActive == true);
+        var itemDetailStore = await _dbContext.TblItemDetailStores.FirstOrDefaultAsync(c =>
+            c.ItemDetailStoreId == dto.ItemDetailStoreId);
+
         var entity = new TblAdjustment
         {
-            EntryDate = DateTime.Now,
-            Date = dto.Date,
-            Note = dto.Note,
             AdjustmentreasonId = dto.AdjustmentreasonId,
+            FiscalPeriodId = fiscalPeriod is null ? -1 : fiscalPeriod.FiscalPeriodId,
+            ArrivalLineId = -1,
+            DispatchLineId = -1,
+            ItemDetailStoreId = itemDetailStore is null ? -1 : itemDetailStore.ItemDetailStoreId,
+            OldQuantity = itemDetailStore is null ? 0 : Convert.ToInt32(itemDetailStore.CurrentStock ?? 0),
             NewQuantity = dto.NewQuantity,
-            OldQuantity = dto.OldQuantity,
-            ArrivalLineId = dto.ArrivalLineId,
-            DispatchLineId = dto.DispatchLineId,
+            EntryDate = DateTime.Now,
+            Date = DateTime.Now,
             EnteredById = dto.EnteredById,
-            FiscalPeriodId = dto.FiscalPeriodId,
-            ItemDetailStoreId = dto.ItemDetailStoreId
+            Note = dto.Note,
         };
 
         await _dbContext.TblAdjustments.AddAsync(entity, cancellationToken);
@@ -55,76 +59,127 @@ public class AdjustmentService : IAdjustmentService
         int pageSize,
         string sortField,
         string sortOrder,
+        int userId,
         CancellationToken cancellationToken)
     {
+        page = page <= 0 ? 1 : page;
+        pageSize = pageSize <= 0 ? 10 : pageSize;
+
         var paging = new PagingModel
         {
             Page = page,
             PageSize = pageSize
         };
 
-        IQueryable<TblAdjustment> query =
-            _dbContext.TblAdjustments.AsNoTracking();
+        var adjustmentsQuery = _dbContext.TblAdjustments
+            .Where(a => a.EnteredById == userId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(x =>
-                x.AdjustmentId.ToString().Contains(search) ||
-                (x.Note != null && x.Note.Contains(search))
-            );
+            adjustmentsQuery = adjustmentsQuery.Where(a => a.Note != null && a.Note.Contains(search));
         }
 
-        query = sortField switch
+        paging.TotalItems = await adjustmentsQuery.CountAsync(cancellationToken);
+
+        adjustmentsQuery = (sortField?.ToLower(), sortOrder?.ToLower()) switch
         {
-            "Date" => sortOrder == "asc"
-                ? query.OrderBy(x => x.Date)
-                : query.OrderByDescending(x => x.Date),
-
-            "EntryDate" => sortOrder == "asc"
-                ? query.OrderBy(x => x.EntryDate)
-                : query.OrderByDescending(x => x.EntryDate),
-
-            "NewQuantity" => sortOrder == "asc"
-                ? query.OrderBy(x => x.NewQuantity)
-                : query.OrderByDescending(x => x.NewQuantity),
-
-            _ => sortOrder == "asc"
-                ? query.OrderBy(x => x.AdjustmentId)
-                : query.OrderByDescending(x => x.AdjustmentId)
+            ("date", "asc") => adjustmentsQuery.OrderBy(a => a.Date),
+            ("date", "desc") => adjustmentsQuery.OrderByDescending(a => a.Date),
+            ("entrydate", "asc") => adjustmentsQuery.OrderBy(a => a.EntryDate),
+            ("entrydate", "desc") => adjustmentsQuery.OrderByDescending(a => a.EntryDate),
+            _ => adjustmentsQuery.OrderByDescending(a => a.AdjustmentId)
         };
-
-        paging.TotalItems =
-            await query.CountAsync(cancellationToken);
-
-        var items = await query
-            .Skip(paging.Skip)
-            .Take(paging.PageSize)
-            .Select(x => new AdjustmentDto
-            {
-                AdjustmentId = x.AdjustmentId,
-                EntryDate = x.EntryDate,
-                Date = x.Date,
-                Note = x.Note,
-                AdjustmentreasonId = x.AdjustmentreasonId,
-                NewQuantity = x.NewQuantity,
-                OldQuantity = x.OldQuantity,
-                ArrivalLineId = x.ArrivalLineId,
-                DispatchLineId = x.DispatchLineId,
-                EnteredById = x.EnteredById,
-                FiscalPeriodId = x.FiscalPeriodId,
-                ItemDetailStoreId = x.ItemDetailStoreId
-            })
+        
+        var adjustments = await adjustmentsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
+
+        var adjustreasonsId = adjustments.Select(c => c.AdjustmentreasonId);
+        var adjustreasons = await _dbContext.TblAdjustreasons.ToListAsync(cancellationToken);
+        adjustreasons = adjustreasons.Where(c => adjustreasonsId.Contains(c.AdjustreasonId)).ToList();
+
+        var itemDetailStoreIds = adjustments.Select(a => a.ItemDetailStoreId).Distinct().ToList();
+        var itemDetailStores = await _dbContext.TblItemDetailStores.ToListAsync(cancellationToken);
+        itemDetailStores = itemDetailStores.Where(c => itemDetailStoreIds.Contains(c.ItemDetailStoreId)).ToList();
+
+        var itemDetailIds = itemDetailStores.Select(ids => ids.ItemDetailId).Distinct().ToList();
+        var itemDetails = await _dbContext.TblItemDetails.ToListAsync(cancellationToken);
+        itemDetails = itemDetails.Where(c => itemDetailIds.Contains(c.ItemDetailId)).ToList();
+
+        var itemIds = itemDetails.Select(id => id.ItemId).Distinct().ToList();
+        var items = await _dbContext.TblItems.ToListAsync(cancellationToken);
+        items = items.Where(c => itemIds.Contains(c.ItemId)).ToList();
+
+        var itemClassIds = items.Select(i => i.ItemClassId).Distinct().ToList();
+        var itemClasses = await _dbContext.TblItemsClasses.ToListAsync(cancellationToken);
+        itemClasses = itemClasses.Where(c => itemClassIds.Contains(c.ItemClassId)).ToList();
+
+        var itemDetailStoreDict = itemDetailStores.ToDictionary(x => x.ItemDetailStoreId);
+        var itemDetailDict = itemDetails.ToDictionary(x => x.ItemDetailId);
+        var itemDict = items.ToDictionary(x => x.ItemId);
+        var itemClassDict = itemClasses.ToDictionary(x => x.ItemClassId);
+
+        var adjustmentDtos = new List<AdjustmentDto>();
+
+        foreach (var a in adjustments)
+        {
+            try
+            {
+                TblItemDetailStore? ids = null;
+                TblItemDetail? id = null;
+                TblItem? i = null;
+                TblItemsClass? ic = null;
+
+                if (a.ItemDetailStoreId != 0 && a.ItemDetailStoreId != null)
+                    itemDetailStoreDict.TryGetValue(a.ItemDetailStoreId.Value, out ids);
+
+                if (ids != null)
+                    itemDetailDict.TryGetValue(ids.ItemDetailId.Value, out id);
+
+                if (id != null)
+                    itemDict.TryGetValue(id.ItemId.Value, out i);
+
+                if (i != null)
+                    itemClassDict.TryGetValue(i.ItemClassId.Value, out ic);
+
+                var adjustreason = adjustreasons.FirstOrDefault(c => c.AdjustreasonId == a.AdjustmentreasonId);
+                
+                adjustmentDtos.Add(new AdjustmentDto
+                {
+                    AdjustmentId = a.AdjustmentId,
+                    EntryDate = a.EntryDate,
+                    Date = a.Date,
+                    Note = a.Note,
+                    AdjustmentreasonId = a.AdjustmentreasonId,
+                    NewQuantity = a.NewQuantity,
+                    OldQuantity = a.OldQuantity,
+                    ArrivalLineId = a.ArrivalLineId,
+                    DispatchLineId = a.DispatchLineId,
+                    EnteredById = a.EnteredById,
+                    FiscalPeriodId = a.FiscalPeriodId,
+                    ItemDetailStoreId = a.ItemDetailStoreId,
+                    ItemFullName = i?.FullName is null ? "" : i?.FullName,
+                    ItemClassFullName = ic?.FullName is null ? "" : ic?.FullName,
+                    AdjustreasonTitle = adjustreason?.FullName?? "" 
+                });
+            }
+            catch (Exception e)
+            {
+                //ignore
+            }
+        }
 
         return new PagingSearchOrderDto<AdjustmentDto>
         {
-            Items = items,
+            Items = adjustmentDtos,
             Paging = paging,
             SearchText = search,
             SortField = sortField,
             SortOrder = sortOrder
         };
     }
+
 
     public async Task<AdjustmentDto?> GetById(
         int id,

@@ -18,9 +18,7 @@ public partial class TblArrivalLine
     public float? UnitPrice { get; set; }
 
     public float? TotalPrice { get; set; }
-
     public int? UseId { get; set; }
-
     public int? ManufacturerId { get; set; }
 
     public int? DosePerVialId { get; set; }

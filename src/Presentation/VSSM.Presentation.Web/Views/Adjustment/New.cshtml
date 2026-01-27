@@ -5,6 +5,13 @@
 string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "ثبت";
 }
 
+<style>
+    .required-star {
+        color: red;
+        margin-right: 3px;
+    }
+</style>
+
 <div class="container-fluid">
     <div class="animated fadeIn">
 
@@ -26,13 +33,16 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                       method="post"
                       class="form-horizontal">
 
-                    <input type="hidden" asp-for="AdjustmentId" />
+                    <input type="hidden" asp-for="AdjustmentId"/>
 
                     <div class="col-lg-6">
 
                         <!-- Item Class -->
                         <div class="form-group">
-                            <label class="form-label">نوع کالا</label>
+                            <span class="form-label">
+                                <span class="required-star">*</span>
+                                نوع کالا:
+                            </span>
                             <select class="form-control"
                                     asp-for="ItemClassId"
                                     id="ItemClassId">
@@ -49,7 +59,10 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
 
                         <!-- Item Group -->
                         <div class="form-group">
-                            <label class="form-label">گروه کالا</label>
+                            <span class="form-label">
+                                <span class="required-star">*</span>
+                                گروه کالا:
+                            </span>
                             <select class="form-control"
                                     asp-for="ItemId"
                                     id="ItemGroupId"
@@ -66,26 +79,29 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                             </select>
                         </div>
 
-                        <!-- ArrivalLines -->
+                        <!-- Item Detail Store -->
                         <div class="form-group">
-                            <label class="form-label">کالا</label>
+                            <span class="form-label">
+                                <span class="required-star">*</span>
+                                کالا:
+                            </span>
                             <select class="form-control"
-                                    asp-for="ArrivalLineId"
-                                    id="ArrivalLineId"
+                                    asp-for="ItemDetailStoreId"
+                                    id="ItemDetailStoreId"
                                     disabled>
                                 <option value="">-- انتخاب کنید --</option>
-                                @foreach (var item in ViewBag.ArrivalLines)
+                                @foreach (var item in ViewBag.ItemDetailStores)
                                 {
-                                <option value="@item.ArrivalLineId"
+                                <option value="@item.ItemDetailStoreId"
                                         data-itemid="@item.ItemId"
-                                        selected="@(Model?.ArrivalLineId == item.ArrivalLineId)">
+                                        selected="@(Model?.ItemDetailStoreId == item.ItemDetailStoreId)">
                                     @item.DropDownText
                                 </option>
                                 }
                             </select>
                         </div>
 
-                        <hr />
+                        <hr/>
 
                         <!-- Old Quantity -->
                         <div class="form-group">
@@ -94,16 +110,22 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                                    asp-for="OldQuantity"
                                    id="OldQuantity"
                                    class="form-control"
-                                   readonly />
+                                   readonly/>
                         </div>
 
                         <!-- New Quantity -->
                         <div class="form-group">
-                            <label class="form-label">مقدار جدید</label>
+                            <span class="form-label">
+                                <span class="required-star">*</span>
+                                مقدار جدید:
+                            </span>
                             <input type="number"
                                    asp-for="NewQuantity"
                                    id="NewQuantity"
-                                   class="form-control" />
+                                   class="form-control"
+                                   min="1"
+                                   step="1"/>
+                            <span asp-validation-for="NewQuantity" class="text-danger"></span>
                         </div>
 
                         <!-- Difference -->
@@ -112,21 +134,27 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                             <input type="number"
                                    id="QuantityDifference"
                                    class="form-control"
-                                   readonly />
+                                   readonly/>
                         </div>
 
-                        <hr />
+                        <hr/>
 
                         <div class="form-group">
                             <label class="form-label">توجه:</label>
-                            <label class="form-control">عدد منفی فعلی موجودی فعلی را کاهش داده و عدد مثبت موجودی فعلی را افزایش میدهد. اضاف کردن موجودی فعلی را با توجه بیشتر انجام دهید.</label>
+                            <label class="form-control">
+                                عدد منفی موجودی فعلی را کاهش داده و عدد مثبت موجودی فعلی را افزایش می‌دهد.
+                                افزودن موجودی را با دقت انجام دهید.
+                            </label>
                         </div>
 
-                        <hr />
+                        <hr/>
 
-                        <!-- Adjustreason -->
+                        <!-- Adjust Reason -->
                         <div class="form-group">
-                            <label class="form-label">نوع کالا</label>
+                            <span class="form-label">
+                                <span class="required-star">*</span>
+                                دلیل تعدیل:
+                            </span>
                             <select class="form-control"
                                     asp-for="AdjustmentreasonId"
                                     id="AdjustmentreasonId">
@@ -149,8 +177,8 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                                       rows="3"></textarea>
                         </div>
 
-                        <hr />
-                        
+                        <hr/>
+
                         <div class="text-center mt-4">
                             <button type="submit" class="btn btn-success px-5">
                                 @formName
@@ -174,7 +202,7 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
 <script>
     const itemClass = document.getElementById("ItemClassId");
     const itemGroup = document.getElementById("ItemGroupId");
-    const arrivalLine = document.getElementById("ArrivalLineId");
+    const itemDetailStore = document.getElementById("ItemDetailStoreId");
 
     const oldQty = document.getElementById("OldQuantity");
     const newQty = document.getElementById("NewQuantity");
@@ -200,33 +228,47 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
 
         if (!initialLoad) {
             itemGroup.value = "";
-            arrivalLine.value = "";
-            arrivalLine.disabled = true;
+            itemDetailStore.value = "";
+            itemDetailStore.disabled = true;
         }
     }
 
-    function toggleArrivalLines() {
-        const hasGroup = itemGroup.value && itemGroup.value !== "";
-        arrivalLine.disabled = !hasGroup;
+    function filterItemDetailStores(initialLoad = false) {
+        const groupId = itemGroup.value;
+        let hasItem = false;
 
-        if (!hasGroup) {
-            arrivalLine.value = "";
+        Array.from(itemDetailStore.options).forEach(opt => {
+            const optItemId = opt.getAttribute("data-itemid");
+            if (!optItemId) return;
+
+            if (optItemId === groupId) {
+                opt.style.display = "block";
+                hasItem = true;
+            } else {
+                opt.style.display = "none";
+            }
+        });
+
+        itemDetailStore.disabled = !groupId || !hasItem;
+
+        if (!initialLoad) {
+            itemDetailStore.value = "";
         }
     }
 
     function updateDifference() {
-        const oldVal = parseFloat(oldQty.value) || 0;
-        const newVal = parseFloat(newQty.value) || 0;
+        const oldVal = parseInt(oldQty.value) || 0;
+        const newVal = parseInt(newQty.value) || 0;
         diff.value = newVal - oldVal;
     }
 
     itemClass.addEventListener("change", () => filterItemGroups(false));
-    itemGroup.addEventListener("change", toggleArrivalLines);
+    itemGroup.addEventListener("change", () => filterItemDetailStores(false));
     newQty.addEventListener("input", updateDifference);
 
     document.addEventListener("DOMContentLoaded", function () {
         filterItemGroups(true);
-        toggleArrivalLines(); // حالت Edit
+        filterItemDetailStores(true);
         updateDifference();
     });
 </script>

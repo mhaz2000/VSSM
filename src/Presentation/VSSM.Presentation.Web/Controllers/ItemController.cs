@@ -124,7 +124,6 @@ namespace VSSM.Presentation.Web.Controllers
             };
 
             await PrepareDropdown(cancellationToken);
-            // نمایش فرم ویرایش با داده‌ها
             return View("New", model);
         }
 
@@ -133,6 +132,8 @@ namespace VSSM.Presentation.Web.Controllers
             var list = await _itemClassService.GetActives(cancellationTOken);
 
             ViewBag.ItemClass = list;
+
+            ViewBag.DiluentDropDown = list.Where(c => c.Code == "2");
         }
 
         [HttpGet("GetItems/{classItemId:required:int}")]

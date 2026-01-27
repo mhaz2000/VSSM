@@ -34,4 +34,6 @@ public partial class TblItemsClass
     public bool? ReqVvmtype { get; set; }
 
     public virtual ICollection<TblItem> TblItems { get; set; } = new List<TblItem>();
+
+    public virtual ICollection<TblManItemClass> TblManItemClasses { get; set; } = new List<TblManItemClass>();
 }

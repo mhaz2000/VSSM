@@ -15,6 +15,12 @@ public partial class TblDosePerVial
 
     public bool? IsActive { get; set; }
 
+    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
+
+    public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
+
+    public virtual ICollection<TblItemDetail> TblItemDetails { get; set; } = new List<TblItemDetail>();
+
     public virtual ICollection<TblItemDoseAssignment> TblItemDoseAssignments { get; set; } = new List<TblItemDoseAssignment>();
 
     public virtual ICollection<TblRequestLine> TblRequestLines { get; set; } = new List<TblRequestLine>();

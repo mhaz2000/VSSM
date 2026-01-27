@@ -18,4 +18,6 @@ public partial class TblStoreType
     public bool? IsActive { get; set; }
 
     public bool? IsUserEditable { get; set; }
+
+    public virtual ICollection<TblStore> TblStores { get; set; } = new List<TblStore>();
 }

@@ -44,4 +44,8 @@ public partial class TblMinMaxItem
     public DateTime? EntryDate { get; set; }
 
     public long? OrderLevel { get; set; }
+
+    public virtual TblItem Item { get; set; }
+
+    public virtual TblRecipient Recipient { get; set; }
 }

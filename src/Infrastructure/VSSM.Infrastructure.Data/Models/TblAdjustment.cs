@@ -30,4 +30,16 @@ public partial class TblAdjustment
     public DateTime? Date { get; set; }
 
     public string Note { get; set; }
+
+    public virtual TblAdjustreason Adjustmentreason { get; set; }
+
+    public virtual TblArrivalLine ArrivalLine { get; set; }
+
+    public virtual TblDispatchLine DispatchLine { get; set; }
+
+    public virtual TblUser EnteredBy { get; set; }
+
+    public virtual TblFiscalPeriod FiscalPeriod { get; set; }
+
+    public virtual TblItemDetailStore ItemDetailStore { get; set; }
 }

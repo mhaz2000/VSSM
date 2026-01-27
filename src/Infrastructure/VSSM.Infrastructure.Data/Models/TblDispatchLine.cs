@@ -47,5 +47,25 @@ public partial class TblDispatchLine
 
     public int? BundleId { get; set; }
 
+    public virtual TblBundle Bundle { get; set; }
+
     public virtual TblDispatch Dispatch { get; set; }
+
+    public virtual TblDosePerVial DosePerVial { get; set; }
+
+    public virtual TblItem Item { get; set; }
+
+    public virtual TblItemDetailStore ItemDetailStore { get; set; }
+
+    public virtual TblManufacturer Manufacturer { get; set; }
+
+    public virtual TblStore Store { get; set; }
+
+    public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
+
+    public virtual TblUse Use { get; set; }
+
+    public virtual TblVvmstage Vvmstage { get; set; }
+
+    public virtual TblVvmtype Vvmtype { get; set; }
 }

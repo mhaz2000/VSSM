@@ -29,6 +29,8 @@ public partial class TblRequest
 
     public virtual TblUser EnteredByNavigation { get; set; }
 
+    public virtual TblFiscalPeriod FiscalPeriod { get; set; }
+
     public virtual TblRecipient Receiver { get; set; }
 
     public virtual TblRecipient Sender { get; set; }

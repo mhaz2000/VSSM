@@ -67,5 +67,19 @@ public partial class TblArrival
 
     public string OrderNumber { get; set; }
 
+    public virtual TblItem FirstTimeArrangementItem { get; set; }
+
+    public virtual TblFiscalPeriod FiscalPeriod { get; set; }
+
+    public virtual TblRecipient Receiver { get; set; }
+
+    public virtual TblRecipient Sender { get; set; }
+
+    public virtual TblSource Source { get; set; }
+
+    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
+
     public virtual ICollection<TblArrivalLine> TblArrivalLines { get; set; } = new List<TblArrivalLine>();
+
+    public virtual ICollection<TblDispatch> TblDispatches { get; set; } = new List<TblDispatch>();
 }

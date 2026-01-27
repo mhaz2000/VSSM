@@ -67,7 +67,35 @@ public partial class TblRecipient
 
     public long? DistanceTime { get; set; }
 
+    public virtual TblClimate Climate { get; set; }
+
+    public virtual TblOwnership Ownership { get; set; }
+
+    public virtual TblPowerSource PowerSource { get; set; }
+
+    public virtual TblReceivingMode ReceivingMode { get; set; }
+
+    public virtual ICollection<TblArrival> TblArrivalReceivers { get; set; } = new List<TblArrival>();
+
+    public virtual ICollection<TblArrival> TblArrivalSenders { get; set; } = new List<TblArrival>();
+
+    public virtual ICollection<TblDispatch> TblDispatchReceivers { get; set; } = new List<TblDispatch>();
+
+    public virtual ICollection<TblDispatch> TblDispatchSenders { get; set; } = new List<TblDispatch>();
+
+    public virtual ICollection<TblMinMaxItem> TblMinMaxItems { get; set; } = new List<TblMinMaxItem>();
+
+    public virtual ICollection<TblRecipientMaxItem> TblRecipientMaxItemReceivers { get; set; } = new List<TblRecipientMaxItem>();
+
+    public virtual ICollection<TblRecipientMaxItem> TblRecipientMaxItemRecipients { get; set; } = new List<TblRecipientMaxItem>();
+
     public virtual ICollection<TblRequest> TblRequestReceivers { get; set; } = new List<TblRequest>();
 
     public virtual ICollection<TblRequest> TblRequestSenders { get; set; } = new List<TblRequest>();
+
+    public virtual ICollection<TblStore> TblStores { get; set; } = new List<TblStore>();
+
+    public virtual TblTransportMode TransportMode { get; set; }
+
+    public virtual TblRoadType TypeOfRoad { get; set; }
 }

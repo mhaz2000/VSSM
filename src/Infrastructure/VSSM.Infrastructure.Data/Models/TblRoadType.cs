@@ -14,4 +14,6 @@ public partial class TblRoadType
     public string FullName { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual ICollection<TblRecipient> TblRecipients { get; set; } = new List<TblRecipient>();
 }

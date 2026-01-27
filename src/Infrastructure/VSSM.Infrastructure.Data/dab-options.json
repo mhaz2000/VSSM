@@ -1,0 +1,350 @@
+﻿{
+   "ConnectionStringName": "dab-connection-string",
+   "Dacpac": null,
+   "DatabaseType": 3,
+   "MergeDacpacs": false,
+   "Optional": false,
+   "ProjectPath": "C:\\1-Projects\\MOHVSSM\\src\\Infrastructure\\VSSM.Infrastructure.Data",
+   "Tables": [
+      {
+         "Name": "[dbo].[AppLogs]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[sync]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[syncBasic]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[syncNew]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblAdjUserPermision]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblAdjustmentArrivalLines]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblAdjustmentArrivals]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblAdjustments]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblAdjustreasons]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblArrivalLines]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblArrivalRepConfig]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblArrivals]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblAuthenticationMode]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblBundleDetails]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblBundles]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblClimate]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblCommercialNames]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblCountryCode]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblCultures]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblDispatches]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblDispatchLines]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblDispatchPacks]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblDispatchRepConfig]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblDosePerVials]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblEduType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblFiscalPeriods]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblGlobalConfigurations]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblHelp]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblItemDetails]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblItemDetailStores]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblItemDoseAssignments]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblItems]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblItemsClass]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblItemsCode]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblJobType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblLevels]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblManItemClass]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblManufacturers]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblMessages]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblMinMaxItem]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblNews]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblOrder]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblOrderLine]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblOrderReceive]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblOwnership]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblPackingType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblPackItemClass]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblPacks]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblPowerSource]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblPresentationType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblReasonForNotutiliz]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblReceivingModes]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblRecipientConfigurations]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblRecipientMaxItems]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblRecipients]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblRequest]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblRequestLine]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblRequestLines]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblRequests]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblRequestsNew]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblRoadType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblSources]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblStockHistories]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblStockLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblStores]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblStoreTypes]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblStoreUsageWarning]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblTransportModes]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblUserHome]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblUserLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblUsers]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblUses]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVacc_Info_AgeGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVacc_Info_DoseCat]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVacc_Info_TargetGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVacc_Item_AgeGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVacc_Item_DoseCat]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVacc_Item_TargetGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVacc_Submit]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVacc_Submit_Detail]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVoucherConfig]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVVMStages]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblVVMTypes]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[userSync]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[userSync2]",
+         "ObjectType": 0
+      }
+   ]
+}

@@ -64,4 +64,6 @@ public partial class TblArrivalLine
     public int? OrderLineId { get; set; }
 
     public virtual TblArrival Arrival { get; set; }
+
+    public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
 }

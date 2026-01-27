@@ -60,5 +60,9 @@ public partial class TblUser
 
     public DateTime? Lastlogin { get; set; }
 
+    public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
+
+    public virtual ICollection<TblDispatch> TblDispatches { get; set; } = new List<TblDispatch>();
+
     public virtual ICollection<TblRequest> TblRequests { get; set; } = new List<TblRequest>();
 }

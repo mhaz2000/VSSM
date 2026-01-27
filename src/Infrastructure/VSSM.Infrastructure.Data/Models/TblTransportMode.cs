@@ -16,4 +16,8 @@ public partial class TblTransportMode
     public DateTime? EntryDate { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual ICollection<TblDispatch> TblDispatches { get; set; } = new List<TblDispatch>();
+
+    public virtual ICollection<TblRecipient> TblRecipients { get; set; } = new List<TblRecipient>();
 }

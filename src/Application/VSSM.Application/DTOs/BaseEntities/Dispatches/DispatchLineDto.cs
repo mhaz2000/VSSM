@@ -3,11 +3,12 @@
 public class DispatchLineDto
 {
     public int ItemId { get; set; }
-    public int Quantity { get; set; }
+    public int ItemDetailId { get; set; }
+    public int DoseCount { get; set; }
     public float UnitPrice { get; set; }
-    public int? NumVial { get; set; }
+    public int? VialCount { get; set; }
     public int? DosePerVialId { get; set; }
-    public float? TotalVolume { get; set; }
+    public float? Volume { get; set; }
     public int? StoreId { get; set; }
     public int? UseId { get; set; }
     public int? VvmtypeId { get; set; }

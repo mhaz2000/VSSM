@@ -15,5 +15,7 @@ public class CreateDispatcheDto
     public string Date { get; set; } = string.Empty;
     public int ArrivalId { get; set; }
     public float TotalPrice { get; set; }
-    public List<DispatchLineDto> DispatchLines { get; set; } = new();
+    public List<DispatchLineDto> Items { get; set; } = new();
+    public ulong DispatchVoucherNumber { get; set; }
+    public string ReportNumber { get; set; }
 }

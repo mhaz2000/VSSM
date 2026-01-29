@@ -1,5 +1,4 @@
 ﻿namespace VSSM.Application.DTOs.BaseEntities.ItemDetail;
-
 public class ItemFullDetailsDto
 {
     public int ItemDetailId { get; set; }

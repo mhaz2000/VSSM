@@ -19,9 +19,7 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public int? SourceId { get; set; }
 
         [Display(Name = "دوره فعالیت")]
-        [Required(ErrorMessage = "دوره فعالیت را انتخاب کنید.")]
-        public int? FiscalPeriodId { get; set; }
-
+        public string? FiscalPeriodName { get; set; }
         // فقط نمایش
         public DateTime? EntryDate { get; set; }
 
@@ -33,7 +31,6 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public float? PackedVolume { get; set; }
 
         [Display(Name = "وزن کل")]
-        [Required(ErrorMessage = "وزن کل را انتخاب کنید.")]
         public float? TotalWeight { get; set; }
 
         [Display(Name = "حجم کل (لیتر)")]

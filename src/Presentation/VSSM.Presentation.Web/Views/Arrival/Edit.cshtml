@@ -92,19 +92,6 @@
                             </div>
 
 
-                            <!-- دوره فعالیت (الزامی) -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    <span class="required-star">*</span>
-                                    دوره فعالیت:
-                                </span>
-                                <select asp-for="FiscalPeriodId"
-                                        asp-items="ViewBag.FiscalPeriodList"
-                                        class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                                <span asp-validation-for="FiscalPeriodId" class="text-danger"></span>
-                            </div>
 
                             <!-- منبع (الزامی) -->
                             <div class="form-group">
@@ -205,13 +192,13 @@
                                         var line = Model.Lines[i];
                                         <tr>
                                             <td>@line.ItemId</td> @* یا نام کالا اگر در DTO آورده‌ای *@
-                                            <td>@line.CommertialNameId</td>
+                                            <td>@line.CommertialName</td>
                                             <td>@line.BatchNum</td>
                                             <td>@line.Quantity</td>
                                             <td>@line.NumVials</td>
                                             <td>@line.TotalVolume</td>
-                                            <td>@line.StoreId</td>
-                                            <td>@line.ExpiryDate</td>
+                                            <td>@line.StoreName</td>
+                                            <td>@line.ExpiryDate?.ToString("yyyy/MM/dd")</td>
 
                                             <td>
                                                 <button type="submit"
@@ -279,20 +266,7 @@
             });
             });
 
-        $("#NewLine_ExpiryDate").pDatepicker({
-              format: "YYYY/MM/DD",
-              timePicker: { enabled: false },
-              initialValueType: "persian",
-              autoClose: true
-          });
-
-          // تاریخ تولید
-          $("#NewLine_ProductionDate").pDatepicker({
-              format: "YYYY/MM/DD",
-              timePicker: { enabled: false },
-              initialValueType: "persian",
-              autoClose: true
-          });
+       
 
 
 

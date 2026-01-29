@@ -8,7 +8,9 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public int? ItemId { get; set; }
         public int? ItemDetailId { get; set; }
         public int? StoreId { get; set; }
+        public string? StoreName { get; set; }
         public int? CommertialNameId { get; set; }
+        public string? CommertialName { get; set; }
         public int? ArrivalId { get; set; }
         public int? DosePerVialId { get; set; }
         public int? ManufacturerId { get; set; }

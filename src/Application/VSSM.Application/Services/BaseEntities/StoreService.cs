@@ -166,7 +166,7 @@ namespace VSSM.Application.Services.BaseEntities
                     Volume = x.Volume,
                     FreeVolume = x.FreeVolume,
                     IsActive = x.IsActive ?? false,
-                    Note =  string.IsNullOrEmpty(x.Note) ? string.Empty : x.Note
+                    Note = string.IsNullOrEmpty(x.Note) ? string.Empty : x.Note
                 })
                 .ToListAsync(token);
 
@@ -182,10 +182,11 @@ namespace VSSM.Application.Services.BaseEntities
         public async Task<List<StoreListDto>> GetAll(CancellationToken cancellationToken)
         {
 
-            IQueryable<TblStore> query = _db.TblStores;
+            IQueryable<TblStore> query = _db.TblStores.Where(z => z.IsActive.Value);
             return await query.Select(x =>
                    new StoreListDto
                    {
+                       RecipientId = x.RecipientId,
                        StoreId = x.StoreId,
                        Code = x.Code,
                        FullName = x.Name,

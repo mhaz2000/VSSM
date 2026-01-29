@@ -1,0 +1,50 @@
+﻿.form-label {
+    text-align: left;
+    width: 130px;
+    margin-left: 15px;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    direction: rtl;
+}
+
+.form-control,
+.form-select {
+    flex: 1;
+}
+
+.item-radio {
+    cursor: pointer;
+}
+
+.table-primary td {
+    vertical-align: middle;
+}
+
+.selectable-row {
+    cursor: pointer;
+}
+
+.selectable-row.table-primary {
+    background-color: #cce5ff;
+}
+
+.card {
+    direction: rtl;
+}
+
+.actions-col {
+    width: 140px; 
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+.dose-col {
+    width: 80px;
+    min-width: 80px;
+    white-space: nowrap;
+}
+

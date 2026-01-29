@@ -270,6 +270,9 @@ namespace VSSM.Application.Services.BaseEntities
 ========================= */
         public async Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token)
         {
+            var does = _db.TblDosePerVials.First(z => z.DosePerVialId == dto.DosePerVialId).NumDosePerVial;
+            if (dto.Quantity % does != 0)
+                throw new ValidationException("تعداد باید مضربی از دوز بر ویال باشد");
             var line = new TblArrivalLine
             {
                 ArrivalId = arrivalId,

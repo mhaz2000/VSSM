@@ -13,17 +13,13 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public string? Date { get; set; } // string – بعداً به DateTime تبدیل می‌کنیم
 
         [Display(Name = "شماره گزارش")]
-        [Required(ErrorMessage = "شماره گزارش اجباری است.")]
-        public string ReportNumber { get; set; }
+        public string? ReportNumber { get; set; }
 
         [Display(Name = "منبع")]
-        [Required(ErrorMessage = "منبع را انتخاب کنید.")]
         public int? SourceId { get; set; }
 
         [Display(Name = "دوره فعالیت")]
-        [Required(ErrorMessage = "دوره فعالیت را انتخاب کنید.")]
-        public int? FiscalPeriodId { get; set; }
-
+        public string? FiscalPeriodName { get; set; }
         // فقط نمایش
         public DateTime? EntryDate { get; set; }
 
@@ -35,7 +31,6 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public float? PackedVolume { get; set; }
 
         [Display(Name = "وزن کل")]
-        [Required(ErrorMessage = "وزن کل را انتخاب کنید.")]
         public float? TotalWeight { get; set; }
 
         [Display(Name = "حجم کل (لیتر)")]
@@ -53,7 +48,7 @@ namespace VSSM.Presentation.Web.Models.Arrival
         public List<ArrivalLineViewModel> Lines { get; set; } = new();
         public ArrivalLineViewModel NewLine { get; set; } = new();
 
-       
+
     }
 
 }

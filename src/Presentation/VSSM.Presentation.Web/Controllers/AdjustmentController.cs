@@ -41,6 +41,7 @@ public class AdjustmentController : BaseController
             pageSize,
             sortField,
             sortOrder,
+            CurrentUserId.Value,
             cancellationToken);
 
         return View(adjustments);
@@ -97,8 +98,8 @@ public class AdjustmentController : BaseController
         ViewBag.ItemClass = list;
         var itemList = await _itemService.GetActives(cancellationToken);
         ViewBag.ItemGroups = itemList;
-        var arrivalLines = await _arrivalService.GetArrivalLines(CurrentUserId!.Value);
-        ViewBag.ArrivalLines = arrivalLines;
+        var itemDetailStores = await _detailStoreService.GetActives(CurrentUserRecipientId.Value);
+        ViewBag.ItemDetailStores = itemDetailStores;
         var adjustReasons = await _adjustReasonService.GetActives(cancellationToken);
         ViewBag.AdjustReasons = adjustReasons;
     }

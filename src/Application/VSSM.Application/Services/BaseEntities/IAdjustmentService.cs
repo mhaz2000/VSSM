@@ -15,6 +15,7 @@ public interface IAdjustmentService
         int pageSize,
         string sortField,
         string sortOrder,
+        int userId,
         CancellationToken cancellationToken);
 
     Task<AdjustmentDto?> GetById(

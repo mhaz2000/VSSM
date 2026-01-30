@@ -311,6 +311,8 @@ namespace VSSM.Presentation.Web.Controllers
             {
                 TempData["ToastMessage"] = "ابتدا اطلاعات اصلی ورود را کامل کنید";
                 TempData["ToastType"] = "error";
+                if(model.ArrivalId.HasValue)
+                    return RedirectToAction("New", "Arrival", new { id = model.ArrivalId });
                 return View("New", model);
             }
 
@@ -319,11 +321,12 @@ namespace VSSM.Presentation.Web.Controllers
                 !model.NewLine.StoreId.HasValue ||
                 !model.NewLine.Quantity.HasValue ||
                 !model.NewLine.ExpiryDate.HasValue ||
-                !model.NewLine.ItemId.HasValue ||
-                !model.NewLine.ItemDetailId.HasValue)
+                !model.NewLine.ItemId.HasValue)
             {
                 TempData["ToastMessage"] = "اطلاعات کالا کامل نیست";
                 TempData["ToastType"] = "error";
+                if (model.ArrivalId.HasValue)
+                    return RedirectToAction("New", "Arrival", new { id = model.ArrivalId });
                 return View("New", model);
             }
 

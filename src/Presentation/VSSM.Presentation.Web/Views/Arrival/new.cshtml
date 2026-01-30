@@ -100,7 +100,7 @@
                             <span asp-validation-for="Date" class="text-danger"></span>
                         </div>
 
-                    
+
 
                         <!-- منبع (الزامی) -->
                         <div class="form-group">
@@ -185,7 +185,10 @@
 
                                 <!-- نوع کالا -->
                                 <div class="form-group">
-                                    <span class="form-label">نوع کالا:</span>
+                                    <span class="form-label">
+                                        <span class="required-star">*</span>
+                                        نوع کالا:
+                                    </span>
                                     <select id="ItemClassId"
                                             asp-items="ViewBag.itemClassList"
                                             class="form-select">
@@ -195,7 +198,10 @@
 
                                 <!-- کالا -->
                                 <div class="form-group">
-                                    <span class="form-label">کالا:</span>
+                                    <span class="form-label">
+                                        <span class="required-star">*</span>
+                                        کالا:
+                                    </span>
                                     <select id="ItemId"
                                             asp-for="NewLine.ItemId"
                                             class="form-select"
@@ -234,9 +240,11 @@
                                     <select asp-for="NewLine.DosePerVialId"
                                             asp-items="ViewBag.DosePerVialList"
                                             class="form-select"
-                                            id="DosePerVialId">
-                                        <option value="">انتخاب کنید...</option>
+                                            id="DosePerVialId"
+                                            disabled>
+                                        <option value="">ابتدا کالا را انتخاب کنید</option>
                                     </select>
+
                                     <span asp-validation-for="NewLine.DosePerVialId" class="text-danger"></span>
                                 </div>
 
@@ -543,6 +551,58 @@
         });
 
              $(function () {
+                const $itemClass = $("#ItemClassId");
+        const $item = $("#ItemId");
+        const $dose = $("#DosePerVialId");
+
+        // از اول دوز غیرفعال
+        $dose.prop("disabled", true);
+        $dose.val("");
+        $dose.find("option:first").text("ابتدا کالا را انتخاب کنید");
+
+        // تغییر نوع کالا
+        $itemClass.on("change", function () {
+            const classId = $(this).val();
+
+            // reset item
+            $item.prop("disabled", true);
+            $item.empty();
+
+            // reset dose too
+            $dose.prop("disabled", true);
+            $dose.val("");
+            $dose.find("option:first").text("ابتدا کالا را انتخاب کنید");
+
+            if (!classId) {
+                $item.append('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
+                return;
+            }
+
+            $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
+                .done(function (data) {
+                    $item.append('<option value="">انتخاب کنید...</option>');
+                    data.forEach(x => {
+                        $item.append(`<option value="${x.id}">${x.text}</option>`);
+                    });
+                    $item.prop("disabled", false);
+                });
+        });
+
+        // ✅ وقتی کالا انتخاب شد، دوز فعال شود
+        $item.on("change", function () {
+            const itemId = $(this).val();
+
+            if (!itemId) {
+                $dose.prop("disabled", true);
+                $dose.val("");
+                $dose.find("option:first").text("ابتدا کالا را انتخاب کنید");
+                return;
+            }
+
+            $dose.prop("disabled", false);
+            // متن گزینه اول رو به حالت عادی برگردون
+            $dose.find("option:first").text("انتخاب کنید...");
+        });
 
             const $type = $("#VvmTypeId");
             const $stage = $("#VvmStageId");

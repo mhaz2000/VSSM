@@ -89,8 +89,7 @@
 
                                 <a class="btn btn-success px-5" asp-action="New">+ جدید</a>
 
-                                <!-- ✅ این همون دکمه‌ایه که می‌خوای کنار جدید/جستجو -->
-                                <a class="btn btn-warning px-5" asp-action="Copy">کپی</a>
+                               
                             </div>
                         </div>
 
@@ -131,30 +130,44 @@
                                     <td>@item.TotalVolume</td>
                                     <td>@item.ReportNumber</td>
                                     <td>@statusText</td>
-                                    <td>
+                                    <td class="text-nowrap">
+                                        <div class="btn-group" role="group">
 
-                                        @if (item.IsConfirmed == true)
-                                        {
-                                            <a class="btn btn-primary btn-sm"
-                                               asp-action="Edit"
-                                               asp-route-id="@item.ArrivalId">
-                                                مشاهده
+                                            @if (item.IsConfirmed == true)
+                                            {
+                                                <a class="btn btn-primary btn-sm"
+                                                   asp-action="Edit"
+                                                   asp-route-id="@item.ArrivalId">
+                                                    مشاهده
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a class="btn btn-primary btn-sm"
+                                                   asp-action="New"
+                                                   asp-route-id="@item.ArrivalId">
+                                                    ویرایش
+                                                </a>
+                                            }
+
+                                            <!-- ✅ Copy from this row -->
+                                            <a class="btn btn-warning btn-sm"
+                                               asp-action="CopyFromRow"
+                                               asp-route-id="@item.ArrivalId"
+                                               title="کپی از این ورود">
+                                                کپی
                                             </a>
-                                        }
-                                        else
-                                        {
-                                            <a class="btn btn-primary btn-sm"
-                                               asp-action="New"
+
+                                            <a class="btn btn-danger btn-sm"
+                                               asp-action="Delete"
                                                asp-route-id="@item.ArrivalId">
-                                                ویرایش
+                                                حذف
                                             </a>
-                                        }
-                                        <a class="btn btn-danger btn-sm"
-                                           asp-action="Delete"
-                                           asp-route-id="@item.ArrivalId">
-                                            حذف
-                                        </a>
+
+                                        </div>
                                     </td>
+
+
                                 </tr>
                             }
                         }

@@ -124,6 +124,7 @@ namespace VSSM.Presentation.Web.Controllers
                     BatchNum = l.BatchNum,
                     CommertialNameId = l.CommertialNameId,
                     CommertialName = _commercialNameService.GetActives(token).Result.FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
+                    ItemName = _itemService.GetActives(token).Result.FirstOrDefault(z => z.Id == l.ItemId)?.FullName,
 
                     DosePerVialId = l.DosePerVialId,
 
@@ -191,6 +192,7 @@ namespace VSSM.Presentation.Web.Controllers
                     BatchNum = l.BatchNum,
                     CommertialNameId = l.CommertialNameId,
                     CommertialName = _commercialNameService.GetActives(token).Result.FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
+                    ItemName = _itemService.GetActives(token).Result.FirstOrDefault(z => z.Id == l.ItemId)?.FullName,
 
                     DosePerVialId = l.DosePerVialId,
 
@@ -226,7 +228,7 @@ namespace VSSM.Presentation.Web.Controllers
         public async Task<IActionResult> Delete(int id, CancellationToken token)
         {
             await _arrivalService.Delete(id);
-            return await Index(null);
+            return RedirectToAction(nameof(Index));
         }
 
         // MAIN POST: all buttons submit here
@@ -234,48 +236,83 @@ namespace VSSM.Presentation.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ArrivalViewModel model, string command, CancellationToken token)
         {
-            await LoadDropDowns(token);
-
-            // If confirmed - block any change
-            if (model.ArrivalId.HasValue)
+            try
             {
-                var existing = await _arrivalService.GetById(model.ArrivalId.Value, token);
-                if (existing?.IsConfirmed == true)
+                await LoadDropDowns(token);
+
+                // If confirmed - block any change
+                if (model.ArrivalId.HasValue)
                 {
-                    TempData["ToastMessage"] = "این ورود تایید شده است و امکان ویرایش ندارد";
-                    TempData["ToastType"] = "error";
-                    return RedirectToAction("Edit", new { id = model.ArrivalId.Value });
+                    var existing = await _arrivalService.GetById(model.ArrivalId.Value, token);
+                    if (existing?.IsConfirmed == true)
+                    {
+                        TempData["ToastMessage"] = "این ورود تایید شده است و امکان ویرایش ندارد";
+                        TempData["ToastType"] = "error";
+                        return RedirectToAction("Edit", new { id = model.ArrivalId.Value });
+                    }
+                }
+
+                switch (command)
+                {
+                    case "addLine":
+                        return await AddLine(model, token);
+
+                    case "draft":
+                        return await SaveDraft(model, token);
+
+                    case "confirm":
+                        return await Confirm(model, token);
+
+                    case "deleteAll":
+                        return await DeleteAll(model, token);
+
+                    case string s when s.StartsWith("deleteLine_", StringComparison.OrdinalIgnoreCase):
+                        {
+                            // command = "deleteLine_123"
+                            var idPart = s.Split('_').Last();
+
+                            if (!int.TryParse(idPart, out var lineId))
+                            {
+                                TempData["ToastMessage"] = "شناسه سطر معتبر نیست";
+                                TempData["ToastType"] = "error";
+                                return View("New", model);
+                            }
+
+                            if (!model.ArrivalId.HasValue || model.ArrivalId.Value == 0)
+                            {
+                                TempData["ToastMessage"] = "شناسه ورود معتبر نیست";
+                                TempData["ToastType"] = "error";
+                                return View("New", model);
+                            }
+
+                            return await DeleteLine(lineId, model.ArrivalId.Value, token);
+                        }
+
+
+                    default:
+                        // fallback: treat as draft
+                        return await SaveDraft(model, token);
                 }
             }
-
-            switch (command)
+            catch (Exception ex)
             {
-                case "addLine":
-                    return await AddLine(model, token);
 
-                case "draft":
-                    return await SaveDraft(model, token);
-
-                case "confirm":
-                    return await Confirm(model, token);
-
-                case "deleteAll":
-                    return await DeleteAll(model, token);
-
-                default:
-                    // fallback: treat as draft
-                    return await SaveDraft(model, token);
+                TempData["ToastMessage"] = ex.Message;
+                TempData["ToastType"] = "error";
+                return View("New", model);
             }
+
         }
 
         private async Task<IActionResult> AddLine(ArrivalViewModel model, CancellationToken token)
         {
             // Validate header minimum required fields (adjust to your required list)
-            if (string.IsNullOrWhiteSpace(model.Date) ||
-                !model.SourceId.HasValue)
+            if (string.IsNullOrWhiteSpace(model.Date))
             {
                 TempData["ToastMessage"] = "ابتدا اطلاعات اصلی ورود را کامل کنید";
                 TempData["ToastType"] = "error";
+                if(model.ArrivalId.HasValue)
+                    return RedirectToAction("New", "Arrival", new { id = model.ArrivalId });
                 return View("New", model);
             }
 
@@ -283,10 +320,13 @@ namespace VSSM.Presentation.Web.Controllers
             if (model.NewLine == null ||
                 !model.NewLine.StoreId.HasValue ||
                 !model.NewLine.Quantity.HasValue ||
-                !model.NewLine.ExpiryDate.HasValue)
+                !model.NewLine.ExpiryDate.HasValue ||
+                !model.NewLine.ItemId.HasValue)
             {
                 TempData["ToastMessage"] = "اطلاعات کالا کامل نیست";
                 TempData["ToastType"] = "error";
+                if (model.ArrivalId.HasValue)
+                    return RedirectToAction("New", "Arrival", new { id = model.ArrivalId });
                 return View("New", model);
             }
 
@@ -297,7 +337,7 @@ namespace VSSM.Presentation.Web.Controllers
                 {
                     Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
                     ReportNumber = model.ReportNumber,
-                    SourceId = model.SourceId.Value,
+                    SourceId = model.SourceId,
                     FiscalPeriodId = _fiscalService.GetActives(token).Result.First().FiscalPeriodId,
                     TotalVolume = model.TotalVolume,
                     IsConfirmed = false,
@@ -310,7 +350,6 @@ namespace VSSM.Presentation.Web.Controllers
                     Frzindc = model.Frzindc,
                     FrzindcNok = model.FrzindcNok,
                     UserRecipientId = CurrentUserRecipientId ?? 0,
-
                     Lines = new List<ArrivalLineDto>()
                 };
 
@@ -372,8 +411,32 @@ namespace VSSM.Presentation.Web.Controllers
                 TempData["ToastType"] = "error";
                 return View("New", model);
             }
+            if (!await _arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
+            {
+                TempData["ToastMessage"] = "ابتدا یک کالا اضافه کنید تا ورود ساخته شود";
+                TempData["ToastType"] = "error";
+                return View("New", model);
+            }
 
-            await _arrivalService.SetDraft(model.ArrivalId.Value, token);
+            var createDto = new ArrivalCreateDto
+            {
+                Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
+                ReportNumber = model.ReportNumber,
+                SourceId = model.SourceId,
+                TotalVolume = model.TotalVolume,
+                IsConfirmed = false,
+                IsDrafted = true,
+                IsCancelled = false,
+
+                PackedVolume = model.PackedVolume,
+                TotalWeight = model.TotalWeight,
+                Note = model.Note,
+                Frzindc = model.Frzindc,
+                FrzindcNok = model.FrzindcNok,
+                UserRecipientId = CurrentUserRecipientId ?? 0,
+            };
+
+            await _arrivalService.SetDraft(model.ArrivalId.Value, createDto, token);
 
             TempData["ToastMessage"] = "به عنوان پیش‌نویس ذخیره شد";
             TempData["ToastType"] = "info";
@@ -389,14 +452,39 @@ namespace VSSM.Presentation.Web.Controllers
                 TempData["ToastType"] = "error";
                 return View("New", model);
             }
-
+            if (!await _arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
+            {
+                TempData["ToastMessage"] = "ابتدا یک کالا اضافه کنید تا ورود ساخته شود";
+                TempData["ToastType"] = "error";
+                return View("New", model);
+            }
             if (!model.ArrivalId.HasValue)
             {
                 return await AddLine(model, token);
             }
             else
             {
-                await _arrivalService.Confirm(model.ArrivalId.Value, token);
+                var createDto = new ArrivalCreateDto
+                {
+                    Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
+                    ReportNumber = model.ReportNumber,
+                    SourceId = model.SourceId,
+                    TotalVolume = model.TotalVolume,
+                    IsConfirmed = false,
+                    IsDrafted = true,
+                    IsCancelled = false,
+
+                    PackedVolume = model.PackedVolume,
+                    TotalWeight = model.TotalWeight,
+                    Note = model.Note,
+                    Frzindc = model.Frzindc,
+                    FrzindcNok = model.FrzindcNok,
+                    UserRecipientId = CurrentUserRecipientId ?? 0,
+
+                };
+
+
+                await _arrivalService.Confirm(model.ArrivalId.Value, createDto, token);
             }
 
 
@@ -431,7 +519,7 @@ namespace VSSM.Presentation.Web.Controllers
             TempData["ToastMessage"] = "سطر حذف شد";
             TempData["ToastType"] = "success";
 
-            return RedirectToAction("Edit", new { id = arrivalId });
+            return RedirectToAction("New", new { id = arrivalId });
         }
 
         private async Task LoadDropDowns(CancellationToken token)
@@ -448,7 +536,7 @@ namespace VSSM.Presentation.Web.Controllers
                 .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName })
                 .ToList();
 
-            ViewBag.StoreList = (await _storeService.GetAll(token)).Where(z => z.RecipientId == CurrentUserId)
+            ViewBag.StoreList = (await _storeService.GetAll(token)).Where(z => z.RecipientId == CurrentUserRecipientId)
                 .Select(x => new SelectListItem { Value = x.StoreId.ToString(), Text = x.FullName })
                 .ToList();
 
@@ -537,7 +625,7 @@ namespace VSSM.Presentation.Web.Controllers
                     BatchNum = l.BatchNum,
                     CommertialNameId = l.CommertialNameId,
                     CommertialName = _commercialNameService.GetActives(token).Result.FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
-
+                    ItemName = _itemService.GetActives(token).Result.FirstOrDefault(z => z.Id == l.ItemId)?.FullName,
                     DosePerVialId = l.DosePerVialId,
 
                     ExpiryDate = l.ExpiryDate,
@@ -569,6 +657,70 @@ namespace VSSM.Presentation.Web.Controllers
             ViewBag.Status = 1;
             return await Index(null);
         }
+        [HttpGet]
+        public async Task<IActionResult> CopyFromRow(int id, CancellationToken token)
+        {
+            // اینجا همون کار CopyConfirm رو انجام می‌دیم ولی با GET
+            await LoadDropDowns(token);
+
+            var dto = await _arrivalService.GetById(id, token);
+            if (dto == null) return NotFound();
+
+            var vm = new ArrivalViewModel
+            {
+                ArrivalId = null,
+                Date = dto.Date.HasValue ? dto.Date.Value.ToShamsi() : DateTime.Now.ToString("yyyy/MM/dd"),
+                ReportNumber = dto.ReportNumber, // اگر می‌خوای شماره گزارش جدید ساخته بشه، اینو null کن
+                SourceId = dto.SourceId,
+                FiscalPeriodName = _fiscalService.GetActives(token).Result.First().FullName,
+                Note = $"{dto.ReportNumber} کپی ورودی شماره ",
+                PackedVolume = dto.PackedVolume,
+                TotalWeight = dto.TotalWeight,
+                IsDrafted = true,
+                IsConfirmed = false,
+                IsCancelled = false,
+
+                Lines = dto.Lines.Select(l => new ArrivalLineViewModel
+                {
+                    ArrivalLineId = null,
+                    ArrivalId = null,
+
+                    BatchNum = l.BatchNum,
+                    CommertialNameId = l.CommertialNameId,
+                    CommertialName = _commercialNameService.GetActives(token).Result
+                        .FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
+                    ItemName = _itemService.GetActives(token).Result.FirstOrDefault(z => z.Id == l.ItemId)?.FullName,
+                    DosePerVialId = l.DosePerVialId,
+                    ExpiryDate = l.ExpiryDate,
+                    ProductionDate = l.ProductionDate,
+
+                    ItemDetailId = l.ItemDetailId,
+                    ItemId = l.ItemId,
+                    ManufacturerId = l.ManufacturerId,
+
+                    Note = l.Note,
+                    NumVials = l.NumVials,
+                    PackageSize = l.PackageSize,
+                    PackingTypeId = l.PackingTypeId,
+
+                    Quantity = l.Quantity,
+                    StoreId = l.StoreId,
+                    StoreName = _storeService.GetAll(token).Result
+                        .FirstOrDefault(z => z.StoreId == l.StoreId)?.FullName,
+
+                    TotalVolume = l.TotalVolume,
+                    UnitVolume = l.UnitVolume,
+
+                    UseId = l.UseId,
+                    VvmStageId = l.VvmStageId,
+                    VvmTypeId = l.VvmTypeId
+                }).ToList()
+            };
+
+            // این متد تو خودت موجوده و در نهایت Redirect به New می‌کنه
+            return await AddLineForCopy(vm, token);
+        }
+
 
         private async Task<IActionResult> AddLineForCopy(ArrivalViewModel model, CancellationToken token)
         {

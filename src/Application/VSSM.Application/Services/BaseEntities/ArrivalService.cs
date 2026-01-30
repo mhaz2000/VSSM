@@ -5,6 +5,7 @@ using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace VSSM.Application.Services.BaseEntities
 {
@@ -168,11 +169,24 @@ namespace VSSM.Application.Services.BaseEntities
         /* =========================
            CONFIRM
         ========================= */
-        public async Task Confirm(int arrivalId, CancellationToken token)
+        public async Task Confirm(int arrivalId, ArrivalCreateDto dto, CancellationToken token)
         {
             var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
+
+
             if (arrival == null) return;
 
+            arrival.ReportNumber = dto.ReportNumber;
+            arrival.SourceId = dto.SourceId;
+            arrival.EntryDate = DateTime.Now;
+            arrival.IsCancelled = false;
+            arrival.PackedVolume = dto.PackedVolume;
+            arrival.TotalWeight = dto.TotalWeight;
+            arrival.TotalVolume = dto.TotalVolume;
+            arrival.Note = dto.Note;
+            arrival.Frzindc = dto.Frzindc;
+            arrival.FrzindcNok = dto.FrzindcNok;
+            arrival.ReceiverId = dto.UserRecipientId;
             arrival.IsConfirmed = true;
             arrival.IsDrafted = false;
             arrival.ConfirmationTime = DateTime.Now;
@@ -183,11 +197,22 @@ namespace VSSM.Application.Services.BaseEntities
         /* =========================
            DRAFT
         ========================= */
-        public async Task SetDraft(int arrivalId, CancellationToken token)
+        public async Task SetDraft(int arrivalId, ArrivalCreateDto dto, CancellationToken token)
         {
             var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
             if (arrival == null) return;
 
+            arrival.ReportNumber = dto.ReportNumber;
+            arrival.SourceId = dto.SourceId;
+            arrival.EntryDate = DateTime.Now;
+            arrival.IsCancelled = false;
+            arrival.PackedVolume = dto.PackedVolume;
+            arrival.TotalWeight = dto.TotalWeight;
+            arrival.TotalVolume = dto.TotalVolume;
+            arrival.Note = dto.Note;
+            arrival.Frzindc = dto.Frzindc;
+            arrival.FrzindcNok = dto.FrzindcNok;
+            arrival.ReceiverId = dto.UserRecipientId;
             arrival.IsDrafted = true;
             arrival.IsConfirmed = false;
 
@@ -273,8 +298,10 @@ namespace VSSM.Application.Services.BaseEntities
             var does = _db.TblDosePerVials.First(z => z.DosePerVialId == dto.DosePerVialId).NumDosePerVial;
             if (dto.Quantity % does != 0)
                 throw new ValidationException("تعداد باید مضربی از دوز بر ویال باشد");
+            var id = _db.TblArrivalLines.OrderByDescending(z => z.ArrivalLineId).First().ArrivalLineId + 1;
             var line = new TblArrivalLine
             {
+                ArrivalLineId = id,
                 ArrivalId = arrivalId,
                 ItemId = dto.ItemId,
                 BatchNum = dto.BatchNum,
@@ -368,7 +395,16 @@ namespace VSSM.Application.Services.BaseEntities
             return result;
         }
 
+        public async Task<bool> DoesHaveArrivalLineByArrivalId(int id)
+        {
 
+            if (await _db.TblArrivalLines.AnyAsync(c => c.ArrivalId == id))
+                return true;
+            return false;
+
+
+
+        }
         public async Task<ArrivalLineDto> GetArrivalLineById(int id)
         {
             var line = await _db.TblArrivalLines.FirstOrDefaultAsync(c => c.ArrivalLineId == id);

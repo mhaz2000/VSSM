@@ -6,6 +6,7 @@ namespace VSSM.Presentation.Web.Models.Arrival
     {
         public int? ArrivalLineId { get; set; }
         public int? ItemId { get; set; }
+        public string? ItemName { get; set; }
         public int? ItemDetailId { get; set; }
         public int? StoreId { get; set; }
         public string? StoreName { get; set; }

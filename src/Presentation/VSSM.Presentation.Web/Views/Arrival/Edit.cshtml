@@ -103,7 +103,6 @@
                                         class="form-select">
                                     <option value="">انتخاب کنید...</option>
                                 </select>
-                                <span asp-validation-for="SourceId" class="text-danger"></span>
                             </div>
 
                             <!-- شماره گزارش -->
@@ -191,7 +190,7 @@
                                     {
                                         var line = Model.Lines[i];
                                         <tr>
-                                            <td>@line.ItemId</td> @* یا نام کالا اگر در DTO آورده‌ای *@
+                                            <td>@line.ItemName</td> @* یا نام کالا اگر در DTO آورده‌ای *@
                                             <td>@line.CommertialName</td>
                                             <td>@line.BatchNum</td>
                                             <td>@line.Quantity</td>

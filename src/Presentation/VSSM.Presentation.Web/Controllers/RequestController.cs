@@ -283,7 +283,7 @@ namespace VSSM.Presentation.Web.Controllers
                                                 string sortField = "Orders",
                                                 string sortOrder = "desc")
         {
-            var listModel = await _requestService.GetPagedList(search,
+            var listModel = await _requestService.GetReceivedRequestsPagedList(search,
                                                                     page,
                                                                     pageSize,
                                                                     sortField,
@@ -293,6 +293,45 @@ namespace VSSM.Presentation.Web.Controllers
 
 
             return View(listModel);
+
+        }
+
+
+        public async Task<IActionResult> ReceivedRequestLines(int? id, CancellationToken token)
+        {
+            var dto = await _requestService.GetById(id.Value, token);
+            if (dto == null) return NotFound();
+
+            var model = new RequestViewModel
+            {
+                ConfirmDate = dto.ConfirmDate,
+                EnteredBy = dto.EnteredBy,
+                Id = dto.Id,
+                RequestNumber = dto.RequestNumber,
+                RequestStatus = dto.RequestStatus,
+                SendDate = dto.SendDate,
+                RequestLines = dto.RequestLines.Select(r => new RequestLinesViewModel
+                {
+                    Id = r.Id,
+                    RequestId = r.RequestId,
+                    Anncount = r.Anncount,
+                    Arivcount = r.Arivcount,
+                    Confirmcount = r.Confirmcount,
+                    Currentcount = r.Currentcount,
+                    DosePerVialId = r.DosePerVialId,
+                    Forperiod = r.Forperiod,
+                    ItemClassId = r.ItemClassId,
+                    ItemId = r.ItemId,
+                    Note = r.Note,
+                    Offercount = r.Offercount,
+                    Reqcount = r.Reqcount,
+                    Usedcount = r.Usedcount
+                }).ToList(),
+
+                NewLine = new RequestLinesViewModel()
+            };
+
+            return View(model);
 
         }
 

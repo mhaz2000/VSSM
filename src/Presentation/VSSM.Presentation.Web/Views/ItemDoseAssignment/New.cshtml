@@ -29,29 +29,26 @@
                         <input type="hidden" asp-for="ItemDoseAssignmentId" />
                         <div class="col-lg-6">
 
+
+                            <!-- نوع کالا -->
+                                <div class="form-group col-md-10">
+                                    <span class="form-label">نوع کالا :</span>
+                                <select id="ItemClassId"
+                                        asp-items="ViewBag.ItemClass" required
+                                            class="form-select">
+                                        <option value="">انتخاب کنید...</option>
+                                    </select>
+                                </div>
+
+                                <!-- کالا -->
                             <div class="form-group col-md-10">
-                                <label class="form-label">نوع کالا</label>
-                                <select class="form-control" id="ddlItemClass">
-                                    <option value="">-- انتخاب کنید --</option>
-
-                                    @foreach (var itemType in ViewBag.ItemClass)
-                                    {
-                                        <option value="@itemType.Id">@itemType.Name</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="form-group col-md-10">
-                                <label class="form-label"> کالا</label>
-                                <select class="form-control" asp-for="ItemId">
-                                    <option value="">-- انتخاب کنید --</option>
-
-                                    @foreach (var itemType in ViewBag.Item)
-                                    {
-                                        <option value="@itemType.Id">@itemType.FullName</option>
-                                    }
-                                </select>
-                            </div>
+                                    <span class="form-label">کالا :</span>
+                                <select id="ItemId" asp-for="ItemId"
+                                        class="form-select" required
+                                            disabled>
+                                        <option value="">ابتدا نوع کالا را انتخاب کنید</option>
+                                    </select>
+                                </div>
 
                             <div class="form-group col-md-10">
                                 <label class="form-label"> دوز بر ویال</label>
@@ -91,24 +88,41 @@
 
 @section Scripts {
     <script>
-        $("#ddlItemClass").on("change", function () {
+        $(function () {
 
-                let typeId = $(this).val();
-                if (!typeId) {
-                    $("#ItemId").empty();
+            const $itemClass = $("#ItemClassId");
+            const $item = $("#ItemId");
+
+            // تغییر نوع کالا
+            $itemClass.on("change", function () {
+
+                const classId = $(this).val();
+
+                // reset
+                $item.prop("disabled", true);
+                $item.empty();
+
+                if (!classId) {
+                    $item.append('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
                     return;
                 }
 
-                $.ajax({
-                    url: "/Item/GetItemsByItemClass",
-                    type: "GET",
-                    data: { typeId: typeId },
-                    success: function (data) {
+                // load filtered items
+                $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
+                    .done(function (data) {
 
-                        
-                    }
-                });
+                        $item.append('<option value="">انتخاب کنید...</option>');
+
+                        data.forEach(x => {
+                            $item.append(
+                                `<option value="${x.id}">${x.text}</option>`
+                            );
+                        });
+
+                        $item.prop("disabled", false);
+                    });
             });
+        });
 
     </script>
 }

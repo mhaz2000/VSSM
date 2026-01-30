@@ -21,5 +21,9 @@ namespace VSSM.Application.Interfaces.RequestEntities
         Task<bool> ChangeStatus(int id, RequestStatusEnum status, string note, CancellationToken token);
         Task Delete(int id);
         Task DeleteLine(int requestLineId, CancellationToken token);
+
+        Task<PagingSearchOrderDto<RequestListDto>> GetReceivedRequestsPagedList(string? search, int page, int pageSize,
+                string sortField, string sortOrder,
+                int currentRecipientId, CancellationToken cancellationToken);
     }
 }

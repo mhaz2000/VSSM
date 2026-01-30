@@ -200,5 +200,65 @@ namespace VSSM.Application.Services.RequestEntities
                 SortOrder = sortOrder
             };
         }
+
+
+        public async Task<PagingSearchOrderDto<RequestListDto>> GetReceivedRequestsPagedList(string? search, int page, int pageSize,
+                string sortField, string sortOrder,
+                int currentRecipientId, CancellationToken cancellationToken)
+        {
+            var paging = new PagingModel { Page = page, PageSize = pageSize };
+
+            IQueryable<TblRequest> query = _dbContext.TblRequests;
+
+            query = query.Where(q => q.ReceiverId == currentRecipientId);
+
+            // 1) Search
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x => x.RequestNumber.Contains(search) || x.SendDate.ToString().Contains(search)
+                );
+            }
+
+            // 2) Sorting
+            query = sortField switch
+            {
+                "SendDate" => sortOrder == "asc" ? query.OrderBy(x => x.SendDate) : query.OrderByDescending(x => x.SendDate),
+                //"Code" => sortOrder == "asc" ? query.OrderBy(x => x.Code) : query.OrderByDescending(x => x.Code),
+                _ => sortOrder == "asc" ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id)
+            };
+
+            // 3) Total count before paging
+            paging.TotalItems = await query.CountAsync();
+
+            // 4) Apply paging
+            var items = await query
+                .Skip(paging.Skip)
+                .Take(paging.PageSize)
+                .Select(x => new RequestListDto
+                {
+                    Id = x.Id,
+                    SendDate = x.SendDate,
+                    RequestNumber = x.RequestNumber,
+                    ConfirmDate = x.ConfirmDate,
+                    EnteredBy = x.EnteredBy,
+                    EnteredByName = x.EnteredByNavigation.FirstName + " " + x.EnteredByNavigation.LastName,
+                    RequestStatus = x.Status,
+                    Status = (RequestStatusEnum)x.Status.Value
+                })
+                .OrderByDescending(r => r.Id)
+                .ToListAsync(cancellationToken);
+
+            return new PagingSearchOrderDto<RequestListDto>
+            {
+                Items = items,
+                Paging = paging,
+                SearchText = search,
+                SortField = sortField,
+                SortOrder = sortOrder
+            };
+        }
+
+
+
     }
 }

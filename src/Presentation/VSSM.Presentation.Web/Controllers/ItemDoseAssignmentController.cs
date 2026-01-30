@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using NuGet.Common;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemDoseAssignment;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -104,11 +106,12 @@ namespace VSSM.Presentation.Web.Controllers
 
         private async Task PrepareDropdown(CancellationToken cancellationTOken)
         {
-            var itemclass = await _itemClassService.GetActives(cancellationTOken);
-            ViewBag.ItemClass = itemclass;
+            ViewBag.ItemClass = (await _itemClassService.GetActives(cancellationTOken))
+             .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+             .ToList();
 
-            var item = await _itemService.GetActives(cancellationTOken);
-            ViewBag.Item = item;
+            //var item = await _itemService.GetActives(cancellationTOken);
+            //ViewBag.Item = item;
 
             var dosePerVial = await _dosePerVialService.GetActives(cancellationTOken);
             ViewBag.DosePerVial = dosePerVial;

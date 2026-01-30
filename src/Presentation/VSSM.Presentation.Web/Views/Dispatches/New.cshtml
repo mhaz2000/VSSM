@@ -1,0 +1,285 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
+@model CreateDispatcheDto
+
+@section Styles {
+    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
+    <link href="~/css/components/dispatches/dispatch-create.css" rel="stylesheet" />
+
+}
+
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <h5>ثبت ارسال</h5>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-block">
+
+                <form asp-action="Create" method="post" id="createForm">
+                    @Html.AntiForgeryToken()
+
+                    <div class="col-lg-6">
+
+                        <div class="form-group">
+                            <label class="form-label">تاریخ:</label>
+                            <input asp-for="Date" id="Date" class="form-control bg-warning-subtle" />
+                            <input type="hidden" id="DateEn" name="Date" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">شماره درخواست:</label>
+                            <input asp-for="RequestNum" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">شماره فاکتور:</label>
+                            <input asp-for="DispatchVoucherNumber" class="form-control bg-warning-subtle" type="number" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">شماره گزارش:</label>
+                            <input asp-for="ReportNumber" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">تشخیص سرما:</label>
+                            <input asp-for="AirwaryWillReference" class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">گیرنده:</label>
+                            <select asp-for="ReceiverId" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                                @foreach (var r in ViewBag.Recipients)
+                                {
+                                    <option value="@r.RecipientId">@r.FullName</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">طریقه حمل:</label>
+                            <select asp-for="TransportModeId" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                                @foreach (var t in ViewBag.TransportModes)
+                                {
+                                    <option value="@t.TransportModeId">@t.FullName</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">روش دریافت:</label>
+                            <select asp-for="ReceivingModeId" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                                @foreach (var r in ViewBag.ReceivingModes)
+                                {
+                                    <option value="@r.ReceivingModeId">@r.FullName</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">نوع کالا:</label>
+                            <select id="itemClassSelect" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                                @foreach (var c in ViewBag.ItemClasses)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">کالا:</label>
+                            <select id="itemSelect" class="form-select">
+                                <option value="">انتخاب کنید</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">ملاحظات:</label>
+                            <textarea asp-for="Note" class="form-control rounded-3" rows="4"></textarea>
+                        </div>
+
+                        <hr />
+
+
+                        <table class="table table-bordered table-striped mt-3" id="itemDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th>انتخاب</th>
+                                    <th>کالا</th>
+                                    <th>انقضا</th>
+                                    <th>مرحله VVM</th>
+                                    <th>سازنده</th>
+                                    <th>موجودی</th>
+                                    <th>انبار</th>
+                                    <th>سری ساخت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="8" class="text-center">کالایی انتخاب نشده</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+
+                        <div class="mt-3" id="itemExtraFields" style="display:none;">
+                            <div class="form-group">
+                                <label class="form-label">تعداد/دوز:</label>
+                                <input name="DoseCount" class="form-control" disabled />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">حجم:</label>
+                                <input name="Volume" class="form-control" disabled />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">تعداد ویال:</label>
+                                <input name="VialCount" class="form-control" disabled />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">دوز در هر ویال:</label>
+                                <select id="dosePerVialSelect"
+                                        class="form-select"
+                                        disabled>
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var d in ViewBag.DoesPerVials)
+                                    {
+                                        <option value="@d.DosePerVialId">@d.NumDosePerVial</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">مورد استفاده:</label>
+                                <select id="useSelect"
+                                        class="form-select"
+                                        disabled>
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var d in ViewBag.Uses)
+                                    {
+                                        <option value="@d.Id">@d.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">نوع vvm:</label>
+                                <select id="vvmTypesSelect"
+                                        class="form-select"
+                                        disabled>
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var d in ViewBag.VVMTypes)
+                                    {
+                                        <option value="@d.VvmtypeId">@d.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">مرحله vvm:</label>
+                                <select id="vvmStagesSelect"
+                                        class="form-select"
+                                        disabled>
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var d in ViewBag.VVMStages)
+                                    {
+                                        <option value="@d.VvmstageId">@d.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">سازنده:</label>
+                                <select id="manufacturerSelect"
+                                        class="form-select"
+                                        disabled>
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var d in ViewBag.Manufacturers)
+                                    {
+                                        <option value="@d.ManufacturerId">@d.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">ملاحظات:</label>
+                                <textarea name="ExtraNote" class="form-control" rows="3" disabled></textarea>
+                            </div>
+
+                            <div class="text-end mt-3">
+                                <button type="button"
+                                        id="addItemBtn"
+                                        class="btn btn-outline-success"
+                                        disabled>
+                                    افزودن کالا
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <h6 class="mt-4">کالاهای افزوده‌شده</h6>
+
+                        <table class="table table-bordered table-striped mt-2" id="addedItemsTable">
+                            <thead>
+                                <tr>
+                                    <th>کالا</th>
+                                    <th>انقضا</th>
+
+                                    <th class="dose-col">تعداد/دوز</th>
+                                    <th>حجم</th>
+                                    <th>تعداد ویال</th>
+                                    <th>دوز/ویال</th>
+                                    <th>مورد استفاده</th>
+                                    <th>نوع VVM</th>
+                                    <th>مرحله VVM</th>
+                                    <th>سازنده</th>
+                                    <th>ملاحظات</th>
+
+                                    <th class="actions-col">عملیات</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr class="empty-row">
+                                    <td colspan="12" class="text-center text-muted">
+                                        کالایی اضافه نشده
+                                    </td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+
+
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success px-5">ثبت</button>
+                            <a asp-action="Index" class="btn btn-primary px-5">لیست</a>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/persian-date.js"></script>
+    <script src="~/js/persian-datepicker.js"></script>
+    <script src="~/js/components/dispatches/dispatch-create.js"></script>
+}

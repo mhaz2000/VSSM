@@ -104,7 +104,7 @@ namespace VSSM.Presentation.Web.Controllers
                 Date = dto.Date.HasValue ? DateTimeHelper.ToShamsi(dto.Date.Value) : "",
                 ReportNumber = dto.ReportNumber,
                 SourceId = dto.SourceId,
-                FiscalPeriodId = dto.FiscalPeriodId,
+                FiscalPeriodName = _fiscalService.GetActives(token).Result.First().FullName,
                 EntryDate = dto.EntryDate,
                 IsConfirmed = dto.IsConfirmed ?? false,
                 IsDrafted = dto.IsDrafted ?? false,
@@ -121,10 +121,12 @@ namespace VSSM.Presentation.Web.Controllers
 
                     BatchNum = l.BatchNum,
                     CommertialNameId = l.CommertialNameId,
+                    CommertialName = _commercialNameService.GetActives(token).Result.FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
+
                     DosePerVialId = l.DosePerVialId,
 
-                    ExpiryDate = l.ExpiryDate.HasValue ? DateTimeHelper.ToShamsi(l.ExpiryDate.Value) : "",
-                    ProductionDate = l.ProductionDate.HasValue ? DateTimeHelper.ToShamsi(l.ProductionDate.Value) : "",
+                    ExpiryDate = l.ExpiryDate,
+                    ProductionDate = l.ProductionDate,
 
                     ItemDetailId = l.ItemDetailId,
                     ItemId = l.ItemId,
@@ -137,7 +139,7 @@ namespace VSSM.Presentation.Web.Controllers
 
                     Quantity = l.Quantity,
                     StoreId = l.StoreId,
-
+                    StoreName = _storeService.GetAll(token).Result.FirstOrDefault(z => z.StoreId == l.StoreId)?.FullName,
                     TotalVolume = l.TotalVolume,
                     UnitVolume = l.UnitVolume,
 
@@ -168,7 +170,7 @@ namespace VSSM.Presentation.Web.Controllers
                 Date = dto.Date.HasValue ? DateTimeHelper.ToShamsi(dto.Date.Value) : "",
                 ReportNumber = dto.ReportNumber,
                 SourceId = dto.SourceId,
-                FiscalPeriodId = dto.FiscalPeriodId,
+                FiscalPeriodName = _fiscalService.GetActives(token).Result.First().FullName,
                 EntryDate = dto.EntryDate,
                 IsConfirmed = dto.IsConfirmed ?? false,
                 IsDrafted = dto.IsDrafted ?? false,
@@ -180,15 +182,18 @@ namespace VSSM.Presentation.Web.Controllers
                 FrzindcNok = dto.FrzindcNok,
                 Lines = dto.Lines.Select(l => new ArrivalLineViewModel
                 {
+
                     ArrivalLineId = l.ArrivalLineId,
                     ArrivalId = l.ArrivalId,
 
                     BatchNum = l.BatchNum,
                     CommertialNameId = l.CommertialNameId,
+                    CommertialName = _commercialNameService.GetActives(token).Result.FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
+
                     DosePerVialId = l.DosePerVialId,
 
-                    ExpiryDate = l.ExpiryDate.HasValue ? DateTimeHelper.ToShamsi(l.ExpiryDate.Value) : "",
-                    ProductionDate = l.ProductionDate.HasValue ? DateTimeHelper.ToShamsi(l.ProductionDate.Value) : "",
+                    ExpiryDate = l.ExpiryDate,
+                    ProductionDate = l.ProductionDate,
 
                     ItemDetailId = l.ItemDetailId,
                     ItemId = l.ItemId,
@@ -201,7 +206,7 @@ namespace VSSM.Presentation.Web.Controllers
 
                     Quantity = l.Quantity,
                     StoreId = l.StoreId,
-
+                    StoreName = _storeService.GetAll(token).Result.FirstOrDefault(z => z.StoreId == l.StoreId)?.FullName,
                     TotalVolume = l.TotalVolume,
                     UnitVolume = l.UnitVolume,
 
@@ -265,9 +270,7 @@ namespace VSSM.Presentation.Web.Controllers
         {
             // Validate header minimum required fields (adjust to your required list)
             if (string.IsNullOrWhiteSpace(model.Date) ||
-                string.IsNullOrWhiteSpace(model.ReportNumber) ||
-                !model.SourceId.HasValue ||
-                !model.FiscalPeriodId.HasValue)
+                !model.SourceId.HasValue)
             {
                 TempData["ToastMessage"] = "ابتدا اطلاعات اصلی ورود را کامل کنید";
                 TempData["ToastType"] = "error";
@@ -277,7 +280,8 @@ namespace VSSM.Presentation.Web.Controllers
             // Validate NewLine minimum required (yellow fields)
             if (model.NewLine == null ||
                 !model.NewLine.StoreId.HasValue ||
-                !model.NewLine.Quantity.HasValue)
+                !model.NewLine.Quantity.HasValue ||
+                !model.NewLine.ExpiryDate.HasValue)
             {
                 TempData["ToastMessage"] = "اطلاعات کالا کامل نیست";
                 TempData["ToastType"] = "error";
@@ -292,7 +296,7 @@ namespace VSSM.Presentation.Web.Controllers
                     Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
                     ReportNumber = model.ReportNumber,
                     SourceId = model.SourceId.Value,
-                    FiscalPeriodId = model.FiscalPeriodId.Value,
+                    FiscalPeriodId = _fiscalService.GetActives(token).Result.First().FiscalPeriodId,
                     TotalVolume = model.TotalVolume,
                     IsConfirmed = false,
                     IsDrafted = true,
@@ -313,13 +317,9 @@ namespace VSSM.Presentation.Web.Controllers
             }
 
             // Map NewLine -> ArrivalLineDto
-            var expiry = string.IsNullOrWhiteSpace(model.NewLine.ExpiryDate)
-                ? (DateTime?)null
-                : DateTimeHelper.ToMiladi(model.NewLine.ExpiryDate);
+            var expiry = model.NewLine.ExpiryDate;
 
-            var prod = string.IsNullOrWhiteSpace(model.NewLine.ProductionDate)
-                ? (DateTime?)null
-                : DateTimeHelper.ToMiladi(model.NewLine.ProductionDate);
+            var prod = model.NewLine.ProductionDate;
 
             var lineDto = new ArrivalLineDto
             {
@@ -353,7 +353,7 @@ namespace VSSM.Presentation.Web.Controllers
             };
 
             await _arrivalService.AddLine(model.ArrivalId.Value, lineDto, token);
-            await _arrivalService.AddToTotal(model.ArrivalId.Value, model.NewLine.TotalVolume.Value);
+            await _arrivalService.AddToTotal(model.ArrivalId.Value, model.NewLine.TotalVolume.HasValue ? model.NewLine.TotalVolume.Value : 0);
 
             TempData["ToastMessage"] = "کالا اضافه شد";
             TempData["ToastType"] = "success";
@@ -446,7 +446,7 @@ namespace VSSM.Presentation.Web.Controllers
                 .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName })
                 .ToList();
 
-            ViewBag.StoreList = (await _storeService.GetAll(token))
+            ViewBag.StoreList = (await _storeService.GetAll(token)).Where(z => z.RecipientId == CurrentUserId)
                 .Select(x => new SelectListItem { Value = x.StoreId.ToString(), Text = x.FullName })
                 .ToList();
 
@@ -454,9 +454,9 @@ namespace VSSM.Presentation.Web.Controllers
                 .Select(x => new SelectListItem { Value = x.ManufacturerId.ToString(), Text = x.FullName })
                 .ToList();
 
-            ViewBag.DosePerVialList = (await _dosePerVialService.GetActives(token))
+            ViewBag.DosePerVialList = (await _dosePerVialService.GetActives(token)).OrderBy(z => z.NumDosePerVial)
                 .Select(x => new SelectListItem
-                    { Value = x.DosePerVialId.ToString(), Text = x.NumDosePerVial.ToString() })
+                { Value = x.DosePerVialId.ToString(), Text = x.NumDosePerVial.ToString() })
                 .ToList();
 
             ViewBag.VvmtypeList = (await _vvmtypeService.GetActives(token))
@@ -504,6 +504,7 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
 
+
         [HttpPost]
         public async Task<IActionResult> CopyConfirm(int arrivalId, CancellationToken token)
         {
@@ -517,7 +518,7 @@ namespace VSSM.Presentation.Web.Controllers
                 Date = dto.Date.Value.ToShamsi(),
                 ReportNumber = dto.ReportNumber,
                 SourceId = dto.SourceId,
-                FiscalPeriodId = dto.FiscalPeriodId,
+                FiscalPeriodName = _fiscalService.GetActives(token).Result.First().FullName,
                 Note = $"{dto.ReportNumber} کپی ورودی شماره ",
                 PackedVolume = dto.PackedVolume,
                 TotalWeight = dto.TotalWeight,
@@ -527,24 +528,34 @@ namespace VSSM.Presentation.Web.Controllers
 
                 Lines = dto.Lines.Select(l => new ArrivalLineViewModel
                 {
+
                     ArrivalLineId = null,
                     ArrivalId = null,
+
                     BatchNum = l.BatchNum,
                     CommertialNameId = l.CommertialNameId,
+                    CommertialName = _commercialNameService.GetActives(token).Result.FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
+
                     DosePerVialId = l.DosePerVialId,
-                    ExpiryDate = l.ExpiryDate.HasValue ? DateTimeHelper.ToShamsi(l.ExpiryDate.Value) : "",
-                    ProductionDate = l.ProductionDate.HasValue ? DateTimeHelper.ToShamsi(l.ProductionDate.Value) : "",
+
+                    ExpiryDate = l.ExpiryDate,
+                    ProductionDate = l.ProductionDate,
+
                     ItemDetailId = l.ItemDetailId,
                     ItemId = l.ItemId,
                     ManufacturerId = l.ManufacturerId,
+
                     Note = l.Note,
                     NumVials = l.NumVials,
                     PackageSize = l.PackageSize,
                     PackingTypeId = l.PackingTypeId,
+
                     Quantity = l.Quantity,
                     StoreId = l.StoreId,
+                    StoreName = _storeService.GetAll(token).Result.FirstOrDefault(z => z.StoreId == l.StoreId)?.FullName,
                     TotalVolume = l.TotalVolume,
                     UnitVolume = l.UnitVolume,
+
                     UseId = l.UseId,
                     VvmStageId = l.VvmStageId,
                     VvmTypeId = l.VvmTypeId
@@ -567,12 +578,12 @@ namespace VSSM.Presentation.Web.Controllers
                     Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
                     ReportNumber = model.ReportNumber,
                     SourceId = model.SourceId.Value,
-                    FiscalPeriodId = model.FiscalPeriodId.Value,
+                    FiscalPeriodId = _fiscalService.GetActives(token).Result.First().FiscalPeriodId,
 
                     IsConfirmed = false,
                     IsDrafted = true,
                     IsCancelled = false,
-                    
+
                     PackedVolume = model.PackedVolume,
                     TotalWeight = model.TotalWeight,
                     Note = model.Note,
@@ -589,13 +600,9 @@ namespace VSSM.Presentation.Web.Controllers
             foreach (var line in model.Lines)
             {
                 // Map NewLine -> ArrivalLineDto
-                var expiry = string.IsNullOrWhiteSpace(model.NewLine.ExpiryDate)
-                    ? (DateTime?)null
-                    : DateTimeHelper.ToMiladi(model.NewLine.ExpiryDate);
+                var expiry = model.NewLine.ExpiryDate;
 
-                var prod = string.IsNullOrWhiteSpace(model.NewLine.ProductionDate)
-                    ? (DateTime?)null
-                    : DateTimeHelper.ToMiladi(model.NewLine.ProductionDate);
+                var prod = model.NewLine.ProductionDate;
 
                 var lineDto = new ArrivalLineDto
                 {

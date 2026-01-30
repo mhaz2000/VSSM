@@ -6,55 +6,96 @@
     .select-height {
         height: 35.9766px !important;
     }
+
+    .page-loader {
+        position: fixed;
+        inset: 0;
+        background: rgba(255,255,255,0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+    }
+
+    .loader-box {
+        text-align: center;
+        padding: 18px 22px;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        direction: rtl;
+    }
 </style>
 
-<div class="container-fluid">
-    <div class="card">
-        <div class="card-block p-4">
+<!-- Loading Overlay -->
+<div id="pageLoader" class="page-loader">
+    <div class="loader-box">
+        <div class="spinner-border" role="status"></div>
+        <div class="mt-2">در حال بارگذاری...</div>
+    </div>
+</div>
 
-            <h5 class="mb-3">کپی ورود</h5>
-            <div class="row g-3">
-            <!-- SEARCH -->
-           
-                <div class="row col-sm-6 mb-3">
-                     <form method="get" asp-action="Copy" >
-                    <div class="col-sm-6">
-                        <input class="form-control"
-                               name="reportNumber"
-                               value="@ViewBag.Search"
-                               placeholder="شماره گزارش را وارد کنید..." />
-                    </div>
-                    <div class="col-sm-3">
-                        <button class="btn btn-primary w-100">جستجو</button>
-                    </div>
-                    </form>
-                </div>
-             
+<!-- Page Content (hidden first) -->
+<div id="pageContent" style="display:none;">
 
-            <!-- SELECT + COPY -->
-         
-                <div class="row col-sm-6">
-                       <form method="post" asp-action="CopyConfirm">
-                    <div class="col-sm-6">
-                        <select name="arrivalId"
-                                class="form-select w-100 select-height"
-                                required>
-                            <option value="">انتخاب کنید...</option>
-                            @foreach (var item in ViewBag.Arrivals)
-                            {
-                                <option value="@item.Value">@item.Text</option>
-                            }
-                        </select>
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-block p-4">
+
+                <h5 class="mb-3">کپی ورود</h5>
+                <div class="row g-3">
+
+                    <!-- SEARCH -->
+                    <div class="row col-sm-6 mb-3">
+                        <form method="get" asp-action="Copy">
+                            <div class="col-sm-6">
+                                <input class="form-control"
+                                       name="reportNumber"
+                                       value="@ViewBag.Search"
+                                       placeholder="شماره گزارش را وارد کنید..." />
+                            </div>
+                            <div class="col-sm-3">
+                                <button class="btn btn-primary w-100">جستجو</button>
+                            </div>
+                        </form>
                     </div>
 
-                    <div class="col-sm-3">
-                        <button class="btn btn-success w-100">
-                            کپی
-                        </button>
+                    <!-- SELECT + COPY -->
+                    <div class="row col-sm-6">
+                        <form method="post" asp-action="CopyConfirm">
+                            <div class="col-sm-6">
+                                <select name="arrivalId"
+                                        class="form-select w-100 select-height"
+                                        required>
+                                    <option value="">انتخاب کنید...</option>
+                                    @foreach (var item in ViewBag.Arrivals)
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-sm-3">
+                                <button class="btn btn-success w-100">
+                                    کپی
+                                </button>
+                            </div>
+                        </form>
                     </div>
-            </form>
+
                 </div>
             </div>
         </div>
     </div>
+
 </div>
+
+<script>
+    window.addEventListener("load", function () {
+        setTimeout(function () {
+            document.getElementById("pageLoader").style.display = "none";
+            document.getElementById("pageContent").style.display = "block";
+        }, 3000);
+    });
+</script>

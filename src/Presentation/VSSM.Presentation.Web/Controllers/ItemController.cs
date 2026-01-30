@@ -133,7 +133,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             ViewBag.ItemClass = list;
 
-            ViewBag.DiluentDropDown = list.Where(c => c.Code == "2");
+            ViewBag.DiluentDropDown = list.Where(c => c.Id == 2);
         }
 
         [HttpGet("GetItems/{classItemId:required:int}")]
@@ -161,11 +161,11 @@ namespace VSSM.Presentation.Web.Controllers
         [HttpGet("GetItemDetails/{itemId:required:int}")]
         public async Task<IActionResult> GetItemDetails(int itemId)
         {
-            var apiResult = new ApiResult<List<ItemFullDetailsDto>>();
+            var apiResult = new ApiResult<List<ToDispatchItemDetailDto>>();
 
             try
             {
-                var itemDetails = await _itemDetailsService.GetItemDetailsAsync(itemId, CancellationToken.None);
+                var itemDetails = await _itemDetailsService.GetItemDetailsAsync(itemId, CurrentUserRecipientId.Value, CancellationToken.None);
 
                 apiResult.Success = true;
                 apiResult.Message = string.Empty;

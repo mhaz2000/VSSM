@@ -100,24 +100,11 @@
                             <span asp-validation-for="Date" class="text-danger"></span>
                         </div>
 
-                        <!-- دوره فعالیت (الزامی) -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-star">*</span>
-                                دوره فعالیت:
-                            </span>
-                            <select asp-for="FiscalPeriodId"
-                                    asp-items="ViewBag.FiscalPeriodList"
-                                    class="form-select">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                            <span asp-validation-for="FiscalPeriodId" class="text-danger"></span>
-                        </div>
+                    
 
                         <!-- منبع (الزامی) -->
                         <div class="form-group">
                             <span class="form-label">
-                                <span class="required-star">*</span>
                                 منبع:
                             </span>
                             <select asp-for="SourceId"
@@ -131,7 +118,6 @@
                         <!-- شماره گزارش -->
                         <div class="form-group">
                             <span class="form-label">
-                                <span class="required-star">*</span>
                                 شماره گزارش:
                             </span>
                             <input asp-for="ReportNumber" class="form-control" />
@@ -141,7 +127,7 @@
                         <!-- حجم بسته -->
                         <div class="form-group">
                             <span class="form-label">
-                                حجم بسته:
+                                حجم بسته(لیتر):
                             </span>
                             <input asp-for="PackedVolume" class="form-control" />
 
@@ -150,7 +136,7 @@
                         <!-- وزن کل -->
                         <div class="form-group">
                             <span class="form-label">
-                                وزن کل:
+                                وزن کل (کیلوگرم):
                             </span>
                             <input asp-for="TotalWeight" class="form-control" />
 
@@ -362,19 +348,25 @@
                                 </div>
 
 
-
                                 <div class="form-group">
-                                    <label class="form-label" for="NewLine.ProductionDate">تاریخ تولید:</label>
-                                    <input type="text" asp-for="NewLine.ProductionDate" class="form-control" />
+                                    <label class="form-label">تاریخ تولید:</label>
+                                    <input type="date"
+                                           asp-for="NewLine.ProductionDate"
+                                           class="form-control"
+                                           value="" />
                                 </div>
+
                                 <div class="form-group">
                                     <span class="form-label">
                                         <span class="required-star">*</span>
                                         تاریخ انقضا:
                                     </span>
-                                    <input type="text" asp-for="NewLine.ExpiryDate" class="form-control" />
+                                    <input type="date"
+                                           asp-for="NewLine.ExpiryDate"
+                                           class="form-control" />
                                     <span asp-validation-for="NewLine.ExpiryDate" class="text-danger"></span>
                                 </div>
+
 
 
 
@@ -457,13 +449,13 @@
                                         var line = Model.Lines[i];
                                         <tr>
                                             <td>@line.ItemId</td> @* یا نام کالا اگر در DTO آورده‌ای *@
-                                            <td>@line.CommertialNameId</td>
+                                            <td>@line.CommertialName</td>
                                             <td>@line.BatchNum</td>
                                             <td>@line.Quantity</td>
                                             <td>@line.NumVials</td>
                                             <td>@line.TotalVolume</td>
-                                            <td>@line.StoreId</td>
-                                            <td>@line.ExpiryDate</td>
+                                            <td>@line.StoreName</td>
+                                            <td>@line.ExpiryDate?.ToString("yyyy/mm/dd")</td>
                                             <td>
                                                 <button type="submit"
                                                         name="command"
@@ -599,25 +591,13 @@
                 timePicker: {
                     enabled: false
                 },
+                initialValue: true,
                 initialValueType: "persian",
                 autoClose: true
             });
             });
 
-        $("#NewLine_ExpiryDate").pDatepicker({
-              format: "YYYY/MM/DD",
-              timePicker: { enabled: false },
-              initialValueType: "persian",
-              autoClose: true
-          });
 
-          // تاریخ تولید
-          $("#NewLine_ProductionDate").pDatepicker({
-              format: "YYYY/MM/DD",
-              timePicker: { enabled: false },
-              initialValueType: "persian",
-              autoClose: true
-          });
 
 
 

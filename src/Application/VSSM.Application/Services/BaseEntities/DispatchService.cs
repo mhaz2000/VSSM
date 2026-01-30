@@ -36,7 +36,7 @@ public class DispatchService : IDispatchService
     CreateDispatcheDto createDispatcheDto,
     CancellationToken cancellationToken)
     {
-        var fiscalPeriod = _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.HasValue && f.IsActive.Value);
+        var fiscalPeriod = _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
 
         var dispatch = new TblDispatch
         {

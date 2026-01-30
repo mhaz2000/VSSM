@@ -35,7 +35,7 @@
                                 <div class="form-group col-md-6">
                                     <span class="form-label">نوع کالا :</span>
                                 <select id="ItemClassId" asp-for="NewLine.ItemClassId"
-                                            asp-items="ViewBag.itemClassList" required
+                                            asp-items="ViewBag.itemClassList" 
                                             class="form-select">
                                         <option value="">انتخاب کنید...</option>
                                     </select>
@@ -45,7 +45,7 @@
                             <div class="form-group col-md-6">
                                     <span class="form-label">کالا :</span>
                                 <select id="ItemId" asp-for="NewLine.ItemId"
-                                        class="form-select" required
+                                        class="form-select" 
                                             disabled>
                                         <option value="">ابتدا نوع کالا را انتخاب کنید</option>
                                     </select>
@@ -156,7 +156,7 @@
                                         {
                                             var line = Model.RequestLines[i];
                                             <tr>
-                                                <td>@line.ItemId</td> @* یا نام کالا اگر در DTO آورده‌ای *@
+                                                <td>@line.ItemName</td> 
                                                 <td>@line.Anncount</td>
                                                 <td>@line.Arivcount</td>
                                                 <td>@line.Usedcount</td>

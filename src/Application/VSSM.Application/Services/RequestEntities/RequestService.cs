@@ -115,7 +115,7 @@ namespace VSSM.Application.Services.RequestEntities
 
             if (request == null) return null;
 
-            var reqLines = await _dbContext.TblRequestLines.Where(x => x.RequestId == id).ToListAsync();
+            var reqLines = await _dbContext.TblRequestLines.Where(x => x.RequestId == id).Include(i => i.Item).ToListAsync();
 
             return new RequestGetDto
             {
@@ -137,6 +137,7 @@ namespace VSSM.Application.Services.RequestEntities
                     Forperiod = r.Forperiod,
                     ItemClassId = r.ItemClassId,
                     ItemId = r.ItemId,
+                    ItemName = r.Item.FullName,
                     Note = r.Note,
                     Offercount = r.Offercount,
                     Reqcount = r.Reqcount,

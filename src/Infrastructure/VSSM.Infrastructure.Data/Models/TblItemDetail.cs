@@ -13,7 +13,7 @@ public partial class TblItemDetail
 
     public int? ItemId { get; set; }
 
-    public long? DosePerVialId { get; set; }
+    public int? DosePerVialId { get; set; }
 
     public int? ManufacturerId { get; set; }
 
@@ -43,5 +43,23 @@ public partial class TblItemDetail
 
     public string BiddingNumber { get; set; }
 
+    public virtual TblCommercialName CommercialName { get; set; }
+
+    public virtual TblDosePerVial DosePerVial { get; set; }
+
+    public virtual TblFiscalPeriod FiscalPeriod { get; set; }
+
+    public virtual TblItem Item { get; set; }
+
+    public virtual TblManufacturer Manufacturer { get; set; }
+
+    public virtual TblPackingType PackingType { get; set; }
+
+    public virtual TblSource Source { get; set; }
+
+    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
+
     public virtual ICollection<TblItemDetailStore> TblItemDetailStores { get; set; } = new List<TblItemDetailStore>();
+
+    public virtual TblVvmtype Vvmtype { get; set; }
 }

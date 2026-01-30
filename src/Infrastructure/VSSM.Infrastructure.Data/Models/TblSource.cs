@@ -16,4 +16,8 @@ public partial class TblSource
     public DateTime? EntryDate { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual ICollection<TblArrival> TblArrivals { get; set; } = new List<TblArrival>();
+
+    public virtual ICollection<TblItemDetail> TblItemDetails { get; set; } = new List<TblItemDetail>();
 }

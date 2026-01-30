@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.ReceivingMode;
 using VSSM.Application.DTOs.BaseEntities.TransportMode;
 using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class TransportModeController : Controller
+[Authorize]
+public class TransportModeController : BaseController
 {
     private readonly ITransportModeService _transportModeService;
 

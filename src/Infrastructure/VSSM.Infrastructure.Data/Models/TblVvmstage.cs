@@ -16,4 +16,10 @@ public partial class TblVvmstage
     public DateTime? EntryDate { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
+
+    public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
+
+    public virtual ICollection<TblItemDetailStore> TblItemDetailStores { get; set; } = new List<TblItemDetailStore>();
 }

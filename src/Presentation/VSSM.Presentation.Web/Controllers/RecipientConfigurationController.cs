@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.RecipientConfiguration;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -6,7 +7,8 @@ using VSSM.Presentation.Web.Models.RecipientConfiguration;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class RecipientConfigurationController : Controller
+    [Authorize]
+    public class RecipientConfigurationController : BaseController
     {
         private readonly IRecipientConfigurationService _service;
         private readonly IRecipientService _recipientService;

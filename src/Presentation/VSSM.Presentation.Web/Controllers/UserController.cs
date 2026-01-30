@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -6,7 +7,8 @@ using VSSM.Presentation.Web.Models.Utility;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class UserController : Controller
+    [Authorize]
+    public class UserController : BaseController
     {
         private readonly IUserService _userService;
         private readonly IRecipientService _recipientService;

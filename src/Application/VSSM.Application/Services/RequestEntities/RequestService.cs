@@ -10,7 +10,9 @@ using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.RequestEntities;
 using VSSM.Application.Interfaces.RequestEntities;
+using VSSM.Domain.Enums;
 using VSSM.Infrastructure.Data.Models;
+using static Dapper.SqlMapper;
 
 namespace VSSM.Application.Services.RequestEntities
 {
@@ -45,6 +47,18 @@ namespace VSSM.Application.Services.RequestEntities
             await _dbContext.SaveChangesAsync(token);
         }
 
+        public async Task<bool> ChangeStatus(int id, RequestStatusEnum status, string note,  CancellationToken token)
+        {
+            var request = await _dbContext.TblRequests
+                .FirstOrDefaultAsync(x => x.Id == id, token);
+
+            if (request == null) return false;
+
+            request.Status = (int)status;
+            await _dbContext.SaveChangesAsync(token);
+            return true;
+        }
+
         public async Task<int> Create(RequestCreateDto dto, CancellationToken token)
         {
             var req = new TblRequest
@@ -63,6 +77,35 @@ namespace VSSM.Application.Services.RequestEntities
             _dbContext.TblRequests.Add(req);
             await _dbContext.SaveChangesAsync(token);
             return req.Id;
+        }
+
+        public async Task Delete(int id)
+        {
+            var request = await _dbContext.TblRequests
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            var lines = await _dbContext.TblRequestLines
+                .Where(x => x.RequestId == id)
+                .ToListAsync();
+            if(lines.Count > 0)
+                _dbContext.TblRequestLines.RemoveRange(lines);
+            _dbContext.TblRequests.Remove(request);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteLine(int requestLineId, CancellationToken token)
+        {
+            
+            var reqLine = await _dbContext.TblRequestLines.FindAsync(new object[] { requestLineId }, token);
+            if (reqLine == null) return;
+
+            var lineCount = _dbContext.TblRequestLines.Count(x => x.RequestId == reqLine.RequestId);
+            _dbContext.TblRequestLines.Remove(reqLine);
+            if (lineCount == 1)
+            {
+                await Delete(reqLine.RequestId.Value);
+            }
+            await _dbContext.SaveChangesAsync(token);
         }
 
         public async Task<RequestGetDto?> GetById(int id, CancellationToken token)
@@ -102,11 +145,15 @@ namespace VSSM.Application.Services.RequestEntities
             };
         }
 
-        public async Task<PagingSearchOrderDto<RequestListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
+        public async Task<PagingSearchOrderDto<RequestListDto>> GetPagedList(string? search, int page, int pageSize, 
+            string sortField, string sortOrder,
+            int currentRecipientId, CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = page, PageSize = pageSize };
 
             IQueryable<TblRequest> query = _dbContext.TblRequests;
+
+            query = query.Where(q => q.SenderId == currentRecipientId || (q.ReceiverId == currentRecipientId && q.Status.Value == (int)RequestStatusEnum.Draft));
 
             // 1) Search
             if (!string.IsNullOrWhiteSpace(search))
@@ -116,12 +163,12 @@ namespace VSSM.Application.Services.RequestEntities
             }
 
             // 2) Sorting
-            //query = sortField switch
-            //{
-            //    "Name" => sortOrder == "asc" ? query.OrderBy(x => x.FullName) : query.OrderByDescending(x => x.FullName),
-            //    "Code" => sortOrder == "asc" ? query.OrderBy(x => x.Code) : query.OrderByDescending(x => x.Code),
-            //    _ => sortOrder == "asc" ? query.OrderBy(x => x.OrderId) : query.OrderByDescending(x => x.OrderId)
-            //};
+            query = sortField switch
+            {
+                "SendDate" => sortOrder == "asc" ? query.OrderBy(x => x.SendDate) : query.OrderByDescending(x => x.SendDate),
+                //"Code" => sortOrder == "asc" ? query.OrderBy(x => x.Code) : query.OrderByDescending(x => x.Code),
+                _ => sortOrder == "asc" ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id)
+            };
 
             // 3) Total count before paging
             paging.TotalItems = await query.CountAsync();
@@ -137,8 +184,11 @@ namespace VSSM.Application.Services.RequestEntities
                     RequestNumber = x.RequestNumber,
                     ConfirmDate = x.ConfirmDate,
                     EnteredBy = x.EnteredBy,
-                    RequestStatus = x.Status
+                    EnteredByName = x.EnteredByNavigation.FirstName + " " + x.EnteredByNavigation.LastName,
+                    RequestStatus = x.Status,
+                    Status = (RequestStatusEnum)x.Status.Value
                 })
+                .OrderByDescending(r => r.Id)
                 .ToListAsync(cancellationToken);
 
             return new PagingSearchOrderDto<RequestListDto>
@@ -150,5 +200,65 @@ namespace VSSM.Application.Services.RequestEntities
                 SortOrder = sortOrder
             };
         }
+
+
+        public async Task<PagingSearchOrderDto<RequestListDto>> GetReceivedRequestsPagedList(string? search, int page, int pageSize,
+                string sortField, string sortOrder,
+                int currentRecipientId, CancellationToken cancellationToken)
+        {
+            var paging = new PagingModel { Page = page, PageSize = pageSize };
+
+            IQueryable<TblRequest> query = _dbContext.TblRequests;
+
+            query = query.Where(q => q.ReceiverId == currentRecipientId);
+
+            // 1) Search
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x => x.RequestNumber.Contains(search) || x.SendDate.ToString().Contains(search)
+                );
+            }
+
+            // 2) Sorting
+            query = sortField switch
+            {
+                "SendDate" => sortOrder == "asc" ? query.OrderBy(x => x.SendDate) : query.OrderByDescending(x => x.SendDate),
+                //"Code" => sortOrder == "asc" ? query.OrderBy(x => x.Code) : query.OrderByDescending(x => x.Code),
+                _ => sortOrder == "asc" ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id)
+            };
+
+            // 3) Total count before paging
+            paging.TotalItems = await query.CountAsync();
+
+            // 4) Apply paging
+            var items = await query
+                .Skip(paging.Skip)
+                .Take(paging.PageSize)
+                .Select(x => new RequestListDto
+                {
+                    Id = x.Id,
+                    SendDate = x.SendDate,
+                    RequestNumber = x.RequestNumber,
+                    ConfirmDate = x.ConfirmDate,
+                    EnteredBy = x.EnteredBy,
+                    EnteredByName = x.EnteredByNavigation.FirstName + " " + x.EnteredByNavigation.LastName,
+                    RequestStatus = x.Status,
+                    Status = (RequestStatusEnum)x.Status.Value
+                })
+                .OrderByDescending(r => r.Id)
+                .ToListAsync(cancellationToken);
+
+            return new PagingSearchOrderDto<RequestListDto>
+            {
+                Items = items,
+                Paging = paging,
+                SearchText = search,
+                SortField = sortField,
+                SortOrder = sortOrder
+            };
+        }
+
+
+
     }
 }

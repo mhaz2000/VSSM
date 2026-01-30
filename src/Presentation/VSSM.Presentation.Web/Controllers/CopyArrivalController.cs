@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class CopyArrivalController : Controller
+    [Authorize]
+    public class CopyArrivalController : BaseController
     {
         public IActionResult Index()
         {

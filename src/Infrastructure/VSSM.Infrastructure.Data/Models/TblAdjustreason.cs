@@ -28,4 +28,8 @@ public partial class TblAdjustreason
     public bool? ApplicationForStockSubtraction { get; set; }
 
     public bool? ApplicationForStockAddition { get; set; }
+
+    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
+
+    public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
 }

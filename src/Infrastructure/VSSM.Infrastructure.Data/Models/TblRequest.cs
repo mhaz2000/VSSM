@@ -26,4 +26,14 @@ public partial class TblRequest
     public string RequestNumber { get; set; }
 
     public int? FiscalPeriodId { get; set; }
+
+    public virtual TblUser EnteredByNavigation { get; set; }
+
+    public virtual TblFiscalPeriod FiscalPeriod { get; set; }
+
+    public virtual TblRecipient Receiver { get; set; }
+
+    public virtual TblRecipient Sender { get; set; }
+
+    public virtual ICollection<TblRequestLine> TblRequestLines { get; set; } = new List<TblRequestLine>();
 }

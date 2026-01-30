@@ -42,4 +42,22 @@ public partial class TblItem
     public int? OrderId { get; set; }
 
     public int? PresentationId { get; set; }
+
+    public virtual TblItemsClass ItemClass { get; set; }
+
+    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
+
+    public virtual ICollection<TblArrival> TblArrivals { get; set; } = new List<TblArrival>();
+
+    public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
+
+    public virtual ICollection<TblItemDetail> TblItemDetails { get; set; } = new List<TblItemDetail>();
+
+    public virtual ICollection<TblItemDoseAssignment> TblItemDoseAssignments { get; set; } = new List<TblItemDoseAssignment>();
+
+    public virtual ICollection<TblMinMaxItem> TblMinMaxItems { get; set; } = new List<TblMinMaxItem>();
+
+    public virtual ICollection<TblRecipientMaxItem> TblRecipientMaxItems { get; set; } = new List<TblRecipientMaxItem>();
+
+    public virtual ICollection<TblRequestLine> TblRequestLines { get; set; } = new List<TblRequestLine>();
 }

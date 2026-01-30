@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using VSSM.Presentation.Web.Controllers;
 
-public class OwnershipController : Controller
+[Authorize]
+public class OwnershipController : BaseController
 {
     private readonly IOwnershipService _service;
 

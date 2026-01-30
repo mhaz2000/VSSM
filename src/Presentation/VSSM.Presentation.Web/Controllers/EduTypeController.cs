@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.EduType;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.EduType;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class EduTypeController : Controller
+    [Authorize]
+    public class EduTypeController : BaseController
     {
         private readonly IEduTypeService _service;
 

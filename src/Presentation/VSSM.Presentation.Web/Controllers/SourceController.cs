@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Source;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Presentation.Web.Controllers;
 using VSSM.Presentation.Web.Models.Source;
 
-public class SourceController : Controller
+[Authorize]
+public class SourceController : BaseController
 {
     private readonly ISourceService _service;
 

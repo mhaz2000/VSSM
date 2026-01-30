@@ -1,18 +1,24 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Threading;
 using VSSM.Application.DTOs.BaseEntities.Manufacturer;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services.BaseEntities;
 using VSSM.Presentation.Web.Models.Manufacturer;
 
 namespace VSSM.Presentation.Web.Controllers;
 
+[Authorize]
 public class ManufacturerController : BaseController
 {
     private readonly IManufacturerService _manufacturerService;
+    private readonly IItemClassService _itemClassService;
 
-    public ManufacturerController(IManufacturerService manufacturerService)
+    public ManufacturerController(IManufacturerService manufacturerService, IItemClassService itemClassService)
     {
         _manufacturerService = manufacturerService;
+        _itemClassService = itemClassService;
     }
 
     public async Task<IActionResult> Index(
@@ -34,16 +40,15 @@ public class ManufacturerController : BaseController
         return View(manufacturers); 
     }
 
-    public IActionResult New()
+    public async Task<IActionResult> New()
     {
         var itemClasses = _manufacturerService.ManufacturerDropDown(null, CancellationToken.None).Result;
-        var model = new ManufacturerViewModel();
         
-        model.Items.AddRange(itemClasses.Select(c=>new SelectListItem()
-        {
-            Value = c.ItemsClassId.ToString(),
-            Text = c.Name
-        }));
+        var model = new ManufacturerViewModel();
+
+        model.ItemClass = (await _itemClassService.GetActives(CancellationToken.None))
+             .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+             .ToList();
 
         return View(model);
     }
@@ -70,11 +75,9 @@ public class ManufacturerController : BaseController
         };
 
         // افزودن ItemClass‌ها به مدل ویو
-        model.Items.AddRange(itemClasses.Select(c => new SelectListItem
-        {
-            Value = c.ItemsClassId.ToString(),
-            Text = c.Name
-        }));
+        model.ItemClass = (await _itemClassService.GetActives(CancellationToken.None))
+             .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+             .ToList();
 
         // مقداردهی آیتم‌های انتخاب‌شده برای checkboxها
         model.SelectedItemClassIds = itemClasses.Where(c => c.Selected).Select(c => c.ItemsClassId).ToList();

@@ -65,5 +65,19 @@ public partial class TblDispatch
 
     public string ReportNumber { get; set; }
 
+    public virtual TblArrival Arrival { get; set; }
+
+    public virtual TblUser EnteredBy { get; set; }
+
+    public virtual TblFiscalPeriod FiscalPeriod { get; set; }
+
+    public virtual TblRecipient Receiver { get; set; }
+
+    public virtual TblReceivingMode ReceivingMode { get; set; }
+
+    public virtual TblRecipient Sender { get; set; }
+
     public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
+
+    public virtual TblTransportMode TransportMode { get; set; }
 }

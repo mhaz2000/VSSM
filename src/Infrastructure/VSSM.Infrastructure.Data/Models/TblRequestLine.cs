@@ -34,4 +34,10 @@ public partial class TblRequestLine
     public int? Confirmcount { get; set; }
 
     public int? DosePerVialId { get; set; }
+
+    public virtual TblDosePerVial DosePerVial { get; set; }
+
+    public virtual TblItem Item { get; set; }
+
+    public virtual TblRequest Request { get; set; }
 }

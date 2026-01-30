@@ -18,7 +18,9 @@ public partial class TblArrivalLine
     public float? UnitPrice { get; set; }
 
     public float? TotalPrice { get; set; }
+
     public int? UseId { get; set; }
+
     public int? ManufacturerId { get; set; }
 
     public int? DosePerVialId { get; set; }
@@ -62,4 +64,6 @@ public partial class TblArrivalLine
     public int? OrderLineId { get; set; }
 
     public virtual TblArrival Arrival { get; set; }
+
+    public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
 }

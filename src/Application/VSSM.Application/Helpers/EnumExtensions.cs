@@ -13,4 +13,5 @@ public static class EnumExtensions
             .GetName()
             ?? enumValue.ToString();
     }
+
 }

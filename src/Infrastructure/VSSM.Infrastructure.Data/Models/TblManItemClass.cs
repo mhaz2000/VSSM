@@ -12,4 +12,8 @@ public partial class TblManItemClass
     public int? ItemClassId { get; set; }
 
     public int? ManufacturerId { get; set; }
+
+    public virtual TblItemsClass ItemClass { get; set; }
+
+    public virtual TblManufacturer Manufacturer { get; set; }
 }

@@ -28,4 +28,6 @@ public partial class TblBundle
     public int? ReceiverId { get; set; }
 
     public virtual ICollection<TblBundleDetail> TblBundleDetails { get; set; } = new List<TblBundleDetail>();
+
+    public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
 }

@@ -23,7 +23,7 @@ public partial class TblMinMaxItem
 
     public long? AnnualNeeds { get; set; }
 
- 
+    public long? MaxCalculateOption { get; set; }
 
     public long? NumberShipment { get; set; }
 
@@ -44,4 +44,8 @@ public partial class TblMinMaxItem
     public DateTime? EntryDate { get; set; }
 
     public long? OrderLevel { get; set; }
+
+    public virtual TblItem Item { get; set; }
+
+    public virtual TblRecipient Recipient { get; set; }
 }

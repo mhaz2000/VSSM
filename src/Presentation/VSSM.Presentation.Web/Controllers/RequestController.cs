@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NuGet.Common;
@@ -39,6 +40,7 @@ namespace VSSM.Presentation.Web.Controllers
                                                                     pageSize,
                                                                     sortField,
                                                                     sortOrder,
+                                                                    CurrentUserRecipientId.GetValueOrDefault(),
                                                                     cancellationToken);
 
             
@@ -47,15 +49,22 @@ namespace VSSM.Presentation.Web.Controllers
         }
         public async Task<IActionResult> New(int? id, CancellationToken token)
         {
-            await LoadDropDowns(token);
             // Create mode
             if (id == null || id == 0)
             {
+                if (CurrentUserLevel == 1)
+                {
+                    TempData["ToastMessage"] = "عدم امکان ثبت درخواست برای بالاترین سطح";
+                    TempData["ToastType"] = "warning";
+                    return RedirectToAction("Index");
+                }
+
                 var vm = new RequestViewModel
                 {
                     RequestLines = new List<RequestLinesViewModel>(),
                     NewLine = new RequestLinesViewModel()
                 };
+                await LoadDropDowns(token);
                 return View(vm);
             }
 
@@ -102,7 +111,30 @@ namespace VSSM.Presentation.Web.Controllers
 
             if (model.Id.HasValue)
             {
+                if(command == "StatusSent")
+                {
+                    await _requestService.ChangeStatus(model.Id.Value, RequestStatusEnum.Sent, "", token);
+                    return RedirectToAction("Index");
+                }
+                if (command == "StatusDraft")
+                {
+                    await _requestService.ChangeStatus(model.Id.Value, RequestStatusEnum.Draft, "", token);
+                    return RedirectToAction("Index");
+                }
+                if (command == "StatusDelete")
+                {
+                    await DeleteRequest(model.Id.Value, token);
+                    return RedirectToAction("Index");
+                }
+                if (command.Contains("deleteLine"))
+                {
+                    var lineId = command.Replace("deleteLine_", "");
+                    await DeleteLine(Convert.ToInt32(lineId), model.Id.GetValueOrDefault(), token);
+                    return RedirectToAction("Index");
+                }
+
                 var existing = await _requestService.GetById(model.Id.Value, token);
+                if(existing == null) return RedirectToAction("New");
                 if (existing.RequestStatus == (int)RequestStatusEnum.Confirmed)
                 {
                     TempData["ToastMessage"] = "این ورود تایید شده است و امکان ویرایش ندارد";
@@ -123,11 +155,11 @@ namespace VSSM.Presentation.Web.Controllers
                     Status = RequestStatusEnum.Label,
                     SenderId = CurrentUserRecipientId,
                     ConfirmDate = DateOnly.FromDateTime(DateTime.Now),
-                    EnteredBy = model.EnteredBy,
-                    FiscalPeriodId = 0,
-                    Note = "تست",
+                    EnteredBy = CurrentUserId,
+                    FiscalPeriodId = null,
+                    Note = "",
                     RequestNumber = "111111",
-                    ReceiverId = CurrentUserRecipientId,
+                    ReceiverId = CurrentUserRecipientParentId,
                     SendDate = DateOnly.FromDateTime(DateTime.Now),
 
                     Lines = new List<RequestLineDto>()
@@ -147,6 +179,7 @@ namespace VSSM.Presentation.Web.Controllers
                 Offercount = model.NewLine.Offercount,
                 Usedcount = model.NewLine.Usedcount,
                 Forperiod = model.NewLine.Forperiod,
+                ItemClassId = model.NewLine.ItemClassId,
                 ItemId = model.NewLine.ItemId,
                 DosePerVialId = model.NewLine.Forperiod,
                 Note = model.NewLine.Note,
@@ -161,6 +194,36 @@ namespace VSSM.Presentation.Web.Controllers
             return RedirectToAction("New", new { id = model.Id });
         }
 
+        public async Task<IActionResult> DeleteRequest(int id, CancellationToken token)
+        {
+            if (id != null && id > 0 )
+            {
+                var existing = await _requestService.GetById(id, token);
+                if (existing.RequestStatus == (int)RequestStatusEnum.Label)
+                {
+                    await _requestService.Delete(id);
+                    TempData["ToastMessage"] = "عملیات حذف با موفقیت انجام شد";
+                    TempData["ToastType"] = "success";
+                    return RedirectToAction("Index");
+                }
+            }
+
+            TempData["ToastMessage"] = "خطایی اتفاق افتاده است";
+            TempData["ToastType"] = "error";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteLine(int id, int requestId, CancellationToken token)
+        {
+            await _requestService.DeleteLine(id, token);
+
+            TempData["ToastMessage"] = "سطر حذف شد";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("New", new { id = requestId });
+        }
 
         private async Task LoadDropDowns(CancellationToken token)
         {
@@ -209,6 +272,67 @@ namespace VSSM.Presentation.Web.Controllers
                 offercount = 0,
                 usedcount = 0
             });
+        }
+
+
+
+
+        public async Task<IActionResult> ReceivedRequests(CancellationToken cancellationToken, string? search,
+                                                int page = 1,
+                                                int pageSize = 10,
+                                                string sortField = "Orders",
+                                                string sortOrder = "desc")
+        {
+            var listModel = await _requestService.GetReceivedRequestsPagedList(search,
+                                                                    page,
+                                                                    pageSize,
+                                                                    sortField,
+                                                                    sortOrder,
+                                                                    CurrentUserRecipientId.GetValueOrDefault(),
+                                                                    cancellationToken);
+
+
+            return View(listModel);
+
+        }
+
+
+        public async Task<IActionResult> ReceivedRequestLines(int? id, CancellationToken token)
+        {
+            var dto = await _requestService.GetById(id.Value, token);
+            if (dto == null) return NotFound();
+
+            var model = new RequestViewModel
+            {
+                ConfirmDate = dto.ConfirmDate,
+                EnteredBy = dto.EnteredBy,
+                Id = dto.Id,
+                RequestNumber = dto.RequestNumber,
+                RequestStatus = dto.RequestStatus,
+                SendDate = dto.SendDate,
+                RequestLines = dto.RequestLines.Select(r => new RequestLinesViewModel
+                {
+                    Id = r.Id,
+                    RequestId = r.RequestId,
+                    Anncount = r.Anncount,
+                    Arivcount = r.Arivcount,
+                    Confirmcount = r.Confirmcount,
+                    Currentcount = r.Currentcount,
+                    DosePerVialId = r.DosePerVialId,
+                    Forperiod = r.Forperiod,
+                    ItemClassId = r.ItemClassId,
+                    ItemId = r.ItemId,
+                    Note = r.Note,
+                    Offercount = r.Offercount,
+                    Reqcount = r.Reqcount,
+                    Usedcount = r.Usedcount
+                }).ToList(),
+
+                NewLine = new RequestLinesViewModel()
+            };
+
+            return View(model);
+
         }
 
     }

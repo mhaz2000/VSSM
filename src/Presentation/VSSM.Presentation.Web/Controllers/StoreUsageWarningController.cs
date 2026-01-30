@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.StoreUsageWarning;
 using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class StoreUsageWarningController : Controller
+[Authorize]
+public class StoreUsageWarningController : BaseController
 {
     private readonly IStoreUsageWarningService _service;
 

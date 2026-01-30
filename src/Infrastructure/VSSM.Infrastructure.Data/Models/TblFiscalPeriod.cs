@@ -20,4 +20,14 @@ public partial class TblFiscalPeriod
     public DateTime? EntryDate { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
+
+    public virtual ICollection<TblArrival> TblArrivals { get; set; } = new List<TblArrival>();
+
+    public virtual ICollection<TblDispatch> TblDispatches { get; set; } = new List<TblDispatch>();
+
+    public virtual ICollection<TblItemDetail> TblItemDetails { get; set; } = new List<TblItemDetail>();
+
+    public virtual ICollection<TblRequest> TblRequests { get; set; } = new List<TblRequest>();
 }

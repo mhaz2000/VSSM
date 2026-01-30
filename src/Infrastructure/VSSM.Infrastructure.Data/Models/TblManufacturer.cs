@@ -20,4 +20,12 @@ public partial class TblManufacturer
     public bool? ShowForOther { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
+
+    public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
+
+    public virtual ICollection<TblItemDetail> TblItemDetails { get; set; } = new List<TblItemDetail>();
+
+    public virtual ICollection<TblManItemClass> TblManItemClasses { get; set; } = new List<TblManItemClass>();
 }

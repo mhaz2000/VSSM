@@ -20,4 +20,10 @@ public partial class TblRecipientMaxItem
     public int? ReceiverId { get; set; }
 
     public int? RelatedToItem { get; set; }
+
+    public virtual TblItem Item { get; set; }
+
+    public virtual TblRecipient Receiver { get; set; }
+
+    public virtual TblRecipient Recipient { get; set; }
 }

@@ -46,13 +46,17 @@ namespace VSSM.Presentation.Web.Controllers
 
             //var chainLevel = await _recipientService.GetChainLevelById(user.RecipientId.GetValueOrDefault(), CancellationToken.None);
 
+            var recipient = await _recipientService.GetById(user.RecipientId.GetValueOrDefault(), CancellationToken.None);
+
             var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.FullName),
                     new Claim("UserId", user.UserId.ToString()),
                     new Claim("UserRole", user.IsAdmin ? "Admin" : "User"),
                     new Claim("RecipientId", user.RecipientId.GetValueOrDefault().ToString()),
-                    new Claim("Level", "1")
+                    new Claim("Level", recipient.ChainLevel.GetValueOrDefault().ToString()),
+                    new Claim("RecipientParentId", recipient.ParentId.GetValueOrDefault().ToString()),
+
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

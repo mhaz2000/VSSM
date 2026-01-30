@@ -1,0 +1,18 @@
+﻿{
+   "ConnectionStringName": "dab-connection-string",
+   "Dacpac": null,
+   "DatabaseType": 3,
+   "MergeDacpacs": false,
+   "Optional": false,
+   "ProjectPath": "C:\\1-Projects\\MOHVSSM\\src\\Infrastructure\\VSSM.Infrastructure.Data",
+   "Tables": [
+      {
+         "Name": "[dbo].[tblJobType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tblUsers]",
+         "ObjectType": 0
+      }
+   ]
+}

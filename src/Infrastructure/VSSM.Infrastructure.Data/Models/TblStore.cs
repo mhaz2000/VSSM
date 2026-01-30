@@ -54,4 +54,14 @@ public partial class TblStore
     public int? PeriodNotUse { get; set; }
 
     public float? UnitCost { get; set; }
+
+    public virtual TblRecipient Recipient { get; set; }
+
+    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
+
+    public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
+
+    public virtual ICollection<TblItemDetailStore> TblItemDetailStores { get; set; } = new List<TblItemDetailStore>();
+
+    public virtual TblStoreType Type { get; set; }
 }

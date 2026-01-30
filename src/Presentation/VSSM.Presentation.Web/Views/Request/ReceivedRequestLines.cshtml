@@ -1,0 +1,179 @@
+﻿@using VSSM.Presentation.Web.Models.Request
+@model RequestViewModel
+@{
+    
+}
+
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <div>
+                        <h5>  جزئیات درخواست</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+
+            <div class="card">
+                <div class="card-block">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <form asp-action="Create" method="post" class="form-horizontal">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="col-lg-12 allign-text">
+                            <table class="table table-bordered table-striped table-condensed lines-table">
+                                <thead>
+                                    <tr>
+                                        <th>کالا</th>
+                                        <th> مقدار مجاز</th>
+                                        <th> تعداد ورودی</th>
+                                        <th>تعداد مصرف شده</th>
+                                        <th>تعداد موجودی انبار</th>
+                                        <th>جهت دوره</th>
+                                        <th>تعداد پیشنهادی</th>
+                                        <th>تعداد درخواستی</th>
+                                        <th>عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.RequestLines != null && Model.RequestLines.Any())
+                                    {
+                                        for (int i = 0; i < Model.RequestLines.Count; i++)
+                                        {
+                                            var line = Model.RequestLines[i];
+                                            <tr>
+                                                <td>@line.ItemId</td> @* یا نام کالا اگر در DTO آورده‌ای *@
+                                                <td>@line.Anncount</td>
+                                                <td>@line.Arivcount</td>
+                                                <td>@line.Usedcount</td>
+                                                <td>@line.Currentcount</td>
+                                                <td>@line.Forperiod</td>
+                                                <td>@line.Offercount</td>
+                                                <td>@line.Reqcount</td>
+                                                <td>
+                                                    <button type="submit"
+                                                            name="command"
+                                                            value="deleteLine_@line.Id"
+                                                            class="btn btn-outline-danger btn-sm">
+                                                        حذف
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="8" class="text-center text-muted">
+                                                آیتمی ثبت نشده است.
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="row col-lg-12">
+                            <div class="form-group col-md-6">
+                                <span class="form-label">
+                                    ملاحظات :
+                                </span>
+                                <input type="text" class="form-control" asp-for="Note" id="note" />
+                            </div>
+                        </div>
+                        <div class="row col-lg-12"><br /></div>
+                        <div class="card-block">
+                            <div class="row col-lg-2"></div>
+                            <button type="submit"
+                                    name="command"
+                                    value="StatusSent" class="btn btn-outline-primary">
+                                ثبت ارسال جدید
+                            </button>
+                           
+                            <a type="button" class="btn btn-primary px-5" asp-action="ReceivedRequests">مشاهده لیست</a>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+        <!--/col-->
+    </div>
+    <!--/row-->
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/persian-date.js"></script>
+    <script src="~/js/persian-datepicker.js"></script>
+    <script>
+            $(function () {
+
+            const $itemClass = $("#ItemClassId");
+            const $item = $("#ItemId");
+
+            // تغییر نوع کالا
+            $itemClass.on("change", function () {
+
+                const classId = $(this).val();
+
+                // reset
+                $item.prop("disabled", true);
+                $item.empty();
+
+                if (!classId) {
+                    $item.append('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
+                    return;
+                }
+
+                // load filtered items
+                $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
+                    .done(function (data) {
+
+                        $item.append('<option value="">انتخاب کنید...</option>');
+
+                        data.forEach(x => {
+                            $item.append(
+                                `<option value="${x.id}">${x.text}</option>`
+                            );
+                        });
+
+                        $item.prop("disabled", false);
+                    });
+            });
+
+            
+            $item.on("change", function () {
+
+                const itemId = $(this).val();
+
+                $.getJSON("/Request/GetItemDetailsByItem", { itemId: itemId })
+                    .done(function (data) {
+                        $("#anncount").val(data.anncount);
+                        $("#currentcount").val(data.currentcount);
+                        $("#arivcount").val(data.arivcount);
+                        $("#usedcount").val(data.usedcount);
+                        $("#inventoryHealth").val(0);
+                        $("#inventoryHealth").val(0);
+                        $("#timeBetweenRequestAndArrival").val(0);
+                        $("#offercount").val(data.offercount);
+
+                    });
+            });
+
+        });
+
+       
+
+    </script>
+
+
+}

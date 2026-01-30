@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Helpers;
@@ -7,6 +8,7 @@ using VSSM.Presentation.Web.Models.Arrival;
 
 namespace VSSM.Presentation.Web.Controllers
 {
+    [Authorize]
     public class ArrivalController : BaseController
     {
         private readonly IArrivalService _arrivalService;
@@ -458,7 +460,7 @@ namespace VSSM.Presentation.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteLine(int id, int arrivalId, CancellationToken token)
         {
-            _arrivalService.SubtractionToTotal(id, arrivalId);
+            await _arrivalService.SubtractionToTotal(id, arrivalId);
             await _arrivalService.CancelLine(id, token);
 
 

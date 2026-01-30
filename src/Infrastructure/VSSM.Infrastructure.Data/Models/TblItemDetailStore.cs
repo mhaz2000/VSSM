@@ -11,13 +11,21 @@ public partial class TblItemDetailStore
 
     public int? ItemDetailId { get; set; }
 
-    public int? StoreId { get; set; } //TODO: 
+    public int? StoreId { get; set; }
 
     public long? CurrentStock { get; set; }
 
     public DateTime? EntryDate { get; set; }
 
-    public int? VvmstageId { get; set; } // TODO: -1
+    public int? VvmstageId { get; set; }
 
     public virtual TblItemDetail ItemDetail { get; set; }
+
+    public virtual TblStore Store { get; set; }
+
+    public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
+
+    public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
+
+    public virtual TblVvmstage Vvmstage { get; set; }
 }

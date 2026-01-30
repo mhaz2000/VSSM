@@ -16,4 +16,8 @@ public partial class TblCommercialName
     public bool? IsActive { get; set; }
 
     public DateTime? EntryDate { get; set; }
+
+    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
+
+    public virtual ICollection<TblItemDetail> TblItemDetails { get; set; } = new List<TblItemDetail>();
 }

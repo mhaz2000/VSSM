@@ -133,7 +133,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             ViewBag.ItemClass = list;
 
-            ViewBag.DiluentDropDown = list.Where(c => c.Code == "2");
+            ViewBag.DiluentDropDown = list.Where(c => c.Id == 2);
         }
 
         [HttpGet("GetItems/{classItemId:required:int}")]

@@ -112,7 +112,6 @@
                                     class="form-select">
                                 <option value="">انتخاب کنید...</option>
                             </select>
-                            <span asp-validation-for="SourceId" class="text-danger"></span>
                         </div>
 
                         <!-- شماره گزارش -->
@@ -455,7 +454,7 @@
                                             <td>@line.NumVials</td>
                                             <td>@line.TotalVolume</td>
                                             <td>@line.StoreName</td>
-                                            <td>@line.ExpiryDate?.ToString("yyyy/mm/dd")</td>
+                                            <td>@line.ExpiryDate?.ToString("yyyy/MM/dd")</td>
                                             <td>
                                                 <button type="submit"
                                                         name="command"

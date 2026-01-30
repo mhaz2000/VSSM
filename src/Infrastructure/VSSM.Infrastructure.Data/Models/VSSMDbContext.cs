@@ -479,7 +479,7 @@ public partial class VSSMDbContext : DbContext
         modelBuilder.Entity<TblArrivalLine>(entity =>
         {
             entity.HasKey(e => e.ArrivalLineId).HasName("PK_tblArrivalLine");
-
+            entity.Property(e => e.ArrivalLineId).ValueGeneratedOnAdd();
             entity.ToTable("tblArrivalLines");
 
             entity.Property(e => e.ArrivalLineId)

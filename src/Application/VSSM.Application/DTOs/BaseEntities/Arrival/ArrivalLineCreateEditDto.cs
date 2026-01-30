@@ -8,7 +8,7 @@ namespace VSSM.Application.DTOs.BaseEntities.Arrival
         public DateTime Date { get; set; }
         public string ReportNumber { get; set; }
 
-        public int SourceId { get; set; }
+        public int? SourceId { get; set; }
         public int FiscalPeriodId { get; set; }
 
         public bool IsConfirmed { get; set; }

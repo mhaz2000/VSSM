@@ -228,7 +228,7 @@ namespace VSSM.Presentation.Web.Controllers
         public async Task<IActionResult> Delete(int id, CancellationToken token)
         {
             await _arrivalService.Delete(id);
-            return await Index(null);
+            return RedirectToAction(nameof(Index));
         }
 
         // MAIN POST: all buttons submit here
@@ -307,8 +307,7 @@ namespace VSSM.Presentation.Web.Controllers
         private async Task<IActionResult> AddLine(ArrivalViewModel model, CancellationToken token)
         {
             // Validate header minimum required fields (adjust to your required list)
-            if (string.IsNullOrWhiteSpace(model.Date) ||
-                !model.SourceId.HasValue)
+            if (string.IsNullOrWhiteSpace(model.Date))
             {
                 TempData["ToastMessage"] = "ابتدا اطلاعات اصلی ورود را کامل کنید";
                 TempData["ToastType"] = "error";
@@ -319,7 +318,9 @@ namespace VSSM.Presentation.Web.Controllers
             if (model.NewLine == null ||
                 !model.NewLine.StoreId.HasValue ||
                 !model.NewLine.Quantity.HasValue ||
-                !model.NewLine.ExpiryDate.HasValue)
+                !model.NewLine.ExpiryDate.HasValue ||
+                !model.NewLine.ItemId.HasValue ||
+                !model.NewLine.ItemDetailId.HasValue)
             {
                 TempData["ToastMessage"] = "اطلاعات کالا کامل نیست";
                 TempData["ToastType"] = "error";
@@ -333,7 +334,7 @@ namespace VSSM.Presentation.Web.Controllers
                 {
                     Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
                     ReportNumber = model.ReportNumber,
-                    SourceId = model.SourceId.Value,
+                    SourceId = model.SourceId,
                     FiscalPeriodId = _fiscalService.GetActives(token).Result.First().FiscalPeriodId,
                     TotalVolume = model.TotalVolume,
                     IsConfirmed = false,
@@ -346,7 +347,6 @@ namespace VSSM.Presentation.Web.Controllers
                     Frzindc = model.Frzindc,
                     FrzindcNok = model.FrzindcNok,
                     UserRecipientId = CurrentUserRecipientId ?? 0,
-
                     Lines = new List<ArrivalLineDto>()
                 };
 
@@ -408,8 +408,32 @@ namespace VSSM.Presentation.Web.Controllers
                 TempData["ToastType"] = "error";
                 return View("New", model);
             }
+            if (!await _arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
+            {
+                TempData["ToastMessage"] = "ابتدا یک کالا اضافه کنید تا ورود ساخته شود";
+                TempData["ToastType"] = "error";
+                return View("New", model);
+            }
 
-            await _arrivalService.SetDraft(model.ArrivalId.Value, token);
+            var createDto = new ArrivalCreateDto
+            {
+                Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
+                ReportNumber = model.ReportNumber,
+                SourceId = model.SourceId,
+                TotalVolume = model.TotalVolume,
+                IsConfirmed = false,
+                IsDrafted = true,
+                IsCancelled = false,
+
+                PackedVolume = model.PackedVolume,
+                TotalWeight = model.TotalWeight,
+                Note = model.Note,
+                Frzindc = model.Frzindc,
+                FrzindcNok = model.FrzindcNok,
+                UserRecipientId = CurrentUserRecipientId ?? 0,
+            };
+
+            await _arrivalService.SetDraft(model.ArrivalId.Value, createDto, token);
 
             TempData["ToastMessage"] = "به عنوان پیش‌نویس ذخیره شد";
             TempData["ToastType"] = "info";
@@ -425,14 +449,39 @@ namespace VSSM.Presentation.Web.Controllers
                 TempData["ToastType"] = "error";
                 return View("New", model);
             }
-
+            if (!await _arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
+            {
+                TempData["ToastMessage"] = "ابتدا یک کالا اضافه کنید تا ورود ساخته شود";
+                TempData["ToastType"] = "error";
+                return View("New", model);
+            }
             if (!model.ArrivalId.HasValue)
             {
                 return await AddLine(model, token);
             }
             else
             {
-                await _arrivalService.Confirm(model.ArrivalId.Value, token);
+                var createDto = new ArrivalCreateDto
+                {
+                    Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
+                    ReportNumber = model.ReportNumber,
+                    SourceId = model.SourceId,
+                    TotalVolume = model.TotalVolume,
+                    IsConfirmed = false,
+                    IsDrafted = true,
+                    IsCancelled = false,
+
+                    PackedVolume = model.PackedVolume,
+                    TotalWeight = model.TotalWeight,
+                    Note = model.Note,
+                    Frzindc = model.Frzindc,
+                    FrzindcNok = model.FrzindcNok,
+                    UserRecipientId = CurrentUserRecipientId ?? 0,
+
+                };
+
+
+                await _arrivalService.Confirm(model.ArrivalId.Value, createDto, token);
             }
 
 
@@ -467,7 +516,7 @@ namespace VSSM.Presentation.Web.Controllers
             TempData["ToastMessage"] = "سطر حذف شد";
             TempData["ToastType"] = "success";
 
-            return RedirectToAction("Edit", new { id = arrivalId });
+            return RedirectToAction("New", new { id = arrivalId });
         }
 
         private async Task LoadDropDowns(CancellationToken token)

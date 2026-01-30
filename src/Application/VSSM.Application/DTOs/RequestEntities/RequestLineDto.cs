@@ -12,6 +12,7 @@ namespace VSSM.Application.DTOs.RequestEntities
         public int? RequestId { get; set; }
 
         public int? ItemId { get; set; }
+        public string ItemName { get; set; }
 
         public int? ItemClassId { get; set; }
 

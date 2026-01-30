@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.ArrivalRepConfig;
 using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers;
 
+[Authorize]
 public class ArrivalRepConfigController : Controller
 {
     private readonly IArrivalRepConfigService _arrivalRepConfigService;

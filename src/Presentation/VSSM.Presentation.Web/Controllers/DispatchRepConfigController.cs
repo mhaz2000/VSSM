@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.DispatchRepConfig;
 using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class DispatchRepConfigController : Controller
+[Authorize]
+public class DispatchRepConfigController : BaseController
 {
     private readonly IDispatchRepConfigService _service;
 

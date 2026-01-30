@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.CommercialName;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -5,7 +6,8 @@ using VSSM.Presentation.Web.Models.CommercialName;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class CommercialNameController : Controller
+    [Authorize]
+    public class CommercialNameController : BaseController
     {
         private readonly ICommercialNameService _commercialNameService;
 

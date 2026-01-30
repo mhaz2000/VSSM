@@ -53,6 +53,8 @@ public partial class TblDispatch
 
     public int? ArrivalId { get; set; }
 
+    public float? TotalPrice { get; set; }
+
     public bool? IsDel { get; set; }
 
     public int? Frzindc { get; set; }

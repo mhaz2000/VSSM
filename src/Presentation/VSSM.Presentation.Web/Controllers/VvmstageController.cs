@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -5,7 +6,8 @@ using VSSM.Presentation.Web.Models.Vvmstage;
 
 namespace VSSM.Presentation.Web.Controllers;
 
- public class VvmstageController : Controller
+[Authorize]
+public class VvmstageController : BaseController
     {
         private readonly IVvmstageService _vvmstageService;
 

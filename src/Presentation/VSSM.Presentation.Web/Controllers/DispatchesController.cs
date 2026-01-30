@@ -8,7 +8,7 @@ using VSSM.Application.Shared;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class DispatchesController : BaseController
     {
         private readonly IRecipientService _recipientService;

@@ -15,11 +15,15 @@ public partial class TblDispatchLine
 
     public int? Quantity { get; set; }
 
+    public float? UnitPrice { get; set; }
+
     public int? NumVial { get; set; }
 
     public int? DosePerVialId { get; set; }
 
     public float? TotalVolume { get; set; }
+
+    public float? TotalPrice { get; set; }
 
     public int? StoreId { get; set; }
 

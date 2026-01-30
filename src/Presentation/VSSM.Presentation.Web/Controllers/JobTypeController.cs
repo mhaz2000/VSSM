@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.JobType;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.JobType;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class JobTypeController : Controller
+    [Authorize]
+    public class JobTypeController : BaseController
     {
         private readonly IJobTypeService _service;
 

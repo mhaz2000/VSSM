@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.UserHome;
 using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class UserHomeController : Controller
+[Authorize]
+public class UserHomeController : BaseController
 {
     private readonly IUserHomeService _service;
 

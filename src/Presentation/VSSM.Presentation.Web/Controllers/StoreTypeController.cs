@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.StoreType;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -5,7 +6,8 @@ using VSSM.Presentation.Web.Models.StoreType;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class StoreTypeController : Controller
+[Authorize]
+public class StoreTypeController : BaseController
     {
         private readonly IStoreTypeService _storeTypeService;
 

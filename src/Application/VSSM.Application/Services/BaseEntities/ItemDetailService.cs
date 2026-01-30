@@ -38,8 +38,8 @@ namespace VSSM.Application.Services.BaseEntities
                         join itmDtl in _db.TblItemDetails.Where(t => t.ItemId == itemId) on itm.ItemId equals itmDtl.ItemId
                         join itmDtlStr in _db.TblItemDetailStores.Where(t => t.CurrentStock > 0) on itmDtl.ItemDetailId equals itmDtlStr.ItemDetailId into itemStoreInfo
                         from i in itemStoreInfo.DefaultIfEmpty()
-                        join str in _db.TblStores.Where(store => store.RecipientId == recipientId) on i.StoreId equals str.StoreId into itemAndStore
-                        from s in itemAndStore.DefaultIfEmpty()
+                        //join str in _db.TblStores.Where(store => store.RecipientId == recipientId) on i.StoreId equals str.StoreId into itemAndStore
+                        //from s in itemAndStore.DefaultIfEmpty()
                         join manufacture in _db.TblManufacturers on itmDtl.ManufacturerId equals manufacture.ManufacturerId into manufactureInfo
                         from m in manufactureInfo.DefaultIfEmpty()
                         join stage in _db.TblVvmstages on i.VvmstageId equals stage.VvmstageId into stageInfo
@@ -50,16 +50,17 @@ namespace VSSM.Application.Services.BaseEntities
                             ItemName = itm.FullName,
                             ExpiryDate = itmDtl.ExpiryDate,
                             VVMStep = si.FullName,
-                            CurrentStock = i.CurrentStock ?? 0,
+                            CurrentStock =  i.CurrentStock ?? 0,
                             BatchNumber = itmDtl.BatchNumber,
-                            StoreName = s.Name,
-                            ItemDetailStoreId= i.ItemDetailStoreId,
-                            StoreId = s.StoreId,
-                            Manufacture = m.FullName
+                            StoreName = "store", // s.Name,
+                            ItemDetailStoreId= 0, // i.ItemDetailStoreId,
+                            StoreId = 0, // s.StoreId,
+                            Manufacture = "manufac", // m.FullName
                         };
 
             var itemDetails = await query
                 .AsNoTracking()
+                .Take(4)
                 .ToListAsync(cancellationToken);
 
             return itemDetails;

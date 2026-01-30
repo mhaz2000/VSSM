@@ -12,4 +12,6 @@ public partial class TblJobType
     public string FullName { get; set; }
 
     public bool? IsActive { get; set; }
+
+    public virtual ICollection<TblUser> TblUsers { get; set; } = new List<TblUser>();
 }

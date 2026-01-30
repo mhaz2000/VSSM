@@ -71,7 +71,7 @@ namespace VSSM.Presentation.Web.Controllers
             // Edit mode
             var dto = await _requestService.GetById(id.Value, token);
             if (dto == null) return NotFound();
-
+            await LoadDropDowns(token);
             var model = new RequestViewModel
             {
                 ConfirmDate = dto.ConfirmDate,
@@ -92,6 +92,7 @@ namespace VSSM.Presentation.Web.Controllers
                     Forperiod = r.Forperiod,
                     ItemClassId = r.ItemClassId,
                     ItemId = r.ItemId,
+                    ItemName = r.ItemName,
                     Note = r.Note,
                     Offercount = r.Offercount,
                     Reqcount = r.Reqcount,
@@ -164,6 +165,19 @@ namespace VSSM.Presentation.Web.Controllers
 
                     Lines = new List<RequestLineDto>()
                 };
+
+                if(model.NewLine.ItemClassId == null || model.NewLine.ItemClassId == 0)
+                {
+                    TempData["ToastMessage"] = "انتخاب نوع کالا اجباری است";
+                    TempData["ToastType"] = "error";
+                    return RedirectToAction("New", new { id = model.Id.Value });
+                }
+                if (model.NewLine.ItemId == null || model.NewLine.ItemId == 0)
+                {
+                    TempData["ToastMessage"] = "انتخاب کالا اجباری است";
+                    TempData["ToastType"] = "error";
+                    return RedirectToAction("New", new { id = model.Id.Value });
+                }
 
                 var newId = await _requestService.Create(createDto, token);
                 model.Id = newId;

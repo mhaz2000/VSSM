@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.ManItemClass;
@@ -6,7 +7,8 @@ using VSSM.Presentation.Web.Models.ManItemClass;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class ManItemClassController : Controller
+[Authorize]
+public class ManItemClassController : BaseController
 {
     private readonly IManItemClassService _service;
 

@@ -1050,21 +1050,21 @@ public partial class VSSMDbContext : DbContext
 
         modelBuilder.Entity<TblJobType>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("tblJobType");
+            entity.HasKey(e => e.JobTypeId);
 
-            entity.Property(e => e.FullName).HasMaxLength(200);
+            entity.ToTable("tblJobType");
+
             entity.Property(e => e.JobTypeId)
-                .ValueGeneratedOnAdd()
+                .ValueGeneratedNever()
                 .HasColumnName("JobTypeID");
+            entity.Property(e => e.FullName).HasMaxLength(200);
         });
 
         modelBuilder.Entity<TblLevel>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("tblLevels");
+            entity.HasKey(e => e.LevelId);
+
+            entity.ToTable("tblLevels");
 
             entity.Property(e => e.LevelId).HasColumnName("LevelID");
         });
@@ -1669,6 +1669,14 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.RecipientId).HasColumnName("RecipientID");
             entity.Property(e => e.Storewarrning).HasColumnName("storewarrning");
             entity.Property(e => e.UserName).HasMaxLength(50);
+
+            entity.HasOne(d => d.CodeJobNavigation).WithMany(p => p.TblUsers)
+                .HasForeignKey(d => d.CodeJob)
+                .HasConstraintName("FK_tblUsers_tblJobType");
+
+            entity.HasOne(d => d.EnteredBy).WithMany(p => p.InverseEnteredBy)
+                .HasForeignKey(d => d.EnteredById)
+                .HasConstraintName("FK_tblUsers_tblUsers");
         });
 
         modelBuilder.Entity<TblUserHome>(entity =>

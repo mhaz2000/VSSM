@@ -197,7 +197,7 @@ formName = "ویرایش";
                         <div class="form-group">
                             <label class="form-label fw-bold">نوع کالا:</label>
                             <div class="custom-scroll-checklist">
-                                @foreach (var item in Model.Items)
+                                @foreach (var item in Model.ItemClass)
                                 {
                                 bool isChecked = Model.SelectedItemClassIds != null &&
                                 Model.SelectedItemClassIds.Contains(int.Parse(item.Value));

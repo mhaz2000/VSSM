@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Pack;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Presentation.Web.Controllers;
 using VSSM.Presentation.Web.Models.Pack;
 
-public class PackController : Controller
+[Authorize]
+public class PackController : BaseController
 {
     private readonly IPackService _packService;
 

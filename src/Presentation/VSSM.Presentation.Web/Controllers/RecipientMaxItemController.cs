@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.RecipientMaxItem;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.RecipientMaxItem;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class RecipientMaxItemController : Controller
+[Authorize]
+public class RecipientMaxItemController : BaseController
     {
         private readonly IRecipientMaxItemService _recipientMaxItemService;
 

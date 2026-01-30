@@ -60,6 +60,12 @@ public partial class TblUser
 
     public DateTime? Lastlogin { get; set; }
 
+    public virtual TblJobType CodeJobNavigation { get; set; }
+
+    public virtual TblUser EnteredBy { get; set; }
+
+    public virtual ICollection<TblUser> InverseEnteredBy { get; set; } = new List<TblUser>();
+
     public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
 
     public virtual ICollection<TblDispatch> TblDispatches { get; set; } = new List<TblDispatch>();

@@ -64,11 +64,11 @@ ViewData["Title"] = "مدیریت تولید کنندگان";
                                 <td>@(manufacturer.ShowForOther ? "بله" : "خیر")</td>
                                 <td>@(manufacturer.IsActive ? "فعال" : "غیرفعال")</td>
                                 <td>
-                                    <a class="btn btn-primary btn-sm" asp-controller="Manufacturer" asp-action="Edit" asp-route-id="@manufacturer.ManufacturerId">ویرایش</a>
+                                    <a class="btn btn-outline-primary btn-sm" asp-controller="Manufacturer" asp-action="Edit" asp-route-id="@manufacturer.ManufacturerId">ویرایش</a>
 
                                     <form asp-controller="Manufacturer" asp-action="Delete" asp-route-id="@manufacturer.ManufacturerId" method="post" style="display:inline;">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('آیا مطمئن هستید می‌خواهید حذف کنید؟');">حذف</button>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('آیا مطمئن هستید می‌خواهید حذف کنید؟');">حذف</button>
                                     </form>
                                 </td>
                             </tr>

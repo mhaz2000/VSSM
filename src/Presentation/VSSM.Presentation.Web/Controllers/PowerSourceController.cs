@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.PowerSource;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Presentation.Web.Controllers;
 using VSSM.Presentation.Web.Models.PowerSource;
 
-public class PowerSourceController : Controller
+[Authorize]
+public class PowerSourceController : BaseController
 {
     private readonly IPowerSourceService _service;
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Recipient;
 using VSSM.Application.Helpers;
@@ -8,7 +9,8 @@ using VSSM.Presentation.Web.Models.Recipient;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class RecipientController : Controller
+    [Authorize]
+    public class RecipientController : BaseController
     {
         private readonly IRecipientService _recipientService;
         private readonly ITransportModeService _transportService;

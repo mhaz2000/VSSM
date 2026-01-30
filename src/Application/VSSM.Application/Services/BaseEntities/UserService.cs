@@ -170,6 +170,7 @@ public class UserService : IUserService
                 LastName = x.User.LastName,
                 Phone1 = x.User.Phone1,
                 Phone2 = x.User.Phone2,
+                JobName = x.User.CodeJobNavigation.FullName,
                 RecipientName = x.Recipient != null ? x.Recipient.FullName : ""
             })
             .ToListAsync(token);

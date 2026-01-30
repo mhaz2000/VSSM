@@ -1,4 +1,5 @@
 ﻿// Presentation/Web/Controllers/MinMaxItemController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.MinMaxItem;
@@ -7,6 +8,7 @@ using VSSM.Presentation.Web.Models.MinMaxItem;
 
 namespace VSSM.Presentation.Web.Controllers
 {
+    [Authorize]
     public class MinMaxItemController : Controller
     {
         private readonly IMinMaxItemService _service;

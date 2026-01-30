@@ -25,11 +25,8 @@ namespace VSSM.Application.Services.BaseEntities
             if (!validationResult.IsValid)
                 throw new ValidationException(validationResult.Errors);
 
-            var maxId = await _dbContext.TblLevels.MaxAsync(x => (int?)x.LevelId) ?? 0;
-
             var entity = new TblLevel
             {
-                LevelId = maxId + 1,
                 ShipCount = dto.ShipCount,
                 SafetyStockPercentage = dto.SafetyStockPercentage,
                 SafetyStockMonth = dto.SafetyStockMonth,
@@ -91,6 +88,7 @@ namespace VSSM.Application.Services.BaseEntities
                     Note = x.Note,
                     MaxDay = x.MaxDay
                 })
+                .OrderByDescending(l => l.LevelId)
                 .ToListAsync(cancellationToken);
 
             return new PagingSearchOrderDto<LevelDto>

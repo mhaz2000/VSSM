@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.AdjustReason;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -5,6 +6,7 @@ using VSSM.Presentation.Web.Models.AdjustReason;
 
 namespace VSSM.Presentation.Web.Controllers;
 
+[Authorize]
 public class AdjustreasonController : Controller
 {
     private readonly IAdjustReasonService _adjustReasonService;

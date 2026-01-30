@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Adjustments;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -6,6 +7,7 @@ using VSSM.Presentation.Web.Models.Adjustment;
 
 namespace VSSM.Presentation.Web.Controllers;
 
+[Authorize]
 public class AdjustmentController : BaseController
 {
     private readonly IAdjustmentService _adjustmentService;

@@ -36,20 +36,19 @@ public class DispatchService : IDispatchService
     CreateDispatcheDto createDispatcheDto,
     CancellationToken cancellationToken)
     {
-        var fiscalPeriod = _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
+        var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
 
         var dispatch = new TblDispatch
         {
             SenderId = createDispatcheDto.SenderId,
             ReceiverId = createDispatcheDto.ReceiverId,
-            FiscalPeriodId = fiscalPeriod.Id,
+            FiscalPeriodId = fiscalPeriod.FiscalPeriodId,
             TransportModeId = createDispatcheDto.TransportModeId,
             EnteredById = createDispatcheDto.EnteredById,
             AirwaryWillReference = createDispatcheDto.AirwaryWillReference,
             RequestNum = createDispatcheDto.RequestNum,
             Note = createDispatcheDto.Note,
             Date = string.IsNullOrWhiteSpace(createDispatcheDto.Date) ? null : DateTimeHelper.ToGregorian(createDispatcheDto.Date),
-            ArrivalId = -1,
             EntryDate = DateTime.Now,
             IsDrafted = true,
             ReceivingModeId = createDispatcheDto.ReceivingModeId,
@@ -84,7 +83,6 @@ public class DispatchService : IDispatchService
                 Note = item.Note,
                 BatchNumber = item.BatchNumber,
                 ExpiryDate = item.ExpiryDate,
-                BundleId = -1,
                 EntryDate = DateTime.Now
             };
 
@@ -106,7 +104,6 @@ public class DispatchService : IDispatchService
                     Note = item.Note,
                     BatchNumber = item.BatchNumber,
                     ExpiryDate = item.ExpiryDate,
-                    BundleId = -1,
                     EntryDate = DateTime.Now
                 };
 

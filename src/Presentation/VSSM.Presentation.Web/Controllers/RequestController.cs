@@ -115,22 +115,30 @@ namespace VSSM.Presentation.Web.Controllers
                 if(command == "StatusSent")
                 {
                     await _requestService.ChangeStatus(model.Id.Value, RequestStatusEnum.Sent, "", token);
+                    TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+                    TempData["ToastType"] = "success";
                     return RedirectToAction("Index");
                 }
                 if (command == "StatusDraft")
                 {
                     await _requestService.ChangeStatus(model.Id.Value, RequestStatusEnum.Draft, "", token);
+                    TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+                    TempData["ToastType"] = "success";
                     return RedirectToAction("Index");
                 }
                 if (command == "StatusDelete")
                 {
                     await DeleteRequest(model.Id.Value, token);
+                    TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+                    TempData["ToastType"] = "success";
                     return RedirectToAction("Index");
                 }
                 if (command.Contains("deleteLine"))
                 {
                     var lineId = command.Replace("deleteLine_", "");
                     await DeleteLine(Convert.ToInt32(lineId), model.Id.GetValueOrDefault(), token);
+                    TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+                    TempData["ToastType"] = "success";
                     return RedirectToAction("Index");
                 }
 
@@ -336,6 +344,7 @@ namespace VSSM.Presentation.Web.Controllers
                     Forperiod = r.Forperiod,
                     ItemClassId = r.ItemClassId,
                     ItemId = r.ItemId,
+                    ItemName = r.ItemName,
                     Note = r.Note,
                     Offercount = r.Offercount,
                     Reqcount = r.Reqcount,

@@ -129,18 +129,72 @@
     </div>
 </div>
 
+@section Scripts {
 <script>
+        var classId = -10;
     // وقتی صفحه لود شد
     document.addEventListener("DOMContentLoaded", function() {
         const checkbox = document.getElementById("requiresDiluentCheckbox");
         const dropdown = document.getElementById("itemClassDropdown");
+            const $item = $("#itemClassDropdown");
 
-        // حالت اولیه (اگر چک شده باشد)
-        dropdown.disabled = !checkbox.checked;
+
+                    $item.prop("disabled", !checkbox.checked);
+        
 
         // تغییر وضعیت هنگام تغییر چک‌باکس
         checkbox.addEventListener("change", function() {
-            dropdown.disabled = !this.checked;
+                $item.prop("disabled", !checkbox.checked);
+
+
+                if(this.checked){
+                    
+                    $item.prop("disabled", true);
+                    $item.empty();
+                        $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
+                        .done(function (data) {
+
+                            $item.append('<option value="">انتخاب کنید...</option>');
+
+                            data.forEach(x => {
+                                $item.append(
+                                    `<option value="${x.id}">${x.text}</option>`
+                                );
+                            });
+
+                            $item.prop("disabled", false);
+                        });
+                }
+                else{
+                       $item.prop("disabled", true);
+                       $item.empty();
+                       $item.append('<option value="">انتخاب کنید...</option>');
+                }
+
+
         });
     });
+
+
+
+    $(function () {
+                const checkbox = document.getElementById("requiresDiluentCheckbox");
+                    const $item = $("#itemClassDropdown");
+                const $itemClass = $("#ItemClassId");
+                $itemClass.on("change", function () {
+
+                    classId = $(this).val();
+                    if(classId == 1){
+                         checkbox.disabled = false;
+                    }
+                    else{
+                         checkbox.disabled = true;
+                            checkbox.checked = false;
+                                $item.prop("disabled", true);
+                           $item.empty();
+                           $item.append('<option value="">انتخاب کنید...</option>');
+                    }
+                });
+        });
 </script>
+}

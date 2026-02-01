@@ -513,166 +513,145 @@
     <script src="~/js/persian-date.js"></script>
     <script src="~/js/persian-datepicker.js"></script>
     <script>
-            $(function () {
+        $(function () {
 
+            // ===============================
+            // ItemClass -> Item -> DosePerVial
+            // ===============================
             const $itemClass = $("#ItemClassId");
             const $item = $("#ItemId");
+            const $dose = $("#DosePerVialId");
 
-            // تغییر نوع کالا
-            $itemClass.on("change", function () {
-
-                const classId = $(this).val();
-
-                // reset
+            function resetItem() {
+                $item.empty().append($("<option>").val("").text("ابتدا نوع کالا را انتخاب کنید"));
                 $item.prop("disabled", true);
-                $item.empty();
+            }
 
-                if (!classId) {
-                    $item.append('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
+            function resetDose(msg) {
+                $dose.empty().append($("<option>").val("").text(msg || "ابتدا کالا را انتخاب کنید"));
+                $dose.prop("disabled", true);
+            }
+
+            async function loadItemsByClass(classId) {
+                resetItem();
+                resetDose("ابتدا کالا را انتخاب کنید");
+
+                if (!classId) return;
+
+                try {
+                    const res = await $.getJSON("/Arrival/GetItemsByClass", { classId: classId });
+
+                    $item.empty().append($("<option>").val("").text("انتخاب کنید..."));
+                    res.forEach(x => $item.append($("<option>").val(x.id).text(x.text)));
+
+                    $item.prop("disabled", false);   // ✅ اینجا فعال می‌شود
+                } catch (e) {
+                    console.error(e);
+                    resetItem();
+                }
+            }
+
+            async function loadDosePerVials(itemId) {
+                resetDose("در حال دریافت دوزها...");
+
+                if (!itemId) {
+                    resetDose("ابتدا کالا را انتخاب کنید");
                     return;
                 }
 
-                // load filtered items
-                $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
-                    .done(function (data) {
+                try {
+                    const res = await $.get("@Url.Action("GetDosePerVialsByItem", "Arrival")", { itemId });
 
-                        $item.append('<option value="">انتخاب کنید...</option>');
+                    $dose.empty().append($("<option>").val("").text("انتخاب کنید..."));
+                    res.forEach(x => $dose.append($("<option>").val(x.value).text(x.text)));
 
-                        data.forEach(x => {
-                            $item.append(
-                                `<option value="${x.id}">${x.text}</option>`
-                            );
-                        });
+                    $dose.prop("disabled", false);
+                } catch (e) {
+                    console.error(e);
+                    resetDose("ابتدا کالا را انتخاب کنید");
+                }
+            }
 
-                        $item.prop("disabled", false);
-                    });
+            // رویدادها
+            $itemClass.on("change", function () {
+                loadItemsByClass($(this).val());
             });
 
-        });
+            $item.on("change", function () {
+                loadDosePerVials($(this).val());
+            });
 
-             $(function () {
-                const $itemClass = $("#ItemClassId");
-        const $item = $("#ItemId");
-        const $dose = $("#DosePerVialId");
+            // init
+            resetItem();
+            resetDose("ابتدا کالا را انتخاب کنید");
 
-        // از اول دوز غیرفعال
-        $dose.prop("disabled", true);
-        $dose.val("");
-        $dose.find("option:first").text("ابتدا کالا را انتخاب کنید");
 
-        // تغییر نوع کالا
-        $itemClass.on("change", function () {
-            const classId = $(this).val();
-
-            // reset item
-            $item.prop("disabled", true);
-            $item.empty();
-
-            // reset dose too
-            $dose.prop("disabled", true);
-            $dose.val("");
-            $dose.find("option:first").text("ابتدا کالا را انتخاب کنید");
-
-            if (!classId) {
-                $item.append('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
-                return;
-            }
-
-            $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
-                .done(function (data) {
-                    $item.append('<option value="">انتخاب کنید...</option>');
-                    data.forEach(x => {
-                        $item.append(`<option value="${x.id}">${x.text}</option>`);
-                    });
-                    $item.prop("disabled", false);
-                });
-        });
-
-        // ✅ وقتی کالا انتخاب شد، دوز فعال شود
-        $item.on("change", function () {
-            const itemId = $(this).val();
-
-            if (!itemId) {
-                $dose.prop("disabled", true);
-                $dose.val("");
-                $dose.find("option:first").text("ابتدا کالا را انتخاب کنید");
-                return;
-            }
-
-            $dose.prop("disabled", false);
-            // متن گزینه اول رو به حالت عادی برگردون
-            $dose.find("option:first").text("انتخاب کنید...");
-        });
-
+            // ===============================
+            // VVM Type -> VVM Stage
+            // ===============================
             const $type = $("#VvmTypeId");
             const $stage = $("#VvmStageId");
 
-            $type.on("change", function () {
+            function resetStage() {
+                $stage.prop("disabled", true);
+                $stage.empty().append($("<option>").val("").text("ابتدا نوع VVM را انتخاب کنید"));
+            }
 
+            resetStage();
+
+            $type.on("change", function () {
                 const typeId = $(this).val();
 
-                // reset stage
-                $stage.prop("disabled", true);
-                $stage.empty();
-
-                if (!typeId) {
-                    $stage.append('<option value="">ابتدا نوع VVM را انتخاب کنید</option>');
-                    return;
-                }
+                resetStage();
+                if (!typeId) return;
 
                 $.getJSON("/Arrival/GetVvmStages", { vvmTypeId: typeId })
                     .done(function (data) {
-
-                        $stage.append('<option value="">انتخاب کنید...</option>');
-
-                        data.forEach(x => {
-                            $stage.append(
-                                `<option value="${x.id}">${x.text}</option>`
-                            );
-                        });
-
+                        $stage.empty().append($("<option>").val("").text("انتخاب کنید..."));
+                        data.forEach(x => $stage.append($("<option>").val(x.id).text(x.text)));
                         $stage.prop("disabled", false);
                     });
             });
 
-        });
-        function recalcNumVials() {
-            var qty = parseFloat($("#Quantity").val()) || 0;
-            var dose = parseFloat($("#DosePerVialId option:selected").text()) || 0; // اگر متن عددی است
-            if (dose > 0) {
-                $("#NumVials").val(Math.floor(qty / dose));
-            }
-        }
 
-            $(document).ready(function () {
+            // ===============================
+            // Calculations (NumVials + TotalVolume)
+            // ===============================
+            function recalcNumVials() {
+                var qty = parseFloat($("#Quantity").val()) || 0;
+                var dose = parseFloat($("#DosePerVialId option:selected").text()) || 0;
+                if (dose > 0) $("#NumVials").val(Math.floor(qty / dose));
+                else $("#NumVials").val("");
+            }
+
+            function recalcLineTotalVolume() {
+                var qty = parseFloat($("#Quantity").val()) || 0;
+                var unitVol = parseFloat($("#UnitVolume").val()) || 0;
+                var total = qty * unitVol;
+                $("#LineTotalVolume").val(total ? total.toFixed(3) : "");
+            }
+
+            $("#Quantity, #DosePerVialId, #UnitVolume").on("change keyup", function () {
+                recalcNumVials();
+                recalcLineTotalVolume();
+            });
+
+
+            // ===============================
+            // Datepicker (Persian only for Date)
+            // ===============================
             $("#Date").pDatepicker({
-                format: "YYYY/MM/DD",
+                 format: "YYYY/MM/DD",
                 timePicker: {
                     enabled: false
                 },
-                initialValue: true,
-                initialValueType: "persian",
+                initialValueType: "1404/10/10",
                 autoClose: true
             });
-            });
 
-
-
-
-
-        $("#Quantity, #DosePerVialId").on("change keyup", function () {
-            recalcNumVials();
-            recalcLineTotalVolume();
         });
-
-
-
-        function showCalcPopup() {
-            alert("در حال محاسبه... (در حال تولید)");
-        }
-
-
     </script>
+
 
 
 

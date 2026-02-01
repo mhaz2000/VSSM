@@ -10,7 +10,7 @@ namespace VSSM.Application.DTOs.BaseEntities.Arrival
 
         public int? SourceId { get; set; }
         public int FiscalPeriodId { get; set; }
-
+        public string EnterById { get; set; }
         public bool IsConfirmed { get; set; }
         public bool IsDrafted { get; set; }
         public bool IsCancelled { get; set; }

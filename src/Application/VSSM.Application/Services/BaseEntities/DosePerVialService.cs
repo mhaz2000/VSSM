@@ -52,7 +52,26 @@ namespace VSSM.Application.Services.BaseEntities
 
             var result = items.Select(x => new DosePerVialListDto
             {
-                
+
+                DosePerVialId = x.DosePerVialId,
+                NumDosePerVial = x.NumDosePerVial
+            }).ToList();
+
+            return result;
+        }
+
+        public async Task<List<DosePerVialListDto>> GetActivesByItemId(CancellationToken cancellationToken, int itemId)
+        {
+
+            var items = await _dbContext.TblDosePerVials
+                                    .AsNoTracking().
+                                    Include(z => z.TblItemDoseAssignments)
+                                    .Where(c => c.IsActive == true && c.TblItemDoseAssignments.Any(z => z.ItemId == itemId))
+                                    .ToListAsync(cancellationToken);
+
+            var result = items.Select(x => new DosePerVialListDto
+            {
+
                 DosePerVialId = x.DosePerVialId,
                 NumDosePerVial = x.NumDosePerVial
             }).ToList();

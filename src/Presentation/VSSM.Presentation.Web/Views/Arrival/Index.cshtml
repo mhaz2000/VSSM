@@ -4,8 +4,8 @@
 
 @{
     ViewData["Title"] = "مدیریت ورودها";
-    var status = (int)(ViewBag.Status ?? 1);
-    int currentStatus = ViewBag.Status is int ? (int)ViewBag.Status : 1;
+    var status = (int)(ViewBag.Status ?? 3);
+    int currentStatus = ViewBag.Status is int ? (int)ViewBag.Status : 3;
 }
 <style>
     .w-full {
@@ -89,7 +89,7 @@
 
                                 <a class="btn btn-success px-5" asp-action="New">+ جدید</a>
 
-                               
+
                             </div>
                         </div>
 
@@ -105,7 +105,6 @@
                 <table class="table table-bordered table-striped table-condensed text-center">
                     <thead>
                         <tr>
-                            <th>منبع</th>
                             <th>دوره فعالیت</th>
                             <th>تاریخ ورود</th>
                             <th>حجم کل (لیتر)</th>
@@ -124,7 +123,6 @@
                                 : item.IsDrafted == true ? "پیش‌نویس" : "نامشخص";
 
                                 <tr ondblclick="onRowDblClick(@item.ArrivalId, '@statusText')">
-                                    <td>@item.SourceName</td>
                                     <td>@item.FiscalPeriodName</td>
                                     <td>@item.Date.Value.ToShamsi()</td>
                                     <td>@item.TotalVolume</td>

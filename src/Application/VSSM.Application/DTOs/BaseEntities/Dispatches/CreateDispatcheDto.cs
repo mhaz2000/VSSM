@@ -1,6 +1,5 @@
 ﻿namespace VSSM.Application.DTOs.BaseEntities.Dispatches;
-
-public class CreateDispatcheDto
+public class CreateDispatchDto
 {
     public int SenderId { get; set; }
     public int ReceiverId { get; set; }

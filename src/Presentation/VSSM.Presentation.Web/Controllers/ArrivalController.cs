@@ -60,7 +60,7 @@ namespace VSSM.Presentation.Web.Controllers
 
         public async Task<IActionResult> Index(
             string? search,
-            int status = 1, // 1 Draft, 2 Confirmed, 3 All
+            int status = 3, // 1 Draft, 2 Confirmed, 3 All
             int page = 1,
             int pageSize = 10,
             CancellationToken token = default)
@@ -311,7 +311,7 @@ namespace VSSM.Presentation.Web.Controllers
             {
                 TempData["ToastMessage"] = "ابتدا اطلاعات اصلی ورود را کامل کنید";
                 TempData["ToastType"] = "error";
-                if(model.ArrivalId.HasValue)
+                if (model.ArrivalId.HasValue)
                     return RedirectToAction("New", "Arrival", new { id = model.ArrivalId });
                 return View("New", model);
             }
@@ -325,8 +325,8 @@ namespace VSSM.Presentation.Web.Controllers
             {
                 TempData["ToastMessage"] = "اطلاعات کالا کامل نیست";
                 TempData["ToastType"] = "error";
-                if (model.ArrivalId.HasValue)
-                    return RedirectToAction("New", "Arrival", new { id = model.ArrivalId });
+                //if (model.ArrivalId.HasValue)
+                //    return RedirectToAction("New", "Arrival", new { id = model.ArrivalId });
                 return View("New", model);
             }
 
@@ -343,7 +343,7 @@ namespace VSSM.Presentation.Web.Controllers
                     IsConfirmed = false,
                     IsDrafted = true,
                     IsCancelled = false,
-
+                    EnterById = CurrentUserId.ToString(),
                     PackedVolume = model.PackedVolume,
                     TotalWeight = model.TotalWeight,
                     Note = model.Note,
@@ -427,7 +427,7 @@ namespace VSSM.Presentation.Web.Controllers
                 IsConfirmed = false,
                 IsDrafted = true,
                 IsCancelled = false,
-
+                EnterById = CurrentUserId.ToString(),
                 PackedVolume = model.PackedVolume,
                 TotalWeight = model.TotalWeight,
                 Note = model.Note,
@@ -473,7 +473,7 @@ namespace VSSM.Presentation.Web.Controllers
                     IsConfirmed = false,
                     IsDrafted = true,
                     IsCancelled = false,
-
+                    EnterById = CurrentUserId.ToString(),
                     PackedVolume = model.PackedVolume,
                     TotalWeight = model.TotalWeight,
                     Note = model.Note,
@@ -507,7 +507,7 @@ namespace VSSM.Presentation.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        // optional: delete one line from grid
+        // optional: delete one line from grids
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteLine(int id, int arrivalId, CancellationToken token)
@@ -544,10 +544,7 @@ namespace VSSM.Presentation.Web.Controllers
                 .Select(x => new SelectListItem { Value = x.ManufacturerId.ToString(), Text = x.FullName })
                 .ToList();
 
-            ViewBag.DosePerVialList = (await _dosePerVialService.GetActives(token)).OrderBy(z => z.NumDosePerVial)
-                .Select(x => new SelectListItem
-                { Value = x.DosePerVialId.ToString(), Text = x.NumDosePerVial.ToString() })
-                .ToList();
+            ViewBag.DosePerVialList = new List<SelectListItem>();
 
             ViewBag.VvmtypeList = (await _vvmtypeService.GetActives(token))
                 .Select(x => new SelectListItem { Value = x.VvmtypeId.ToString(), Text = x.FullName })
@@ -721,6 +718,16 @@ namespace VSSM.Presentation.Web.Controllers
             return await AddLineForCopy(vm, token);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetDosePerVialsByItem(int itemId, CancellationToken token)
+        {
+            var list = (await _dosePerVialService.GetActivesByItemId(token, itemId))
+                .OrderBy(z => z.NumDosePerVial)
+                .Select(x => new { value = x.DosePerVialId, text = x.NumDosePerVial.ToString() })
+                .ToList();
+
+            return Json(list);
+        }
 
         private async Task<IActionResult> AddLineForCopy(ArrivalViewModel model, CancellationToken token)
         {
@@ -737,7 +744,7 @@ namespace VSSM.Presentation.Web.Controllers
                     IsConfirmed = false,
                     IsDrafted = true,
                     IsCancelled = false,
-
+                    EnterById = CurrentUserId.ToString(),
                     PackedVolume = model.PackedVolume,
                     TotalWeight = model.TotalWeight,
                     Note = model.Note,

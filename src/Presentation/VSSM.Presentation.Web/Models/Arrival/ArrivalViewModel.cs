@@ -6,11 +6,12 @@ namespace VSSM.Presentation.Web.Models.Arrival
 {
     public class ArrivalViewModel
     {
+
         public int? ArrivalId { get; set; }
 
         [Display(Name = "تاریخ ورود")]
         [Required(ErrorMessage = "تاریخ ورود اجباری است.")]
-        public string? Date { get; set; } // string – بعداً به DateTime تبدیل می‌کنیم
+        public string Date { get; set; } // string – بعداً به DateTime تبدیل می‌کنیم
 
         [Display(Name = "شماره گزارش")]
         public string? ReportNumber { get; set; }

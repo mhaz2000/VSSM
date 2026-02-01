@@ -131,7 +131,7 @@
 
 @section Scripts {
 <script>
-        var classId = -10;
+        //var classId = 1;
     // وقتی صفحه لود شد
     document.addEventListener("DOMContentLoaded", function() {
         const checkbox = document.getElementById("requiresDiluentCheckbox");
@@ -151,7 +151,7 @@
                     
                     $item.prop("disabled", true);
                     $item.empty();
-                        $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
+                        $.getJSON("/Arrival/GetItemsByClass", { classId: 1 })
                         .done(function (data) {
 
                             $item.append('<option value="">انتخاب کنید...</option>');
@@ -183,8 +183,8 @@
                 const $itemClass = $("#ItemClassId");
                 $itemClass.on("change", function () {
 
-                    classId = $(this).val();
-                    if(classId == 1){
+                    var classId = $(this).val();
+                    if(classId == 6){
                          checkbox.disabled = false;
                     }
                     else{

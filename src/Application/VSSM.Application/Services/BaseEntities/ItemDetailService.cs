@@ -25,8 +25,6 @@ namespace VSSM.Application.Services.BaseEntities
                 Id = x.ItemDetailId,
                 Name = x.UnitVolume,
                 itemid = x.ItemId,
-
-
             }).ToList();
 
             return result;

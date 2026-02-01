@@ -157,7 +157,8 @@ namespace VSSM.Application.Services.BaseEntities
                 Note = dto.Note,
                 Frzindc = dto.Frzindc,
                 FrzindcNok = dto.FrzindcNok,
-                ReceiverId = dto.UserRecipientId
+                ReceiverId = dto.UserRecipientId,
+                EnteredById = dto.EnterById
             };
 
             _db.TblArrivals.Add(arrival);

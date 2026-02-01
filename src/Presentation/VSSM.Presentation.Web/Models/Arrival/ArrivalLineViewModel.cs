@@ -4,6 +4,7 @@ namespace VSSM.Presentation.Web.Models.Arrival
 {
     public class ArrivalLineViewModel
     {
+        public int? ItemClassId { get; set; }
         public int? ArrivalLineId { get; set; }
         public int? ItemId { get; set; }
         public string? ItemName { get; set; }

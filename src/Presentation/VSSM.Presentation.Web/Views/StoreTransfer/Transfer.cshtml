@@ -1,0 +1,233 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model VSSM.Presentation.Web.Models.StoreTransfer.StoreTransferViewModel
+
+@{
+ViewData["Title"] = "انتقال بین انبارها";
+}
+
+<style>
+    .required-star {
+        color: red;
+        margin-right: 3px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <!-- Header -->
+        <div class="card mb-3">
+            <div class="card-block p-3">
+                <h5>انتقال موجودی بین انبارها</h5>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="card">
+            <div class="card-block p-3">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <form asp-controller="StoreTransfer" asp-action="Transfer" method="post" class="form-horizontal">
+
+                    <div class="col-lg-6">
+
+                        <!-- From Store -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="required-star">*</span>
+                                انتقال از انبار:
+                            </label>
+                            <select class="form-control" asp-for="FromStoreId" id="FromStoreId">
+                                <option value="">-- انتخاب کنید --</option>
+                                @foreach (var store in Model.Stores)
+                                {
+                                <option value="@store.Value">@store.Text</option>
+                                }
+                            </select>
+                            <span asp-validation-for="FromStoreId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">حجم کل انبار مبدا</label>
+                            <input type="number" id="FromStoreCapacity" class="form-control" readonly />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">حجم خالی انبار مبدا</label>
+                            <input type="number" id="FromStoreFreeCapacity" class="form-control" readonly />
+                        </div>
+
+                        <hr />
+
+                        <!-- To Store -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="required-star">*</span>
+                                انتقال به انبار:
+                            </label>
+                            <select class="form-control" asp-for="ToStoreId" id="ToStoreId">
+                                <option value="">-- انتخاب کنید --</option>
+                                @foreach (var store in Model.Stores)
+                                {
+                                <option value="@store.Value">@store.Text</option>
+                                }
+                            </select>
+                            <span asp-validation-for="ToStoreId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">حجم کل انبار مقصد</label>
+                            <input type="number" id="ToStoreCapacity" class="form-control" readonly />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">حجم خالی انبار مقصد</label>
+                            <input type="number" id="ToStoreFreeCapacity" class="form-control" readonly />
+                        </div>
+
+                        <hr />
+
+                        <!-- Items Table -->
+                        <h6>لیست کالاهای موجود در انبار مبدا</h6>
+                        <table class="table table-bordered table-striped" id="itemsTable">
+                            <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" /></th>
+                                <th>نام کالا</th>
+                                <th>موجودی فعلی</th>
+                                <th>مقدار انتقال</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                        <!-- Buttons -->
+                        <div class="text-center mt-4">
+                            <button type="button" class="btn btn-success px-5" id="btnTransfer">
+                                ثبت انتقال
+                            </button>
+                            <a asp-controller="Store" asp-action="Index" class="btn btn-primary px-5">لیست</a>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    const tableBody = document.querySelector("#itemsTable tbody");
+    const fromStore = document.getElementById("FromStoreId");
+    const toStore = document.getElementById("ToStoreId");
+
+    function loadStoreCapacity(storeId, capacityId, freeCapacityId) {
+        if (!storeId) {
+            document.getElementById(capacityId).value = "";
+            document.getElementById(freeCapacityId).value = "";
+            return;
+        }
+        fetch(`/StoreTransfer/GetStoreCapacity?storeId=${storeId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById(capacityId).value = data.capacity;
+                document.getElementById(freeCapacityId).value = data.freeCapacity;
+            })
+            .catch(() => {
+                document.getElementById(capacityId).value = "";
+                document.getElementById(freeCapacityId).value = "";
+            });
+    }
+
+    fromStore.addEventListener("change", function () {
+        loadStoreCapacity(this.value, "FromStoreCapacity", "FromStoreFreeCapacity");
+        loadItemsByStore(this.value);
+    });
+
+    toStore.addEventListener("change", function () {
+        loadStoreCapacity(this.value, "ToStoreCapacity", "ToStoreFreeCapacity");
+    });
+
+    function loadItemsByStore(storeId) {
+        tableBody.innerHTML = "";
+        if (!storeId) return;
+
+        fetch(`/StoreTransfer/GetItemsByStore?storeId=${storeId}`)
+            .then(res => res.json())
+            .then(items => {
+                items.forEach((item, index) => {
+                    const row = `
+<tr>
+<td>
+    <input type="checkbox" class="row-checkbox" name="Items[${index}].IsSelected" value="true" />
+    <input type="hidden" name="Items[${index}].ItemDetailStoreId" value="${item.itemDetailStoreId}" />
+</td>
+<td>${item.itemName}</td>
+<td class="current-stock">${item.currentStock}</td>
+<td>
+    <input type="number" name="Items[${index}].Quantity" class="form-control quantity-input" min="1" max="${item.currentStock}" />
+</td>
+</tr>`;
+                    tableBody.insertAdjacentHTML("beforeend", row);
+                });
+
+                attachCheckboxEvents();
+            });
+    }
+
+    function attachCheckboxEvents() {
+        const checkboxes = tableBody.querySelectorAll(".row-checkbox");
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", function() {
+                const row = cb.closest("tr");
+                const stock = parseInt(row.querySelector(".current-stock").textContent);
+                const qtyInput = row.querySelector(".quantity-input");
+
+                if (cb.checked) {
+                    qtyInput.value = stock;
+                } else {
+                    qtyInput.value = "";
+                }
+            });
+        });
+    }
+
+    document.getElementById("selectAll").addEventListener("change", function() {
+        const checks = tableBody.querySelectorAll(".row-checkbox");
+        checks.forEach(c => {
+            c.checked = this.checked;
+            const row = c.closest("tr");
+            const stock = parseInt(row.querySelector(".current-stock").textContent);
+            const qtyInput = row.querySelector(".quantity-input");
+            qtyInput.value = c.checked ? stock : "";
+        });
+    });
+
+    document.getElementById("btnTransfer").addEventListener("click", function () {
+        const checkedRows = tableBody.querySelectorAll(".row-checkbox:checked");
+
+        if (checkedRows.length === 0) {
+            alert("لطفاً حداقل یک کالا را انتخاب کنید.");
+            return;
+        }
+
+        if (fromStore.value === toStore.value) {
+            alert("انبار مبدا و مقصد نمی‌توانند یکسان باشند.");
+            return;
+        }
+
+        // فقط ردیف‌های انتخاب شده در فرم باقی می‌مانند
+        const allRows = tableBody.querySelectorAll("tr");
+        allRows.forEach(row => {
+            const cb = row.querySelector(".row-checkbox");
+            if (!cb.checked) row.remove();
+        });
+
+        // باقی ردیف‌ها با نام درست برای MVC ارسال می‌شوند
+        document.querySelector("form").submit();
+    });
+</script>
+}

@@ -16,4 +16,5 @@ public class ItemDetailStoreDto
     public DateTime EntryDate { get; set; } = DateTime.Now;
     public string DropDownText { get; set; } = "";
     public int? ItemId { get; set; }
+    public string BatchNumber { get; set; }
 }

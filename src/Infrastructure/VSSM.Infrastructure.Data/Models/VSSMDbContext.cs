@@ -482,9 +482,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.ArrivalLineId).ValueGeneratedOnAdd();
             entity.ToTable("tblArrivalLines");
 
-            entity.Property(e => e.ArrivalLineId)
-                .ValueGeneratedNever()
-                .HasColumnName("ArrivalLineID");
             entity.Property(e => e.ArrivalId).HasColumnName("ArrivalID");
             entity.Property(e => e.CommertialNameId).HasColumnName("CommertialNameID");
             entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");

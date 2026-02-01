@@ -1,5 +1,4 @@
 ﻿namespace VSSM.Application.DTOs.BaseEntities.Dispatches;
-
 public class DispatchLineDto
 {
     public int ItemId { get; set; }

@@ -189,6 +189,7 @@ namespace VSSM.Application.Services.BaseEntities
                        RecipientId = x.RecipientId,
                        StoreId = x.StoreId,
                        Code = x.Code,
+                       TypeId= x.TypeId ?? 0,
                        FullName = x.Name,
                        FreeVolume = x.FreeVolume ?? 0,
                        IsActive = x.IsActive ?? false

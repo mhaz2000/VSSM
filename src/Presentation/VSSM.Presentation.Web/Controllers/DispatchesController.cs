@@ -15,6 +15,7 @@ namespace VSSM.Presentation.Web.Controllers
         private readonly ITransportModeService _transportModeService;
         private readonly IFiscalPeriodService _fiscalPeriodService;
         private readonly IReceivingModeService _receivingModeService;
+        private readonly IStoreService _storeService;
         private readonly IItemService _itemService;
         private readonly IUseService _useService;
         private readonly IDispatchService _dispatchService;
@@ -29,6 +30,7 @@ namespace VSSM.Presentation.Web.Controllers
             IVvmstageService vvmstageService,
             IVvmtypeService vvmtypeService,
             IUseService useService,
+            IStoreService storeService,
             IRecipientService recipientService,
             ITransportModeService transportModeService,
             IFiscalPeriodService fiscalPeriodService,
@@ -42,6 +44,7 @@ namespace VSSM.Presentation.Web.Controllers
             _vvmstageService = vvmstageService;
             _vvmtypeService = vvmtypeService;
             _recipientService = recipientService;
+            _storeService = storeService;
             _transportModeService = transportModeService;
             _fiscalPeriodService = fiscalPeriodService;
             _receivingModeService = receivingModeService;
@@ -60,6 +63,17 @@ namespace VSSM.Presentation.Web.Controllers
                                                 string sortOrder = "desc")
         {
             var dispatches = await _dispatchService.GetPagedDispatchesAsync(search, page, pageSize, sortField, sortOrder, status, CurrentUserRecipientId.Value, cancellationToken);
+            return View(dispatches);
+        }
+
+        public async Task<IActionResult> ToBeArrivedIndex(CancellationToken cancellationToken, string? search,
+                                        int page = 1,
+                                        int pageSize = 10,
+                                        string? status = null,
+                                        string sortField = "Orders",
+                                        string sortOrder = "desc")
+        {
+            var dispatches = await _dispatchService.GetPagedToBeArrivedDispatchesAsync(search, page, pageSize, sortField, sortOrder, status, CurrentUserRecipientId.Value, cancellationToken);
             return View(dispatches);
         }
 
@@ -91,15 +105,29 @@ namespace VSSM.Presentation.Web.Controllers
             return View();
         }
 
+        public async Task<IActionResult> Arrive(long id, CancellationToken cancellationToken)
+        {
+            ViewBag.DispatchLines = await _dispatchService.GetDispatchLinesAsync(id,cancellationToken);
+            ViewBag.Stores = ((await _storeService.GetAll(cancellationToken)).Where(store=> store.RecipientId == CurrentUserRecipientId)).ToList();
+
+            return View();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateDispatcheDto createDispatcheDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> Create(CreateDispatchDto createDispatcheDto, CancellationToken cancellationToken)
         {
             createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
             createDispatcheDto.EnteredById = CurrentUserId.Value;
 
             await _dispatchService.CreateDispatchAsync(createDispatcheDto, cancellationToken);
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> ArriveSubmit(DispatchArrivedDto arrivedDto, CancellationToken cancellationToken)
+        {
+            await _dispatchService.DispatchArrivedAsync(arrivedDto, CurrentUserId.Value,CurrentUserRecipientId.Value, cancellationToken);
+            return RedirectToAction("ToBeArrivedIndex");
         }
     }
 }

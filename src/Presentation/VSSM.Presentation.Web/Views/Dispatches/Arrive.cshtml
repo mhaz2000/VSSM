@@ -1,0 +1,228 @@
+﻿@using System.Globalization
+@using VSSM.Application.DTOs.BaseEntities.Dispatches
+@using VSSM.Application.DTOs.BaseEntities.Store
+
+@{
+    ViewData["Title"] = "دریافت محموله";
+
+    var dispatchLines = ViewBag.DispatchLines as List<ToBeArrivedDispatchLineDto>;
+    var stores = ViewBag.Stores as List<StoreListDto>;
+
+    var index = 0;
+}
+
+<form id="arriveForm" method="post" asp-action="ArriveSubmit">
+    <div class="container-fluid">
+        <div class="animated fadeIn">
+
+            <!-- Header -->
+            <div class="card mb-3">
+                <div class="card-block d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">
+                        <i class="fa fa-truck"></i>
+                        دریافت محموله
+                    </h5>
+                </div>
+            </div>
+
+            <!-- General Arrival Info -->
+            <div class="card mb-3">
+                <div class="card-block">
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="FrzindcNok" style="margin-bottom: 0px; margin-left: 5px;">
+                                    تشخیص دهنده سرما - غیر معتبر:
+                                </label>
+                                <input type="number"
+                                       id="FrzindcNok"
+                                       name="FrzindcNok"
+                                       class="form-control"
+                                       placeholder="10" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="Frzindc" style="margin-bottom: 0px; margin-left: 5px;">
+                                    تشخیص دهنده سرما
+                                </label>
+                                <input type="number"
+                                       id="Frzindc"
+                                       name="Frzindc"
+                                       class="form-control"
+                                       placeholder="10" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dispatch Lines -->
+            <div class="card">
+                <div class="card-block">
+
+                    <table class="table table-bordered table-striped table-hover text-center align-middle">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>نام کالا</th>
+                                <th>سازنده</th>
+                                <th>سری ساخت</th>
+                                <th>تاریخ انقضا</th>
+                                <th>دوز / ویال</th>
+                                <th>تعداد دوز</th>
+                                <th>VVM</th>
+                                <th style="min-width: 220px;">انبار مقصد</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (dispatchLines != null && dispatchLines.Any())
+                            {
+                                foreach (var line in dispatchLines)
+                                {
+                                    <tr data-use-above-zero="@line.UserAboveZeroStore"
+                                        data-use-below-zero="@line.UserBelowZeroStore"
+                                        data-use-ordinary="@line.UseOrdinaryStore">
+
+                                        <!-- Hidden fields for model binding -->
+                                        <input type="hidden"
+                                               name="Lines[@index].DispatchLineId"
+                                               value="@line.DispatchLineId" />
+
+                                        <input type="hidden"
+                                               name="Lines[@index].ItemId"
+                                               value="@line.ItemId" />
+
+                                        <td>@line.ItemName</td>
+                                        <td>@line.Manufacure</td>
+                                        <td>@line.BatchNumber</td>
+                                        <td>
+                                            @(line.ExpiryDate?.ToString(
+                                                "yyyy/MM/dd",
+                                                CultureInfo.GetCultureInfo("fa-IR")) ?? "-")
+                                        </td>
+                                        <td>@line.DoesPerVial</td>
+                                        <td>@line.DoseCount</td>
+                                        <td>@line.Vvmstage</td>
+
+                                        <!-- Store selector -->
+                                        <td>
+                                            <select class="form-select store-selector"
+                                                    name="Lines[@index].StoreId"
+                                                    required>
+                                                <option value="">-- انتخاب انبار --</option>
+
+                                                @foreach (var store in stores)
+                                                {
+                                                    <option value="@store.StoreId"
+                                                            data-type-id="@store.TypeId">
+                                                        @store.FullName
+                                                    </option>
+                                                }
+                                            </select>
+
+                                            <div class="text-danger mt-1 warning-message"
+                                                 style="display:none;">
+                                                ⚠️ نوع انبار انتخاب شده با این کالا سازگار نیست!
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    index++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-danger">
+                                        موردی برای دریافت یافت نشد
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end mt-3">
+                        <a asp-action="ToBeArrivedIndex"
+                           class="btn btn-secondary me-2">
+                            بازگشت
+                        </a>
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa fa-check"></i>
+                            ثبت دریافت
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+@section Styles {
+    <style>
+        .table td,
+        .table th {
+            vertical-align: middle !important;
+        }
+
+        .form-select {
+            min-width: 200px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.store-selector').forEach(select => {
+            select.addEventListener('change', function () {
+
+                const row = select.closest('tr');
+
+                const itemFlags = {
+                    aboveZero: row.dataset.useAboveZero === "True",
+                    belowZero: row.dataset.useBelowZero === "True",
+                    ordinary: row.dataset.useOrdinary === "True"
+                };
+
+                const selectedOption = select.options[select.selectedIndex];
+                const storeTypeId = parseInt(selectedOption.dataset.typeId);
+
+                const warningDiv = row.querySelector('.warning-message');
+
+                if (!storeTypeId) {
+                    warningDiv.style.display = 'none';
+                    row.classList.remove('table-danger');
+                    return;
+                }
+
+                let valid = true;
+                let warningMessage = "⚠️ نوع انبار انتخاب شده با این کالا سازگار نیست!";
+
+                if (![1, 2, 3].includes(storeTypeId)) {
+                    valid = false;
+                    warningMessage = "⚠️ نوع انبار مشخص نشده است!";
+                } else {
+                    if (storeTypeId === 1 && !itemFlags.aboveZero) valid = false;
+                    if (storeTypeId === 2 && !itemFlags.belowZero) valid = false;
+                    if (storeTypeId === 3 && !itemFlags.ordinary) valid = false;
+                }
+
+                if (!valid) {
+                    warningDiv.textContent = warningMessage;
+                    warningDiv.style.display = 'block';
+                    row.classList.add('table-danger');
+                } else {
+                    warningDiv.style.display = 'none';
+                    row.classList.remove('table-danger');
+                }
+            });
+        });
+    </script>
+}

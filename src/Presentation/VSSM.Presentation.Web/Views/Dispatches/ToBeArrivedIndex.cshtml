@@ -1,0 +1,142 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
+@model PagingSearchOrderDto<ToBeArrivedDispatchListDto>
+
+@{
+    ViewData["Title"] = "مدیریت محموله‌ها";
+}
+
+
+<style>
+    .search-section {
+        display: flex;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block d-flex align-items-center justify-content-between flex-wrap">
+
+                <div class="col-lg-3 mb-2">
+                    <h5>مدیریت محموله‌ها</h5>
+                </div>
+
+                <form method="get" class="col-lg-6 mb-2">
+                    <div class="input-group w-100 search-section">
+
+                        <input type="text"
+                               name="search"
+                               value="@Model.SearchText"
+                               class="form-control"
+                               placeholder="جستجو بر اساس شماره درخواست..." />
+
+                        <button type="submit" class="btn btn-primary" style="margin-right: 10px;">
+                            <i class="fa fa-search"></i>
+                        </button>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+
+                    <div class="card-block">
+                        <table class="table table-bordered table-striped table-condensed text-center">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        فرستنده
+                                    </th>
+                                    <th>
+                                        تاریخ
+                                    </th>
+                                    <th>
+                                        شماره درخواست
+                                    </th>
+                                    <th>
+                                        شماره فاکتور
+                                    </th>
+                                    <th>
+                                        تاریخ ورود
+                                    </th>
+                                    <th>حجم کل (لیتر)</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Items.Any())
+                                {
+                                    foreach (var d in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>@d.SenderName</td>
+                                            <td>@d.Date?.ToString("yyyy/MM/dd", System.Globalization.CultureInfo.GetCultureInfo("fa-IR"))</td>
+                                            <td>@d.RequestNum</td>
+                                            <td>@d.ReportNumber</td>
+                                            <td>@d.EntryDate?.ToString("yyyy/MM/dd", System.Globalization.CultureInfo.GetCultureInfo("fa-IR"))</td>
+                                            <td>@d.TotalVolume</td>
+                                            <td>
+                                                <a asp-action="Arrive"
+                                                   asp-route-id="@d.Id"
+                                                   class="btn btn-success btn-sm">
+                                                    دریافت
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center text-danger">داده‌ای یافت نشد</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        <!-- Pagination -->
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        قبلی
+                                    </a>
+                                </li>
+
+                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                                {
+                                    <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
+                                        بعدی
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Optional: you can add client-side enhancements later
+    </script>
+}

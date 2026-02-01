@@ -33,7 +33,7 @@ public class DispatchService : IDispatchService
     }
 
     public async Task CreateDispatchAsync(
-    CreateDispatcheDto createDispatcheDto,
+    CreateDispatchDto createDispatcheDto,
     CancellationToken cancellationToken)
     {
         var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
@@ -131,6 +131,160 @@ public class DispatchService : IDispatchService
 
     }
 
+    public async Task DispatchArrivedAsync(DispatchArrivedDto arrivedDto, int userId, int recipientId, CancellationToken cancellationToken)
+
+    {
+        var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
+
+        var query = from line in _context.TblDispatchLines
+                    join dispatch in _context.TblDispatches on line.DispatchId equals dispatch.DispatchId
+                    join itemDetailStore in _context.TblItemDetailStores on line.ItemDetailStoreId equals itemDetailStore.ItemDetailStoreId
+                    join itemDetail in _context.TblItemDetails on itemDetailStore.ItemDetailId equals itemDetail.ItemDetailId
+                    select new
+                    {
+                        line.DispatchLineId,
+                        dispatch.DispatchId,
+                        dispatch.SenderId,
+                        line.BatchNumber,
+                        itemDetail.CommercialNameId,
+                        line.DosePerVialId,
+                        line.ExpiryDate,
+                        itemDetail.ItemDetailId,
+                        line.ItemId,
+                        line.ManufacturerId,
+                        line.NumVial,
+                        itemDetail.PackageSize,
+                        itemDetail.PackingTypeId,
+                        itemDetail.ProductionDate,
+                        line.Quantity,
+                        line.TotalVolume,
+                        itemDetail.UnitVolume,
+                        line.UseId,
+                        line.VvmstageId,
+                        line.VvmtypeId,
+                    };
+
+        var data = await query.ToListAsync();
+
+        var currentDispatch = await _context.TblDispatches.FindAsync(data.FirstOrDefault().DispatchId);
+
+
+        var arrival = new TblArrival()
+        {
+            Date = DateTime.Now,
+            FiscalPeriodId = fiscalPeriod.FiscalPeriodId,
+            EntryDate = DateTime.Now,
+            EnteredById = userId.ToString(),
+            IsConfirmed = true,
+            IsDrafted = false,
+            IsFirstTime = false,
+            ConfirmationTime = DateTime.Now,
+            IsFirstTimeArrangedAsked = false,
+            PackedVolume = 0,
+            TotalWeight = 0,
+            TotalVolume = 0,
+            SenderId = data.FirstOrDefault().SenderId,
+            ReceiverId = recipientId,
+            DispatchId = data.FirstOrDefault().DispatchId,
+            Frzindc = arrivedDto.Frzindc,
+            FrzindcNok = arrivedDto.FrzindcNok,
+        };
+
+        foreach (var item in data)
+        {
+            var arrivalLine = new TblArrivalLine()
+            {
+                BatchNum = item.BatchNumber,
+                CommertialNameId = item.CommercialNameId,
+                DosePerVialId = item.DosePerVialId,
+                EntryDate = DateTime.Now,
+                ExpiryDate = item.ExpiryDate,
+                ItemDetailId = item.ItemDetailId,
+                ItemId = item.ItemId,
+                ManufacturerId = item.ManufacturerId,
+                PackageSize = item.PackageSize,
+                PackingTypeId = item.PackingTypeId,
+                ProductionDate = item.ProductionDate,
+                Quantity = item.Quantity,
+                StoreId = arrivedDto.Lines.FirstOrDefault(line => line.DispatchLineId == item.DispatchLineId).StoreId,
+                TempDosePerVial = "0",
+                TotalVolume = item.TotalVolume,
+                UnitVolume = item.UnitVolume,
+                UseId = item.UseId,
+                VvmstageId = item.VvmstageId,
+                VvmtypeId = item.VvmtypeId,
+            };
+
+            var itemDetailStore = new TblItemDetailStore()
+            {
+                ItemDetailId = item.ItemDetailId,
+                StoreId = arrivedDto.Lines.FirstOrDefault(line => line.DispatchLineId == item.DispatchLineId).StoreId,
+                CurrentStock = item.Quantity,
+                EntryDate = DateTime.Now
+            };
+
+            await _context.TblItemDetailStores.AddAsync(itemDetailStore);
+
+            arrival.TblArrivalLines.Add(arrivalLine);
+        }
+
+
+        await _context.TblArrivals.AddAsync(arrival, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        currentDispatch.ArrivalId = arrival.ArrivalId;
+        currentDispatch.ReceiverStatus = 2;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+    }
+    public Task<List<ToBeArrivedDispatchLineDto>> GetDispatchLinesAsync(long dispatchId, CancellationToken cancellationToken)
+    {
+        var query = from dispatchLine in _context.TblDispatchLines
+                        .Where(dl => dl.DispatchId == dispatchId)
+                        .AsNoTracking()
+
+                    join itemDetailStore in _context.TblItemDetailStores
+                        on dispatchLine.ItemDetailStoreId equals itemDetailStore.ItemDetailStoreId
+                    join itemDetail in _context.TblItemDetails
+                        on itemDetailStore.ItemDetailId equals itemDetail.ItemDetailId
+                    join item in _context.TblItems
+                        on dispatchLine.ItemId equals item.ItemId
+
+                    join manufacturer in _context.TblManufacturers
+                        on dispatchLine.ManufacturerId equals manufacturer.ManufacturerId
+                        into manufacturerJoin
+                    from manufacturer in manufacturerJoin.DefaultIfEmpty()
+
+                    join doesPerVial in _context.TblDosePerVials
+                        on dispatchLine.DosePerVialId equals doesPerVial.DosePerVialId
+                        into doesPerVialJoin
+                    from doesPerVial in doesPerVialJoin.DefaultIfEmpty()
+
+                    join vvmStage in _context.TblVvmstages
+                        on dispatchLine.VvmstageId equals vvmStage.VvmstageId
+                        into vvmStageJoin
+                    from vvmStage in vvmStageJoin.DefaultIfEmpty()
+
+                    select new ToBeArrivedDispatchLineDto
+                    {
+                        DispatchLineId = dispatchLine.DispatchLineId,
+                        ItemId = dispatchLine.ItemId,
+                        UseOrdinaryStore = item.UseOrdinaryStore,
+                        UserAboveZeroStore = item.UserAboveZeroStore,
+                        UserBelowZeroStore = item.UserBelowZeroStore,
+                        ItemName = item.FullName,
+                        BatchNumber = itemDetail.BatchNumber,
+                        DoseCount = dispatchLine.Quantity,
+                        DoesPerVial = doesPerVial.NumDosePerVial,
+                        ExpiryDate = dispatchLine.ExpiryDate,
+                        Manufacure = manufacturer.FullName,
+                        Vvmstage = vvmStage.FullName
+                    };
+
+        return query.ToListAsync(cancellationToken);
+    }
+
     public async Task<DispatchPagingSearchOrderDto> GetPagedDispatchesAsync(
     string? search,
     int page,
@@ -203,6 +357,75 @@ public class DispatchService : IDispatchService
             .ToListAsync(cancellationToken);
 
         return new DispatchPagingSearchOrderDto
+        {
+            Items = items,
+            Paging = paging,
+            SearchText = search,
+            SortField = sortField,
+            SortOrder = sortOrder
+        };
+    }
+
+    public async Task<PagingSearchOrderDto<ToBeArrivedDispatchListDto>> GetPagedToBeArrivedDispatchesAsync(
+        string? search,
+        int page,
+        int pageSize,
+        string sortField,
+        string sortOrder,
+        string? status,
+        int receiverId,
+        CancellationToken cancellationToken)
+    {
+        var paging = new PagingModel { Page = page, PageSize = pageSize };
+
+        // base query using joins
+        var query = from d in _context.TblDispatches.Where(dispatch => dispatch.ReceiverStatus == 0 &&
+                            dispatch.ReceiverId == receiverId && dispatch.IsConfirmed.HasValue && dispatch.IsConfirmed.Value)
+                    join r in _context.TblRecipients on d.SenderId equals r.RecipientId into rj
+                    from r in rj.DefaultIfEmpty()
+                    select new ToBeArrivedDispatchListDto
+                    {
+                        Id = d.DispatchId,
+                        Date = d.Date,
+                        ReportNumber = d.ReportNumber,
+                        RequestNum = d.RequestNum,
+                        TotalVolume = d.TotalVolume,
+                        EntryDate = d.EntryDate,
+                        SenderName = r != null ? r.FullName : "-",
+                    };
+
+
+        // 1) Search
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(d =>
+                d.RequestNum.Contains(search) ||
+                d.SenderName.Contains(search)
+            );
+        }
+
+        // 2) Sorting
+        query = (sortField, sortOrder.ToLower()) switch
+        {
+            ("Date", "asc") => query.OrderBy(d => d.Date),
+            ("Date", "desc") => query.OrderByDescending(d => d.Date),
+            ("RequestNum", "asc") => query.OrderBy(d => d.RequestNum),
+            ("RequestNum", "desc") => query.OrderByDescending(d => d.RequestNum),
+            ("SenderName", "asc") => query.OrderBy(d => d.SenderName),
+            ("SenderName", "desc") => query.OrderByDescending(d => d.SenderName),
+            _ => query.OrderByDescending(d => d.Date)
+        };
+
+        // 3) Total count before paging
+        paging.TotalItems = await query.CountAsync(cancellationToken);
+
+        // 4) Apply paging
+        var items = await query
+            .Skip(paging.Skip)
+            .Take(paging.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagingSearchOrderDto<ToBeArrivedDispatchListDto>
         {
             Items = items,
             Paging = paging,

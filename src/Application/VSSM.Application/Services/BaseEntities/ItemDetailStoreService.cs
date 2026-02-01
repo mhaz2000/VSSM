@@ -17,6 +17,41 @@ public class ItemDetailStoreService : IItemDetailStoreService
         _db = db;
     }
 
+    public async Task<List<ItemDetailStoreDto>> GetActivesByStoreId(int storeId, CancellationToken cancellationToken)
+    {
+        var itemsDetails = await _db.TblItemDetails
+            .AsNoTracking()
+            .Include(c => c.TblItemDetailStores)
+            .Where(c => c.TblItemDetailStores.Any(v => v.StoreId == storeId))
+            .ToListAsync(cancellationToken);
+
+        var itemDetailsStores = itemsDetails.SelectMany(c => c.TblItemDetailStores);
+
+        var result = new List<ItemDetailStoreDto>();
+        foreach (var itemDetailsStore in itemDetailsStores)
+        {
+            var item = _db.TblItems.FirstOrDefault(c => c.ItemId == itemDetailsStore.ItemDetail.ItemId);
+
+            if (item is null)
+                continue;
+
+            var dto = new ItemDetailStoreDto()
+            {
+                ItemId = item.ItemId,
+                CurrentStock = itemDetailsStore.CurrentStock ?? 0,
+                ItemDetailId = itemDetailsStore.ItemDetailId,
+                StoreId = itemDetailsStore.StoreId,
+                DropDownText = item.FullName,
+                ItemDetailStoreId = itemDetailsStore.ItemDetailStoreId
+            };
+            
+            result.Add(dto);
+        }
+
+
+        return result;
+    }
+
     public async Task<ItemDetailStoreDto> GetById(long id)
     {
         var itemDetailStore =
@@ -46,11 +81,11 @@ public class ItemDetailStoreService : IItemDetailStoreService
                 Manufacturer = _db.TblManufacturers.FirstOrDefault(m => m.ManufacturerId == l.ManufacturerId),
                 Store = _db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
                 DoseVial = _db.TblDosePerVials.FirstOrDefault(d => d.DosePerVialId == l.DosePerVialId),
-                ItemDetail = _db.TblItemDetails.FirstOrDefault(d=>d.ItemDetailId == l.ItemDetailId)
+                ItemDetail = _db.TblItemDetails.FirstOrDefault(d => d.ItemDetailId == l.ItemDetailId)
             })
             .AsNoTracking()
             .ToListAsync();
-        
+
         var keys = lines
             .Select(c => new
             {
@@ -69,7 +104,9 @@ public class ItemDetailStoreService : IItemDetailStoreService
 
         foreach (var itemDetailStore in itemDetailStores)
         {
-            var arivalLine = lines.FirstOrDefault(c => c.Store.StoreId == itemDetailStore.StoreId && c.ItemDetail.ItemDetailId == itemDetailStore.ItemDetailId);
+            var arivalLine = lines.FirstOrDefault(c =>
+                c.Store.StoreId == itemDetailStore.StoreId &&
+                c.ItemDetail.ItemDetailId == itemDetailStore.ItemDetailId);
 
             var line = arivalLine.Line;
 
@@ -92,7 +129,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
                     line.Quantity
                 )
             };
-            
+
             result.Add(dto);
         }
 

@@ -6,4 +6,5 @@ public interface IItemDetailStoreService
 {
     Task<ItemDetailStoreDto> GetById(long id);
     Task<List<ItemDetailStoreDto>> GetActives(long userRecipientId);
+    Task<List<ItemDetailStoreDto>> GetActivesByStoreId(int storeId, CancellationToken cancellationToken);
 }

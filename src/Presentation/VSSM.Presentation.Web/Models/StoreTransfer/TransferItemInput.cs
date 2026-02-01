@@ -3,6 +3,6 @@
 public class TransferItemInput
 {
     public int ItemDetailStoreId { get; set; }
-    public int Quantity { get; set; }
     public bool IsSelected { get; set; }
+    public int Quantity { get; set; }
 }

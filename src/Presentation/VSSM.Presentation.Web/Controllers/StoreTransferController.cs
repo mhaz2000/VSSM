@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using VSSM.Application.DTOs.BaseEntities.StoreTransfers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.StoreTransfer;
 
@@ -17,32 +18,31 @@ public class StoreTransferController : BaseController
     }
 
     [HttpGet]
-    public IActionResult GetStoreCapacity(int storeId)
+    public async Task<IActionResult> GetStoreCapacity(int storeId)
     {
-        //var store = _storeRepository.GetById(storeId);
-//
-        //if (store == null)
-        //    return NotFound();
+        var store = await _storeService.GetById(storeId, CancellationToken.None);
+
+        if (store == null)
+            return NotFound();
 
         return Json(new
         {
-            capacity = 1000,
-            freeCapacity = 500
+            capacity = store.Volume,
+            freeCapacity = store.FreeVolume
         });
     }
 
     [HttpGet]
     public async Task<IActionResult> GetItemsByStore(int storeId)
     {
-        var items = await _itemDetailStoreService.GetActivesByStoreId(storeId,CancellationToken.None);
-        
+        var items = await _itemDetailStoreService.GetActivesByStoreId(storeId, CancellationToken.None);
+
         var x = items.Where(x => x.CurrentStock > 0)
             .Select(x => new
             {
                 itemDetailStoreId = x.ItemDetailStoreId,
                 itemName = x.ItemDetailId,
                 currentStock = x.CurrentStock,
-                Bac
             })
             .ToList();
 
@@ -70,22 +70,24 @@ public class StoreTransferController : BaseController
 
     // ثبت انتقال
     [HttpPost]
-    public IActionResult Transfer(StoreTransferViewModel model)
+    public async Task<IActionResult> Transfer(StoreTransferViewModel model)
     {
-        var selectedItems = model.Items
-            .Where(x => x.IsSelected && x.Quantity > 0)
-            .ToList();
-        
-        foreach (var item in selectedItems)
+        var dto = new StoreTransfersDto()
         {
-            _itemDetailStoreService.TransferItem(
-                model.FromStoreId,
-                model.ToStoreId,
-                item.ItemDetailStoreId,
-                item.Quantity
-            );
-        }
+            ToStoreId = model.ToStoreId,
+        };
 
-        return RedirectToAction("Index");
+        dto.Items.AddRange(model.Items.Select(c => new TransferItem()
+        {
+            Quantity = c.Quantity,
+            ItemDetailStoreId = c.ItemDetailStoreId
+        }));
+
+        await _itemDetailStoreService.TransferItems(dto);
+
+        TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+        TempData["ToastType"] = "success";
+        
+        return RedirectToAction("Transfer");
     }
 }

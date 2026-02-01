@@ -2,7 +2,7 @@
 @model VSSM.Presentation.Web.Models.StoreTransfer.StoreTransferViewModel
 
 @{
-    ViewData["Title"] = "انتقال بین انبارها";
+ViewData["Title"] = "انتقال بین انبارها";
 }
 
 <style>
@@ -28,10 +28,7 @@
 
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                <form asp-controller="StoreTransfer"
-                      asp-action="Transfer"
-                      method="post"
-                      class="form-horizontal">
+                <form asp-controller="StoreTransfer" asp-action="Transfer" method="post" class="form-horizontal">
 
                     <div class="col-lg-6">
 
@@ -45,7 +42,7 @@
                                 <option value="">-- انتخاب کنید --</option>
                                 @foreach (var store in Model.Stores)
                                 {
-                                    <option value="@store.Value">@store.Text</option>
+                                <option value="@store.Value">@store.Text</option>
                                 }
                             </select>
                             <span asp-validation-for="FromStoreId" class="text-danger"></span>
@@ -73,7 +70,7 @@
                                 <option value="">-- انتخاب کنید --</option>
                                 @foreach (var store in Model.Stores)
                                 {
-                                    <option value="@store.Value">@store.Text</option>
+                                <option value="@store.Value">@store.Text</option>
                                 }
                             </select>
                             <span asp-validation-for="ToStoreId" class="text-danger"></span>
@@ -95,19 +92,21 @@
                         <h6>لیست کالاهای موجود در انبار مبدا</h6>
                         <table class="table table-bordered table-striped" id="itemsTable">
                             <thead>
-                                <tr>
-                                    <th><input type="checkbox" id="selectAll" /></th>
-                                    <th>نام کالا</th>
-                                    <th>موجودی فعلی</th>
-                                    <th>مقدار انتقال</th>
-                                </tr>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" /></th>
+                                <th>نام کالا</th>
+                                <th>موجودی فعلی</th>
+                                <th>مقدار انتقال</th>
+                            </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
 
                         <!-- Buttons -->
                         <div class="text-center mt-4">
-                            <button type="button" class="btn btn-success px-5" id="btnTransfer">ثبت انتقال</button>
+                            <button type="button" class="btn btn-success px-5" id="btnTransfer">
+                                ثبت انتقال
+                            </button>
                             <a asp-controller="Store" asp-action="Index" class="btn btn-primary px-5">لیست</a>
                         </div>
 
@@ -119,35 +118,18 @@
     </div>
 </div>
 
-<!-- Modal تایید نهایی -->
-<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">تایید انتقال</h5>
-        <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        آیا از انتقال کالاهای انتخاب شده اطمینان دارید؟
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لغو</button>
-        <button type="button" class="btn btn-success" id="confirmSubmit">تایید و انتقال</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 @section Scripts {
-<script>
-    // --- Load Store Capacity ---
+    <script>
+    const tableBody = document.querySelector("#itemsTable tbody");
+    const fromStore = document.getElementById("FromStoreId");
+    const toStore = document.getElementById("ToStoreId");
+
     function loadStoreCapacity(storeId, capacityId, freeCapacityId) {
         if (!storeId) {
             document.getElementById(capacityId).value = "";
             document.getElementById(freeCapacityId).value = "";
             return;
         }
-
         fetch(`/StoreTransfer/GetStoreCapacity?storeId=${storeId}`)
             .then(res => res.json())
             .then(data => {
@@ -160,9 +142,6 @@
             });
     }
 
-    const fromStore = document.getElementById("FromStoreId");
-    const toStore = document.getElementById("ToStoreId");
-
     fromStore.addEventListener("change", function () {
         loadStoreCapacity(this.value, "FromStoreCapacity", "FromStoreFreeCapacity");
         loadItemsByStore(this.value);
@@ -171,9 +150,6 @@
     toStore.addEventListener("change", function () {
         loadStoreCapacity(this.value, "ToStoreCapacity", "ToStoreFreeCapacity");
     });
-
-    // --- Load Items Table ---
-    const tableBody = document.querySelector("#itemsTable tbody");
 
     function loadItemsByStore(storeId) {
         tableBody.innerHTML = "";
@@ -186,40 +162,71 @@
                     const row = `
 <tr>
 <td>
-<input type="checkbox" name="Items[${index}].IsSelected" value="true" />
-<input type="hidden" name="Items[${index}].ItemDetailStoreId" value="${item.itemDetailStoreId}" />
+    <input type="checkbox" class="row-checkbox" name="Items[${index}].IsSelected" value="true" />
+    <input type="hidden" name="Items[${index}].ItemDetailStoreId" value="${item.itemDetailStoreId}" />
 </td>
 <td>${item.itemName}</td>
-<td>${item.currentStock}</td>
+<td class="current-stock">${item.currentStock}</td>
 <td>
-<input type="number" name="Items[${index}].Quantity" class="form-control" min="1" max="${item.currentStock}" />
+    <input type="number" name="Items[${index}].Quantity" class="form-control quantity-input" min="1" max="${item.currentStock}" />
 </td>
 </tr>`;
                     tableBody.insertAdjacentHTML("beforeend", row);
                 });
+
+                attachCheckboxEvents();
             });
     }
 
-    // --- Select All Checkbox ---
+    function attachCheckboxEvents() {
+        const checkboxes = tableBody.querySelectorAll(".row-checkbox");
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", function() {
+                const row = cb.closest("tr");
+                const stock = parseInt(row.querySelector(".current-stock").textContent);
+                const qtyInput = row.querySelector(".quantity-input");
+
+                if (cb.checked) {
+                    qtyInput.value = stock;
+                } else {
+                    qtyInput.value = "";
+                }
+            });
+        });
+    }
+
     document.getElementById("selectAll").addEventListener("change", function() {
-        const checks = tableBody.querySelectorAll("input[type='checkbox']");
-        checks.forEach(c => c.checked = this.checked);
+        const checks = tableBody.querySelectorAll(".row-checkbox");
+        checks.forEach(c => {
+            c.checked = this.checked;
+            const row = c.closest("tr");
+            const stock = parseInt(row.querySelector(".current-stock").textContent);
+            const qtyInput = row.querySelector(".quantity-input");
+            qtyInput.value = c.checked ? stock : "";
+        });
     });
 
-    // --- نمایش Modal هنگام کلیک دکمه انتقال ---
     document.getElementById("btnTransfer").addEventListener("click", function () {
-        const checked = tableBody.querySelectorAll("input[type='checkbox']:checked");
-        if (checked.length === 0) {
+        const checkedRows = tableBody.querySelectorAll(".row-checkbox:checked");
+
+        if (checkedRows.length === 0) {
             alert("لطفاً حداقل یک کالا را انتخاب کنید.");
             return;
         }
 
-        const modalEl = new bootstrap.Modal(document.getElementById("confirmModal"));
-        modalEl.show();
-    });
+        if (fromStore.value === toStore.value) {
+            alert("انبار مبدا و مقصد نمی‌توانند یکسان باشند.");
+            return;
+        }
 
-    // --- تایید و ارسال فرم ---
-    document.getElementById("confirmSubmit").addEventListener("click", function () {
+        // فقط ردیف‌های انتخاب شده در فرم باقی می‌مانند
+        const allRows = tableBody.querySelectorAll("tr");
+        allRows.forEach(row => {
+            const cb = row.querySelector(".row-checkbox");
+            if (!cb.checked) row.remove();
+        });
+
+        // باقی ردیف‌ها با نام درست برای MVC ارسال می‌شوند
         document.querySelector("form").submit();
     });
 </script>

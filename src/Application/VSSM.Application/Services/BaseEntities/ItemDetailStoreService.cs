@@ -1,7 +1,9 @@
+using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.DTOs.BaseEntities.ItemDetailStores;
+using VSSM.Application.DTOs.BaseEntities.StoreTransfers;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
@@ -19,18 +21,12 @@ public class ItemDetailStoreService : IItemDetailStoreService
 
     public async Task<List<ItemDetailStoreDto>> GetActivesByStoreId(int storeId, CancellationToken cancellationToken)
     {
-        var itemsDetails = await _db.TblItemDetails
-            .AsNoTracking()
-            .Include(c => c.TblItemDetailStores)
-            .Where(c => c.TblItemDetailStores.Any(v => v.StoreId == storeId))
-            .ToListAsync(cancellationToken);
-
-        var itemDetailsStores = itemsDetails.SelectMany(c => c.TblItemDetailStores);
+        var itemDetailStores = await _db.TblItemDetailStores.Where(c => c.StoreId == storeId && c.CurrentStock > 0).ToListAsync();
 
         var result = new List<ItemDetailStoreDto>();
-        foreach (var itemDetailsStore in itemDetailsStores)
+        foreach (var itemDetailsStore in itemDetailStores)
         {
-            var item = _db.TblItems.FirstOrDefault(c => c.ItemId == itemDetailsStore.ItemDetail.ItemId);
+            var item = _db.TblItems.FirstOrDefault(c => c.ItemId == itemDetailsStore.ItemDetailId);
 
             if (item is null)
                 continue;
@@ -44,12 +40,46 @@ public class ItemDetailStoreService : IItemDetailStoreService
                 DropDownText = item.FullName,
                 ItemDetailStoreId = itemDetailsStore.ItemDetailStoreId
             };
-            
+
             result.Add(dto);
         }
 
 
         return result;
+    }
+
+    public async Task TransferItems(StoreTransfersDto dto)
+    {
+        foreach (var item in dto.Items)
+        {
+            var itemDetailStore =
+                await _db.TblItemDetailStores.FirstOrDefaultAsync(c => c.ItemDetailStoreId == item.ItemDetailStoreId);
+
+            if (itemDetailStore is null)
+                continue;
+
+            if (itemDetailStore.CurrentStock == item.Quantity)
+            {
+                itemDetailStore.StoreId = dto.ToStoreId;
+                _db.TblItemDetailStores.Update(itemDetailStore);
+            }
+            else
+            {
+                itemDetailStore.CurrentStock = itemDetailStore.CurrentStock - item.Quantity;
+
+                var newItemDetailStore = new TblItemDetailStore()
+                {
+                    ItemDetailId = itemDetailStore.ItemDetailId,
+                    EntryDate = DateTime.Now,
+                    StoreId = dto.ToStoreId,
+                    CurrentStock = item.Quantity,
+                    VvmstageId = itemDetailStore.VvmstageId,
+                };
+
+                _db.TblItemDetailStores.Add(newItemDetailStore);
+                await _db.SaveChangesAsync();
+            }
+        }
     }
 
     public async Task<ItemDetailStoreDto> GetById(long id)

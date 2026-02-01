@@ -6,6 +6,7 @@ namespace VSSM.Presentation.Web.Models.Arrival
 {
     public class ArrivalViewModel
     {
+
         public int? ArrivalId { get; set; }
 
         [Display(Name = "تاریخ ورود")]

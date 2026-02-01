@@ -190,6 +190,7 @@
                                         نوع کالا:
                                     </span>
                                     <select id="ItemClassId"
+                                            asp-for="NewLine.ItemClassId"
                                             asp-items="ViewBag.itemClassList"
                                             class="form-select">
                                         <option value="">انتخاب کنید...</option>
@@ -204,6 +205,7 @@
                                     </span>
                                     <select id="ItemId"
                                             asp-for="NewLine.ItemId"
+                                            data-selected="@Model?.NewLine?.ItemId"
                                             class="form-select"
                                             disabled>
                                         <option value="">ابتدا نوع کالا را انتخاب کنید</option>
@@ -239,6 +241,7 @@
                                     </span>
                                     <select asp-for="NewLine.DosePerVialId"
                                             asp-items="ViewBag.DosePerVialList"
+                                            data-selected="@Model?.NewLine?.DosePerVialId"
                                             class="form-select"
                                             id="DosePerVialId"
                                             disabled>
@@ -515,103 +518,68 @@
     <script>
         $(function () {
 
-            // ===============================
-            // ItemClass -> Item -> DosePerVial
-            // ===============================
+
             const $itemClass = $("#ItemClassId");
             const $item = $("#ItemId");
             const $dose = $("#DosePerVialId");
 
-            function resetItem() {
-                $item.empty().append($("<option>").val("").text("ابتدا نوع کالا را انتخاب کنید"));
-                $item.prop("disabled", true);
-            }
+            async function loadItemsByClass(classId, selectedItemId) {
+                $item.prop("disabled", true).empty()
+                     .append($("<option>").val("").text("در حال دریافت..."));
 
-            function resetDose(msg) {
-                $dose.empty().append($("<option>").val("").text(msg || "ابتدا کالا را انتخاب کنید"));
-                $dose.prop("disabled", true);
-            }
-
-            async function loadItemsByClass(classId) {
-                resetItem();
-                resetDose("ابتدا کالا را انتخاب کنید");
-
-                if (!classId) return;
-
-                try {
-                    const res = await $.getJSON("/Arrival/GetItemsByClass", { classId: classId });
-
-                    $item.empty().append($("<option>").val("").text("انتخاب کنید..."));
-                    res.forEach(x => $item.append($("<option>").val(x.id).text(x.text)));
-
-                    $item.prop("disabled", false);   // ✅ اینجا فعال می‌شود
-                } catch (e) {
-                    console.error(e);
-                    resetItem();
-                }
-            }
-
-            async function loadDosePerVials(itemId) {
-                resetDose("در حال دریافت دوزها...");
-
-                if (!itemId) {
-                    resetDose("ابتدا کالا را انتخاب کنید");
+                if (!classId) {
+                    $item.empty().append($("<option>").val("").text("ابتدا نوع کالا را انتخاب کنید"));
                     return;
                 }
 
-                try {
-                    const res = await $.get("@Url.Action("GetDosePerVialsByItem", "Arrival")", { itemId });
+                const res = await $.getJSON("/Arrival/GetItemsByClass", { classId });
 
-                    $dose.empty().append($("<option>").val("").text("انتخاب کنید..."));
-                    res.forEach(x => $dose.append($("<option>").val(x.value).text(x.text)));
+                $item.empty().append($("<option>").val("").text("انتخاب کنید..."));
+                res.forEach(x => $item.append($("<option>").val(x.id).text(x.text)));
 
-                    $dose.prop("disabled", false);
-                } catch (e) {
-                    console.error(e);
-                    resetDose("ابتدا کالا را انتخاب کنید");
-                }
+                $item.prop("disabled", false);
+
+                if (selectedItemId) $item.val(selectedItemId).trigger("change");
             }
 
-            // رویدادها
+            async function loadDosePerVials(itemId, selectedDoseId) {
+                $dose.prop("disabled", true).empty()
+                     .append($("<option>").val("").text("در حال دریافت..."));
+
+                if (!itemId) {
+                    $dose.empty().append($("<option>").val("").text("ابتدا کالا را انتخاب کنید"));
+                    return;
+                }
+
+                const res = await $.get("@Url.Action("GetDosePerVialsByItem", "Arrival")", { itemId });
+
+                $dose.empty().append($("<option>").val("").text("انتخاب کنید..."));
+                res.forEach(x => $dose.append($("<option>").val(x.value).text(x.text)));
+
+                $dose.prop("disabled", false);
+                if (selectedDoseId) $dose.val(selectedDoseId);
+            }
+
+            // events
             $itemClass.on("change", function () {
-                loadItemsByClass($(this).val());
+                loadItemsByClass($(this).val(), null);
             });
 
             $item.on("change", function () {
-                loadDosePerVials($(this).val());
+                loadDosePerVials($(this).val(), null);
             });
 
-            // init
-            resetItem();
-            resetDose("ابتدا کالا را انتخاب کنید");
+            // ✅ init from server model after return View
+            const initClassId = $itemClass.val();
+            const initItemId = $("#ItemId").attr("data-selected");   // می‌سازیم پایین
+            const initDoseId = $("#DosePerVialId").attr("data-selected");
 
-
-            // ===============================
-            // VVM Type -> VVM Stage
-            // ===============================
-            const $type = $("#VvmTypeId");
-            const $stage = $("#VvmStageId");
-
-            function resetStage() {
-                $stage.prop("disabled", true);
-                $stage.empty().append($("<option>").val("").text("ابتدا نوع VVM را انتخاب کنید"));
+            if (initClassId) {
+                loadItemsByClass(initClassId, initItemId);
+                if (initItemId) loadDosePerVials(initItemId, initDoseId);
             }
 
-            resetStage();
 
-            $type.on("change", function () {
-                const typeId = $(this).val();
-
-                resetStage();
-                if (!typeId) return;
-
-                $.getJSON("/Arrival/GetVvmStages", { vvmTypeId: typeId })
-                    .done(function (data) {
-                        $stage.empty().append($("<option>").val("").text("انتخاب کنید..."));
-                        data.forEach(x => $stage.append($("<option>").val(x.id).text(x.text)));
-                        $stage.prop("disabled", false);
-                    });
-            });
 
 
             // ===============================
@@ -624,16 +592,10 @@
                 else $("#NumVials").val("");
             }
 
-            function recalcLineTotalVolume() {
-                var qty = parseFloat($("#Quantity").val()) || 0;
-                var unitVol = parseFloat($("#UnitVolume").val()) || 0;
-                var total = qty * unitVol;
-                $("#LineTotalVolume").val(total ? total.toFixed(3) : "");
-            }
 
-            $("#Quantity, #DosePerVialId, #UnitVolume").on("change keyup", function () {
+            $("#Quantity, #DosePerVialId").on("change keyup", function () {
                 recalcNumVials();
-                recalcLineTotalVolume();
+                 ;
             });
 
 

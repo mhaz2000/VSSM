@@ -1,7 +1,9 @@
+using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.DTOs.BaseEntities.ItemDetailStores;
+using VSSM.Application.DTOs.BaseEntities.StoreTransfers;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
@@ -15,6 +17,69 @@ public class ItemDetailStoreService : IItemDetailStoreService
     public ItemDetailStoreService(VSSMDbContext db)
     {
         _db = db;
+    }
+
+    public async Task<List<ItemDetailStoreDto>> GetActivesByStoreId(int storeId, CancellationToken cancellationToken)
+    {
+        var itemDetailStores = await _db.TblItemDetailStores.Where(c => c.StoreId == storeId && c.CurrentStock > 0).ToListAsync();
+
+        var result = new List<ItemDetailStoreDto>();
+        foreach (var itemDetailsStore in itemDetailStores)
+        {
+            var item = _db.TblItems.FirstOrDefault(c => c.ItemId == itemDetailsStore.ItemDetailId);
+
+            if (item is null)
+                continue;
+
+            var dto = new ItemDetailStoreDto()
+            {
+                ItemId = item.ItemId,
+                CurrentStock = itemDetailsStore.CurrentStock ?? 0,
+                ItemDetailId = itemDetailsStore.ItemDetailId,
+                StoreId = itemDetailsStore.StoreId,
+                DropDownText = item.FullName,
+                ItemDetailStoreId = itemDetailsStore.ItemDetailStoreId
+            };
+
+            result.Add(dto);
+        }
+
+
+        return result;
+    }
+
+    public async Task TransferItems(StoreTransfersDto dto)
+    {
+        foreach (var item in dto.Items)
+        {
+            var itemDetailStore =
+                await _db.TblItemDetailStores.FirstOrDefaultAsync(c => c.ItemDetailStoreId == item.ItemDetailStoreId);
+
+            if (itemDetailStore is null)
+                continue;
+
+            if (itemDetailStore.CurrentStock == item.Quantity)
+            {
+                itemDetailStore.StoreId = dto.ToStoreId;
+                _db.TblItemDetailStores.Update(itemDetailStore);
+            }
+            else
+            {
+                itemDetailStore.CurrentStock = itemDetailStore.CurrentStock - item.Quantity;
+
+                var newItemDetailStore = new TblItemDetailStore()
+                {
+                    ItemDetailId = itemDetailStore.ItemDetailId,
+                    EntryDate = DateTime.Now,
+                    StoreId = dto.ToStoreId,
+                    CurrentStock = item.Quantity,
+                    VvmstageId = itemDetailStore.VvmstageId,
+                };
+
+                _db.TblItemDetailStores.Add(newItemDetailStore);
+                await _db.SaveChangesAsync();
+            }
+        }
     }
 
     public async Task<ItemDetailStoreDto> GetById(long id)
@@ -46,11 +111,11 @@ public class ItemDetailStoreService : IItemDetailStoreService
                 Manufacturer = _db.TblManufacturers.FirstOrDefault(m => m.ManufacturerId == l.ManufacturerId),
                 Store = _db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
                 DoseVial = _db.TblDosePerVials.FirstOrDefault(d => d.DosePerVialId == l.DosePerVialId),
-                ItemDetail = _db.TblItemDetails.FirstOrDefault(d=>d.ItemDetailId == l.ItemDetailId)
+                ItemDetail = _db.TblItemDetails.FirstOrDefault(d => d.ItemDetailId == l.ItemDetailId)
             })
             .AsNoTracking()
             .ToListAsync();
-        
+
         var keys = lines
             .Select(c => new
             {
@@ -69,7 +134,9 @@ public class ItemDetailStoreService : IItemDetailStoreService
 
         foreach (var itemDetailStore in itemDetailStores)
         {
-            var arivalLine = lines.FirstOrDefault(c => c.Store.StoreId == itemDetailStore.StoreId && c.ItemDetail.ItemDetailId == itemDetailStore.ItemDetailId);
+            var arivalLine = lines.FirstOrDefault(c =>
+                c.Store.StoreId == itemDetailStore.StoreId &&
+                c.ItemDetail.ItemDetailId == itemDetailStore.ItemDetailId);
 
             var line = arivalLine.Line;
 
@@ -92,7 +159,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
                     line.Quantity
                 )
             };
-            
+
             result.Add(dto);
         }
 

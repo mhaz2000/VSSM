@@ -107,5 +107,4 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IRequestService, RequestService>();
         }
     }
-
 }

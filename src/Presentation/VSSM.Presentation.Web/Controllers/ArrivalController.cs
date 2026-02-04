@@ -321,7 +321,8 @@ namespace VSSM.Presentation.Web.Controllers
                 !model.NewLine.StoreId.HasValue ||
                 !model.NewLine.Quantity.HasValue ||
                 !model.NewLine.ExpiryDate.HasValue ||
-                !model.NewLine.ItemId.HasValue)
+                !model.NewLine.ItemId.HasValue ||
+                string.IsNullOrEmpty(model.NewLine.BatchNum))
             {
                 TempData["ToastMessage"] = "اطلاعات کالا کامل نیست";
                 TempData["ToastType"] = "error";

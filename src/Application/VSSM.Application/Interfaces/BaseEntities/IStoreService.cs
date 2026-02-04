@@ -18,5 +18,6 @@ namespace VSSM.Application.Interfaces.BaseEntities
         Task<int> Create(StoreCreateDto dto, CancellationToken cancellationToken);
 
         Task<bool> Update(StoreEditDto dto, CancellationToken cancellationToken);
+        Task<List<StoreListDto>> GetAllWithRecipientId(int recipientId, CancellationToken cancellationToken);
     }
 }

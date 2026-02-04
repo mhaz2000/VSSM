@@ -738,7 +738,7 @@ namespace VSSM.Presentation.Web.Controllers
                 {
                     Date = DateTimeHelper.ToMiladi(model.Date) ?? DateTime.Now,
                     ReportNumber = model.ReportNumber,
-                    SourceId = model.SourceId.Value,
+                    SourceId = model.SourceId,
                     FiscalPeriodId = _fiscalService.GetActives(token).Result.First().FiscalPeriodId,
 
                     IsConfirmed = false,

@@ -54,7 +54,7 @@ public class StoreTransferController : BaseController
     [HttpGet]
     public async Task<IActionResult> Transfer()
     {
-        var stores = await _storeService.GetAll(CancellationToken.None);
+        var stores = await _storeService.GetAllWithRecipientId((int)CurrentUserRecipientId! ,CancellationToken.None);
 
         var model = new StoreTransferViewModel
         {

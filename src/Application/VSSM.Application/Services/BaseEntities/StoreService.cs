@@ -196,5 +196,22 @@ namespace VSSM.Application.Services.BaseEntities
                    }
                 ).ToListAsync(cancellationToken);
         }
+        
+        public async Task<List<StoreListDto>> GetAllWithRecipientId(int recipientId,CancellationToken cancellationToken)
+        {
+            IQueryable<TblStore> query = _db.TblStores.Where(z => z.RecipientId!.Value == recipientId && z.IsActive!.Value);
+            return await query.Select(x =>
+                new StoreListDto
+                {
+                    RecipientId = x.RecipientId,
+                    StoreId = x.StoreId,
+                    Code = x.Code,
+                    TypeId= x.TypeId ?? 0,
+                    FullName = x.Name,
+                    FreeVolume = x.FreeVolume ?? 0,
+                    IsActive = x.IsActive ?? false
+                }
+            ).ToListAsync(cancellationToken);
+        }
     }
 }

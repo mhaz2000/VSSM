@@ -21,13 +21,15 @@ public class ItemDetailStoreService : IItemDetailStoreService
 
     public async Task<List<ItemDetailStoreDto>> GetActivesByStoreId(int storeId, CancellationToken cancellationToken)
     {
-        var itemDetailStores = await _db.TblItemDetailStores.Where(c => c.StoreId == storeId && c.CurrentStock > 0).ToListAsync();
+        var itemDetailStores = await _db.TblItemDetailStores.Where(c => c.StoreId == storeId && c.CurrentStock > 0)
+            .ToListAsync();
 
         var result = new List<ItemDetailStoreDto>();
         foreach (var itemDetailsStore in itemDetailStores)
         {
-            var item = _db.TblItems.FirstOrDefault(c => c.ItemId == itemDetailsStore.ItemDetailId);
-
+            var itemDetail = await _db.TblItemDetails.FirstOrDefaultAsync(c => c.ItemDetailId == itemDetailsStore.ItemDetailId);
+            var item = await _db.TblItems.FirstOrDefaultAsync(c => c.ItemId == itemDetail!.ItemId);
+            
             if (item is null)
                 continue;
 

@@ -173,6 +173,7 @@ namespace VSSM.Application.Services.BaseEntities
         public async Task Confirm(int arrivalId, ArrivalCreateDto dto, CancellationToken token)
         {
             var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
+            var lines = _db.TblArrivalLines.Where(x => x.ArrivalId == arrivalId).ToList();
 
 
             if (arrival == null) return;
@@ -191,6 +192,42 @@ namespace VSSM.Application.Services.BaseEntities
             arrival.IsConfirmed = true;
             arrival.IsDrafted = false;
             arrival.ConfirmationTime = DateTime.Now;
+            #region additemdetal-itemdetailstore
+            var itemdetails = new List<TblItemDetail>();
+            foreach (var item in lines)
+            {
+                var itemDetail = new TblItemDetail
+                {
+                    EntryDate = DateTime.Now,
+                    FiscalPeriodId = arrival.FiscalPeriodId,
+                    ItemId = item.ItemId,
+                    DosePerVialId = item.DosePerVialId,
+                    ManufacturerId = item.ManufacturerId,
+                    CommercialNameId = item.CommertialNameId,
+                    SourceId = arrival.SourceId,
+                    VvmtypeId = item.VvmtypeId,
+                    BatchNumber = item.BatchNum,
+                    ExpiryDate = item.ExpiryDate,
+                    ProductionDate = item.ProductionDate,
+                    UnitVolume = item.UnitVolume,
+                    IsConfirmed = true,
+                    PackingTypeId = item.PackingTypeId,
+                    PackageSize = item.PackageSize,
+                    TblItemDetailStores = new List<TblItemDetailStore>()
+                };
+
+                itemDetail.TblItemDetailStores.Add(new TblItemDetailStore
+                {
+                    ItemDetail = itemDetail,
+                    StoreId = item.StoreId,
+                    CurrentStock = item.Quantity,
+                    EntryDate = DateTime.Now,
+                    VvmstageId = item.VvmstageId
+                });
+                itemdetails.Add(itemDetail);
+            }
+            _db.TblItemDetails.AddRange(itemdetails);
+            #endregion
 
             await _db.SaveChangesAsync(token);
         }

@@ -52,12 +52,12 @@ namespace VSSM.Presentation.Web.Controllers
             // Create mode
             if (id == null || id == 0)
             {
-                if (CurrentUserLevel == 1)
-                {
-                    TempData["ToastMessage"] = "عدم امکان ثبت درخواست برای بالاترین سطح";
-                    TempData["ToastType"] = "warning";
-                    return RedirectToAction("Index");
-                }
+                //if (CurrentUserLevel == 1)
+                //{
+                //    TempData["ToastMessage"] = "عدم امکان ثبت درخواست برای بالاترین سطح";
+                //    TempData["ToastType"] = "warning";
+                //    return RedirectToAction("Index");
+                //}
 
                 var vm = new RequestViewModel
                 {
@@ -167,7 +167,7 @@ namespace VSSM.Presentation.Web.Controllers
                     EnteredBy = CurrentUserId,
                     FiscalPeriodId = null,
                     Note = "",
-                    RequestNumber = "111111",
+                    RequestNumber = "",
                     ReceiverId = CurrentUserRecipientParentId,
                     SendDate = DateOnly.FromDateTime(DateTime.Now),
 

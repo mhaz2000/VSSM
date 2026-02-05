@@ -17,4 +17,5 @@ public class ItemDetailStoreDto
     public string DropDownText { get; set; } = "";
     public int? ItemId { get; set; }
     public string BatchNumber { get; set; }
+    public string ItemFullName { get; set; } = "";
 }

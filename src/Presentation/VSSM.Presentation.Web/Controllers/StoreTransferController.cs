@@ -41,7 +41,7 @@ public class StoreTransferController : BaseController
             .Select(x => new
             {
                 itemDetailStoreId = x.ItemDetailStoreId,
-                itemName = x.ItemDetailId,
+                itemName = x.ItemFullName,
                 currentStock = x.CurrentStock,
             })
             .ToList();

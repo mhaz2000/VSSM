@@ -40,7 +40,8 @@ public class ItemDetailStoreService : IItemDetailStoreService
                 ItemDetailId = itemDetailsStore.ItemDetailId,
                 StoreId = itemDetailsStore.StoreId,
                 DropDownText = item.FullName,
-                ItemDetailStoreId = itemDetailsStore.ItemDetailStoreId
+                ItemDetailStoreId = itemDetailsStore.ItemDetailStoreId,
+                ItemFullName = item.FullName
             };
 
             result.Add(dto);

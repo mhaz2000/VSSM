@@ -224,6 +224,26 @@ ViewData["Title"] = "انتقال بین انبارها";
             return;
         }
 
+        for (let cb of checkedRows) {
+            const row = cb.closest("tr");
+            const qtyInput = row.querySelector(".quantity-input");
+            const stockCell = row.querySelector(".current-stock");
+            const stock = parseInt(stockCell.textContent.trim());
+            const qty = parseInt(qtyInput.value);
+            
+            if (!qty || qty <= 0) {
+                alert("مقدار انتقال برای همه کالاهای انتخاب شده باید بزرگتر از صفر باشد.");
+                qtyInput.focus();
+                return;
+            }
+
+            if (qty > stock) {
+                alert("مقدار انتقال نمی‌تواند بیشتر از موجودی کالا باشد.");
+                qtyInput.focus();
+                return;
+            }
+        }
+
         // فقط ردیف‌های انتخاب شده در فرم باقی می‌مانند
         const allRows = tableBody.querySelectorAll("tr");
         allRows.forEach(row => {

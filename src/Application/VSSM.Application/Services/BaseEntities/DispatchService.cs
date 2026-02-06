@@ -136,7 +136,8 @@ public class DispatchService : IDispatchService
         var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
 
         var query = from line in _context.TblDispatchLines
-                    join dispatch in _context.TblDispatches on line.DispatchId equals dispatch.DispatchId
+                    join dispatch in _context.TblDispatches.Where(d => d.ReceiverStatus == 0 &&
+                            d.ReceiverId == recipientId && d.IsConfirmed.HasValue && d.IsConfirmed.Value) on line.DispatchId equals dispatch.DispatchId
                     join itemDetailStore in _context.TblItemDetailStores on line.ItemDetailStoreId equals itemDetailStore.ItemDetailStoreId
                     join itemDetail in _context.TblItemDetails on itemDetailStore.ItemDetailId equals itemDetail.ItemDetailId
                     select new

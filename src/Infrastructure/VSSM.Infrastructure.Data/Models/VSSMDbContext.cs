@@ -125,11 +125,7 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblRequest> TblRequests { get; set; }
 
-    public virtual DbSet<TblRequest1> TblRequests1 { get; set; }
-
     public virtual DbSet<TblRequestLine> TblRequestLines { get; set; }
-
-    public virtual DbSet<TblRequestLine1> TblRequestLines1 { get; set; }
 
     public virtual DbSet<TblRequestsNew> TblRequestsNews { get; set; }
 
@@ -479,9 +475,10 @@ public partial class VSSMDbContext : DbContext
         modelBuilder.Entity<TblArrivalLine>(entity =>
         {
             entity.HasKey(e => e.ArrivalLineId).HasName("PK_tblArrivalLine");
-            entity.Property(e => e.ArrivalLineId).ValueGeneratedOnAdd();
+
             entity.ToTable("tblArrivalLines");
 
+            entity.Property(e => e.ArrivalLineId).HasColumnName("ArrivalLineID");
             entity.Property(e => e.ArrivalId).HasColumnName("ArrivalID");
             entity.Property(e => e.CommertialNameId).HasColumnName("CommertialNameID");
             entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
@@ -1425,18 +1422,6 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblRequest_tblRecipients");
         });
 
-        modelBuilder.Entity<TblRequest1>(entity =>
-        {
-            entity.HasKey(e => e.RequestId);
-
-            entity.ToTable("tblRequests");
-
-            entity.Property(e => e.RequestId).HasColumnName("RequestID");
-            entity.Property(e => e.FiscalPeriodId).HasColumnName("FiscalPeriodID");
-            entity.Property(e => e.ReceiverId).HasColumnName("ReceiverID");
-            entity.Property(e => e.SenderId).HasColumnName("SenderID");
-        });
-
         modelBuilder.Entity<TblRequestLine>(entity =>
         {
             entity.ToTable("tblRequestLine");
@@ -1466,23 +1451,6 @@ public partial class VSSMDbContext : DbContext
             entity.HasOne(d => d.Request).WithMany(p => p.TblRequestLines)
                 .HasForeignKey(d => d.RequestId)
                 .HasConstraintName("FK_tblRequestLine_tblRequest");
-        });
-
-        modelBuilder.Entity<TblRequestLine1>(entity =>
-        {
-            entity.HasKey(e => e.RequestLineId);
-
-            entity.ToTable("tblRequestLines");
-
-            entity.Property(e => e.RequestLineId).HasColumnName("RequestLineID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.RequestId).HasColumnName("RequestID");
-
-            entity.HasOne(d => d.Request).WithMany(p => p.TblRequestLine1s)
-                .HasForeignKey(d => d.RequestId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_tblRequestLines_tblRequests");
         });
 
         modelBuilder.Entity<TblRequestsNew>(entity =>

@@ -139,55 +139,6 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">حجم:</label>
-                                <input name="Volume" class="form-control" disabled />
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">تعداد ویال:</label>
-                                <input name="VialCount" class="form-control" disabled />
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">دوز در هر ویال:</label>
-                                <select id="dosePerVialSelect"
-                                        class="form-select"
-                                        disabled>
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var d in ViewBag.DoesPerVials)
-                                    {
-                                        <option value="@d.DosePerVialId">@d.NumDosePerVial</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">مورد استفاده:</label>
-                                <select id="useSelect"
-                                        class="form-select"
-                                        disabled>
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var d in ViewBag.Uses)
-                                    {
-                                        <option value="@d.Id">@d.FullName</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">نوع vvm:</label>
-                                <select id="vvmTypesSelect"
-                                        class="form-select"
-                                        disabled>
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var d in ViewBag.VVMTypes)
-                                    {
-                                        <option value="@d.VvmtypeId">@d.FullName</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="form-group">
                                 <label class="form-label">مرحله vvm:</label>
                                 <select id="vvmStagesSelect"
                                         class="form-select"
@@ -196,19 +147,6 @@
                                     @foreach (var d in ViewBag.VVMStages)
                                     {
                                         <option value="@d.VvmstageId">@d.FullName</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">سازنده:</label>
-                                <select id="manufacturerSelect"
-                                        class="form-select"
-                                        disabled>
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var d in ViewBag.Manufacturers)
-                                    {
-                                        <option value="@d.ManufacturerId">@d.FullName</option>
                                     }
                                 </select>
                             </div>
@@ -236,16 +174,9 @@
                             <thead>
                                 <tr>
                                     <th>کالا</th>
-                                    <th>انقضا</th>
 
                                     <th class="dose-col">تعداد/دوز</th>
-                                    <th>حجم</th>
-                                    <th>تعداد ویال</th>
-                                    <th>دوز/ویال</th>
-                                    <th>مورد استفاده</th>
-                                    <th>نوع VVM</th>
                                     <th>مرحله VVM</th>
-                                    <th>سازنده</th>
                                     <th>ملاحظات</th>
 
                                     <th class="actions-col">عملیات</th>
@@ -262,12 +193,24 @@
 
                         </table>
 
-
-
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-success px-5">ثبت</button>
+                            <button type="submit"
+                                    name="submitType"
+                                    value="final"
+                                    class="btn btn-success px-5">
+                                ثبت نهایی
+                            </button>
+
+                            <button type="submit"
+                                    name="submitType"
+                                    value="draft"
+                                    class="btn btn-warning px-5">
+                                ذخیره پیش‌نویس
+                            </button>
+
                             <a asp-action="Index" class="btn btn-primary px-5">لیست</a>
                         </div>
+
 
                     </div>
                 </form>

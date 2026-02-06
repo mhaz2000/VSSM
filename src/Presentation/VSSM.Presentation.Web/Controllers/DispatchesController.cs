@@ -97,11 +97,7 @@ namespace VSSM.Presentation.Web.Controllers
             ViewBag.TransportModes = await _transportModeService.GetActiveTransportModes(cancellationToken);
             ViewBag.ReceivingModes = await _receivingModeService.GetActiveReceivingModesAsync(cancellationToken);
             ViewBag.ItemClasses = await _itemClassService.GetActives(cancellationToken);
-            ViewBag.DoesPerVials = await _dosePerVialService.GetActives(cancellationToken);
-            ViewBag.Uses = await _useService.GetActives(cancellationToken);
-            ViewBag.VVMTypes = await _vvmtypeService.GetActives(cancellationToken);
             ViewBag.VVMStages = await _vvmstageService.GetActives(cancellationToken);
-            ViewBag.Manufacturers = await _manufacturerService.GetActives(cancellationToken);
             return View();
         }
 
@@ -115,14 +111,20 @@ namespace VSSM.Presentation.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateDispatchDto createDispatcheDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> Create(
+            CreateDispatchDto createDispatcheDto,
+            string submitType,
+            CancellationToken cancellationToken)
         {
             createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
             createDispatcheDto.EnteredById = CurrentUserId.Value;
 
-            await _dispatchService.CreateDispatchAsync(createDispatcheDto, cancellationToken);
+
+            await _dispatchService.CreateDispatchAsync(createDispatcheDto, submitType, cancellationToken);
+
             return RedirectToAction(nameof(Index));
         }
+
 
         public async Task<IActionResult> ArriveSubmit(DispatchArrivedDto arrivedDto, CancellationToken cancellationToken)
         {

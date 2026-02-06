@@ -42,8 +42,11 @@ namespace VSSM.Application.Services.BaseEntities
                         from m in manufactureInfo.DefaultIfEmpty()
                         join stage in _db.TblVvmstages on i.VvmstageId equals stage.VvmstageId into stageInfo
                         from si in stageInfo.DefaultIfEmpty()
+                        join dpv in _db.TblDosePerVials on itmDtl.DosePerVialId equals dpv.DosePerVialId into dosePervials
+                        from dosePervial in dosePervials.DefaultIfEmpty()
                         select new ToDispatchItemDetailDto
                         {
+                            NumDosePerVial = dosePervial == null ? 1 : dosePervial.NumDosePerVial,
                             ItemId = itmDtl.ItemId,
                             ItemName = itm.FullName,
                             ExpiryDate = itmDtl.ExpiryDate,

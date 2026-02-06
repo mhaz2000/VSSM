@@ -66,7 +66,7 @@
 
                 res.result.forEach(d => {
                     tbody.append(`
-                        <tr data-expiryDate=${d.expiryDate} data-item-detail-store-id=${d.itemDetailStoreId} data-batch="${d.batchNumber}" data-store-id="${d.storeId}">
+                        <tr data-numDosePerVial=${d.numDosePerVial} data-expiryDate=${d.expiryDate} data-item-detail-store-id=${d.itemDetailStoreId} data-batch="${d.batchNumber}" data-store-id="${d.storeId}">
                             <td class="text-center">
                                 <input type="radio"
                                        name="SelectedItemDetailId"
@@ -76,8 +76,8 @@
                             <td>${d.itemName ?? '-'}</td>
                             <td>${formatDate(d.expiryDate)}</td>
                             <td>${d.vvmStep ?? '-'}</td>
-                            <td>${d.manufacture ?? '-'}</td>
                             <td>${d.currentStock ?? '-'}</td>
+                            <td>${d.manufacture ?? '-'}</td>
                             <td>${d.storeName ?? '-'}</td>
                             <td>${d.batchNumber ?? '-'}</td>
                         </tr>
@@ -119,7 +119,7 @@
         let storeId = row.data('store-id');
         let expiryDate = row.data('expirydate');
         let itemDetailStoreId = row.data('item-detail-store-id');
-
+        let dosePerVial = row.data('numdosepervial');
 
         if ($(`#addedItemsTable tbody tr[data-id="${itemId}"]`).length) {
             alert('این کالا قبلاً اضافه شده است');
@@ -130,24 +130,9 @@
         let expiry = row.find('td:eq(2)').text();
 
         let dose = parseInt($('input[name="DoseCount"]').val());
-        let volume = $('input[name="Volume"]').val();
-        let vial = $('input[name="VialCount"]').val();
-
-        let dosePerVialId = $('#dosePerVialSelect').val();
-        let dosePerVialText = $('#dosePerVialSelect option:selected').text();
-        let dosePerVial = parseInt(dosePerVialText);
-
-        let useId = $('#useSelect').val();
-        let useText = $('#useSelect option:selected').text();
-
-        let vvmTypeId = $('#vvmTypesSelect').val();
-        let vvmTypeText = $('#vvmTypesSelect option:selected').text();
-
         let vvmStageId = $('#vvmStagesSelect').val();
         let vvmStageText = $('#vvmStagesSelect option:selected').text();
 
-        let manufacturerId = $('#manufacturerSelect').val();
-        let manufacturerText = $('#manufacturerSelect option:selected').text();
 
         let note = $('textarea[name="ExtraNote"]').val();
 
@@ -172,7 +157,6 @@
 
         tbody.append(`
             <tr data-id="${itemId}"
-                data-dose-per-vial="${dosePerVialText}">
                 <td>${itemName}</td>
                 <td>${expiry}</td>
             
@@ -180,14 +164,7 @@
                     <span class="dose-text">${dose || '-'}</span>
                 </td>
 
-
-                <td>${volume || '-'}</td>
-                <td>${vial || '-'}</td>
-                <td>${dosePerVialText || '-'}</td>
-                <td>${useText || '-'}</td>
-                <td>${vvmTypeText || '-'}</td>
                 <td>${vvmStageText || '-'}</td>
-                <td>${manufacturerText || '-'}</td>
                 <td>${note || '-'}</td>
             
                 <td class="text-center actions-col">
@@ -208,13 +185,7 @@
                 <input type="hidden" name="Items[${addedItemsIndex}].StoreId" value="${storeId}" />
                 <input type="hidden" name="Items[${addedItemsIndex}].ItemId" value="${itemId}" />
                 <input type="hidden" name="Items[${addedItemsIndex}].DoseCount" value="${dose}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].Volume" value="${volume}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].VialCount" value="${vial}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].DosePerVialId" value="${dosePerVialId}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].UseId" value="${useId}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].VvmTypeId" value="${vvmTypeId}" />
                 <input type="hidden" name="Items[${addedItemsIndex}].VvmStageId" value="${vvmStageId}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].ManufacturerId" value="${manufacturerId}" />
                 <input type="hidden" name="Items[${addedItemsIndex}].Note" value="${note}" />
             </tr>
 `);

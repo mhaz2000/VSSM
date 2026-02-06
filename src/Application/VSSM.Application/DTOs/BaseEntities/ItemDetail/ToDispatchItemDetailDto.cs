@@ -13,4 +13,5 @@ public record ToDispatchItemDetailDto
     public string? Manufacture { get; set; }
     public int StoreId { get; internal set; }
     public int ItemDetailStoreId { get; internal set; }
+    public int NumDosePerVial { get; internal set; }
 }

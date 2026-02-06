@@ -34,6 +34,7 @@ public class DispatchService : IDispatchService
 
     public async Task CreateDispatchAsync(
     CreateDispatchDto createDispatcheDto,
+    string submitType,
     CancellationToken cancellationToken)
     {
         var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
@@ -50,12 +51,13 @@ public class DispatchService : IDispatchService
             Note = createDispatcheDto.Note,
             Date = string.IsNullOrWhiteSpace(createDispatcheDto.Date) ? null : DateTimeHelper.ToGregorian(createDispatcheDto.Date),
             EntryDate = DateTime.Now,
-            IsDrafted = true,
+            IsDrafted = submitType == "draft" ? true : false,
             ReceivingModeId = createDispatcheDto.ReceivingModeId,
             IsCancelled = false,
-            IsConfirmed = false,
+            IsConfirmed = submitType == "final" ? true : false,
             DispatchVoucherPrinted = false,
             ConfirmationTime = DateTime.Now,
+            ReceiverStatus = 0,
             DispatchVoucherNumber = createDispatcheDto.DispatchVoucherNumber.ToString(),
             ReportNumber = createDispatcheDto.ReportNumber
         };
@@ -66,19 +68,19 @@ public class DispatchService : IDispatchService
         foreach (var item in createDispatcheDto.Items)
         {
             var itemInfo = await _context.TblItems.FindAsync(item.ItemId);
+            var itemDetailStore = await _context.TblItemDetailStores.FindAsync(item.ItemDetailStoreId);
+            var itemDetail = await _context.TblItemDetails.FindAsync(itemDetailStore.ItemDetailId);
+
 
             var line = new TblDispatchLine
             {
                 ItemId = item.ItemId,
                 Quantity = item.DoseCount,
-                NumVial = item.VialCount,
-                DosePerVialId = item.DosePerVialId,
-                TotalVolume = item.Volume,
+                DosePerVialId = itemDetail.DosePerVialId,
                 StoreId = item.StoreId,
-                UseId = item.UseId,
-                VvmtypeId = item.VvmtypeId,
+                VvmtypeId = itemDetail.VvmtypeId,
                 VvmstageId = item.VvmstageId,
-                ManufacturerId = item.ManufacturerId,
+                ManufacturerId = itemDetail.ManufacturerId,
                 ItemDetailStoreId = item.ItemDetailStoreId,
                 Note = item.Note,
                 BatchNumber = item.BatchNumber,
@@ -86,20 +88,17 @@ public class DispatchService : IDispatchService
                 EntryDate = DateTime.Now
             };
 
-            if (itemInfo.DiluentId is not null)
+            if (itemInfo.DiluentId is not null && itemInfo.DiluentId > 0)
             {
                 var diluentLine = new TblDispatchLine
                 {
                     ItemId = itemInfo.DiluentId,
                     Quantity = item.DoseCount,
-                    NumVial = item.VialCount,
-                    DosePerVialId = item.DosePerVialId,
-                    TotalVolume = item.Volume,
+                    DosePerVialId = itemDetail.DosePerVialId,
                     StoreId = item.StoreId,
-                    UseId = item.UseId,
-                    VvmtypeId = item.VvmtypeId,
+                    VvmtypeId = itemDetail.VvmtypeId,
                     VvmstageId = item.VvmstageId,
-                    ManufacturerId = item.ManufacturerId,
+                    ManufacturerId = itemDetail.ManufacturerId,
                     ItemDetailStoreId = item.ItemDetailStoreId,
                     Note = item.Note,
                     BatchNumber = item.BatchNumber,
@@ -309,11 +308,12 @@ public class DispatchService : IDispatchService
                     {
                         Id = d.DispatchId,
                         Date = d.Date,
+                        IsConfirmed = d.IsConfirmed,
                         ReportNumber = d.ReportNumber,
                         RequestNum = d.RequestNum,
                         TotalVolume = d.TotalVolume,
                         IsDrafted = d.IsDrafted,
-                        IsConfirmed = d.IsConfirmed,
+                        ReceiverStatus = d.ReceiverStatus ?? 0,
                         ReceiverName = r != null ? r.FirstName + " " + r.LastName : "-",
                     };
 

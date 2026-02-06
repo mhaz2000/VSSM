@@ -212,6 +212,12 @@ ViewData["Title"] = "انتقال بین انبارها";
             alert("لطفاً حداقل یک کالا را انتخاب کنید.");
             return;
         }
+        
+        if (!toStore.value || toStore.value.trim() === "")
+        {
+            alert("انتخاب انبار مقصد اجباری است.");
+            return;
+        }
 
         if (fromStore.value === toStore.value) {
             alert("انبار مبدا و مقصد نمی‌توانند یکسان باشند.");

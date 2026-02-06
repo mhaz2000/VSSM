@@ -56,6 +56,8 @@ namespace VSSM.Presentation.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["ToastMessage"] = "کد و نام اجباری هستند";
+                TempData["ToastType"] = "error";
                 return Redirect("New");
             }
 

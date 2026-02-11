@@ -59,6 +59,10 @@ $(document).ready(function($){
 			$(this).parent().toggleClass('open');
 		}
 
+		if (!$('body').hasClass('mobile-open')) {
+			$('body').addClass('mobile-open');
+		}
+
 	});
 
 	function resizeBroadcast() {

@@ -12,19 +12,43 @@
                     {
                         <i class="@item.Icon"></i>
                     }
-                    <span class="item-title"> @item.Title </span>
+                    <span class="item-title">@item.Title</span>
                 </a>
 
                 <ul class="nav-dropdown-items">
                     @foreach (var child in item.Children)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="@child.Controller"
-                               asp-action="@child.Action">
-                                <span class="item-title">@child.Title</span>
-                            </a>
-                        </li>
+                        if (child.Children.Any())
+                        {
+                            <li class="nav-item nav-dropdown">
+                                <a class="nav-link nav-dropdown-toggle" href="#">
+                                    <span class="item-title">@child.Title</span>
+                                </a>
+
+                                <ul class="nav-dropdown-items">
+                                    @foreach (var subChild in child.Children)
+                                    {
+                                        <li class="nav-item">
+                                            <a class="nav-link"
+                                               asp-controller="@subChild.Controller"
+                                               asp-action="@subChild.Action">
+                                                <span class="item-title">@subChild.Title</span>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="@child.Controller"
+                                   asp-action="@child.Action">
+                                    <span class="item-title">@child.Title</span>
+                                </a>
+                            </li>
+                        }
                     }
                 </ul>
             </li>

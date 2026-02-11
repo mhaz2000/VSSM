@@ -37,13 +37,15 @@ $(document).ready(function($){
 			cUrl = cUrl.slice(0,-1);
 		}
 
-		if ($($(this))[0].href==cUrl) {
-			$(this).addClass('active');
+		//must be fixed, as it opens everything
+		//if ($($(this))[0].href == cUrl) {
 
-			$(this).parents('ul').add(this).each(function(){
-			    $(this).parent().addClass('open');
-			});
-		}
+		//	$(this).addClass('active');
+
+		//	$(this).parents('ul').add(this).each(function(){
+		//	    $(this).parent().addClass('open');
+		//	});
+		//}
 	});
 
 	// Dropdown Menu
@@ -72,27 +74,39 @@ $(document).ready(function($){
 	}
 
 	/* ---------- Main Menu Open/Close, Min/Full ---------- */
-	$('.navbar-toggler').click(function(){
+	$('.navbar-toggler').click(function () {
 
 		var bodyClass = localStorage.getItem('body-class');
 
 		if ($(this).hasClass('layout-toggler') && $('body').hasClass('sidebar-off-canvas')) {
+
 			$('body').toggleClass('sidebar-opened').parent().toggleClass('sidebar-opened');
-			//resize charts
+
+			$('.sidebar .nav-dropdown.open').removeClass('open');
+
 			resizeBroadcast();
 
 		} else if ($(this).hasClass('layout-toggler') && ($('body').hasClass('sidebar-nav') || bodyClass == 'sidebar-nav')) {
+
 			$('body').toggleClass('sidebar-nav');
 			localStorage.setItem('body-class', 'sidebar-nav');
+
 			if (bodyClass == 'sidebar-nav') {
 				localStorage.clear();
 			}
-			//resize charts
+
+			$('.sidebar .nav-dropdown.open').removeClass('open');
+
 			resizeBroadcast();
+
 		} else {
+
 			$('body').toggleClass('mobile-open');
+
+			$('.sidebar .nav-dropdown.open').removeClass('open');
 		}
 	});
+
 
 	$('.aside-toggle').click(function(){
 		$('body').toggleClass('aside-menu-open');

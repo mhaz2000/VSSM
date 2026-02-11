@@ -84,7 +84,7 @@ public class AdjustmentController : BaseController
             Note = adjustment.Note,
             OldQuantity = adjustment.NewQuantity,
             NewQuantity = 0,
-            AdjustmentreasonId = adjustment.AdjustmentreasonId,
+            AdjustmentReasonId = adjustment.AdjustmentreasonId,
             ItemDetailStoreId = adjustment.ItemDetailStoreId,
             ItemId = arrivalLine.ItemId,
             ArrivalLineId = arrivalLine.ArrivalId,
@@ -121,7 +121,7 @@ public class AdjustmentController : BaseController
         {
             Date = DateTime.Now,
             Note = model.Note,
-            AdjustmentreasonId = model.AdjustmentreasonId,
+            AdjustmentreasonId = model.AdjustmentReasonId,
             NewQuantity = model.NewQuantity,
             OldQuantity = model.OldQuantity,
             ArrivalLineId = model.ArrivalLineId,

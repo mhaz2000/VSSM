@@ -2,7 +2,6 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Adjustments;
-using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities;

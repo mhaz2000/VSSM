@@ -170,17 +170,27 @@ namespace VSSM.Application.Services.BaseEntities
         /* =========================
            CONFIRM
         ========================= */
+
+
         public async Task Confirm(int arrivalId, ArrivalCreateDto dto, CancellationToken token)
         {
-            var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
-            var lines = _db.TblArrivalLines.Where(x => x.ArrivalId == arrivalId).ToList();
+            var now = DateTime.Now;
 
+            var arrival = await _db.TblArrivals
+                .FirstOrDefaultAsync(x => x.ArrivalId == arrivalId, token);
 
             if (arrival == null) return;
 
+            var lines = await _db.TblArrivalLines
+                .Where(x => x.ArrivalId == arrivalId)
+                .ToListAsync(token);
+
+            await using var tx = await _db.Database.BeginTransactionAsync(token);
+
+            // ----- update arrival -----
             arrival.ReportNumber = dto.ReportNumber;
             arrival.SourceId = dto.SourceId;
-            arrival.EntryDate = DateTime.Now;
+            arrival.EntryDate = now;
             arrival.IsCancelled = false;
             arrival.PackedVolume = dto.PackedVolume;
             arrival.TotalWeight = dto.TotalWeight;
@@ -191,46 +201,63 @@ namespace VSSM.Application.Services.BaseEntities
             arrival.ReceiverId = dto.UserRecipientId;
             arrival.IsConfirmed = true;
             arrival.IsDrafted = false;
-            arrival.ConfirmationTime = DateTime.Now;
-            #region additemdetal-itemdetailstore
-            var itemdetails = new List<TblItemDetail>();
-            foreach (var item in lines)
+            arrival.ConfirmationTime = now;
+
+            // ----- 1) create ItemDetails first -----
+            var map = new Dictionary<TblArrivalLine, TblItemDetail>(lines.Count);
+
+            foreach (var line in lines)
             {
-                var itemDetail = new TblItemDetail
+                var detail = new TblItemDetail
                 {
-                    EntryDate = DateTime.Now,
+                    EntryDate = now,
                     FiscalPeriodId = arrival.FiscalPeriodId,
-                    ItemId = item.ItemId,
-                    DosePerVialId = item.DosePerVialId,
-                    ManufacturerId = item.ManufacturerId,
-                    CommercialNameId = item.CommertialNameId,
-                    SourceId = arrival.SourceId,
-                    VvmtypeId = item.VvmtypeId,
-                    BatchNumber = item.BatchNum,
-                    ExpiryDate = item.ExpiryDate,
-                    ProductionDate = item.ProductionDate,
-                    UnitVolume = item.UnitVolume,
+                    ItemId = line.ItemId,
+                    DosePerVialId = line.DosePerVialId,
+                    ManufacturerId = line.ManufacturerId,
+                    CommercialNameId = line.CommertialNameId,
+                    SourceId = arrival.SourceId, // (arrival.SourceId already set from dto)
+                    VvmtypeId = line.VvmtypeId,
+                    BatchNumber = line.BatchNum,
+                    ExpiryDate = line.ExpiryDate,
+                    ProductionDate = line.ProductionDate,
+                    UnitVolume = line.UnitVolume,
                     IsConfirmed = true,
-                    PackingTypeId = item.PackingTypeId,
-                    PackageSize = item.PackageSize,
-                    TblItemDetailStores = new List<TblItemDetailStore>()
+                    PackingTypeId = line.PackingTypeId,
+                    PackageSize = line.PackageSize
                 };
 
-                itemDetail.TblItemDetailStores.Add(new TblItemDetailStore
-                {
-                    ItemDetail = itemDetail,
-                    StoreId = item.StoreId,
-                    CurrentStock = item.Quantity,
-                    EntryDate = DateTime.Now,
-                    VvmstageId = item.VvmstageId
-                });
-                itemdetails.Add(itemDetail);
+                map.Add(line, detail);
+                _db.TblItemDetails.Add(detail);
             }
-            _db.TblItemDetails.AddRange(itemdetails);
-            #endregion
+
+            // Save so ItemDetailId is generated (no more 0)
+            await _db.SaveChangesAsync(token);
+
+            // ----- 2) now set ArrivalLine.ItemDetailId + create stores using ONLY IDs -----
+            var stores = new List<TblItemDetailStore>(lines.Count);
+
+            foreach (var (line, detail) in map)
+            {
+                // FK on line (now we have real detail.ItemDetailId)
+                line.ItemDetailId = detail.ItemDetailId;
+
+                stores.Add(new TblItemDetailStore
+                {
+                    ItemDetailId = detail.ItemDetailId, // FK only (no object relation)
+                    StoreId = line.StoreId,
+                    CurrentStock = line.Quantity,
+                    EntryDate = now,
+                    VvmstageId = line.VvmstageId
+                });
+            }
+
+            _db.TblItemDetailStores.AddRange(stores);
 
             await _db.SaveChangesAsync(token);
+            await tx.CommitAsync(token);
         }
+
 
         /* =========================
            DRAFT

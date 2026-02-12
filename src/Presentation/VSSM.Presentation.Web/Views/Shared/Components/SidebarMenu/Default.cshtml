@@ -10,7 +10,9 @@
                 <a class="nav-link nav-dropdown-toggle" href="#">
                     @if (!string.IsNullOrEmpty(item.Icon))
                     {
-                        <i class="@item.Icon"></i>
+                        <i class="@item.Icon"
+                           rel="tooltip"
+                           title="@item.Title"></i>
                     }
                     <span class="item-title">@item.Title</span>
                 </a>
@@ -61,7 +63,9 @@
                    asp-action="@item.Action">
                     @if (!string.IsNullOrEmpty(item.Icon))
                     {
-                        <i class="@item.Icon"></i>
+                        <i class="@item.Icon"
+                           rel="tooltip"
+                           title="@item.Title"></i>
                     }
                     <span class="item-title">@item.Title</span>
                 </a>

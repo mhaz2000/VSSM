@@ -11,4 +11,5 @@ public record DispatchListDto
     public float? TotalVolume { get; set; }
     public bool? IsDrafted { get; set; }
     public bool? IsConfirmed { get; set; }
+    public int ReceiverStatus { get; set; }
 }

@@ -63,13 +63,7 @@
 <body class="navbar-fixed sidebar-nav fixed-nav">
     <header class="navbar">
         <div class="container">
-            <button class="navbar-toggler mobile-toggler hidden-lg-up" type="button">&#9776;</button>
-            <a class="navbar-brand" href="#"></a>
-            <ul class="nav navbar-nav hidden-md-down">
-                <li class="nav-item">
-                    <a class="nav-link navbar-toggler layout-toggler" href="#">&#9776;</a>
-                </li>
-            </ul>
+            
             <ul class="nav navbar-nav pull-left hidden-md-down">
                 @* <li class="nav-item">
                     <a class="nav-link aside-toggle" href="#"><i class="icon-bell"></i><span class="tag tag-pill tag-danger">5</span></a>
@@ -99,258 +93,24 @@
     </header>
 
     <div class="sidebar">
+
+        <div class="sidebar-top-header">
+            <img src="~/img/New-VSSMLogo.png" alt="VSSM Logo" class="sidebar-logo" />
+            <button class="navbar-toggler mobile-toggler" type="button">
+                <i class="fa fa-angle-left"></i>
+            </button>
+
+        </div>
+
         <nav class="sidebar-nav">
-            <ul class="nav">
+            @* <a class="navbar-brand" href="#"></a>
+            <ul class="nav navbar-nav hidden-md-down">
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Home" asp-action="Index"><i class="icon-speedometer"></i> داشبورد </a>
+                    <a class="nav-link navbar-toggler layout-toggler" href="#">&#9776;</a>
                 </li>
+            </ul> *@
 
-                <li class="nav-item nav-dropdown">
-                    <a class="nav-link nav-dropdown-toggle" href="#"> اطلاعات پایه</a>
-                    <ul class="nav-dropdown-items">
-                        <li class="nav-item nav-dropdown">
-                            <a class="nav-link nav-dropdown-toggle" href="#"> کالاها</a>
-                            <ul class="nav-dropdown-items">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="ItemClass" asp-action="Index"> نوع کالا</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Item" asp-action="Index"> کالاها</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="DosePerVial" asp-action="Index"> دوز بر ویال</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="ItemDoseAssignment" asp-action="Index"> دوز اختصاص داده شده به کالا</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Level" asp-action="Index">سطح</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="AdjustReason" asp-action="Index">دلایل تعدیل</a>
-                        </li>
-                        <li class="nav-item nav-dropdown">
-                            <a class="nav-link nav-dropdown-toggle" href="#"> اطلاعات مربوط به برنامه</a>
-                            <ul class="nav-dropdown-items">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="ReceivingMode" asp-action="Index"> روش دریافت</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="TransportMode" asp-action="Index"> حالات انتقال</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Climate" asp-action="Index"> شرایط اقلیمی</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="RoadType" asp-action="Index"> نوع راه</a>
-                                </li>
-
-
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Ownership" asp-action="Index"> نوع مالکیت</a>
-                                </li>
-
-                            </ul>
-                        </li>
-                        <li class="nav-item nav-dropdown">
-                            <a class="nav-link nav-dropdown-toggle" href="#"> سازندگان</a>
-                            <ul class="nav-dropdown-items">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Manufacturer" asp-action="Index"> سازندگان</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="CommercialName" asp-action="Index"> نامهای تجاری</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item nav-dropdown">
-                            <a class="nav-link nav-dropdown-toggle" href="#"> تجهیزات</a>
-                            <ul class="nav-dropdown-items">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="StoreType" asp-action="Index"> نوع انبار</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="PowerSource" asp-action="Index"> منبع انرژی</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item nav-dropdown">
-                            <a class="nav-link nav-dropdown-toggle" href="#"> VVM</a>
-                            <ul class="nav-dropdown-items">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Vvmstage" asp-action="Index"> مرحله VVM</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Vvmtype" asp-action="Index"> انواع VVM</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item nav-dropdown">
-                            <a class="nav-link nav-dropdown-toggle" href="#"> اطلاعات مربوط به کاربران</a>
-                            <ul class="nav-dropdown-items">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="EduType" asp-action="Index"> تحصیلات</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="JobType" asp-action="Index"> عنوان شغل </a>
-                                </li>
-
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction">انتقال گیرنده </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction">کمک </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Store" asp-action="Index"> انبار</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="User" asp-action="Index"> کاربران</a>
-                        </li>
-
-                    </ul>
-                </li>
-
-                <li class="nav-item nav-dropdown">
-                    <a class="nav-link nav-dropdown-toggle" href="#">  اطلاعات پایه 2</a>
-                    <ul class="nav-dropdown-items">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="RecipientConfiguration" asp-action="Index">تنظیمات</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Recipient" asp-action="Index">گیرندگان</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="MinMaxItem" asp-action="Index"> مقدار حداقل و حداثر برای کالاها</a>
-                        </li>
-
-                    </ul>
-                </li>
-
-                <li class="nav-item nav-dropdown">
-                    <a class="nav-link nav-dropdown-toggle" href="#">ورودی ها</a>
-                    <ul class="nav-dropdown-items">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Arrival" asp-action="Index">مدیریت ورودی</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction">مشاهده محموله های رسیده</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction">موجودی اولیه</a>
-                        </li>
-                    @*     <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Arrival"
-                               asp-action="Copy">
-                                کپی ورودی
-                            </a>
-                        </li> *@
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="StoreTransfer" asp-action="Transfer">انتقال کالا بین انبار</a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="nav-item nav-dropdown">
-                    <a class="nav-link nav-dropdown-toggle" href="#"> تنظیمات کلی</a>
-                    <ul class="nav-dropdown-items">
-                        @* <li class="nav-item">
-                        <a class="nav-link" href="#"> نوع احراز هویت</a>
-                    </li> *@
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="ArrivalRepConfig" asp-action="Index"> Arrival report config </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="DispatchRepConfig" asp-action="Index"> Dispatch report config </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="VoucherConfig" asp-action="Index"> تنظیمات فاکتور </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction">فرهنگ ها </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="FiscalPeriod" asp-action="Index"> دوره های فعالیت </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction">مدیریت صفحه نخست کاربر </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="StoreUsageWarning" asp-action="Index">اخطار میزان مصرف انبار</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#"> مدیریت لوگوها</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" id="latestLink">تازه ها</a>
-                        </li>
-                        @* <div id="message" style="margin-top:10px; color:blue;"></div> *@
-                    </ul>
-                </li>
-
-                <li class="nav-item nav-dropdown">
-                    <a class="nav-link nav-dropdown-toggle" href="#"> ارسالات</a>
-                    <ul class="nav-dropdown-items">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Dispatches" asp-action="Index"> ثبت ارسال جدید </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Dispatches" asp-action="ToBeArrivedIndex"> مشاهده محموله‌های رسیده </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction"> کپی ارسالات </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction"> مدیریت فاکتور‌ها </a>
-                        </li>
-                    </ul>
-                </li>
-
-
-                <li class="nav-item nav-dropdown">
-                    <a class="nav-link nav-dropdown-toggle" href="#"> تعدیل</a>
-                    <ul class="nav-dropdown-items">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Adjustment" asp-action="Index"> تعدیل مقدار جاری </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction"> تعدیل ارسالات </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction"> تعدیل ورودی ها </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction"> تعدیل محموله های رسیده </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <li class="nav-item nav-dropdown">
-                    <a class="nav-link nav-dropdown-toggle" href="#"> درخواست</a>
-                    <ul class="nav-dropdown-items">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Request" asp-action="Index"> مدیریت درخواست ها</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Request" asp-action="ReceivedRequests"> درخواست های رسیده </a>
-                        </li>
-                    </ul>
-                </li>
-                
-
-                <li class="nav-item">
-                    <a class="nav-link" asp-controller="Home" asp-action="UnderConstruction"> ورود در نقش مدیر سیستم</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" asp-controller="Account" asp-action="Logout"> خروج</a>
-                </li>
-
-            </ul>
+            @await Component.InvokeAsync("SidebarMenu")
         </nav>
     </div>
 
@@ -359,12 +119,12 @@
             @RenderBody()
         </main>
     </div>
-
+@* 
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - VSSM - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
-    </footer>
+    </footer> *@
 
 
 
@@ -423,4 +183,12 @@
             }, 3000); // 3 ثانیه
         });
     });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.sidebar .nav-dropdown').forEach(function (item) {
+            item.classList.remove('open');
+        });
+    });
+
+
 </script>

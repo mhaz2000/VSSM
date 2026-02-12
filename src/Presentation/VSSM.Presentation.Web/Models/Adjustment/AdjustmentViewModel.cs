@@ -6,7 +6,7 @@ namespace VSSM.Presentation.Web.Models.Adjustment;
 public class AdjustmentViewModel
 {
     public int AdjustmentId { get; set; }
-    public int? AdjustmentreasonId { get; set; }
+    public int? AdjustmentReasonId { get; set; }
     public int? FiscalPeriodId { get; set; }
     public int? ItemClassId { get; set; }
     public int? ArrivalLineId { get; set; }

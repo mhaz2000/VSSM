@@ -2,7 +2,7 @@
 @model VSSM.Presentation.Web.Models.Adjustment.AdjustmentViewModel
 
 @{
-string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "ثبت";
+    string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "ثبت";
 }
 
 <style>
@@ -49,10 +49,10 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                                 <option value="">-- انتخاب کنید --</option>
                                 @foreach (var item in ViewBag.ItemClass)
                                 {
-                                <option value="@item.Id"
-                                        selected="@(Model?.ItemClassId == item.Id)">
-                                    @item.Name
-                                </option>
+                                    <option value="@item.Id"
+                                            selected="@(Model?.ItemClassId == item.Id)">
+                                        @item.Name
+                                    </option>
                                 }
                             </select>
                         </div>
@@ -70,11 +70,11 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                                 <option value="">-- انتخاب کنید --</option>
                                 @foreach (var item in ViewBag.ItemGroups)
                                 {
-                                <option value="@item.Id"
-                                        data-itemclassid="@item.ItemClassId"
-                                        selected="@(Model?.ItemId == item.Id)">
-                                    @item.FullName
-                                </option>
+                                    <option value="@item.Id"
+                                            data-itemclassid="@item.ItemClassId"
+                                            selected="@(Model?.ItemId == item.Id)">
+                                        @item.FullName
+                                    </option>
                                 }
                             </select>
                         </div>
@@ -92,11 +92,11 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                                 <option value="">-- انتخاب کنید --</option>
                                 @foreach (var item in ViewBag.ItemDetailStores)
                                 {
-                                <option value="@item.ItemDetailStoreId"
-                                        data-itemid="@item.ItemId"
-                                        selected="@(Model?.ItemDetailStoreId == item.ItemDetailStoreId)">
-                                    @item.DropDownText
-                                </option>
+                                    <option value="@item.ItemDetailStoreId"
+                                            data-itemid="@item.ItemId"
+                                            selected="@(Model?.ItemDetailStoreId == item.ItemDetailStoreId)">
+                                        @item.DropDownText
+                                    </option>
                                 }
                             </select>
                         </div>
@@ -123,8 +123,7 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
                                    asp-for="NewQuantity"
                                    id="NewQuantity"
                                    class="form-control"
-                                   min="1"
-                                   step="1"/>
+                                   min="1"/>
                             <span asp-validation-for="NewQuantity" class="text-danger"></span>
                         </div>
 
@@ -139,34 +138,25 @@ string formName = (Model != null && Model.AdjustmentId > 0) ? "ویرایش" : "
 
                         <hr/>
 
-                        <div class="form-group">
-                            <label class="form-label">توجه:</label>
-                            <label class="form-control">
-                                عدد منفی موجودی فعلی را کاهش داده و عدد مثبت موجودی فعلی را افزایش می‌دهد.
-                                افزودن موجودی را با دقت انجام دهید.
-                            </label>
-                        </div>
-
-                        <hr/>
-
-                        <!-- Adjust Reason -->
+                        <!-- Adjustment Reason -->
                         <div class="form-group">
                             <span class="form-label">
                                 <span class="required-star">*</span>
                                 دلیل تعدیل:
                             </span>
                             <select class="form-control"
-                                    asp-for="AdjustmentreasonId"
-                                    id="AdjustmentreasonId">
+                                    asp-for="AdjustmentReasonId"
+                                    id="AdjustmentReasonId">
                                 <option value="">-- انتخاب کنید --</option>
                                 @foreach (var item in ViewBag.AdjustReasons)
                                 {
-                                <option value="@item.AdjustReasonId"
-                                        selected="@(Model?.AdjustmentreasonId == item.AdjustReasonId)">
-                                    @item.FullName
-                                </option>
+                                    <option value="@item.AdjustReasonId"
+                                            selected="@(Model?.AdjustmentReasonId == item.AdjustReasonId)">
+                                        @item.FullName
+                                    </option>
                                 }
                             </select>
+                            <span asp-validation-for="AdjustmentReasonId" class="text-danger"></span>
                         </div>
 
                         <!-- Note -->

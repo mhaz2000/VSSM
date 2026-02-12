@@ -41,9 +41,10 @@ public class StoreTransferController : BaseController
             .Select(x => new
             {
                 itemDetailStoreId = x.ItemDetailStoreId,
-                itemName = x.ItemDetailId,
+                itemName = x.ItemFullName,
                 currentStock = x.CurrentStock,
             })
+            .OrderBy(c=>c.itemName)
             .ToList();
 
         return Json(x);
@@ -62,7 +63,7 @@ public class StoreTransferController : BaseController
             {
                 Value = x.StoreId.ToString(),
                 Text = x.FullName
-            }).ToList()
+            }).OrderBy(c=>c.Text).ToList()
         };
 
         return View(model);

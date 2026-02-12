@@ -78,7 +78,7 @@
                                     </th>
                                     <th>حجم کل (لیتر)</th>
                                     <th>پیش نویس</th>
-                                    <th>وضعیت</th>
+                                    <th>وضعیت گیرنده</th>
                                     <th>عملیات</th>
                                 </tr>
                             </thead>
@@ -93,7 +93,7 @@
                                             <td>@d.ReportNumber</td>
                                             <td>@d.TotalVolume</td>
                                             <td>@(d.IsDrafted.Value ? "بله" : "خیر")</td>
-                                            <td>@(d.IsConfirmed.Value ? "تایید شده" : "تایید نشده")</td>
+                                            <td>@(d.ReceiverStatus == 0 ? "جدید" : "تایید")</td>
                                             <td>
                                                 <a asp-action="Confirm" asp-route-id="@d.Id" class="btn btn-warning btn-sm">تایید</a>
                                                 <a asp-action="Delete" asp-route-id="@d.Id" class="btn btn-danger btn-sm">حذف</a>

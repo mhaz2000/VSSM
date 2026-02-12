@@ -76,6 +76,11 @@ namespace VSSM.Application.Services.RequestEntities
 
             _dbContext.TblRequests.Add(req);
             await _dbContext.SaveChangesAsync(token);
+
+            var recepCode = _dbContext.TblRecipients.Where(x => x.RecipientId == dto.SenderId).First().Code;
+            req.RequestNumber = recepCode + "-" + req.Id.ToString();
+            await _dbContext.SaveChangesAsync(token);
+
             return req.Id;
         }
 

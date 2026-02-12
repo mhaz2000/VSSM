@@ -1,0 +1,75 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@model List<MenuItem>
+
+<ul class="nav">
+    @foreach (var item in Model)
+    {
+        if (item.Children.Any())
+        {
+            <li class="nav-item nav-dropdown">
+                <a class="nav-link nav-dropdown-toggle" href="#">
+                    @if (!string.IsNullOrEmpty(item.Icon))
+                    {
+                        <i class="@item.Icon"
+                           rel="tooltip"
+                           title="@item.Title"></i>
+                    }
+                    <span class="item-title">@item.Title</span>
+                </a>
+
+                <ul class="nav-dropdown-items">
+                    @foreach (var child in item.Children)
+                    {
+                        if (child.Children.Any())
+                        {
+                            <li class="nav-item nav-dropdown">
+                                <a class="nav-link nav-dropdown-toggle" href="#">
+                                    <span class="item-title">@child.Title</span>
+                                </a>
+
+                                <ul class="nav-dropdown-items">
+                                    @foreach (var subChild in child.Children)
+                                    {
+                                        <li class="nav-item">
+                                            <a class="nav-link"
+                                               asp-controller="@subChild.Controller"
+                                               asp-action="@subChild.Action">
+                                                <span class="item-title">@subChild.Title</span>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="@child.Controller"
+                                   asp-action="@child.Action">
+                                    <span class="item-title">@child.Title</span>
+                                </a>
+                            </li>
+                        }
+                    }
+                </ul>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-controller="@item.Controller"
+                   asp-action="@item.Action">
+                    @if (!string.IsNullOrEmpty(item.Icon))
+                    {
+                        <i class="@item.Icon"
+                           rel="tooltip"
+                           title="@item.Title"></i>
+                    }
+                    <span class="item-title">@item.Title</span>
+                </a>
+            </li>
+        }
+    }
+</ul>

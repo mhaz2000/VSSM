@@ -40,7 +40,8 @@ public class ItemDetailStoreService : IItemDetailStoreService
                 ItemDetailId = itemDetailsStore.ItemDetailId,
                 StoreId = itemDetailsStore.StoreId,
                 DropDownText = item.FullName,
-                ItemDetailStoreId = itemDetailsStore.ItemDetailStoreId
+                ItemDetailStoreId = itemDetailsStore.ItemDetailStoreId,
+                ItemFullName = item.FullName
             };
 
             result.Add(dto);
@@ -118,7 +119,8 @@ public class ItemDetailStoreService : IItemDetailStoreService
             .AsNoTracking()
             .ToListAsync();
 
-        var keys = lines
+        var keys = lines.
+            Where(c=>c.Store != null && c.Line.ItemDetailId != null)
             .Select(c => new
             {
                 StoreId = (int)c.Store.StoreId,

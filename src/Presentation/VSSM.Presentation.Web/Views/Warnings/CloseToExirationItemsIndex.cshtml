@@ -1,0 +1,31 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Warnings
+@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@section Styles {
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
+}
+
+@{
+    ViewData["Title"] = "کالاهای نزدیک به انقضا";
+}
+
+<div class="grid-wrapper">
+    <div class="grid-header">
+
+        <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
+
+        @await Component.InvokeAsync("SearchBar", new
+        {
+            searchTerm = Model.SearchTerm,
+                pageSize = Model.Data.PageSize,
+                sort = Model.CurrentSort,
+                direction = Model.CurrentDirection
+                })
+
+    </div>
+
+    <div>
+        @await Html.PartialAsync("_DynamicGrid", Model)
+    </div>
+</div>

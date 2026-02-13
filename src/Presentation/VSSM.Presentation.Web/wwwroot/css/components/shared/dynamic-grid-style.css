@@ -1,0 +1,26 @@
+﻿.dynamic-grid {
+    margin: 0px;
+    border-color: none !important;
+}
+
+.dynamic-grid-wrapper {
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #e4e5e6;
+}
+
+.dynamic-grid tbody tr {
+    background-color: white;
+}
+
+    .dynamic-grid tbody tr:nth-child(even) {
+        background-color: #e4e5e6;
+    }
+
+    .dynamic-grid tbody tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
+
+    .dynamic-grid tbody tr:hover {
+        background-color: #d8d9da !important;
+    }

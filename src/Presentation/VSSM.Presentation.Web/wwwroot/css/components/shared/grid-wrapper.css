@@ -1,0 +1,13 @@
+﻿.grid-wrapper{
+    margin: 1.5rem;
+    background-color: white;    
+    border-radius: 20px;
+    padding: 1rem;
+}
+
+.grid-header{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    align-items: center;
+}

@@ -202,6 +202,19 @@ public static class MenuConfig
                 }
             },
 
+            // ---------------- Warnings ----------------
+            new MenuItem
+            {
+                Icon = "fa fa-warning",
+                Title = "اخطار‌ها",
+                Children =
+                {
+                    new MenuItem { Title = "کالا‌های بالای حداکثر", Controller = "Warnings", Action = "HighItemsMaxIndex" },
+                    new MenuItem { Title = "کالا‌های زیر حداقل", Controller = "Warnings", Action = "LowItemsMinIndex" },
+                    new MenuItem { Title = "کالاهای نزدیک به انقضا", Controller = "Warnings", Action = "CloseToExirationItemsIndex" }
+                }
+            },
+
             // ---------------- Logout ----------------
             new MenuItem
             {

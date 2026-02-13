@@ -1,0 +1,120 @@
+﻿@model VSSM.Presentation.Web.Models.Base.PaginationModel
+
+<style>
+
+    .custom-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 15px;
+        gap: 10px;
+    }
+
+    /* Range text */
+    .pagination-info {
+        font-size: 14px;
+        color: #555;
+    }
+
+    /* Button container */
+    .pagination-controls {
+        display: flex;
+        gap: 6px;
+    }
+
+    /* Buttons */
+    .pagination-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        border-radius: 6px;
+        border: 1px solid #d1d1d1;
+        background-color: white;
+        color: #333;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+        /* Hover */
+        .pagination-btn:hover {
+            background-color: #f1f1f1;
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
+
+        /* Disabled */
+        .pagination-btn.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+
+</style>
+
+@{
+    var data = Model.Data;
+
+    var totalPages = data.TotalPages <= 0 ? 1 : data.TotalPages;
+    var currentPage = data.PageNumber <= 0 ? 1 : data.PageNumber;
+
+    var startItem = data.TotalCount == 0
+        ? 0
+        : ((currentPage - 1) * data.PageSize) + 1;
+
+    var endItem = Math.Min(currentPage * data.PageSize, data.TotalCount);
+}
+
+<nav class="custom-pagination">
+
+    <!-- Range Info -->
+    <div class="pagination-info">
+        @startItem-@endItem از @data.TotalCount
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="pagination-controls">
+
+        <a class="pagination-btn @(currentPage == 1 ? "disabled" : "")"
+           href="?pageNumber=1
+                  &pageSize=@data.PageSize
+                  &search=@Model.Search
+                  &sort=@Model.Sort
+                  &direction=@Model.Direction">
+            |<
+        </a>
+
+        <a class="pagination-btn @(currentPage == 1 ? "disabled" : "")"
+           href="?pageNumber=@(currentPage - 1)
+                  &pageSize=@data.PageSize
+                  &search=@Model.Search
+                  &sort=@Model.Sort
+                  &direction=@Model.Direction">
+            <
+        </a>
+
+        <a class="pagination-btn @(currentPage >= totalPages ? "disabled" : "")"
+           href="?pageNumber=@(currentPage + 1)
+                  &pageSize=@data.PageSize
+                  &search=@Model.Search
+                  &sort=@Model.Sort
+                  &direction=@Model.Direction">
+            >
+        </a>
+
+        <a class="pagination-btn @(currentPage >= totalPages ? "disabled" : "")"
+           href="?pageNumber=@totalPages
+                  &pageSize=@data.PageSize
+                  &search=@Model.Search
+                  &sort=@Model.Sort
+                  &direction=@Model.Direction">
+            >|
+        </a>
+
+    </div>
+
+</nav>

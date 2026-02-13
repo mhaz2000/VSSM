@@ -30,4 +30,16 @@
     <Folder Include="Views\Source\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\css\components\shared\dynamic-grid-style.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\css\components\shared\grid-wrapper.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\css\components\shared\search-bar.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

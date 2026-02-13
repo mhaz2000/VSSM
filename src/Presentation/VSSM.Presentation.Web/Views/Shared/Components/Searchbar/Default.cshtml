@@ -1,0 +1,64 @@
+﻿@model VSSM.Presentation.Web.Models.Base.SearchBarModel
+
+<style>
+    .fa-icon {
+        color: green;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        width: 260px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 15px 8px 12px;
+        border-radius: 15px;
+        border: 1px solid #ccc;
+        outline: none;
+        background-color: #e4e5e6;
+        transition: 0.2s ease;
+    }
+
+        .search-input:focus {
+            border-color: #0d6efd;
+        }
+
+    .search-icon-btn {
+        position: absolute;
+        top: 50%;
+        left: 8px; /* magnifier inside on left */
+        transform: translateY(-50%);
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: #888;
+    }
+
+        .search-icon-btn:hover {
+            color: #0d6efd;
+        }
+
+</style>
+
+<form method="get" class="search-form">
+
+    <div class="search-input-wrapper">
+
+        <button type="submit" class="search-icon-btn">
+            <i class="fa fa-search fa-icon"></i>
+        </button>
+
+        <input type="text"
+               name="search"
+               value="@Model.SearchTerm"
+               placeholder="جستجو..."
+               class="search-input" />
+
+        <input type="hidden" name="pageSize" value="@Model.PageSize" />
+        <input type="hidden" name="sort" value="@Model.Sort" />
+        <input type="hidden" name="direction" value="@Model.Direction" />
+
+    </div>
+
+</form>

@@ -4,19 +4,34 @@
    "ContextNamespace": null,
    "FilterSchemas": false,
    "IncludeConnectionString": false,
-   "MinimumProductVersion": "2.6.1186",
+   "IrregularWords": null,
+   "MinimumProductVersion": "2.6.1301",
    "ModelNamespace": null,
    "OutputContextPath": null,
    "OutputPath": "Models",
+   "PluralRules": null,
    "PreserveCasingWithRegex": true,
    "ProjectRootNamespace": "VSSM.Infrastructure.Data",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,
+   "SingularRules": null,
    "T4TemplatePath": null,
    "Tables": [
       {
          "Name": "[dbo].[AppLogs]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Menus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RoleMenu]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Roles]",
          "ObjectType": 0
       },
       {

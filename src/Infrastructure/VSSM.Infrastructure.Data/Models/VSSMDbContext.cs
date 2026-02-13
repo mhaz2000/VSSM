@@ -15,6 +15,12 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<AppLog> AppLogs { get; set; }
 
+    public virtual DbSet<Menu> Menus { get; set; }
+
+    public virtual DbSet<Role> Roles { get; set; }
+
+    public virtual DbSet<RoleMenu> RoleMenus { get; set; }
+
     public virtual DbSet<Sync> Syncs { get; set; }
 
     public virtual DbSet<SyncBasic> SyncBasics { get; set; }
@@ -125,7 +131,11 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblRequest> TblRequests { get; set; }
 
+    public virtual DbSet<TblRequest1> TblRequests1 { get; set; }
+
     public virtual DbSet<TblRequestLine> TblRequestLines { get; set; }
+
+    public virtual DbSet<TblRequestLine1> TblRequestLines1 { get; set; }
 
     public virtual DbSet<TblRequestsNew> TblRequestsNews { get; set; }
 
@@ -192,6 +202,42 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.TimeStamp).HasColumnType("datetime");
             entity.Property(e => e.Token).IsUnicode(false);
             entity.Property(e => e.UserName).IsUnicode(false);
+        });
+
+        modelBuilder.Entity<Menu>(entity =>
+        {
+            entity.Property(e => e.Action).HasMaxLength(100);
+            entity.Property(e => e.Controller).HasMaxLength(100);
+            entity.Property(e => e.Icon).HasMaxLength(100);
+            entity.Property(e => e.Ttitle)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.HasOne(d => d.Parent).WithMany(p => p.InverseParent)
+                .HasForeignKey(d => d.ParentId)
+                .HasConstraintName("FK_Menus_Menus");
+        });
+
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<RoleMenu>(entity =>
+        {
+            entity.ToTable("RoleMenu");
+
+            entity.HasOne(d => d.Menu).WithMany(p => p.RoleMenus)
+                .HasForeignKey(d => d.MenuId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RoleMenu_Menus");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.RoleMenus)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RoleMenu_Roles");
         });
 
         modelBuilder.Entity<Sync>(entity =>
@@ -1056,9 +1102,9 @@ public partial class VSSMDbContext : DbContext
 
         modelBuilder.Entity<TblLevel>(entity =>
         {
-            entity.HasKey(e => e.LevelId);
-
-            entity.ToTable("tblLevels");
+            entity
+                .HasNoKey()
+                .ToTable("tblLevels");
 
             entity.Property(e => e.LevelId).HasColumnName("LevelID");
         });
@@ -1307,6 +1353,10 @@ public partial class VSSMDbContext : DbContext
 
             entity.ToTable("tblRecipients");
 
+            entity.HasIndex(e => e.RecipientId, "IX_tblRecipients");
+
+            entity.HasIndex(e => e.FullName, "IX_tblRecipients_1");
+
             entity.Property(e => e.RecipientId).HasColumnName("RecipientID");
             entity.Property(e => e.Address1).HasMaxLength(500);
             entity.Property(e => e.Address2).HasMaxLength(500);
@@ -1367,6 +1417,10 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.LastLogin).HasColumnType("datetime");
             entity.Property(e => e.RecipientId).HasColumnName("RecipientID");
+
+            entity.HasOne(d => d.Recipient).WithMany(p => p.TblRecipientConfigurations)
+                .HasForeignKey(d => d.RecipientId)
+                .HasConstraintName("FK_tblRecipientConfigurations_tblRecipients");
         });
 
         modelBuilder.Entity<TblRecipientMaxItem>(entity =>
@@ -1422,6 +1476,18 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblRequest_tblRecipients");
         });
 
+        modelBuilder.Entity<TblRequest1>(entity =>
+        {
+            entity.HasKey(e => e.RequestId);
+
+            entity.ToTable("tblRequests");
+
+            entity.Property(e => e.RequestId).HasColumnName("RequestID");
+            entity.Property(e => e.FiscalPeriodId).HasColumnName("FiscalPeriodID");
+            entity.Property(e => e.ReceiverId).HasColumnName("ReceiverID");
+            entity.Property(e => e.SenderId).HasColumnName("SenderID");
+        });
+
         modelBuilder.Entity<TblRequestLine>(entity =>
         {
             entity.ToTable("tblRequestLine");
@@ -1451,6 +1517,23 @@ public partial class VSSMDbContext : DbContext
             entity.HasOne(d => d.Request).WithMany(p => p.TblRequestLines)
                 .HasForeignKey(d => d.RequestId)
                 .HasConstraintName("FK_tblRequestLine_tblRequest");
+        });
+
+        modelBuilder.Entity<TblRequestLine1>(entity =>
+        {
+            entity.HasKey(e => e.RequestLineId);
+
+            entity.ToTable("tblRequestLines");
+
+            entity.Property(e => e.RequestLineId).HasColumnName("RequestLineID");
+            entity.Property(e => e.EntryDate).HasColumnType("datetime");
+            entity.Property(e => e.ItemId).HasColumnName("ItemID");
+            entity.Property(e => e.RequestId).HasColumnName("RequestID");
+
+            entity.HasOne(d => d.Request).WithMany(p => p.TblRequestLine1s)
+                .HasForeignKey(d => d.RequestId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_tblRequestLines_tblRequests");
         });
 
         modelBuilder.Entity<TblRequestsNew>(entity =>
@@ -1530,6 +1613,8 @@ public partial class VSSMDbContext : DbContext
             entity.HasKey(e => e.StoreId);
 
             entity.ToTable("tblStores");
+
+            entity.HasIndex(e => e.Name, "IX_tblStores");
 
             entity.Property(e => e.StoreId).HasColumnName("StoreID");
             entity.Property(e => e.Barcode).HasMaxLength(100);
@@ -1642,6 +1727,10 @@ public partial class VSSMDbContext : DbContext
             entity.HasOne(d => d.EnteredBy).WithMany(p => p.InverseEnteredBy)
                 .HasForeignKey(d => d.EnteredById)
                 .HasConstraintName("FK_tblUsers_tblUsers");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.TblUsers)
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("FK_tblUsers_Roles");
         });
 
         modelBuilder.Entity<TblUserHome>(entity =>

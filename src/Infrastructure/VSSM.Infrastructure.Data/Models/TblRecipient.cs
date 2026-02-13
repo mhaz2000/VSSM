@@ -85,6 +85,8 @@ public partial class TblRecipient
 
     public virtual ICollection<TblMinMaxItem> TblMinMaxItems { get; set; } = new List<TblMinMaxItem>();
 
+    public virtual ICollection<TblRecipientConfiguration> TblRecipientConfigurations { get; set; } = new List<TblRecipientConfiguration>();
+
     public virtual ICollection<TblRecipientMaxItem> TblRecipientMaxItemReceivers { get; set; } = new List<TblRecipientMaxItem>();
 
     public virtual ICollection<TblRecipientMaxItem> TblRecipientMaxItemRecipients { get; set; } = new List<TblRecipientMaxItem>();

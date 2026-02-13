@@ -4,10 +4,18 @@
    "DatabaseType": 3,
    "MergeDacpacs": false,
    "Optional": false,
-   "ProjectPath": "C:\\1-Projects\\MOHVSSM\\src\\Infrastructure\\VSSM.Infrastructure.Data",
+   "ProjectPath": "F:\\MOHVSSM\\src\\Infrastructure\\VSSM.Infrastructure.Data",
    "Tables": [
       {
-         "Name": "[dbo].[tblJobType]",
+         "Name": "[dbo].[Menus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RoleMenu]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Roles]",
          "ObjectType": 0
       },
       {

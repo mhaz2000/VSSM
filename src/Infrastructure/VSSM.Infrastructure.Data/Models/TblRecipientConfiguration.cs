@@ -22,4 +22,6 @@ public partial class TblRecipientConfiguration
     public int? RecipientId { get; set; }
 
     public DateTime? LastLogin { get; set; }
+
+    public virtual TblRecipient Recipient { get; set; }
 }

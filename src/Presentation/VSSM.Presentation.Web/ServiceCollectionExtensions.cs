@@ -99,6 +99,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IArrivalService, ArrivalService>();
             services.AddScoped<IUseService, UseService>();
             services.AddScoped<IItemDetailsService, ItemDetailService>();
+            services.AddScoped<IWarningService, WarningService>();
             services.AddScoped<IPackingTypeService, PackingTypeService>();
             services.AddScoped<IAdjustmentService, AdjustmentService>();
             services.AddScoped<IValidator<AdjustmentDto>, AdjustmentDtoValidator>();

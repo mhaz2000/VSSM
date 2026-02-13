@@ -7020,7 +7020,7 @@ body.navbar-fixed.top-nav.fixed-nav .main {
 }
 
 body:not(.top-nav) header.navbar {
-    z-index: 0;
+    z-index: 10;
 }
 
 body:not(.top-nav) .sidebar {

@@ -1,0 +1,67 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+<div class="dynamic-grid-wrapper">
+    <table class="dynamic-grid table table-bordered table-hover">
+    <thead>
+        <tr>
+            @foreach (var column in Model.Columns)
+            {
+                <th>
+                    @column.Header
+
+                    @if (column.Sortable)
+                    {
+                        var newDirection =
+                            Model.CurrentSort == column.PropertyName &&
+                            Model.CurrentDirection == "asc"
+                            ? "desc" : "asc";
+
+                        <a href="?pageNumber=@Model.Data.PageNumber&pageSize=@Model.Data.PageSize&sort=@column.PropertyName&direction=@newDirection">
+
+                            <i class="fa fa-sort"></i>
+                        </a>
+                    }
+                </th>
+            }
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model.Data.Items)
+        {
+            <tr>
+                @foreach (var column in Model.Columns)
+                {
+                    <td>
+                         @{
+                            var prop = item.GetType().GetProperty(column.PropertyName);
+                            var value = prop?.GetValue(item);
+                            string displayValue = "";
+
+                            if (value != null)
+                            {
+                                if (column.IsAmount && decimal.TryParse(value.ToString(), out var amount))
+                                {
+                                    displayValue = amount.ToString("N0");
+                                }
+                                else
+                                {
+                                    displayValue = value.ToString();
+                                }
+                            }
+                         }
+                        @displayValue
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+</div>
+@await Component.InvokeAsync("Pagination",
+    new {
+        model = Model.Data,
+        sort = Model.CurrentSort,
+        direction = Model.CurrentDirection
+    })

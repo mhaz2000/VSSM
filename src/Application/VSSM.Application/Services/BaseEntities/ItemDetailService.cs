@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Domain.Entities;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities

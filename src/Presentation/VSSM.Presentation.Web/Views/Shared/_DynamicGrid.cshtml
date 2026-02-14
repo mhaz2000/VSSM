@@ -27,36 +27,64 @@
         </tr>
     </thead>
 
-    <tbody>
-        @foreach (var item in Model.Data.Items)
+<tbody>
+@foreach (var item in Model.Data.Items)
+{
+    <tr>
+        @foreach (var column in Model.Columns)
         {
-            <tr>
-                @foreach (var column in Model.Columns)
-                {
-                    <td>
-                         @{
-                            var prop = item.GetType().GetProperty(column.PropertyName);
-                            var value = prop?.GetValue(item);
-                            string displayValue = "";
+            if (column.IsActionColumn)
+            {
+                <td class="grid-actions">
+                    @{
+                        var idProp = item.GetType().GetProperty("Id");
+                        var idValue = idProp?.GetValue(item);
+                    }
 
-                            if (value != null)
+                    @foreach (var action in Model.Actions)
+                    {
+                        var routeProp = item.GetType().GetProperty(action.RouteIdProperty);
+                        var routeValue = routeProp?.GetValue(item);
+
+                        <a asp-controller="@action.Controller"
+                           asp-action="@action.Action"
+                           asp-route-id="@routeValue"
+                           class="action-btn @action.LinkClass"
+                           title="@action.Title">
+
+                            <i class="@action.IconClass"></i>
+                        </a>
+                    }
+                </td>
+            }
+            else
+            {
+                <td>
+                    @{
+                        var prop = item.GetType().GetProperty(column.PropertyName);
+                        var value = prop?.GetValue(item);
+                        string displayValue = "";
+
+                        if (value != null)
+                        {
+                            if (column.IsAmount && decimal.TryParse(value.ToString(), out var amount))
                             {
-                                if (column.IsAmount && decimal.TryParse(value.ToString(), out var amount))
-                                {
-                                    displayValue = amount.ToString("N0");
-                                }
-                                else
-                                {
-                                    displayValue = value.ToString();
-                                }
+                                displayValue = amount.ToString("N0");
                             }
-                         }
-                        @displayValue
-                    </td>
-                }
-            </tr>
+                            else
+                            {
+                                displayValue = value.ToString();
+                            }
+                        }
+                    }
+                    @displayValue
+                </td>
+            }
         }
-    </tbody>
+    </tr>
+}
+</tbody>
+
 </table>
 </div>
 @await Component.InvokeAsync("Pagination",

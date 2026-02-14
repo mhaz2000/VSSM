@@ -7,4 +7,6 @@ public class GridColumn
     public string PropertyName { get; set; }
 
     public bool Sortable { get; set; } = false;
+    public bool IsActionColumn { get; set; }
+
 }

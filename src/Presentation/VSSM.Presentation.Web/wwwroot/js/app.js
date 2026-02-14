@@ -28,6 +28,35 @@ $.grayLightest = '#f8f9fa';
 
 $(document).ready(function ($) {
 
+	$(function () {
+
+		var currentUrl = window.location.pathname.toLowerCase();
+
+		// find matching link
+		$('.sidebar .nav-link').each(function () {
+
+			var linkUrl = $(this).attr('href');
+
+			if (!linkUrl) return;
+
+			// ignore #
+			if (linkUrl === '#' || linkUrl === '/') return;
+
+			if (currentUrl.startsWith(linkUrl.toLowerCase())) {
+
+				// set active
+				$(this).addClass('active');
+
+				// open all parents
+				$(this).parents('.nav-dropdown').addClass('open');
+
+			}
+		});
+
+	});
+
+
+
 	/* ---------------------------------
 	   Sidebar Arrow Sync Function
 	--------------------------------- */

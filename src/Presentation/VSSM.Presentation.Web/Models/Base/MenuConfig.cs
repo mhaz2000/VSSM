@@ -168,12 +168,8 @@ public static class MenuConfig
             {
                 Icon = "fa fa-plane",
                 Title = "ارسالات",
-                Children =
-                {
-                    new MenuItem { Title = "ثبت ارسال جدید", Controller = "Dispatches", Action = "Index" },
-                    new MenuItem { Title = "کپی ارسالات", Controller = "Home", Action = "UnderConstruction" },
-                    new MenuItem { Title = "مدیریت فاکتور‌ها", Controller = "Home", Action = "UnderConstruction" }
-                }
+                Controller = "Dispatches",
+                Action = "Index"
             },
 
             // ---------------- Adjustment ----------------

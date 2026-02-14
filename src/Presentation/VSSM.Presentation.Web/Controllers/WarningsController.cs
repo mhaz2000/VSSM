@@ -40,7 +40,21 @@ namespace VSSM.Presentation.Web.Controllers
                     new() { Header = "سری ساخت", PropertyName = nameof(CloseToExpirationDto.BatchNumber), Sortable = false },
                     new() { Header = "مرحله vvm", PropertyName = nameof(CloseToExpirationDto.VVMStage), Sortable = false },
                     new() { Header = "انبار", PropertyName = nameof(CloseToExpirationDto.StockName), Sortable = false },
-                }
+                    //new() { Header = "عملیات", IsActionColumn = true}
+                },
+                //Actions = new List<GridAction>
+                //{
+                //    new()
+                //    {
+                //        Title = "مشاهده",
+                //        Controller = "ItemClass",
+                //        Action = "Index",
+                //        RouteIdProperty = "ItemName",
+                //        LinkClass = "",
+                //        IconClass = "fa fa-edit"
+                //    }
+                //}
+
             };
 
 

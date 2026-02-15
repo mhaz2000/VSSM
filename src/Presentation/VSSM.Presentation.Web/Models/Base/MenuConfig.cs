@@ -110,9 +110,9 @@ public static class MenuConfig
                 Children =
                 {
                     new MenuItem { Title = "کاربران", Controller = "User", Action = "Index" },
-                    new MenuItem { Title = "نقشها", Controller = "Home", Action = "UnderConstruction" },
-                    new MenuItem { Title = "منوها", Controller = "Home", Action = "UnderConstruction" },
-                    new MenuItem { Title = "دسترسی نقش به منوها", Controller = "Home", Action = "UnderConstruction" },
+                    new MenuItem { Title = "نقشها", Controller = "Role", Action = "Index" },
+                    //new MenuItem { Title = "منوها", Controller = "Home", Action = "UnderConstruction" },
+                    //new MenuItem { Title = "دسترسی نقش به منوها", Controller = "Home", Action = "UnderConstruction" },
                     new MenuItem { Title = "ورود در نقش مدیر سیستم", Controller = "Home", Action = "UnderConstruction" }
                 }
             },

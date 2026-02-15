@@ -106,6 +106,8 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IDispatchService, DispatchService>();
             services.AddScoped<IItemDetailStoreService, ItemDetailStoreService>();
             services.AddScoped<IRequestService, RequestService>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IMenuService, MenuService>();
         }
     }
 }

@@ -1,0 +1,93 @@
+﻿@using VSSM.Presentation.Web.Models.Role
+@model RolePermissionViewModel
+@{
+    string formName = "ثبت";
+    if (Model != null && Model.RoleId > 0)
+        formName = "ویرایش";
+}
+
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <div>
+                        <h5>@formName نقش</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+
+            <div class="card">
+                <div class="card-block">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <form asp-action="Create" asp-controller="Role" method="post" class="form-horizontal">
+                        <input type="hidden" asp-for="RoleId" />
+                        <div class="col-lg-6">
+
+                            <div class="form-group">
+                                <label class="form-label" for="DisplayOrder">نام نقش :</label>
+                                <input type="text" asp-for="RoleName" name="RoleName" class="form-control" />
+                            </div>
+                            <br /><br />
+                            <ul style="height:400px; overflow-y:scroll">
+                                @foreach(var parent in Model.Menus.Where(m => m.ParentId == null))
+                                {
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" asp-for="Menus[@Model.Menus.IndexOf(parent)].IsSelected" />
+                                            @parent.Title
+                                        </label>
+                                        <input type="hidden" asp-for="Menus[@Model.Menus.IndexOf(parent)].Id" />
+                                        <ul>
+                                            @foreach(var child in Model.Menus.Where(m => m.ParentId == parent.Id))
+                                            {
+                                                <li>
+                                                    <label>
+                                                        <input type="checkbox" asp-for="Menus[@Model.Menus.IndexOf(child)].IsSelected" />
+                                                        @child.Title
+                                                    </label>
+                                                    <input type="hidden" asp-for="Menus[@Model.Menus.IndexOf(child)].Id" />
+                                                    <ul>
+                                                        @foreach (var child2 in Model.Menus.Where(m => m.ParentId == child.Id))
+                                                        {
+                                                            <li>
+                                                                <label>
+                                                                    <input type="checkbox" asp-for="Menus[@Model.Menus.IndexOf(child2)].IsSelected" />
+                                                                    @child2.Title
+                                                                </label>
+                                                                <input type="hidden" asp-for="Menus[@Model.Menus.IndexOf(child2)].Id" />
+
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                            </ul>
+
+                            <div class="col-lg-8"></div>
+                            <div class="col-lg-4">
+                                <div class="text-center mt-4 align-middle">
+                                    <button type="submit" class="btn btn-success px-5">ثبت</button>
+                                    <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+        <!--/col-->
+    </div>
+    <!--/row-->
+</div>
+

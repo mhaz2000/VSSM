@@ -25,6 +25,8 @@ public class UserViewModel
     [Required(ErrorMessage = "سطح دسترسی نمی‌تواند خالی باشد.")]
     public int? PermissionLevel { get; set; }
 
+    public int? RoleId { get; set; }
+
     public string? Phone1 { get; set; }
     public string? Phone2 { get; set; }
 

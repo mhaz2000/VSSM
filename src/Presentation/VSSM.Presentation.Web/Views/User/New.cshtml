@@ -152,6 +152,18 @@
 
                         </div>
 
+                        <!-- roles -->
+                        <div class="form-group">
+                            <span class="form-label">
+                                <span class="required-marker">*</span> نقش :
+                            </span>
+                            <span asp-validation-for="RoleId" class="text-danger"></span>
+                            <select asp-for="RoleId" class="form-select" asp-items="ViewBag.Roles">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+
+                        </div>
+
                         <!-- Is Admin -->
                         <div class="form-group">
                             <label class="form-label">مدیر سیستم:</label>

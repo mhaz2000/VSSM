@@ -36,7 +36,8 @@ public class UserService : IUserService
             CodeJob = x.CodeJob,
             IsAdmin = x.IsAdmin ?? false,
             Course = x.Course,
-            CourseDate = x.CourseDate
+            CourseDate = x.CourseDate,
+            RoleId = x.RoleId
         };
     }
 
@@ -60,7 +61,8 @@ public class UserService : IUserService
             IsAdmin = dto.IsAdmin,
             Course = dto.Course,
             CourseDate = dto.CourseDate,
-            EntryDate = DateTime.Now
+            EntryDate = DateTime.Now,
+            RoleId = dto.RoleId
         };
 
         _db.TblUsers.Add(model);
@@ -84,6 +86,7 @@ public class UserService : IUserService
         x.Idnumber = dto.Idnumber;
         x.RecipientId = dto.RecipientId;
         x.PermissionLevel = dto.PermissionLevel;
+        x.RoleId = dto.RoleId;
         x.CodeEdu = dto.CodeEdu;
         x.CodeJob = dto.CodeJob;
         x.IsAdmin = dto.IsAdmin;
@@ -203,6 +206,7 @@ public class UserService : IUserService
             Phone2 = x.Phone2,
             RecipientId = x.RecipientId,
             PermissionLevel = x.PermissionLevel,
+            RoleId = x.RoleId,
             CodeEdu = x.CodeEdu,
             CodeJob = x.CodeJob,
             IsAdmin = x.IsAdmin ?? false,

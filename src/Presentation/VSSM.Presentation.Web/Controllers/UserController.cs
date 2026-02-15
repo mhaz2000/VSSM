@@ -14,17 +14,20 @@ namespace VSSM.Presentation.Web.Controllers
         private readonly IRecipientService _recipientService;
         private readonly IEduTypeService _eduService;
         private readonly IJobTypeService _jobService;
+        private readonly IRoleService _roleService;
 
         public UserController(
             IUserService userService,
             IRecipientService recipientService,
             IEduTypeService eduService,
-            IJobTypeService jobService)
+            IJobTypeService jobService,
+            IRoleService roleService)
         {
             _userService = userService;
             _recipientService = recipientService;
             _eduService = eduService;
             _jobService = jobService;
+            _roleService = roleService;
         }
 
         // ====================== INDEX ============================
@@ -73,6 +76,7 @@ namespace VSSM.Presentation.Web.Controllers
                 IsAdmin = dto.IsAdmin,
                 Course = dto.Course,
                 CourseDate = PersianDateHelper.ToStringDate(dto.CourseDate),
+                RoleId = dto.RoleId
             };
 
             return View(model);
@@ -109,6 +113,7 @@ namespace VSSM.Presentation.Web.Controllers
                     IsAdmin = model.IsAdmin,
                     Course = model.Course,
                     CourseDate = PersianDateHelper.ToDateTime(model.CourseDate),
+                    RoleId = model.RoleId
                 };
 
                 await _userService.Create(dto, token);
@@ -134,6 +139,7 @@ namespace VSSM.Presentation.Web.Controllers
                     IsAdmin = model.IsAdmin,
                     Course = model.Course,
                     CourseDate = PersianDateHelper.ToDateTime(model.CourseDate),
+                    RoleId = model.RoleId
                 };
 
                 await _userService.Update(dto, token);
@@ -189,6 +195,15 @@ namespace VSSM.Presentation.Web.Controllers
                 {
                     Value = ((int)x).ToString(),
                     Text = x.GetDisplayName() // Persian name
+                })
+                .ToList();
+
+
+            ViewBag.Roles = (await _roleService.GetAll(cancellationToken))
+                .Select(x => new SelectListItem
+                {
+                    Value = x.Id.ToString(),
+                    Text = x.Name
                 })
                 .ToList();
         }

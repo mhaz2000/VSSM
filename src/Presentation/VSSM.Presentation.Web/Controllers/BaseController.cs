@@ -11,6 +11,7 @@ namespace VSSM.Presentation.Web.Controllers
         protected int? CurrentUserRecipientId { get; private set; }
         protected int? CurrentUserRecipientParentId { get; private set; }
         protected int? CurrentUserLevel { get; private set; }
+        protected int? CurrentUserRoleId { get; private set; }
 
         public override void OnActionExecuting(
             Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
@@ -28,6 +29,8 @@ namespace VSSM.Presentation.Web.Controllers
                     User.FindFirst("RecipientParentId")?.Value, out var ridPid) ? rid : null;
                 CurrentUserLevel = int.TryParse(
                     User.FindFirst("Level")?.Value, out var l) ? l : null;
+                CurrentUserRoleId = int.TryParse(
+                    User.FindFirst("RoleId")?.Value, out var roleid) ? roleid : null;
 
                 ViewBag.CurrentUserName = CurrentUserFullName;
             }

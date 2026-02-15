@@ -54,6 +54,7 @@ namespace VSSM.Presentation.Web.Controllers
                     new Claim("UserId", user.UserId.ToString()),
                     new Claim("UserRole", user.IsAdmin ? "Admin" : "User"),
                     new Claim("RecipientId", user.RecipientId.GetValueOrDefault().ToString()),
+                    new Claim("RoleId", user.RoleId.GetValueOrDefault().ToString()),
                     new Claim("Level", recipient.ChainLevel.GetValueOrDefault().ToString()),
                     new Claim("RecipientParentId", recipient.ParentId.GetValueOrDefault().ToString()),
 

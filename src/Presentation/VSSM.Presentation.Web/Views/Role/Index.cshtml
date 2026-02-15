@@ -1,0 +1,107 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Role
+@model PagingSearchOrderDto<RoleListDto>;
+@{
+    ViewData["Title"] = "View";
+}
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card">
+            <div class="card-block">
+                <div class="col-lg-3">
+                    <div><h5> مدیریت نقشها</h5></div>
+                </div>
+
+                <div class="col-lg-4">
+                </div>
+                <form method="get">
+                    <div class="col-lg-4">
+                        <div class="input-group">
+                            <input type="text" name="search" value="@Model.SearchText" class="form-control" placeholder="جستجو...">
+                            <div class="input-group-btn">
+                                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> جستجو</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="col-lg-1">
+                    <a type="submit" class="btn btn btn-success" asp-controller="Role" asp-action="RolePermissions"><i class="fa fa-plus-circle"></i> جدید</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+
+                    <div class="card-block">
+                        <table class="table table-bordered table-striped table-condensed text-center">
+                            <thead>
+                                <tr>
+                                    <th>عنوان نقش</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Items.Any())
+                                {
+                                    int i = 1;
+                                    foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.Name</td>
+                                            <td>
+                                                <a class="btn btn-outline-primary btn-sm" asp-controller="Role" asp-action="RolePermissions" asp-route-id="@item.Id">ویرایش</a>
+                                            </td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-danger">داده‌ای یافت نشد</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <nav>
+                            <ul class="pagination">
+
+                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
+                                </li>
+
+                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                                {
+                                    <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
+                                        <a class="page-link"
+                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
+                                    <a class="page-link"
+                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <!--/col-->
+        </div>
+        <!--/row-->
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+
+
+    </script>
+}

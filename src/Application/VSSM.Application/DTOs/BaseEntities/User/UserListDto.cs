@@ -9,6 +9,7 @@
         public string RecipientName { get; set; }
 
         public int? PermissionLevel { get; set; }
+        public int? RoleId { get; set; }
         public bool IsAdmin { get; set; }
     }
 }

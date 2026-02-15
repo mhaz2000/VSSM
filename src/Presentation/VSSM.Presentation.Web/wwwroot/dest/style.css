@@ -3745,7 +3745,7 @@ input[type="button"].btn-block {
     position: absolute;
     border: none;
     left: -10px;
-    bottom: -20px;
+    top: 50px;
     box-shadow: 0px 0px 30px 1px grey;
     opacity: 90%;
     border-radius: 8px;
@@ -7041,6 +7041,7 @@ body:not(.top-nav).fixed-nav .sidebar {
 
     body:not(.top-nav).fixed-nav .sidebar .sidebar-nav {
         height: calc(100vh - 55px);
+        border-bottom-left-radius: 50px;
     }
 
 body:not(.top-nav).fixed-nav .sidebar-footer {
@@ -7145,17 +7146,16 @@ body.footer-fixed .footer {
 }
 
 body:not(.top-nav) .sidebar {
-    box-shadow: 15px 8px 26px 3px black;
-    border-radius: 40px 0px 0px 40px;
-    position: absolute;
+    position: fixed;
     top: 0;
-    z-index: 10;
-    display: inline !important;
+    height: 100vh;
     width: 200px;
-    /*  height: 100%;*/
-    padding: 0;
-    color: #fff;
-    background: white;
+    background: #fff;
+    z-index: 10;
+    box-shadow: 15px 8px 26px 3px black;
+    border-radius: 40px 0 0 40px;
+    display: flex;
+    flex-direction: column;
 }
 
     body:not(.top-nav) .sidebar .sidebar-close {
@@ -7207,10 +7207,10 @@ body:not(.top-nav) .sidebar {
             }
 
     body:not(.top-nav) .sidebar .sidebar-nav {
-        position: relative;
-        overflow-x: hidden;
+        flex: 1;
         overflow-y: auto;
-        -ms-overflow-style: -ms-autohiding-scrollbar;
+        overflow-x: hidden;
+        padding-bottom: 20px;
     }
 
     body:not(.top-nav) .sidebar .sidebar-nav {
@@ -10471,11 +10471,13 @@ base-chart.chart {
 }
 
 .sidebar-top-header {
+    height: 70px;
     position: relative;
     display: flex;
     justify-content: left;
     margin: 20px 0px;
 }
+
 
 .sidebar-logo {
     border-radius: 30px;

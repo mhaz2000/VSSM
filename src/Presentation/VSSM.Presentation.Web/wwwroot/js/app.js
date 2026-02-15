@@ -32,28 +32,29 @@ $(document).ready(function ($) {
 
 		var currentUrl = window.location.pathname.toLowerCase();
 
-		// find matching link
 		$('.sidebar .nav-link').each(function () {
 
 			var linkUrl = $(this).attr('href');
 
 			if (!linkUrl) return;
 
-			// ignore #
+			// ignore placeholders
 			if (linkUrl === '#' || linkUrl === '/') return;
 
 			if (currentUrl.startsWith(linkUrl.toLowerCase())) {
 
-				// set active
 				$(this).addClass('active');
 
-				// open all parents
-				$(this).parents('.nav-dropdown').addClass('open');
+				var parents = $(this).parents('.nav-dropdown');
+				parents.addClass('open');
+
+				parents.children('.nav-link').addClass('active');
 
 			}
 		});
 
 	});
+
 
 
 

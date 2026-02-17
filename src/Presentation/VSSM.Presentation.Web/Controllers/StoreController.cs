@@ -8,7 +8,7 @@ using VSSM.Presentation.Web.Models.Store;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class StoreController : BaseController
     {
         private readonly IStoreService _storeService;

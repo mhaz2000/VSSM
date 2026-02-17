@@ -11,7 +11,7 @@ using VSSM.Presentation.Web.Models.ItemDoseAssignment;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class ItemDoseAssignmentController : BaseController
     {
         private readonly IItemService _itemService;

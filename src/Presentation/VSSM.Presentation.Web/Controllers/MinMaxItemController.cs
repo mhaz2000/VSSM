@@ -8,7 +8,7 @@ using VSSM.Presentation.Web.Models.MinMaxItem;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class MinMaxItemController : Controller
     {
         private readonly IMinMaxItemService _service;

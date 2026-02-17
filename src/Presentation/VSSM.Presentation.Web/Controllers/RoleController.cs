@@ -12,7 +12,6 @@ using VSSM.Presentation.Web.Models.Role;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
     public class RoleController : BaseController
     {
         private readonly IRoleService _roleService;

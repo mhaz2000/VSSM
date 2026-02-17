@@ -5,7 +5,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Controllers;
 using VSSM.Presentation.Web.Models.Pack;
 
-[Authorize]
+
 public class PackController : BaseController
 {
     private readonly IPackService _packService;

@@ -5,7 +5,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Controllers;
 using VSSM.Presentation.Web.Models.Source;
 
-[Authorize]
+
 public class SourceController : BaseController
 {
     private readonly ISourceService _service;

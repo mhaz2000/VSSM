@@ -17,7 +17,7 @@ using VSSM.Presentation.Web.Models.Request;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class RequestController : BaseController
     {
         private readonly IItemClassService _itemClassService;

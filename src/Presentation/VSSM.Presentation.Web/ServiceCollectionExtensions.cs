@@ -1,6 +1,9 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using VSSM.Application.Common.Authorization;
+using VSSM.Application.Common.Interfaces;
 using VSSM.Application.DTOs.BaseEntities.Adjustments;
 using VSSM.Application.DTOs.BaseEntities.AdjustReason;
 using VSSM.Application.DTOs.BaseEntities.CommercialName;
@@ -25,6 +28,7 @@ using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
 using VSSM.Application.Services.RequestEntities;
 using VSSM.Infrastructure.Data.Models;
+using VSSM.Presentation.Web.Authorization;
 using VSSM.Presentation.Web.Controllers;
 
 namespace VSSM.Presentation.Web
@@ -37,11 +41,11 @@ namespace VSSM.Presentation.Web
             services.AddDbContext<VSSMDbContext>(options =>
                                     options.UseSqlServer(configuration.GetConnectionString("VSSMDbConnectionStrings")));
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(options =>
-            {
-                options.LoginPath = "/Account/Login";
-            });
+            //services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            //.AddCookie(options =>
+            //{
+            //    options.LoginPath = "/Account/Login";
+            //});
 
             services.AddScoped<IItemClassService, ItemClassService>();
             services.AddScoped<ILevelService, LevelService>();
@@ -108,6 +112,21 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IRequestService, RequestService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMenuService, MenuService>();
+
+
+            services.AddAuthentication("Cookies")
+                .AddCookie("Cookies", options =>
+                {
+                    options.LoginPath = "/Account/Login";
+                    options.AccessDeniedPath = "/Account/AccessDenied";
+                });
+            services.AddScoped<IMenuPermissionService, MenuPermissionService>();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("MenuPermission",
+                    policy => policy.Requirements.Add(new MenuPermissionRequirement()));
+            });
+            services.AddScoped<IAuthorizationHandler, MenuPermissionHandler>();
         }
     }
 }

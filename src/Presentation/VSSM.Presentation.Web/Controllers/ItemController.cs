@@ -16,7 +16,7 @@ using VSSM.Presentation.Web.Models.ItemClass;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class ItemController : BaseController
     {
         private readonly IItemService _itemService;

@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.RecipientMaxItem;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class RecipientMaxItemController : BaseController
     {
         private readonly IRecipientMaxItemService _recipientMaxItemService;

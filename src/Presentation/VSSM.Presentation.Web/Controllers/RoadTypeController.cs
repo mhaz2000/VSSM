@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.RoadType;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class RoadTypeController : BaseController
     {
         private readonly IRoadTypeService _roadTypeService;

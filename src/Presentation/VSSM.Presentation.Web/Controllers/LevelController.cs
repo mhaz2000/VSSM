@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.Level;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class LevelController : BaseController
     {
         private readonly ILevelService _levelService;

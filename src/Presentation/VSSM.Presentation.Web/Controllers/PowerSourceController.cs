@@ -5,7 +5,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Controllers;
 using VSSM.Presentation.Web.Models.PowerSource;
 
-[Authorize]
+
 public class PowerSourceController : BaseController
 {
     private readonly IPowerSourceService _service;

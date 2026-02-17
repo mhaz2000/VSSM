@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class WarningsController(IWarningService warningService) : BaseController
     {
         public async Task<IActionResult> CloseToExirationItemsIndex(

@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.CommercialName;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class CommercialNameController : BaseController
     {
         private readonly ICommercialNameService _commercialNameService;

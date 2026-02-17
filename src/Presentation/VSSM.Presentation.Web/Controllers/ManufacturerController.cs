@@ -9,7 +9,7 @@ using VSSM.Presentation.Web.Models.Manufacturer;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class ManufacturerController : BaseController
 {
     private readonly IManufacturerService _manufacturerService;

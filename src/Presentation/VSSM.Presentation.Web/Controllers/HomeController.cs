@@ -5,7 +5,7 @@ using VSSM.Presentation.Web.Models;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;

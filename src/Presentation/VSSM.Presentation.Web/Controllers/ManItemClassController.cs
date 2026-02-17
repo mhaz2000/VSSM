@@ -7,7 +7,7 @@ using VSSM.Presentation.Web.Models.ManItemClass;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class ManItemClassController : BaseController
 {
     private readonly IManItemClassService _service;

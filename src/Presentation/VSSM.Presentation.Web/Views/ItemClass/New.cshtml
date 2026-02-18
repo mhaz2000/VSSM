@@ -9,92 +9,113 @@
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-
         <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <div>
-                        <h5>@formName نوع کالا</h5>
-                    </div>
-                </div>
+            <div class="card-header">
+                <h5 class="header-title">@formName نوع کالا</h5>
             </div>
-        </div>
-
-        <div>
-
-            <div class="card">
-                <div class="card-block">
+            <div class="card-block">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <form asp-action="Create" method="post" class="form-horizontal">
                         <input type="hidden" asp-for="ItemClassId"/>
-                        <div class="col-lg-6">
-                            <div class="form-group">
-                                <label class="form-label" for="Code">کد:</label>
+                        <div class="row mb-4 mx-0">
+                            <div class="form-group col-lg-4">
+                                <label class="form-label" for="Code">کد</label>
                                 <input type="text" asp-for="Code" name="Code" class="form-control bg-warning-subtle" required/>
                             </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="FullName">نام کامل:</label>
+                            <div class="form-group col-lg-4">
+                                <label class="form-label" for="FullName">نام کامل</label>
                                 <input type="text" asp-for="FullName" name="FullName" class="form-control bg-warning-subtle" required/>
                             </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="Unit">واحد حجم:</label>
-                                <select asp-for="UnitName" asp-items="ViewBag.UnitList" class="form-select">
+                            <div class="form-group col-lg-4">
+                                <label class="form-label" for="Unit">واحد حجم</label>
+                                <select asp-for="UnitName" asp-items="ViewBag.UnitList" class="form-control form-select ">
                                 </select>
                             </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="DisplayOrder">ترتیب نمایش:</label>
+                            <div class="form-group col-lg-4">
+                                <label class="form-label" for="DisplayOrder">ترتیب نمایش</label>
                                 <input type="number" asp-for="OrderInList" name="OrderInList" class="form-control" min="0"/>
                             </div>
 
-                            <div class="form-group">
-                                <label class="form-label">وضعیت:</label>
+                            <div class="form-group col-lg-4">
+                            <label class="form-label" style="margin-bottom: 1.5rem;">وضعیت</label>
+
+                            <div class="d-flex">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" asp-for="IsActive" name="IsActive"/>
-                                    <label class="form-check-label" for="IsActive" id="IsActive">فعال است</label>
+                                <input type="radio"
+                                    asp-for="IsActive"
+                                    value="true"
+                                    class="form-check-input"
+                                    id="isActiveTrue" />
+                                <label class="form-check-label" for="isActiveTrue">
+                                    فعال
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input type="radio"
+                                    asp-for="IsActive"
+                                    value="false"
+                                    class="form-check-input"
+                                    id="isActiveFalse" />
+                                <label class="form-check-label" for="isActiveFalse">
+                                    غیرفعال
+                                </label>
+                            </div>
+                            </div>
+                        </div>
+
+
+                            <div class="form-group col-lg-4">
+                                <label class="form-label" style="margin-bottom: 1.5rem;">فیلدهای اجباری</label>
+
+                                <div class="d-flex flex-wrap align-items-center gap-3" >
+
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                            type="checkbox"
+                                            asp-for="ReqManufacturer" />
+                                        <label class="form-check-label">سازنده</label>
+                                    </div>
+
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                            type="checkbox"
+                                            asp-for="ReqBatchNo" />
+                                        <label class="form-check-label">سری ساخت</label>
+                                    </div>
+
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                            type="checkbox"
+                                            asp-for="ReqExpireDate" />
+                                        <label class="form-check-label">تاریخ انقضاء</label>
+                                    </div>
+
+                                    <div class="form-check">
+                                        <input type="hidden" asp-for="ReqDosePerVial" value="true" />
+                                        <input class="form-check-input"
+                                            type="checkbox"
+                                            disabled
+                                            checked />
+                                        <label class="form-check-label">دوز بر ویال</label>
+                                    </div>
+
                                 </div>
                             </div>
 
-                            @* <hr /> *@
-
-                            <div class="form-group">
-                                <label class="form-label">فیلدهای اجباری:</label>
-                                <div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" asp-for="ReqManufacturer" name="ReqManufacturer"/>
-                                        <label class="form-check-label" for="lbbReqManufacturer">سازنده</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" asp-for="ReqBatchNo" name="ReqBatchNo"/>
-                                        <label class="form-check-label" for="lblReqBatchNo">سری ساخت</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" asp-for="ReqExpireDate" name="ReqExpireDate"/>
-                                        <label class="form-check-label" for="lblReqExpireDate">تاریخ انقضاء</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input type="hidden" asp-for="ReqDosePerVial" name="ReqDosePerVial" value="true"/>
-                                        <input class="form-check-input" type="checkbox" disabled checked/>
-                                        <label class="form-check-label" for="lblReqDosePerVial">دوز بر ویال</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-8"></div>
-                            <div class="col-lg-4">
-                                <div class="text-center mt-4 align-middle">
-                                    <button type="submit" class="btn btn-success px-5">ثبت</button>
-                                    <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
-                                </div>
-                            </div>
+                            <div class="text-left">
+                        <button type="submit" class="btn btn-success px-5">ثبت</button>
+                        <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
+                    </div>
                         </div>
                     </form>
 
                 </div>
-            </div>
-        </div>
+        <div>
+
         <!--/col-->
     </div>
     <!--/row-->

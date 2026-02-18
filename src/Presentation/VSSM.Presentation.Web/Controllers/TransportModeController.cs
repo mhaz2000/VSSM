@@ -6,7 +6,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class TransportModeController : BaseController
 {
     private readonly ITransportModeService _transportModeService;

@@ -5,7 +5,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class UserHomeController : BaseController
 {
     private readonly IUserHomeService _service;

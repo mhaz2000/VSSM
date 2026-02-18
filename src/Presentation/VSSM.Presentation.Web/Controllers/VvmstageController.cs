@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.Vvmstage;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class VvmstageController : BaseController
     {
         private readonly IVvmstageService _vvmstageService;

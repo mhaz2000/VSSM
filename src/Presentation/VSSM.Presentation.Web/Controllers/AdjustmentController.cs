@@ -7,7 +7,7 @@ using VSSM.Presentation.Web.Models.Adjustment;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class AdjustmentController : BaseController
 {
     private readonly IAdjustmentService _adjustmentService;

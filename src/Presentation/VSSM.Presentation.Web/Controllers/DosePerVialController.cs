@@ -9,7 +9,7 @@ using VSSM.Presentation.Web.Models.Item;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class DosePerVialController : BaseController
     {
         private readonly IDosePerVialService _dosePerVialService;

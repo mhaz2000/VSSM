@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.StoreType;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class StoreTypeController : BaseController
     {
         private readonly IStoreTypeService _storeTypeService;

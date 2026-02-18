@@ -8,7 +8,7 @@ using VSSM.Presentation.Web.Models.Arrival;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class ArrivalController : BaseController
     {
         private readonly IArrivalService _arrivalService;

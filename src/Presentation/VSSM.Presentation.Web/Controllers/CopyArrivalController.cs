@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class CopyArrivalController : BaseController
     {
         public IActionResult Index()

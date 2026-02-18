@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.JobType;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class JobTypeController : BaseController
     {
         private readonly IJobTypeService _service;

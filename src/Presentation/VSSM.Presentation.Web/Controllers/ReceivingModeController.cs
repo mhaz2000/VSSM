@@ -5,7 +5,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class ReceivingModeController : BaseController
 {
     private readonly IReceivingModeService _receivingModeService;

@@ -7,7 +7,7 @@ using VSSM.Presentation.Web.Models.RecipientConfiguration;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class RecipientConfigurationController : BaseController
     {
         private readonly IRecipientConfigurationService _service;

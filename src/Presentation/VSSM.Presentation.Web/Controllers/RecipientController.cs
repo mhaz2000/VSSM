@@ -9,7 +9,7 @@ using VSSM.Presentation.Web.Models.Recipient;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class RecipientController : BaseController
     {
         private readonly IRecipientService _recipientService;

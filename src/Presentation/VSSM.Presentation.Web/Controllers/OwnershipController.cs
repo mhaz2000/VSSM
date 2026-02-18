@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class OwnershipController : BaseController
 {
     private readonly IOwnershipService _service;

@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.EduType;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class EduTypeController : BaseController
     {
         private readonly IEduTypeService _service;

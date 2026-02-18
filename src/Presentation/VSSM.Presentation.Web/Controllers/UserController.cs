@@ -7,7 +7,6 @@ using VSSM.Presentation.Web.Models.Utility;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
     public class UserController : BaseController
     {
         private readonly IUserService _userService;

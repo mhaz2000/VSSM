@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.Vvmtype;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class VvmtypeController : BaseController
     {
         private readonly IVvmtypeService _vvmtypeService;

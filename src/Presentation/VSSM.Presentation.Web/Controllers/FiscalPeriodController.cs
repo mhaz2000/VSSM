@@ -6,7 +6,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    [Authorize]
+    
     public class FiscalPeriodController : BaseController
     {
         private readonly IFiscalPeriodService _fiscalPeriodService;

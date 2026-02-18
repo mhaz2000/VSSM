@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace VSSM.Presentation.Web.Controllers
 {
+    [Authorize(Policy = "MenuPermission")]
     public abstract class BaseController : Controller
     {
         protected int? CurrentUserId { get; private set; }

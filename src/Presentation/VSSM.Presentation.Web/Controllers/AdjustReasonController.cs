@@ -6,7 +6,7 @@ using VSSM.Presentation.Web.Models.AdjustReason;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[Authorize]
+
 public class AdjustreasonController : Controller
 {
     private readonly IAdjustReasonService _adjustReasonService;

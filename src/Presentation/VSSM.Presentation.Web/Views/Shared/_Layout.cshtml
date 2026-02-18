@@ -10,50 +10,200 @@
     <link href="~/dest/style.css" rel="stylesheet">
     <link href="~/toastify/toast.css" rel="stylesheet" />
     <link href="~/css/components/shared/dynamic-grid-style.css" rel="stylesheet" />
-    <style>
 
+    
+
+    <style>
         .card {
             margin-bottom: 0px !important;
             border: 0px !important;
+            direction: rtl;
+            border-radius: 24px;
+            padding-right: 4px;
+            padding-left: 4px;
+            padding-top: 16px;
+            background: #F6F6F6;
+        }
+
+        .card-header {
+            background: #F6F6F6;
+            border-radius: 24px;
+            border: 0;
         }
 
         .page-name {
             margin-left: 20px;
         }
 
-        .table th, tr {
-            text-align: center !important
+        .table th,
+        .table tr {
+            text-align: center !important;
         }
 
-        .form-label {
-            text-align: left;
-            width: 130px;
-            margin-left: 15px;
+        .header-title {
+            font-weight: 800;
+            font-size: 24px;
+            line-height: 32px;
+            text-align: right;
         }
 
+        /* Spacing Utilities */
+        .m-0 { margin: 0 !important; }
+        .mx-0 { margin: auto 0; }
+        .ml-2 { margin-left: 4px; }
+        .m-auto { margin: auto !important; }
+
+        /* Form Layout */
         .form-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+            display: block;
             direction: rtl;
         }
 
-        .form-control, .form-select {
+        .form-label {
+            text-align: right;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 32px;
+        }
+
+        .form-label-caption {
+            text-align: right;
+            font-size: 14px;
+            font-weight: 300;
+            line-height: 32px;
+            color: gray;
+        }
+
+        .required-marker {
+            color: red;
+        }
+
+        .form-control,
+        .form-select {
             flex: 1;
+            border-radius: 8px;
+            border: 1px solid #C2C5C6;
+            padding: auto 16px;
+            height: 56px !important;
+            margin-bottom: 24px;
         }
 
         .form-check {
             margin-inline-end: 20px;
             margin-right: 30px !important;
+            display: flex;
+            align-items: center;
         }
 
         .form-check-label {
             padding-right: 0rem !important;
         }
 
-        .card {
-            direction: rtl;
+        /* Buttons */
+        .btn-success {
+            border-radius: 12px;
+            background: #37842F;
+            border: 1px solid #37842F;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 24px;
+            min-height: 40px;
+            min-width: 120px;
+            color: white;
         }
+
+        .btn-success-outlet {
+            border-radius: 12px;
+            color: #37842F;
+            border: 1px solid #37842F;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 24px;
+            min-height: 40px;
+            min-width: 120px;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        /* Table Wrapper */
+        .table-wrapper {
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+            margin-bottom: 32px;
+        }
+        .table{
+            margin:0;
+        }
+
+
+    .pager-wrap {
+        display: flex;
+        justify-content: flex-start; 
+        margin-top: 12px;
+        direction: rtl;
+    }
+
+    .cpageination{
+        display: flex;
+        gap: 8px;
+    }
+
+    .pager-modern .page-item .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-left: -1px;
+        background: #fff;
+        color: #262626;
+        font-weight: 500;
+        font-size:14px;
+        width:32px;
+        height:32px;
+    }
+
+    .pager-modern .page-item .page-link .fa{
+        font-size: 18px;
+        font-weight: 400;
+    }
+
+    .pager-modern .page-item.active .page-link {
+        background: #0071B7; 
+        border-color: #0071B7;
+        color: #fff;
+    }
+
+    .pager-modern .page-item.disabled .page-link {
+        background: #f9fafb;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .pager-modern .page-item.ellipsis .page-link {
+        pointer-events: none;
+    }
+    .d-flex{
+        display:flex;
+    }
+    .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12, .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12, .col-xl-1, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-10, .col-xl-11, .col-xl-12{
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .badge{
+        padding: 2px 8px;
+        border-radius:8px;
+        max-width:100px;
+        width:100%;
+        display: block;
+        margin:auto;
+    }
     </style>
 
 
@@ -128,7 +278,7 @@
     </footer> *@
 
 
-
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <!-- Bootstrap and necessary plugins -->
     <script src="~/js/libs/jquery.min.js"></script>
     <script src="~/js/libs/tether.min.js"></script>

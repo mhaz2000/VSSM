@@ -5,105 +5,55 @@
     ViewData["Title"] = "مدیریت انبارها";
 }
 
-<style>
-    .w-full {
-        width: 100%;
-    }
+@{
+    int rowIndex = (Model.Paging.Page - 1) * Model.Paging.PageSize;
+}
 
-    .pager-wrap {
-        display: flex;
-        justify-content: flex-start; /* ← راست‌چین */
-        margin-top: 12px;
-        direction: rtl;
-    }
-
-
-    .pager-modern {
-        margin: 0;
-        gap: 0;
-    }
-
-        .pager-modern .page-item .page-link {
-            min-width: 44px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #e5e7eb;
-            border-radius: 0;
-            margin-left: -1px; /* چسبیدن مثل عکس */
-
-            background: #fff;
-            color: #1d4ed8; /* آبی متن */
-            font-weight: 500;
-        }
-
-        .pager-modern .page-item.active .page-link {
-            background: #0ea5e9; /* آبی/فیروزه‌ای مثل عکس */
-            border-color: #0ea5e9;
-            color: #fff;
-        }
-
-        .pager-modern .page-item.disabled .page-link {
-            background: #f9fafb;
-            color: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .pager-modern .page-item.ellipsis .page-link {
-            pointer-events: none;
-        }
-
-</style>
 <div class="container-fluid">
     <div class="animated fadeIn">
 
         <!-- Search Card -->
-        <div class="card mb-3">
-            <div class="card-block">
-
-                <form method="get">
-                    <div class="row d-flex align-items-center justify-content-between">
-
-                        <div class="col-lg-3">
-                            <input class="form-control"
-                                   name="search"
-                                   value="@Model.SearchText"
-                                   placeholder="جستجو بر اساس کد یا نام..." />
-                        </div>
+        <div class="card">
+            <div class="row m-0  card-header">
+                <div class="col-lg-8">
+                    <h5 class="header-title">@ViewData["Title"]</h5>
+                </div>
+                <div class="col-lg-4 row d-flex align-items-center justify-content-between">
 
                         <div class="col-lg-3">
-                            <select name="typeId" class="form-select" asp-items="ViewBag.TypeList">
+                            <select name="typeId" class="form-control form-select m-0" 
+                            style="height:42px!important"
+                            asp-items="ViewBag.TypeList">
                                 <option value="">نوع انبار</option>
                             </select>
                         </div>
-
-                        <div class="col-lg-2 d-flex justify-content-start">
-                            <button type="submit" class="btn btn-primary w-100">جستجو</button>
+                        <div class="col-lg-6">
+                            @await Component.InvokeAsync("SearchBar", new
+                            {
+                                searchTerm = Model.SearchText,
+                                pageSize = Model.Paging.PageSize,
+                                sort = Model.SortField,
+                                direction = Model.SortOrder
+                            })
+                        </div>
+                        <div class="col-lg-3">
+                            <a class="btn btn-success m-0" asp-action="New"><i class="fa fa-plus ml-2"></i>افزودن</a>
                         </div>
 
-                        <div class="col-lg-2 d-flex justify-content-start mt-2 mt-lg-0">
-                            <a class="btn btn-success w-100" asp-action="New">+ جدید</a>
-                        </div>
-                    </div>
-                </form>
+                </div>
             </div>
-        </div>
-
-        <!-- TABLE -->
-        <div class="card">
+            
             <div class="card-block">
-
-                <table class="table table-bordered table-striped text-center">
+                <div class="table-wrapper">
+                    <table class="table table-bordered table-striped text-center m-0">
                     <thead>
                         <tr>
                             <th>کد</th>
                             <th>نام</th>
                             <th>نوع انبار</th>
-                            <th>حجم (لیتر)</th>
-                            <th>حجم خالی (لیتر)</th>
-                            <th>ملاحظات</th>
-                            <th>فعال است</th>
+                            <th>حجم کلی فضا (لیتر)</th>
+                            <th>حجم مفید (لیتر)</th>
+                            <th>وضعیت</th>
                             <th>عملیات</th>
                         </tr>
                     </thead>
@@ -113,21 +63,29 @@
                         {
                             foreach (var item in Model.Items)
                             {
+                                rowIndex++;
                                 <tr>
+                                    <td>@rowIndex</td>
                                     <td>@item.Code</td>
                                     <td>@item.FullName</td>
                                     <td>@item.TypeName</td>
                                     <td>@item.Volume</td>
                                     <td>@item.FreeVolume</td>
-                                    <td>@item.Note</td>
                                     <td>
-                                        <input type="checkbox" checked="@item.IsActive" disabled />
+                                        @if (item.IsActive)
+                                            {
+                                                <span class="badge bg-success">فعال</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">غیرفعال</span>
+                                            }
                                     </td>
                                     <td>
-                                        <a class="btn btn-primary btn-sm"
+                                        <a class="btn btn-link text-danger btn-sm"
                                            asp-action="New"
                                            asp-route-id="@item.StoreId">
-                                            ویرایش
+                                            <i class="fa fa-trash" style="font-size:18px;"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -141,9 +99,11 @@
                         }
                     </tbody>
                 </table>
-
+                
+                
+                </div>
                 <!-- Pagination -->
-                @{
+               @{
                     int page = Model.Paging.Page;
                     int totalPages = Model.Paging.TotalPages;
 
@@ -171,13 +131,13 @@
                     => $"?search={search}&typeId={typeId}&sortField={sortField}&sortOrder={sortOrder}&page={p}";
                 }
 
-                <nav class="pager-wrap mt-2" aria-label="Page navigation">
-                    <ul class="pagination pager-modern">
+                <nav class="pager-wrap mt-2 m-auto" aria-label="Page navigation">
+                    <ul class="cpageination pager-modern m-auto">
 
                         <!-- قبلی -->
                         <li class="page-item @(page == 1 ? "disabled" : "")">
                             <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))" tabindex="@(page == 1 ? "-1" : "0")">
-                                قبلی
+                                <
                             </a>
                         </li>
 
@@ -199,11 +159,15 @@
                                 prev = p;
                             }
                         }
-
+                        <li class="page-item @(page == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page + 1))" tabindex="@(page == 1 ? "-1" : "0")">
+                                >
+                            </a>
+                        </li>
+                </nav>
 
             </div>
         </div>
-
     </div>
 </div>
 

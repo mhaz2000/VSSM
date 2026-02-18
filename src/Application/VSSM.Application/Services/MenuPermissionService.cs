@@ -17,13 +17,12 @@ namespace VSSM.Application.Services
         {
             _db = db;
         }
-        public async Task<bool> HasAccessAsync(int roleId, string controller, string action)
+        public async Task<bool> HasAccessAsync(int roleId, string controller)
         {
             return await _db.RoleMenus
             .AnyAsync(rm =>
                 rm.RoleId == roleId &&
-                rm.Menu.Controller == controller &&
-                rm.Menu.Action == action);
+                rm.Menu.Controller == controller);
         }
     }
 }

@@ -8,6 +8,6 @@ namespace VSSM.Application.Common.Interfaces
 {
     public interface IMenuPermissionService
     {
-        Task<bool> HasAccessAsync(int roleId, string controller, string action);
+        Task<bool> HasAccessAsync(int roleId, string controller);
     }
 }

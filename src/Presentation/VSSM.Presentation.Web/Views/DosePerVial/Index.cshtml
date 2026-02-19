@@ -1,6 +1,6 @@
 ﻿@model PagingSearchOrderDto<DosePerVialListDto>;
 @{
-    ViewData["Title"] = "View";
+    ViewData["Title"] = "مدیریت دوز بر ویال";
 }
 
 <div class="container-fluid">
@@ -8,35 +8,35 @@
 
 
         <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <div><h5> مدیریت دوز بر ویال</h5></div>
-                </div>
 
-                <div class="col-lg-4">
+            <div class="row m-0  card-header">
+                <div class="col-lg-9">
+                    <h5 class="header-title">@ViewData["Title"]</h5>
                 </div>
-                <form method="get">
-                    <div class="col-lg-4">
-                        <div class="input-group">
-                            <input type="text" name="search" value="@Model.SearchText" class="form-control" placeholder="جستجو...">
-                            <div class="input-group-btn">
-                                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> جستجو</button>
-                            </div>
-                        </div>
+                <div class="col-lg-3 row d-flex align-items-center justify-content-between">
+
+                    <div class="col-lg-9">
+                        @await Component.InvokeAsync("SearchBar", new
+                        {
+                            searchTerm = Model.SearchText,
+                            pageSize = Model.Paging.PageSize,
+                            sort = Model.SortField,
+                            direction = Model.SortOrder
+                        })
                     </div>
-                </form>
-                <div class="col-lg-1">
-                    <a type="submit" class="btn btn btn-success" asp-controller="DosePerVial" asp-action="New"><i class="fa fa-plus-circle"></i> جدید</a>
+                    <div class="col-lg-3">
+                        <a class="btn btn-success m-0" 
+                            asp-controller="DosePerVial"
+                            asp-action="New">
+                            <i class="fa fa-plus ml-2"></i>افزودن
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
-
-                    <div class="card-block">
-                        <table class="table table-bordered table-striped table-condensed text-center">
+            <div class="card-block">
+                <div class="table-wrapper">
+                     <table class="table table-bordered table-striped table-condensed text-center">
                             <thead>
                                 <tr>
                                     <th>تعداد دوز بر ویال</th>
@@ -52,10 +52,23 @@
                                     {
                                         <tr>
                                             <td>@item.NumDosePerVial</td>
-                                            <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
                                             <td>
-                                                <a class="btn btn-primary btn-sm" asp-controller="DosePerVial" asp-action="Edit" asp-route-id="@item.DosePerVialId">ویرایش</a>
-                                            </td>
+                                                @if (item.IsActive)
+                                                    {
+                                                        <span class="badge bg-success">فعال</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">غیرفعال</span>
+                                                    }
+                                            </td>                                            <td>
+                                            <a class="btn btn-link text-info btn-sm"
+                                                asp-controller="DosePerVial"
+                                                asp-action="Edit"
+                                                asp-route-id="@item.DosePerVialId">
+                                                <i class="fa fa-edit" style="font-size:18px;"></i>
+                                            </a>
+                                        </td>
                                         </tr>
                                         i++;
                                     }
@@ -68,33 +81,75 @@
                                 }
                             </tbody>
                         </table>
-                        <nav>
-                            <ul class="pagination">
 
-                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
-                                </li>
+                </div>
+                        <!-- Pagination -->
+               @{
+                    int page = Model.Paging.Page;
+                    int totalPages = Model.Paging.TotalPages;
 
-                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                    // چند صفحه اطراف صفحه فعلی
+                    int window = 2;
+
+                    // پارامترهای فیلتر/مرتب‌سازی که باید حفظ شوند
+                    var search = Model.SearchText ?? "";
+                    var sortField = Model.SortField ?? "";
+                    var sortOrder = Model.SortOrder ?? "";
+
+                    // typeId از QueryString میاد (چون تو Model نیست)
+                    var typeId = Context.Request.Query["typeId"].ToString() ?? "";
+
+                    // انتخاب صفحات: 1, ... , (page-window..page+window), ... , total
+                    var selected = new SortedSet<int>();
+                    if (totalPages >= 1) selected.Add(1);
+
+                    for (int p = page - window; p <= page + window; p++)
+                        if (p >= 1 && p <= totalPages) selected.Add(p);
+
+                    if (totalPages >= 2) selected.Add(totalPages);
+
+                    string PageUrl(int p)
+                    => $"?search={search}&typeId={typeId}&sortField={sortField}&sortOrder={sortOrder}&page={p}";
+                }
+
+                <nav class="pager-wrap mt-2 m-auto" aria-label="Page navigation">
+                    <ul class="cpageination pager-modern m-auto">
+
+                        <!-- قبلی -->
+                        <li class="page-item @(page == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))" tabindex="@(page == 1 ? "-1" : "0")">
+                                <
+                            </a>
+                        </li>
+
+                        @{
+                            int prev = 0;
+                            foreach (var p in selected)
+                            {
+                                if (prev != 0 && p - prev > 1)
                                 {
-                                    <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
-                                        <a class="page-link"
-                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
+                                    <li class="page-item disabled ellipsis">
+                                        <span class="page-link">…</span>
                                     </li>
                                 }
 
-                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
+                                <li class="page-item @(p == page ? "active" : "")">
+                                    <a class="page-link" href="@PageUrl(p)">@p</a>
                                 </li>
-                            </ul>
+
+                                prev = p;
+                            }
+                        }
+                        <li class="page-item @(page == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page + 1))" tabindex="@(page == 1 ? "-1" : "0")">
+                                >
+                            </a>
+                        </li>
                         </nav>
-                    </div>
-                </div>
             </div>
-            <!--/col-->
+
         </div>
-        <!--/row-->
+
+        
     </div>
 </div>

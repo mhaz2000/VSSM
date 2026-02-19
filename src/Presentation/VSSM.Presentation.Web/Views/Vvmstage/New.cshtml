@@ -6,97 +6,73 @@ if (Model != null && Model.VvmstageId > 0)
 formName = "ویرایش";
 }
 
-<style>
-    /* Styling copied directly from the sample */
-    .form-label {
-        text-align: left;
-        width: 130px;
-        margin-left: 15px;
-    }
-
-    .form-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-        direction: rtl;
-    }
-
-    .form-control, .form-select {
-        flex: 1;
-    }
-
-    .card {
-        direction: rtl;
-    }
-
-    /* Adjust checkbox alignment for better visual appearance */
-    .checkbox-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-    }
-
-    .form-check-input {
-        width: 20px;
-        height: 20px;
-        margin: 0 !important; /* Resetting default margins */
-        margin-right: 15px !important;
-    }
-</style>
-
 <div class="container-fluid">
     <div class="animated fadeIn">
 
         <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <div><h5>@formName مرحله VVM</h5></div>
-                </div>
+            <div class="card-header">
+                <h5 class="header-title">@formName مرحله VVM</h5>
             </div>
-        </div>
+            <div class="card-block">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <div>
-            <div class="card">
-                <div class="card-block">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <form asp-action="Create" method="post" class="form-horizontal">
-                        <input type="hidden" asp-for="VvmstageId" />
+                <form asp-action="Create" method="post" class="form-horizontal">
+                    <input type="hidden" asp-for="VvmstageId" />
 
-                        <div class="col-lg-6">
+                    <div class="row equal-height mb-4 mx-0">
+                        <div class="form-group col-lg-4">
+                            <label class="form-label" asp-for="Code">کد</label>
+                            <input type="text" asp-for="Code" class="form-control bg-warning-subtle" maxlength="50" required />
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="Code">کد:</label>
-                                <input type="text" asp-for="Code" class="form-control" />
-                            </div>
-                            <span asp-validation-for="Code" class="text-danger d-block text-end"></span>
+                        <div class="form-group col-lg-4">
+                            <label class="form-label" asp-for="FullName">نام کامل</label>
+                            <input type="text" asp-for="FullName" class="form-control bg-warning-subtle" maxlength="200" required />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
 
-                            <div class="form-group">
-                                <label class="form-label" for="FullName">نام کامل:</label>
-                                <input type="text" asp-for="FullName" class="form-control" />
-                            </div>
-                            <span asp-validation-for="FullName" class="text-danger d-block text-end"></span>
-
-                            <div class="form-group">
-                                <label class="form-label" for="IsActive">فعال:</label>
-                                <div class="checkbox-container">
-                                    @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+                        <!-- Radio buttons for active/inactive -->
+                        <div class="form-group col-lg-1"></div>
+                        <div class="form-group col-lg-2">
+                            <label class="form-label">وضعیت</label>
+                            <div class="d-flex">
+                                <div class="form-check">
+                                    <input type="radio"
+                                           asp-for="IsActive"
+                                           value="true"
+                                           class="form-check-input"
+                                           id="isActiveTrue" />
+                                    <label class="form-check-label" for="isActiveTrue">
+                                        فعال
+                                    </label>
                                 </div>
-                            </div>
 
-                            <span asp-validation-for="IsActive" class="text-danger d-block text-end"></span>
-
-                            <div class="col-lg-8"></div>
-                            <div class="col-lg-4">
-                                <div class="text-center mt-4 align-middle">
-                                    <button type="submit" class="btn btn-success px-5">ثبت</button>
-                                    <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
+                                <div class="form-check">
+                                    <input type="radio"
+                                           asp-for="IsActive"
+                                           value="false"
+                                           class="form-check-input"
+                                           id="isActiveFalse" />
+                                    <label class="form-check-label" for="isActiveFalse">
+                                        غیرفعال
+                                    </label>
                                 </div>
                             </div>
                         </div>
-                    </form>
+                    </div>
 
-                </div>
+                    <div class="text-left">
+                        <button type="submit" class="btn btn-success px-5">@formName</button>
+                        <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
+                    </div>
+                </form>
             </div>
         </div>
+
     </div>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

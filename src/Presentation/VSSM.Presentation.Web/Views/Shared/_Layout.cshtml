@@ -14,6 +14,21 @@
     
 
     <style>
+
+.row.equal-height {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.row.equal-height > [class*='col-'] {
+  display: flex;
+  flex-direction: column;
+}
+
+.row.equal-height > [class*='col-'] > * {
+  flex-grow: 1;
+}
+
         .card {
             margin-bottom: 0px !important;
             border: 0px !important;
@@ -24,7 +39,9 @@
             padding-top: 16px;
             background: #F6F6F6;
         }
-
+        .card.form-card,.card-form-header{
+            background:white!important;
+        }
         .card-header {
             background: #F6F6F6;
             border-radius: 24px;
@@ -79,15 +96,19 @@
         .required-marker {
             color: red;
         }
-
+        .form-group{
+            
+            margin-bottom: 24px;
+        }
         .form-control,
         .form-select {
             flex: 1;
             border-radius: 8px;
             border: 1px solid #C2C5C6;
             padding: auto 16px;
-            height: 56px !important;
-            margin-bottom: 24px;
+        }
+        .form-group>.form-control{
+            min-height: 56px;
         }
 
         .form-check {

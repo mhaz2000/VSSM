@@ -1,157 +1,137 @@
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model PagingSearchOrderDto<VSSM.Application.DTOs.BaseEntities.Vvmtype.VvmtypeDto>
+
 @{
-ViewData["Title"] = "مدیریت انواع VVM";
+    ViewData["Title"] = "مدیریت انواع VVM";
 }
 
 <div class="container-fluid">
     <div class="animated fadeIn">
 
         <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <h5>مدیریت انواع VVM</h5>
+            <div class="row m-0 card-header align-items-center">
+                <div class="col-lg-9">
+                    <h5 class="header-title">@ViewData["Title"]</h5>
                 </div>
-                <div class="col-lg-4">
-                </div>
-                <form method="get">
-                    <div class="col-lg-4">
-                        <div class="input-group">
-                            <input type="text" name="search" value="@Model.SearchText" class="form-control" placeholder="جستجو (کد یا نام)...">
-                            <div class="input-group-btn">
-                                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> جستجو</button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Hidden fields to maintain sorting state -->
-                    <input type="hidden" name="sortField" value="@Model.SortField" />
-                    <input type="hidden" name="sortOrder" value="@Model.SortOrder" />
-                </form>
 
-                <div class="col-lg-1 ms-auto">
-                    <a class="btn btn-success" asp-controller="Vvmtype" asp-action="New"><i class="fa fa-plus-circle"></i> جدید</a>
+                <div class="col-lg-3 row d-flex align-items-center justify-content-between">
+                    <div class="col-lg-9">
+                            @await Component.InvokeAsync("SearchBar", new
+                            {
+                                searchTerm = Model.SearchText,
+                                pageSize = Model.Paging.PageSize,
+                                sort = Model.SortField,
+                                direction = Model.SortOrder
+                            })
+                        </div>
+                    <div class="col-lg-3">
+                        <a class="btn btn-success  m-0" asp-controller="Vvmtype" asp-action="New">
+                            <i class="fa fa-plus ml-2"></i>افزودن
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-body p-0">
-                        <table class="table table-bordered table-striped table-condensed text-center mb-0">
-                            <thead>
-                            <tr>
-                                <th>
-                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=VvmtypeId&sortOrder=@(Model.SortField == "VvmtypeId" && Model.SortOrder == "asc" ? "desc" : "asc")">
-                                        شناسه <i class="fa fa-sort"></i>
-                                    </a>
-                                </th>
-                                <th>
-                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=Code&sortOrder=@(Model.SortField == "Code" && Model.SortOrder == "asc" ? "desc" : "asc")">
-                                        کد <i class="fa fa-sort"></i>
-                                    </a>
-                                </th>
-                                <th>
-                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=FullName&sortOrder=@(Model.SortField == "FullName" && Model.SortOrder == "asc" ? "desc" : "asc")">
-                                        نام کامل <i class="fa fa-sort"></i>
-                                    </a>
-                                </th>
-                                <th>
-                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=CanUserChange&sortOrder=@(Model.SortField == "CanUserChange" && Model.SortOrder == "asc" ? "desc" : "asc")">
-                                        قابل تغییر توسط کاربر <i class="fa fa-sort"></i>
-                                    </a>
-                                </th>
-                                <th>تاریخ ثبت</th>
-                                <th>فعال</th>
-                                <th>عملیات</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @if (Model.Items != null && Model.Items.Any())
-                            {
+            <div class="card-block">
+                <table class="table table-bordered table-striped table-condensed text-center mb-0">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="?sortField=VvmtypeId&sortOrder=@(Model.SortField == "VvmtypeId" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                    شناسه <i class="fa fa-sort"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sortField=Code&sortOrder=@(Model.SortField == "Code" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                    کد <i class="fa fa-sort"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sortField=FullName&sortOrder=@(Model.SortField == "FullName" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                    نام کامل <i class="fa fa-sort"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sortField=CanUserChange&sortOrder=@(Model.SortField == "CanUserChange" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                    قابل تغییر توسط کاربر <i class="fa fa-sort"></i>
+                                </a>
+                            </th>
+                            <th>تاریخ ثبت</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items != null && Model.Items.Any())
+                        {
                             foreach (var item in Model.Items)
                             {
-                            <tr>
-                                <td>@item.VvmtypeId</td>
-                                <td>@item.Code</td>
-                                <td>@item.FullName</td>
+                                <tr>
+                                    <td>@item.VvmtypeId</td>
+                                    <td>@item.Code</td>
+                                    <td>@item.FullName</td>
+                                    
+                                    <td>
+                                        <i class="fa @(item.CanUserChange ? "fa-check text-success" : "fa-times text-danger")"></i>
+                                    </td>
+                                    <td>@item.EntryShamsiDate</td>
+                                    <td>
+                                                @if (item.IsActive)
+                                                    {
+                                                        <span class="badge bg-success">فعال</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">غیرفعال</span>
+                                                    }
+                                            </td>  
+                                    <td>
+                                        <a class="btn btn-link text-info btn-sm" asp-action="Edit" asp-route-id="@item.VvmtypeId">
+                                            <i class="fa fa-edit" style="font-size:18px;"></i>
+                                        </a>
 
-                                <!-- CanUserChange visual representation -->
-                                <td>
-                                    @if (item.CanUserChange == true)
-                                    {
-                                    <span class="badge badge-success">بله</span>
-                                    }
-                                    else
-                                    {
-                                    <span class="badge badge-secondary">خیر</span>
-                                    }
-                                </td>
-
-                                <td>@(item.EntryShamsiDate)</td>
-
-                                <!-- IsActive visual representation -->
-                                <td>
-                                    @if (item.IsActive == true)
-                                    {
-                                    <span class="badge badge-success">بله</span>
-                                    }
-                                    else
-                                    {
-                                    <span class="badge badge-secondary">خیر</span>
-                                    }
-                                </td>
-
-                                <td>
-                                    <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.VvmtypeId">ویرایش</a>
-
-                                    <form asp-action="Delete" asp-route-id="@item.VvmtypeId" method="post" style="display:inline;">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('آیا مطمئن هستید می‌خواهید این نوع VVM را حذف کنید؟');">حذف</button>
-                                    </form>
-                                </td>
-                            </tr>
+                                        <form asp-action="Delete" asp-route-id="@item.VvmtypeId" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-link text-danger btn-sm"
+                                                    onclick="return confirm('آیا مطمئن هستید می‌خواهید این نوع VVM را حذف کنید؟');">
+                                                <i class="fa fa-trash" style="font-size:18px;"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
                             }
-                            }
-                            else
-                            {
+                        }
+                        else
+                        {
                             <tr>
                                 <td colspan="7" class="text-center text-danger">داده‌ای یافت نشد</td>
                             </tr>
-                            }
-                            </tbody>
-                        </table>
+                        }
+                    </tbody>
+                </table>
 
-                        <!-- Pagination -->
-                        <nav class="mt-2">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
-                                    <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
-                                </li>
+                <!-- Pagination -->
+                <nav class="mt-2">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
+                            <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
+                        </li>
 
-                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
-                                {
-                                <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
-                                    <a class="page-link" href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
-                                </li>
-                                }
+                        @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                        {
+                            <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
+                                <a class="page-link" href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
+                            </li>
+                        }
 
-                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
-                                    <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
-                                </li>
-                            </ul>
-                        </nav>
+                        <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
+                        </li>
+                    </ul>
+                </nav>
 
-                    </div>
-                </div>
             </div>
         </div>
 
     </div>
 </div>
-
-@section Scripts {
-<script>
-    // Optional: Add any JavaScript if needed
-</script>
-}

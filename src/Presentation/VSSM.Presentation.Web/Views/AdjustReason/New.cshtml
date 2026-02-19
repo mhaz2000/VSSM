@@ -1,121 +1,101 @@
-﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
-@model VSSM.Presentation.Web.Models.AdjustReason.AdjustReasonViewModel
+﻿@model VSSM.Presentation.Web.Models.AdjustReason.AdjustReasonViewModel
 
 @{
-    string formName = "ثبت دلیل تعدیل";
-    if (Model != null && Model.AdjustReasonId > 0 && Model.AdjustReasonId > 0)
-    {
-        formName = "ویرایش دلیل تعدیل";
-    }
+    string formName = "ثبت";
+    if (Model != null && Model.AdjustReasonId > 0)
+        formName = "ویرایش";
 }
-
-<style>
-    .form-label {
-        text-align: left;
-        width: 160px;
-        margin-left: 15px;
-    }
-
-    .form-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 12px;
-        direction: rtl;
-    }
-
-    .form-control, .form-select {
-        flex: 1;
-    }
-
-    .form-check {
-        margin-inline-end: 25px;
-        margin-right: 30px !important;
-    }
-
-    .form-check-label {
-        padding-right: 0rem !important;
-    }
-
-    .card {
-        direction: rtl;
-    }
-</style>
 
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <!-- Title -->
-        <div class="card mb-3">
-            <div class="card-block">
-                <h5>@formName</h5>
-            </div>
-        </div>
-
         <div class="card">
+            <div class="card-header">
+                <h5 class="header-title">@formName دلیل تعدیل</h5>
+            </div>
+
             <div class="card-block">
+
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                 <form asp-action="Create" method="post" class="form-horizontal">
                     <input type="hidden" asp-for="AdjustReasonId"/>
 
-                    <div class="col-lg-6">
+                    <div class="row mb-4 mx-0">
 
-                        <div class="form-group">
+                        <div class="form-group col-lg-4">
                             <label class="form-label">کد</label>
-                            <input asp-for="Code" class="form-control"/>
+                            <input asp-for="Code" class="form-control bg-warning-subtle" required />
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group col-lg-4">
                             <label class="form-label">نام کامل</label>
-                            <input asp-for="FullName" class="form-control"/>
+                            <input asp-for="FullName" class="form-control bg-warning-subtle" required />
                         </div>
-                        <hr/>
+                        <div class="form-group col-lg-1"></div>
+                        <div class="form-group col-lg-3">
+                            <label class="form-label" style="margin-bottom:1.5rem;">وضعیت</label>
+                            <div class="d-flex">
+                                <div class="form-check">
+                                    <input type="radio" asp-for="IsActive" value="true"
+                                           class="form-check-input" id="activeTrue"/>
+                                    <label class="form-check-label" for="activeTrue">فعال</label>
+                                </div>
 
-                        <div class=" " style="width: 50%;margin: auto;display: block;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <label style="text-align: right;margin-right: 8px" class="form-label">فعال</label>
-                                <input asp-for="IsActive" type="checkbox"/>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between;">
-                                <label class="form-label" style="text-align: right;margin-right: 8px">استفاده برای تعدیل ارسال</label>
-                                <input asp-for="UsedForDispatchAdjust" type="checkbox"/>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between;">
-                                <label class="form-label" style="text-align: right;margin-right: 8px">استفاده برای تعدیل رسید</label>
-                                <input asp-for="UserForArrivalAdjust" type="checkbox"/>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between;">
-                                <label class="form-label" style="text-align: right;margin-right: 8px">استفاده برای تعدیل موجودی</label>
-                                <input asp-for="UsedForStockAdjust" type="checkbox"/>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between;">
-                                <label style="text-align: right;margin-right: 8px" class="form-label">به عنوان پرتی حساب شود</label>
-                                <input asp-for="IsWaste" type="checkbox"/>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between;">
-                                <label style="text-align: right;margin-right: 8px" class="form-label">کاهش موجودی</label>
-                                <input asp-for="ApplicationForStockSubtraction" type="checkbox"/>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between;">
-                                <label style="text-align: right;margin-right: 8px" class="form-label">افزایش موجودی</label>
-                                <input asp-for="ApplicationForStockAddition" type="checkbox"/>
+                                <div class="form-check">
+                                    <input type="radio" asp-for="IsActive" value="false"
+                                           class="form-check-input" id="activeFalse"/>
+                                    <label class="form-check-label" for="activeFalse">غیرفعال</label>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Submit + Back Buttons -->
-                        <div class="col-lg-12 text-center mt-4">
+                        <div class="form-group col-lg-12">
+                            <label class="form-label" style="margin-bottom:1.5rem;">کاربردها</label>
+
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+
+                                <div class="form-check">
+                                    <input class="form-check-input" asp-for="UsedForDispatchAdjust" type="checkbox"/>
+                                    <label class="form-check-label">تعدیل ارسال</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" asp-for="UserForArrivalAdjust" type="checkbox"/>
+                                    <label class="form-check-label">تعدیل رسید</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" asp-for="UsedForStockAdjust" type="checkbox"/>
+                                    <label class="form-check-label">تعدیل موجودی</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" asp-for="IsWaste" type="checkbox"/>
+                                    <label class="form-check-label">پرتی حساب شود</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" asp-for="ApplicationForStockSubtraction" type="checkbox"/>
+                                    <label class="form-check-label">کاهش موجودی</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" asp-for="ApplicationForStockAddition" type="checkbox"/>
+                                    <label class="form-check-label">افزایش موجودی</label>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="text-left">
                             <button type="submit" class="btn btn-success px-5">ثبت</button>
-                            <a class="btn btn-primary px-5" asp-action="Index">لیست</a>
+                            <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
                         </div>
 
                     </div>
                 </form>
+
             </div>
         </div>
 

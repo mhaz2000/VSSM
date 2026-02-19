@@ -1,5 +1,4 @@
 @using Microsoft.AspNetCore.Mvc.TagHelpers
-@using VSSM.Application.DTOs
 @model PagingSearchOrderDto<VSSM.Application.DTOs.BaseEntities.StoreType.StoreTypeDto>
 @{
     ViewData["Title"] = "مدیریت انواع انبار";
@@ -9,60 +8,56 @@
     <div class="animated fadeIn">
 
         <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <h5>مدیریت انواع انبار</h5>
+            <div class="row m-0 card-header">
+                <div class="col-lg-9">
+                    <h5 class="header-title">@ViewData["Title"]</h5>
                 </div>
-                <div class="col-lg-4">
-                </div>
-                <form method="get">
-                    <div class="col-lg-4">
-                        <div class="input-group">
-                            <input type="text" name="search" value="@Model.SearchText" class="form-control" placeholder="جستجو (کد یا نام)...">
-                            <div class="input-group-btn">
-                                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> جستجو</button>
-                            </div>
+                <div class="col-lg-3 row d-flex align-items-center justify-content-between">
+                    <div class="col-lg-9">
+                            @await Component.InvokeAsync("SearchBar", new
+                            {
+                                searchTerm = Model.SearchText,
+                                pageSize = Model.Paging.PageSize,
+                                sort = Model.SortField,
+                                direction = Model.SortOrder
+                            })
                         </div>
+                    <div class="col-lg-3">
+                        <a class="btn btn-success m-0" asp-controller="StoreType" asp-action="New">
+                            <i class="fa fa-plus ml-2"></i> افزودن
+                        </a>
                     </div>
-                    <input type="hidden" name="sortField" value="@Model.SortField" />
-                    <input type="hidden" name="sortOrder" value="@Model.SortOrder" />
-                </form>
-
-                <div class="col-lg-1 ms-auto">
-                    <a class="btn btn-success" asp-controller="StoreType" asp-action="New"><i class="fa fa-plus-circle"></i> جدید</a>
                 </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-body p-0">
-                        <table class="table table-bordered table-striped table-condensed text-center mb-0">
-                            <thead>
+            <div class="card-block">
+                <div class="table-wrapper">
+                    <table class="table table-bordered table-striped table-condensed text-center">
+                        <thead>
                             <tr>
                                 <th>
-                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=StoreTypeId&sortOrder=@(Model.SortField == "StoreTypeId" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                    <a href="?sortField=StoreTypeId&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
                                         شناسه <i class="fa fa-sort"></i>
                                     </a>
                                 </th>
                                 <th>
-                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=Code&sortOrder=@(Model.SortField == "Code" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                    <a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
                                         کد <i class="fa fa-sort"></i>
                                     </a>
                                 </th>
                                 <th>
-                                    <a href="?search=@Model.SearchText&page=@Model.Paging.Page&sortField=FullName&sortOrder=@(Model.SortField == "FullName" && Model.SortOrder == "asc" ? "desc" : "asc")">
+                                    <a href="?sortField=FullName&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
                                         نام کامل <i class="fa fa-sort"></i>
                                     </a>
                                 </th>
                                 <th>تاریخ ثبت</th>
-                                <th>فعال</th>
+                                <th>وضعیت</th>
                                 <th>قابل ویرایش</th>
                                 <th>عملیات</th>
                             </tr>
-                            </thead>
-                            <tbody>
+                        </thead>
+
+                        <tbody>
                             @if (Model.Items != null && Model.Items.Any())
                             {
                                 foreach (var item in Model.Items)
@@ -71,35 +66,30 @@
                                         <td>@item.StoreTypeId</td>
                                         <td>@item.Code</td>
                                         <td>@item.FullName</td>
-                                        <td>@(item.EntryShamsiDate)</td>
-                                        
+                                        <td>@item.EntryShamsiDate</td>
                                         <td>
-                                            @if (item.IsActive == true)
-                                            {
-                                                <span class="badge badge-success">بله</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge badge-secondary">خیر</span>
-                                            }
+                                                @if (item.IsActive)
+                                                    {
+                                                        <span class="badge bg-success">فعال</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">غیرفعال</span>
+                                                    }
+                                            </td>  
+                                        <td>
+                                            <i class="fa @(item.IsUserEditable ? "fa-check text-success" : "fa-times text-danger")"></i>
                                         </td>
                                         <td>
-                                            @if (item.IsUserEditable == true)
-                                            {
-                                                <i class="fa fa-check text-success"></i>
-                                            }
-                                            else
-                                            {
-                                                <i class="fa fa-times text-danger"></i>
-                                            }
-                                        </td>
-
-                                        <td>
-                                            <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.StoreTypeId">ویرایش</a>
+                                            <a class="btn btn-link text-info btn-sm" asp-action="Edit" asp-route-id="@item.StoreTypeId">
+                                                <i class="fa fa-edit" style="font-size:18px;"></i>
+                                            </a>
 
                                             <form asp-action="Delete" asp-route-id="@item.StoreTypeId" method="post" style="display:inline;">
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('آیا مطمئن هستید می‌خواهید این نوع فروشگاه را حذف کنید؟');">حذف</button>
+                                                <button type="submit" class="btn btn-link text-danger btn-sm" onclick="return confirm('آیا مطمئن هستید می‌خواهید حذف کنید؟');">
+                                                    <i class="fa fa-trash" style="font-size:18px;"></i>
+                                                </button>
                                             </form>
                                         </td>
                                     </tr>
@@ -108,41 +98,68 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="7" class="text-center text-danger">داده‌ای یافت نشد</td>
+                                    <td colspan="7" class="text-center text-danger">
+                                        داده‌ای یافت نشد
+                                    </td>
                                 </tr>
                             }
-                            </tbody>
-                        </table>
+                        </tbody>
+                    </table>
+                </div>
 
-                        <nav class="mt-2">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
-                                    <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
-                                </li>
+                <!-- Pagination -->
+                @{
+                    int page = Model.Paging.Page;
+                    int totalPages = Model.Paging.TotalPages;
+                    int window = 2;
 
-                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
+                    var selected = new SortedSet<int>();
+                    if (totalPages >= 1) selected.Add(1);
+
+                    for (int p = page - window; p <= page + window; p++)
+                        if (p >= 1 && p <= totalPages) selected.Add(p);
+
+                    if (totalPages >= 2) selected.Add(totalPages);
+
+                    string PageUrl(int p)
+                        => $"?search={Model.SearchText}&sortField={Model.SortField}&sortOrder={Model.SortOrder}&page={p}";
+                }
+
+                <nav class="pager-wrap mt-2 m-auto" aria-label="Page navigation">
+                    <ul class="cpageination pager-modern m-auto">
+                        <li class="page-item @(page == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))">
+                                <
+                            </a>
+                        </li>
+
+                        @{
+                            int prev = 0;
+                            foreach (var p in selected)
+                            {
+                                if (prev != 0 && p - prev > 1)
                                 {
-                                    <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
-                                        <a class="page-link" href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
+                                    <li class="page-item disabled ellipsis">
+                                        <span class="page-link">…</span>
                                     </li>
                                 }
 
-                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
-                                    <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
+                                <li class="page-item @(p == page ? "active" : "")">
+                                    <a class="page-link" href="@PageUrl(p)">@p</a>
                                 </li>
-                            </ul>
-                        </nav>
 
-                    </div>
-                </div>
+                                prev = p;
+                            }
+                        }
+
+                        <li class="page-item @(page == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@(page == totalPages ? "#" : PageUrl(page + 1))">
+                                >
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
-
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // Optional: Add any JavaScript if needed
-    </script>
-}

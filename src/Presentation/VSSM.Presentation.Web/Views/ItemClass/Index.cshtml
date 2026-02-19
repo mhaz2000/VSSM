@@ -72,7 +72,16 @@
                                             <td>@item.Name</td>
                                             <td>@item.OrderInList</td>
                                             <td>@item.UnitName</td>
-                                            <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
+                                            <td>
+                                                @if (item.IsActive)
+                                                    {
+                                                        <span class="badge bg-success">فعال</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">غیرفعال</span>
+                                                    }
+                                            </td>
                                             <td>
                                                 <a  class="btn btn-link text-info btn-sm" 
                                                 asp-controller="ItemClass" asp-action="Edit"

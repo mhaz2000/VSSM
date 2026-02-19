@@ -1,89 +1,78 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.TransportMode
-
 @model UpdateTransportModeDto
 
-<style>
-    .form-label {
-        text-align: left;
-        width: 130px;
-        margin-left: 15px;
-    }
-
-    .form-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-        direction: rtl;
-    }
-
-    .form-control, .form-select {
-        flex: 1;
-    }
-
-    .form-check {
-        margin-inline-end: 20px;
-        margin-right: 30px !important;
-    }
-
-    .form-check-label {
-        padding-right: 0rem !important;
-    }
-
-    .card {
-        direction: rtl;
-    }
-</style>
+@{
+    ViewData["Title"] = "ویرایش حالت انتقال";
+}
 
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-
         <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <div><h5>ویرایش روش‌دریافت</h5></div>
-                </div>
+            <div class="card-header">
+                <h5 class="header-title">ویرایش حالت انتقال</h5>
             </div>
-        </div>
 
-        <div>
+            <div class="card-block">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <div class="card">
-                <div class="card-block">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <form asp-action="Edit" method="post" class="form-horizontal">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" asp-for="TransportModeId" />
-                        <div class="col-lg-6">
-                            <div class="form-group">
-                                <label class="form-label" for="Code">کد:</label>
-                                <input type="text" asp-for="Code" name="Code" class="form-control bg-warning-subtle" required />
-                            </div>
+                <form asp-action="Edit" method="post" class="form-horizontal">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="TransportModeId" />
 
-                            <div class="form-group">
-                                <label class="form-label" for="FullName">نام کامل:</label>
-                                <input type="text" asp-for="FullName" name="FullName" class="form-control bg-warning-subtle" required />
-                            </div>
+                    <div class="row mb-4 mx-0">
 
-                            <div class="form-group">
-                                <label class="form-label">وضعیت:</label>
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">کد</label>
+                            <input asp-for="Code"
+                                   class="form-control bg-warning-subtle"
+                                   required />
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">نام کامل</label>
+                            <input asp-for="FullName"
+                                   class="form-control bg-warning-subtle"
+                                   required />
+                        </div>
+                        <div class="form-group col-lg-1"></div>
+                        <div class="form-group col-lg-3">
+                            <label class="form-label" style="margin-bottom:1.5rem;">وضعیت</label>
+
+                            <div class="d-flex">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" asp-for="IsActive" name="IsActive" checked />
-                                    <label class="form-check-label" for="IsActive" id="IsActive">فعال است</label>
+                                    <input type="radio"
+                                           asp-for="IsActive"
+                                           value="true"
+                                           class="form-check-input"
+                                           id="activeTrue" />
+                                    <label class="form-check-label" for="activeTrue">
+                                        فعال
+                                    </label>
                                 </div>
-                            </div>
 
-                            <div class="col-lg-8"></div>
-                            <div class="col-lg-4">
-                                <div class="text-center mt-4 align-middle">
-                                    <button type="submit" class="btn btn-primary px-5">ویرایش</button>
-                                    <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
+                                <div class="form-check">
+                                    <input type="radio"
+                                           asp-for="IsActive"
+                                           value="false"
+                                           class="form-check-input"
+                                           id="activeFalse" />
+                                    <label class="form-check-label" for="activeFalse">
+                                        غیرفعال
+                                    </label>
                                 </div>
                             </div>
                         </div>
-                    </form>
-                </div>
+
+                        <div class="text-left">
+                            <button type="submit" class="btn btn-success px-5">ذخیره</button>
+                            <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
+                        </div>
+
+                    </div>
+                </form>
             </div>
         </div>
+
     </div>
 </div>

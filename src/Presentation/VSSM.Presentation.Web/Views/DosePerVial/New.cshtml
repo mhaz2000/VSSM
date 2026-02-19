@@ -11,51 +11,56 @@
 
 
         <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <div>
-                        <h5>@formName دوز بر ویال</h5>
-                    </div>
-                </div>
+            <div class="card-header">
+                <h5 class="header-title">@formName دوز بر ویال</h5>
             </div>
-        </div>
-
-        <div>
-
-            <div class="card">
-                <div class="card-block">
+            <div class="card-block">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <form asp-action="Create" method="post" class="form-horizontal">
                         <input type="hidden" asp-for="DosePerVialId" />
-                        <div class="col-lg-6">
+                        <div class="row mx-0 mb-4">
                             
-                            <div class="form-group">
-                                <label class="form-label" for="DisplayOrder">تعداد دوز بر ویال :</label>
+                            <div class="form-group col-lg-4">
+                                <label class="form-label" for="DisplayOrder">تعداد دوز بر ویال </label>
                                 <input type="number" asp-for="NumDosePerVial" name="NumDosePerVial" class="form-control" min="0" />
                             </div>
+                            <div class="col-lg-2"></div>
+                            <div class="col-lg-6">
+                                <label class="form-label">وضعیت</label>
 
-                            <div class="form-group">
-                                <label class="form-label">وضعیت:</label>
+                                <div class="d-flex">
+                                    <div class="form-check">
+                                    <input type="radio"
+                                        asp-for="IsActive"
+                                        value="true"
+                                        class="form-check-input"
+                                        id="isActiveTrue" />
+                                    <label class="form-check-label" for="isActiveTrue">
+                                        فعال
+                                    </label>
+                                </div>
+
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" asp-for="IsActive" name="IsActive" />
-                                    <label class="form-check-label" for="IsActive" id="IsActive">فعال است</label>
+                                    <input type="radio"
+                                        asp-for="IsActive"
+                                        value="false"
+                                        class="form-check-input"
+                                        id="isActiveFalse" />
+                                    <label class="form-check-label" for="isActiveFalse">
+                                        غیرفعال
+                                    </label>
                                 </div>
                             </div>
-
-                            <div class="col-lg-8"></div>
-                            <div class="col-lg-4">
-                                <div class="text-center mt-4 align-middle">
-                                    <button type="submit" class="btn btn-success px-5">ثبت</button>
-                                    <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
-                                </div>
-                            </div>
+                            
+                            <div class="text-left">
+                            <button type="submit" class="btn btn-success px-5">ثبت</button>
+                            <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
+                        </div>
                         </div>
                     </form>
 
                 </div>
-            </div>
+
         </div>
-        <!--/col-->
-    </div>
-    <!--/row-->
+        
 </div>

@@ -7,138 +7,151 @@
     <div class="animated fadeIn">
 
         <div class="card">
-            <div class="card-block">
-
-                <div class="col-lg-3">
-                    <div><h5> مدیریت نوع مالکیت</h5></div>
+            <div class="row m-0 card-header">
+                <div class="col-lg-9">
+                    <h5 class="header-title">@ViewData["Title"]</h5>
                 </div>
-
-                <div class="col-lg-4"></div>
-
-                <form method="get">
-                    <div class="col-lg-4">
-                        <div class="input-group">
-                            <input type="text" name="search" value="@Model.SearchText"
-                                   class="form-control" placeholder="جستجو..." />
-
-                            <div class="input-group-btn">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-search"></i> جستجو
-                                </button>
-                            </div>
-                        </div>
+                <div class="col-lg-3 row d-flex align-items-center justify-content-between">
+                    <div class="col-lg-9">
+                        @await Component.InvokeAsync("SearchBar", new
+                        {
+                            searchTerm = Model.SearchText,
+                            pageSize = Model.Paging.PageSize,
+                            sort = Model.SortField,
+                            direction = Model.SortOrder
+                        })
                     </div>
-                </form>
-
-                <div class="col-lg-1">
-                    <a class="btn btn-success"
-                       asp-controller="Ownership"
-                       asp-action="New">
-                        <i class="fa fa-plus-circle"></i> جدید
-                    </a>
+                    <div class="col-lg-3">
+                        <a class="btn btn-success m-0" 
+                           asp-controller="Ownership"
+                           asp-action="New">
+                            <i class="fa fa-plus ml-2"></i>افزودن
+                        </a>
+                    </div>
                 </div>
-
             </div>
-        </div>
 
-        <!-- TABLE -->
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
-
-                    <div class="card-block">
-                        <table class="table table-bordered table-striped table-condensed text-center">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
-                                            کد
-                                        </a>
-                                    </th>
-                                    <th>
-                                        <a href="?sortField=Name&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
-                                            نام
-                                        </a>
-                                    </th>
-                                    <th>وضعیت</th>
-                                    <th>عملیات</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @if (Model.Items.Any())
-                                {
-                                    foreach (var item in Model.Items)
-                                    {
+            <div class="card-block">
+                            <div class="table-wrapper">
+                                <table class="table table-bordered table-striped table-condensed text-center">
+                                    <thead>
                                         <tr>
-                                            <td>@item.Code</td>
-                                            <td>@item.FullName</td>
-                                            <td>@(item.IsActive ? "فعال" : "غیرفعال")</td>
-                                            <td>
-                                                <a class="btn btn-primary btn-sm"
-                                                   asp-controller="Ownership"
-                                                   asp-action="Edit"
-                                                   asp-route-id="@item.OwnershipId">
-                                                    ویرایش
+                                            <th>
+                                                کد
+                                                <a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
+                                                    <i class="fa fa-sort"></i>
                                                 </a>
-                                            </td>
+                                            </th>
+                                            <th>
+                                                نام
+                                                <a href="?sortField=FullName&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
+                                                    <i class="fa fa-sort"></i>
+                                                </a>
+                                            </th>
+                                            <th>وضعیت</th>
+                                            <th>عملیات</th>
                                         </tr>
-                                    }
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="4" class="text-danger text-center">
-                                            داده‌ای یافت نشد
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                                    </thead>
 
-                        <!-- Paging -->
-                        <nav>
-                            <ul class="pagination">
+                                    <tbody>
+                                        @if (Model != null && Model.Items.Any())
+                                        {
+                                            foreach (var item in Model.Items)
+                                            {
+                                                <tr>
+                                                    <td>@item.Code</td>
+                                                    <td>@item.FullName</td>
+                                                    <td>
+                                                        @if (item.IsActive)
+                                                            {
+                                                                <span class="badge bg-success">فعال</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-danger">غیرفعال</span>
+                                                            }
+                                                    </td>                                                    <td>
+                                                        <a class="btn btn-link text-info btn-sm"
+                                                           asp-controller="Ownership"
+                                                           asp-action="Edit"
+                                                           asp-route-id="@item.OwnershipId">
+                                                            <i class="fa fa-edit" style="font-size:18px;"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="4" class="text-center text-danger">
+                                                    داده‌ای یافت نشد
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
 
-                                <!-- Previous -->
-                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                        قبلی
-                                    </a>
-                                </li>
+                            <!-- Pagination -->
+                            @{
+                                int page = Model.Paging.Page;
+                                int totalPages = Model.Paging.TotalPages;
+                                int window = 2;
+                                var search = Model.SearchText ?? "";
+                                var sortField = Model.SortField ?? "";
+                                var sortOrder = Model.SortOrder ?? "";
 
-                                <!-- Page Numbers -->
-                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
-                                {
-                                    <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
-                                        <a class="page-link"
-                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                            @i
+                                var selected = new SortedSet<int>();
+                                if (totalPages >= 1) selected.Add(1);
+
+                                for (int p = page - window; p <= page + window; p++)
+                                    if (p >= 1 && p <= totalPages) selected.Add(p);
+
+                                if (totalPages >= 2) selected.Add(totalPages);
+
+                                string PageUrl(int p)
+                                    => $"?search={search}&sortField={sortField}&sortOrder={sortOrder}&page={p}";
+                            }
+
+                            <nav class="pager-wrap mt-2 m-auto" aria-label="Page navigation">
+                                <ul class="cpageination pager-modern m-auto">
+                                    <!-- قبلی -->
+                                    <li class="page-item @(page == 1 ? "disabled" : "")">
+                                        <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))" tabindex="@(page == 1 ? "-1" : "0")">
+                                            <
                                         </a>
                                     </li>
-                                }
 
-                                <!-- Next -->
-                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                        بعدی
-                                    </a>
-                                </li>
+                                    @{
+                                        int prev = 0;
+                                        foreach (var p in selected)
+                                        {
+                                            if (prev != 0 && p - prev > 1)
+                                            {
+                                                <li class="page-item disabled ellipsis">
+                                                    <span class="page-link">…</span>
+                                                </li>
+                                            }
 
-                            </ul>
-                        </nav>
+                                            <li class="page-item @(p == page ? "active" : "")">
+                                                <a class="page-link" href="@PageUrl(p)">@p</a>
+                                            </li>
 
-                    </div>
-
-                </div>
-            </div>
+                                            prev = p;
+                                        }
+                                    }
+                                    
+                                    <!-- بعدی -->
+                                    <li class="page-item @(page == totalPages ? "disabled" : "")">
+                                        <a class="page-link" href="@(page == totalPages ? "#" : PageUrl(page + 1))" tabindex="@(page == totalPages ? "-1" : "0")">
+                                            >
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
         </div>
 
     </div>
 </div>
-
-@section Scripts {
-    <script></script>
-}

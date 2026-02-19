@@ -62,6 +62,7 @@ public class SidebarMenuViewComponent : ViewComponent
                 Title = m.Title,
                 Controller = m.Controller,
                 Action = m.Action,
+                Icon = m.Icon,
                 Children = BuildTree(menus, m.Id)
             })
             .ToList();

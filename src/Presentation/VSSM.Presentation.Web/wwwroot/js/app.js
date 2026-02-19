@@ -29,33 +29,36 @@ $.grayLightest = '#f8f9fa';
 $(document).ready(function ($) {
 
 	$(function () {
-
 		var currentUrl = window.location.pathname.toLowerCase();
 
 		$('.sidebar .nav-link').each(function () {
 
 			var linkUrl = $(this).attr('href');
-
 			if (!linkUrl) return;
 
-			// ignore placeholders
-			if (linkUrl === '#' || linkUrl === '/') return;
+			linkUrl = linkUrl.toLowerCase();
 
-			if (currentUrl.startsWith(linkUrl.toLowerCase())) {
+			if (linkUrl === '/') {
+				if (currentUrl === '/') {
+					activateMenu($(this));
+				}
+				return;
+			}
 
-				$(this).addClass('active');
-
-				var parents = $(this).parents('.nav-dropdown');
-				parents.addClass('open');
-
-				parents.children('.nav-link').addClass('active');
-
+			if (currentUrl === linkUrl || currentUrl.startsWith(linkUrl + '/')) {
+				activateMenu($(this));
 			}
 		});
 
+		function activateMenu($link) {
+			$link.addClass('active');
+
+			var parents = $link.parents('.nav-dropdown');
+			parents.addClass('open');
+			parents.children('.nav-link').addClass('active');
+		}
+
 	});
-
-
 
 
 	/* ---------------------------------

@@ -40,10 +40,10 @@ namespace VSSM.Presentation.Web.Authorization
 
             var routeData = httpContext.GetRouteData();
             var controller = routeData.Values["controller"]?.ToString();
-            var action = routeData.Values["action"]?.ToString();
+            //var action = routeData.Values["action"]?.ToString();
 
             var hasAccess = await _permissionService
-                .HasAccessAsync(roleId, controller, action);
+                .HasAccessAsync(roleId, controller);
 
             if (hasAccess)
                 context.Succeed(requirement);

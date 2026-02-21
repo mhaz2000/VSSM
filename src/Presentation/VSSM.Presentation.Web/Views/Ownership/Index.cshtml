@@ -8,11 +8,11 @@
 
         <div class="card">
             <div class="row m-0 card-header">
-                <div class="col-lg-9">
+                <div class="col-lg-6">
                     <h5 class="header-title">@ViewData["Title"]</h5>
                 </div>
-                <div class="col-lg-3 row d-flex align-items-center justify-content-between">
-                    <div class="col-lg-9">
+                <div class="col-lg-6 d-flex align-items-center justify-content-end">
+                    <div class="col-lg-5 d-flex align-items-center justify-content-end">
                         @await Component.InvokeAsync("SearchBar", new
                         {
                             searchTerm = Model.SearchText,
@@ -21,7 +21,7 @@
                             direction = Model.SortOrder
                         })
                     </div>
-                    <div class="col-lg-3">
+                    <div class="col-lg-2 d-flex align-items-center justify-content-end">
                         <a class="btn btn-success m-0" 
                            asp-controller="Ownership"
                            asp-action="New">

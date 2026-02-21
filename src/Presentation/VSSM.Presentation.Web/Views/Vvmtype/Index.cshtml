@@ -10,12 +10,12 @@
 
         <div class="card">
             <div class="row m-0 card-header align-items-center">
-                <div class="col-lg-9">
+                <div class="col-lg-6">
                     <h5 class="header-title">@ViewData["Title"]</h5>
                 </div>
 
-                <div class="col-lg-3 row d-flex align-items-center justify-content-between">
-                    <div class="col-lg-9">
+                <div class="col-lg-6 d-flex align-items-center justify-content-end">
+                    <div class="col-lg-5 d-flex align-items-center justify-content-end">
                             @await Component.InvokeAsync("SearchBar", new
                             {
                                 searchTerm = Model.SearchText,
@@ -24,7 +24,7 @@
                                 direction = Model.SortOrder
                             })
                         </div>
-                    <div class="col-lg-3">
+                    <div class="col-lg-2 d-flex align-items-center justify-content-end">
                         <a class="btn btn-success  m-0" asp-controller="Vvmtype" asp-action="New">
                             <i class="fa fa-plus ml-2"></i>افزودن
                         </a>
@@ -33,7 +33,8 @@
             </div>
 
             <div class="card-block">
-                <table class="table table-bordered table-striped table-condensed text-center mb-0">
+                <div class="table-wrapper">
+                                    <table class="table table-bordered table-striped table-condensed text-center mb-0">
                     <thead>
                         <tr>
                             <th>
@@ -109,23 +110,54 @@
                         }
                     </tbody>
                 </table>
+                </div>
 
+                
                 <!-- Pagination -->
-                <nav class="mt-2">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
-                            <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
+                @{
+                    int page = Model.Paging.Page;
+                    int totalPages = Model.Paging.TotalPages;
+                    int window = 2;
+
+                    var selected = new SortedSet<int>();
+                    if (totalPages >= 1) selected.Add(1);
+
+                    for (int p = page - window; p <= page + window; p++)
+                        if (p >= 1 && p <= totalPages) selected.Add(p);
+
+                    if (totalPages >= 2) selected.Add(totalPages);
+
+                    string PageUrl(int p)
+                        => $"?search={Model.SearchText}&sortField={Model.SortField}&sortOrder={Model.SortOrder}&page={p}";
+                }
+
+                <nav class="pager-wrap mt-2 m-auto" aria-label="Page navigation">
+                    <ul class="cpageination pager-modern m-auto">
+                        <li class="page-item @(page == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))"><</a>
                         </li>
 
-                        @for (int i = 1; i <= Model.Paging.TotalPages; i++)
-                        {
-                            <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
-                                <a class="page-link" href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
-                            </li>
+                        @{
+                            int prev = 0;
+                            foreach (var p in selected)
+                            {
+                                if (prev != 0 && p - prev > 1)
+                                {
+                                    <li class="page-item disabled ellipsis">
+                                        <span class="page-link">…</span>
+                                    </li>
+                                }
+
+                                <li class="page-item @(p == page ? "active" : "")">
+                                    <a class="page-link" href="@PageUrl(p)">@p</a>
+                                </li>
+
+                                prev = p;
+                            }
                         }
 
-                        <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
-                            <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
+                        <li class="page-item @(page == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@(page == totalPages ? "#" : PageUrl(page + 1))">></a>
                         </li>
                     </ul>
                 </nav>

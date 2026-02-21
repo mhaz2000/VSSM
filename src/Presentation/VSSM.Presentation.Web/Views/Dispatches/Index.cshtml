@@ -1,153 +1,70 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
-@model DispatchPagingSearchOrderDto
+@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
 
-@{
-    ViewData["Title"] = "مدیریت ارسال‌ها";
+
+@section Styles {
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
 }
 
+@{
+    ViewData["Title"] = "ارسالات";
+}
 
-<style>
-    .search-section {
-        display: flex;
-    }
-</style>
+<div class="grid-wrapper">
+    <div class="grid-header">
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
+        <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
 
-        <div class="card">
-            <div class="card-block d-flex align-items-center justify-content-between flex-wrap">
+        <div class="d-flex align-items-center gap-2">
 
-                <div class="col-lg-3 mb-2">
-                    <h5>مدیریت ارسال‌ها</h5>
+            <!-- Draft filter -->
+            <form method="get" class="d-flex align-items-center gap-2">
+
+                <!-- keep existing query values -->
+                <input type="hidden" name="search" value="@Model.SearchTerm" />
+                <input type="hidden" name="sort" value="@Model.CurrentSort" />
+                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
+                <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
+
+
+                <div class="form-group">
+
+                    <select name="status"
+                            class="form-select form-select-sm"
+                            onchange="this.form.submit()"
+                            style="padding: 7px; margin-left: 10px;">
+
+                        <option value="">همه</option>
+                        <option value="draft" selected="@(Context.Request.Query["status"] == "draft")">
+                            پیش نویس
+                        </option>
+                        <option value="final" selected="@(Context.Request.Query["status"] == "final")">
+                            نهایی
+                        </option>
+                    </select>
                 </div>
+            </form>
 
-                <form method="get" class="col-lg-6 mb-2">
-                    <div class="input-group w-100 search-section">
+            <!-- shared search component untouched -->
+            @await Component.InvokeAsync("SearchBar", new
+            {
+                searchTerm = Model.SearchTerm,
+                        pageSize = Model.Data.PageSize,
+                        sort = Model.CurrentSort,
+                        direction = Model.CurrentDirection
+                        })
 
-                        <select name="status"
-                                class="form-select"
-                                style="max-width:160px; margin-left: 10px">
-                            <option value="">همه</option>
-                            <option value="draft" selected="@(Model.Status == "draft")">
-                                پیش نویس
-                            </option>
-                            <option value="confirmed" selected="@(Model.Status == "confirmed")">
-                                تایید شده
-                            </option>
-                        </select>
-
-                        <input type="text"
-                               name="search"
-                               value="@Model.SearchText"
-                               class="form-control"
-                               placeholder="جستجو بر اساس شماره درخواست..." />
-
-                        <button type="submit" class="btn btn-primary" style="margin-right: 10px;">
-                            <i class="fa fa-search"></i>
-                        </button>
-
-                    </div>
-                </form>
-
-
-
-                <div class="col-lg-3 mb-2 text-end">
-                    <a class="btn btn-success" asp-action="New"><i class="fa fa-plus-circle"></i> ثبت ارسال جدید</a>
-                </div>
-
+            <div class="col-lg-3 mb-2 text-end">
+                <a class="btn btn-success" asp-action="New"><i class="fa fa-plus-circle"></i> ثبت ارسال جدید</a>
             </div>
+
         </div>
+    </div>
 
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
-
-                    <div class="card-block">
-                        <table class="table table-bordered table-striped table-condensed text-center">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        تاریخ
-                                    </th>
-                                    <th>
-                                        شماره درخواست
-                                    </th>
-                                    <th>
-                                        شماره فاکتور
-                                    </th>
-                                    <th>حجم کل (لیتر)</th>
-                                    <th>پیش نویس</th>
-                                    <th>وضعیت گیرنده</th>
-                                    <th>عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (Model.Items.Any())
-                                {
-                                    foreach (var d in Model.Items)
-                                    {
-                                        <tr>
-                                            <td>@d.Date?.ToString("yyyy/MM/dd", System.Globalization.CultureInfo.GetCultureInfo("fa-IR"))</td>
-                                            <td>@d.RequestNum</td>
-                                            <td>@d.ReportNumber</td>
-                                            <td>@d.TotalVolume</td>
-                                            <td>@(d.IsDrafted.Value ? "بله" : "خیر")</td>
-                                            <td>@(d.ReceiverStatus == 0 ? "جدید" : "تایید")</td>
-                                            <td>
-                                                <a asp-action="Confirm" asp-route-id="@d.Id" class="btn btn-warning btn-sm">تایید</a>
-                                                <a asp-action="Delete" asp-route-id="@d.Id" class="btn btn-danger btn-sm">حذف</a>
-                                            </td>
-                                        </tr>
-                                    }
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="7" class="text-center text-danger">داده‌ای یافت نشد</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-
-                        <!-- Pagination -->
-                        <nav>
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                        قبلی
-                                    </a>
-                                </li>
-
-                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
-                                {
-                                    <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
-                                        <a class="page-link"
-                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                            @i
-                                        </a>
-                                    </li>
-                                }
-
-                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(Model.Paging.Page + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                        بعدی
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div>
+        @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // Optional: you can add client-side enhancements later
-    </script>
-}
+

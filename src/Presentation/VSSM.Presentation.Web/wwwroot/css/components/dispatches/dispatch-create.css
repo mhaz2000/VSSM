@@ -43,8 +43,19 @@
 }
 
 .dose-col {
-    width: 80px;
-    min-width: 80px;
+    width: 150px;
+    min-width: 150px;
     white-space: nowrap;
 }
 
+.item-table-action{
+    border: none;
+    outline: none;
+    background: none;
+    font-size: 1.5rem;
+    color: #0071B7;
+}
+
+.item-table-action:focus{
+    outline: none;
+}

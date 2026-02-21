@@ -285,7 +285,7 @@ public class DispatchService : IDispatchService
         return query.ToListAsync(cancellationToken);
     }
 
-    public async Task<DispatchPagingSearchOrderDto> GetPagedDispatchesAsync(
+    public async Task<(List<DispatchListDto> data, int count)> GetPagedDispatchesAsync(
     string? search,
     int page,
     int pageSize,
@@ -323,11 +323,12 @@ public class DispatchService : IDispatchService
             if (status == "draft")
                 query = query.Where(x => x.IsDrafted == true);
 
-            else if (status == "confirmed")
+            else if (status == "final")
                 query = query.Where(x => x.IsConfirmed == true);
         }
 
-        // 1) Search
+        query = query.AsNoTracking();
+
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(d =>
@@ -336,35 +337,14 @@ public class DispatchService : IDispatchService
             );
         }
 
-        // 2) Sorting
-        query = (sortField, sortOrder.ToLower()) switch
-        {
-            ("Date", "asc") => query.OrderBy(d => d.Date),
-            ("Date", "desc") => query.OrderByDescending(d => d.Date),
-            ("RequestNum", "asc") => query.OrderBy(d => d.RequestNum),
-            ("RequestNum", "desc") => query.OrderByDescending(d => d.RequestNum),
-            ("ReceiverName", "asc") => query.OrderBy(d => d.ReceiverName),
-            ("ReceiverName", "desc") => query.OrderByDescending(d => d.ReceiverName),
-            _ => query.OrderByDescending(d => d.Date)
-        };
+        var total = await query.CountAsync();
 
-        // 3) Total count before paging
-        paging.TotalItems = await query.CountAsync(cancellationToken);
+        query = query.ApplySorting(sortField, sortOrder == "desc");
 
-        // 4) Apply paging
-        var items = await query
-            .Skip(paging.Skip)
-            .Take(paging.PageSize)
-            .ToListAsync(cancellationToken);
-
-        return new DispatchPagingSearchOrderDto
-        {
-            Items = items,
-            Paging = paging,
-            SearchText = search,
-            SortField = sortField,
-            SortOrder = sortOrder
-        };
+        return (await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(), total);
     }
 
     public async Task<PagingSearchOrderDto<ToBeArrivedDispatchListDto>> GetPagedToBeArrivedDispatchesAsync(

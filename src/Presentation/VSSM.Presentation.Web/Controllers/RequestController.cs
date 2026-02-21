@@ -287,12 +287,12 @@ namespace VSSM.Presentation.Web.Controllers
         {
             return Json(new
             {
-                anncount = 0,
-                arivcount = 0,
-                confirmcount = 0,
-                currentcount = 0,
-                offercount = 0,
-                usedcount = 0
+                anncount = 0, //مقدار مجاز
+                arivcount = 0, // مقدار ورودی
+                confirmcount = 0, //
+                currentcount = 0, //تعداد موجودی انبار
+                offercount = 0, //تعداد پیشنهادی
+                usedcount = 0 //تعداد مصرف شده
             });
         }
 

@@ -169,12 +169,15 @@
             
                 <td class="text-center actions-col">
                     <button type="button"
-                            class="btn btn-sm btn-warning edit-item">
-                        ویرایش
+                            class="item-table-action edit-item"
+                            title="ویرایش">
+                        <i class="fa fa-edit"></i>
                     </button>
+                
                     <button type="button"
-                            class="btn btn-sm btn-danger remove-item ms-1">
-                        حذف
+                            class="item-table-action remove-item ms-1"
+                            title="حذف">
+                        <i class="fa fa-trash"></i>
                     </button>
                 </td>
 
@@ -228,11 +231,10 @@
                class="form-control form-control-sm dose-input"
                value="${currentDose}" />
     `);
-
         $(this)
             .removeClass('btn-warning edit-item')
-            .addClass('btn-success save-item')
-            .text('دخیره');
+            .addClass('save-item')
+            .html('<i class="fa fa-check"></i>');
     });
 
 
@@ -263,8 +265,8 @@
 
         $(this)
             .removeClass('btn-success save-item')
-            .addClass('btn-warning edit-item')
-            .text('ویرایش');
+            .addClass('edit-item')
+            .html('<i class="fa fa-edit"></i>');
     });
 
 

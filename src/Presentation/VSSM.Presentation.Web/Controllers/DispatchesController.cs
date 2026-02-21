@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
-using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
-using VSSM.Application.Shared;
+using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
@@ -56,14 +53,54 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         public async Task<IActionResult> Index(CancellationToken cancellationToken, string? search,
-                                                int page = 1,
+                                                int pageNumber = 1,
                                                 int pageSize = 10,
                                                 string? status = null,
-                                                string sortField = "Orders",
-                                                string sortOrder = "desc")
+                                                string sort = "Orders",
+                                                string direction = "desc")
         {
-            var dispatches = await _dispatchService.GetPagedDispatchesAsync(search, page, pageSize, sortField, sortOrder, status, CurrentUserRecipientId.Value, cancellationToken);
-            return View(dispatches);
+
+            var (data, count) = await _dispatchService.GetPagedDispatchesAsync(search, pageNumber, pageSize, sort, direction, status, CurrentUserRecipientId.Value, cancellationToken);
+
+            var model = new GridViewModel
+            {
+                SearchTerm = search,
+                CurrentSort = sort,
+                CurrentDirection = direction,
+                Data = new PagedResult<object>
+                {
+                    Items = data.Cast<object>().ToList(),
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = count
+                },
+                Columns = new List<GridColumn>
+                {
+                    new() { Header = "تاریخ", PropertyName = nameof(DispatchListDto.DateText),  Sortable = false },
+                    new() { Header = "شماره درخواست", PropertyName = nameof(DispatchListDto.RequestNum), Sortable = false },
+                    new() { Header = "شماره فاکتور", PropertyName = nameof(DispatchListDto.ReportNumber), Sortable = false },
+                    new() { Header = "حجم کل (لیتر)", PropertyName = nameof(DispatchListDto.TotalVolume),  Sortable = false },
+                    new() { Header = "پیش نویس", PropertyName = nameof(DispatchListDto.IsDraftedText),  Sortable = false },
+                    new() { Header = "وضعیت گیرنده", PropertyName = nameof(DispatchListDto.ReceiverStatusText),  Sortable = false },
+                    new() { Header = "عملیات", IsActionColumn = true}
+                },
+                Actions = new List<GridAction>
+                {
+                    new()
+                    {
+                        Title = "ویرایش",
+                        Controller = "Dispatches",
+                        Action = "Edit",
+                        RouteIdProperty = nameof(DispatchListDto.Id),
+                        LinkClass = "",
+                        IconClass = "fa fa-edit"
+                    }
+                }
+            };
+
+
+            return View(model);
+
         }
 
         public async Task<IActionResult> ToBeArrivedIndex(CancellationToken cancellationToken, string? search,

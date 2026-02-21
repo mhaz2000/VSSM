@@ -36,7 +36,7 @@
                                 direction = Model.SortOrder
                             })
                         </div>
-                        <div class="col-lg-3">
+                        <div class="col-lg-2 d-flex align-items-center justify-content-end">
                             <a class="btn btn-success m-0" asp-action="New"><i class="fa fa-plus ml-2"></i>افزودن</a>
                         </div>
 
@@ -74,11 +74,11 @@
                                     <td>
                                         @if (item.IsActive)
                                             {
-                                                <span class="badge bg-success">فعال</span>
+                                                <span class="badge badge-success">فعال</span>
                                             }
                                             else
                                             {
-                                                <span class="badge bg-danger">غیرفعال</span>
+                                                <span class="badge badge-danger">غیرفعال</span>
                                             }
                                     </td>
                                     <td>

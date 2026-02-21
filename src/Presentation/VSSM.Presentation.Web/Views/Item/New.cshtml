@@ -7,26 +7,16 @@
 
 <div class="container-fluid">
     <div class="animated fadeIn">
-
-
-        <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <div>
-                        <h5>@formName کالا</h5>
-                    </div>
-                </div>
+        <div class="card form-card">
+            <div class="card-header card-form-header">
+                <h5 class="header-title">@formName کالا</h5>
+                <p>برای تعیین حجم واکسنها و حلالها به منوی "دوز اختصاص داده شده به کالا" مراجعه کنید</p>
             </div>
-        </div>
-
-        <div>
-
-            <div class="card">
-                <div class="card-block">
+            <div class="card-block">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <form asp-action="Create" method="post" class="form-horizontal">
                         <input type="hidden" asp-for="ItemId"/>
-                        <div class="col-lg-12">
+                        <div class="row mx-0 mb-4">
 
                             <div class="form-group col-md-4">
                                 <label class="form-label">نوع کالا</label>
@@ -45,10 +35,6 @@
                                 <input type="number" class="form-control" asp-for="Volume" name="Volume"/>
                             </div>
                             <div class="form-group col-md-4">
-                                <p>برای تعیین حجم واکسنها و حلالها به منوی "دوز اختصاص داده شده به کالا" مراجعه کنید</p>
-                            </div>
-
-                            <div class="form-group col-md-4">
                                 <label class="form-label">کد</label>
                                 <input class="form-control" asp-for="Code"/>
                                 
@@ -59,9 +45,10 @@
                             </div>
 
                             <div class="form-group col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="requiresDiluentCheckbox" asp-for="RequiresDiluent"/>
-                                    <label class="form-check-label" asp-for="RequiresDiluent">نیاز به حلال</label>
+                                <div class="mb-2" style="padding-right: 20px;">
+                                    <input class="form-check-input" style="margin-top: 0.65rem;"
+                                     type="checkbox" id="requiresDiluentCheckbox" asp-for="RequiresDiluent"/>
+                                    <label class="form-label m-0" asp-for="RequiresDiluent">نیاز به حلال</label>
                                 </div>
 
                                 <select class="form-control" id="itemClassDropdown" asp-for="DiluentId" disabled>
@@ -79,18 +66,12 @@
                                 <input type="number" class="form-control" asp-for="DayToWarmExpire"/>
                             </div>
 
-                            <!--
-                            <div class="form-group col-md-4">
-                                <label class="form-label">قیمت واحد خروجی</label>
-                                <input class="form-control" asp-for="UnitPrice" name="UnitPrice"/>
-                            </div> -->
-
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-lg-4">
                                 <label class="form-label">ترتیب نمایش در لیست</label>
                                 <input type="number" class="form-control" asp-for="OrderInList"/>
                             </div>
 
-                            <div class="col-md-12">
+                            <div class="form-group col-lg-6" style="padding:3rem 2rem 1rem 1rem;">
                                 <div class="form-group col-md-3">
                                     <input class="form-check-input" type="checkbox" asp-for="UserBelowZeroStore" name="UserBelowZeroStore"/>
                                     <label class="form-check-label">انبار در زیر صفر درجه</label>
@@ -112,22 +93,17 @@
                                 </div>
                             </div>
 
-                            <div class="col-lg-5">
-
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="text-center mt-4 align-middle">
-                                    <button type="submit" class="btn btn-success px-5">ثبت</button>
-                                    <a type="button" class="btn btn-primary px-5" asp-action="Index">لیست</a>
-                                </div>
-                            </div>
+                        </div>
+                         <div class="text-left">
+                            <button type="submit" class="btn btn-success px-5">ثبت</button>
+                            <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
                         </div>
                     </form>
 
 
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                 </div>
-            </div>
+
         </div>
         <!--/col-->
     </div>

@@ -11,23 +11,46 @@
     <link href="~/toastify/toast.css" rel="stylesheet" />
     <link href="~/css/components/shared/dynamic-grid-style.css" rel="stylesheet" />
 
-    
-
     <style>
 
-.row.equal-height {
-  display: flex;
-  flex-wrap: wrap;
-}
+        @@font-face {
+            font-family: 'iranyekan';
+            src: url('/fonts/iranyekan/Qs_Iranyekan.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
 
-.row.equal-height > [class*='col-'] {
-  display: flex;
-  flex-direction: column;
-}
+        @@font-face {
+            font-family: 'iranyekan';
+            src: url('/fonts/iranyekan/Qs_Iranyekan_bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
 
-.row.equal-height > [class*='col-'] > * {
-  flex-grow: 1;
-}
+
+        body,
+        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6
+         {
+            font-family: 'iranyekan', sans-serif!important;
+        }
+        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6{
+            font-weight:bold!important;
+        }
+
+
+        .row.equal-height {
+        display: flex;
+        flex-wrap: wrap;
+        }
+
+        .row.equal-height > [class*='col-'] {
+        display: flex;
+        flex-direction: column;
+        }
+
+        .row.equal-height > [class*='col-'] > * {
+        flex-grow: 1;
+        }
 
         .card {
             margin-bottom: 0px !important;
@@ -162,69 +185,118 @@
         }
 
 
-    .pager-wrap {
-        display: flex;
-        justify-content: flex-start; 
-        margin-top: 12px;
-        direction: rtl;
-    }
+        .pager-wrap {
+            display: flex;
+            justify-content: flex-start; 
+            margin-top: 12px;
+            direction: rtl;
+        }
 
-    .cpageination{
-        display: flex;
-        gap: 8px;
-    }
+        .cpageination{
+            display: flex;
+            gap: 8px;
+        }
 
-    .pager-modern .page-item .page-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        margin-left: -1px;
-        background: #fff;
-        color: #262626;
-        font-weight: 500;
-        font-size:14px;
-        width:32px;
-        height:32px;
-    }
+        .pager-modern .page-item .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-left: -1px;
+            background: #fff;
+            color: #262626;
+            font-weight: 500;
+            font-size:14px;
+            width:32px;
+            height:32px;
+        }
 
-    .pager-modern .page-item .page-link .fa{
-        font-size: 18px;
-        font-weight: 400;
-    }
+        .pager-modern .page-item .page-link .fa{
+            font-size: 18px;
+            font-weight: 400;
+        }
 
-    .pager-modern .page-item.active .page-link {
-        background: #0071B7; 
-        border-color: #0071B7;
-        color: #fff;
-    }
+        .pager-modern .page-item.active .page-link {
+            background: #0071B7; 
+            border-color: #0071B7;
+            color: #fff;
+        }
 
-    .pager-modern .page-item.disabled .page-link {
-        background: #f9fafb;
-        color: #9ca3af;
-        cursor: not-allowed;
-    }
+        .pager-modern .page-item.disabled .page-link {
+            background: #f9fafb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
 
-    .pager-modern .page-item.ellipsis .page-link {
-        pointer-events: none;
-    }
-    .d-flex{
-        display:flex;
-    }
-    .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12, .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12, .col-xl-1, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-10, .col-xl-11, .col-xl-12{
-        padding-left: 4px;
-        padding-right: 4px;
-    }
+        .pager-modern .page-item.ellipsis .page-link {
+            pointer-events: none;
+        }
+        .d-flex{
+            display:flex;
+        }
+        .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12, .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12, .col-xl-1, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-10, .col-xl-11, .col-xl-12{
+            padding-left: 4px;
+            padding-right: 4px;
+        }
 
-    .badge{
-        padding: 2px 8px;
-        border-radius:8px;
-        max-width:100px;
-        width:100%;
-        display: block;
-        margin:auto;
-    }
+        .badge{
+            padding: 2px 8px;
+            border-radius:8px;
+            max-width:100px;
+            width:100%;
+            display: block;
+            margin:auto;
+        }
+        .badge-success{
+            background:#E4F6E2!important;
+            color:#37842F!important;
+        }
+        .badge-danger{
+            background:#FFDFDF!important;
+            color:#ED1515!important;
+        }
+        table tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.1) !important;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Alternative hover with border */
+        tr:hover {
+            background-color: #F0F8FF !important;
+            transition: all 0.2s ease;
+        }
+
+        /* Hover effect for action buttons */
+        tr:hover .btn-link {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .btn-link {
+            opacity: 0.8;
+            transition: all 0.2s ease;
+        }
+
+        .btn-link:hover {
+            opacity: 1;
+            transform: scale(1.15);
+        }
+
+        /* Zebra striping with hover (maintains hover even on striped rows) */
+        .table-striped tbody tr:nth-of-type(odd):hover {
+            background-color: rgba(52, 152, 219, 0.15) !important;
+        }
+
+        .table-striped tbody tr:nth-of-type(even):hover {
+            background-color: rgba(52, 152, 219, 0.1) !important;
+        }
+
+        /* Smooth transitions */
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
     </style>
 
 

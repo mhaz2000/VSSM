@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿let addedItemsIndex = 0;
+
+$(function () {
 
     $('#Date').pDatepicker({
         format: "YYYY/MM/DD",
@@ -102,7 +104,10 @@
         $('#addItemBtn').prop('disabled', false);
     });
 
-    let addedItemsIndex = 0;
+    addedItemsIndex =
+        $('#addedItemsTable tbody tr')
+            .not('.empty-row')
+            .length;
 
     $('#addItemBtn').click(function () {
 
@@ -156,7 +161,7 @@
 
 
         tbody.append(`
-            <tr data-id="${itemId}"
+            <tr data-id="${itemId}">
                 <td>${itemName}</td>
                 <td>${expiry}</td>
             
@@ -214,6 +219,8 @@
                 </tr>
             `);
         }
+
+        reindexItems();
     });
 
     $(document).on('click', '.edit-item', function () {
@@ -239,6 +246,8 @@
 
 
     $(document).on('click', '.save-item', function () {
+
+        debugger
 
         let row = $(this).closest('tr');
         let cell = row.find('.dose-cell');
@@ -279,3 +288,22 @@ function formatDate(d) {
     return new Date(d).toLocaleDateString('fa-IR');
 }
 
+function reindexItems() {
+
+    debugger
+    let rows = $('#addedItemsTable tbody tr').not('.empty-row');
+
+    rows.each(function (index) {
+        $(this).find('input[type="hidden"]').each(function () {
+            let name = $(this).attr('name');
+            if (!name) return;
+
+            // Replace index in name attribute
+            let newName = name.replace(/Items\[\d+\]/, `Items[${index}]`);
+            $(this).attr('name', newName);
+        });
+    });
+
+    // Update global addedItemsIndex to next available
+    addedItemsIndex = rows.length;
+}

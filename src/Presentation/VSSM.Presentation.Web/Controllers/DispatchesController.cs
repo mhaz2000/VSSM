@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services.BaseEntities;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
@@ -122,6 +124,8 @@ namespace VSSM.Presentation.Web.Controllers
 
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken token)
         {
             await _dispatchService.DeleteDispatchAsync(id, token);
@@ -167,6 +171,37 @@ namespace VSSM.Presentation.Web.Controllers
         {
             await _dispatchService.DispatchArrivedAsync(arrivedDto, CurrentUserId.Value,CurrentUserRecipientId.Value, cancellationToken);
             return RedirectToAction("ToBeArrivedIndex");
+        }
+
+        public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
+        {
+            var dispatch = await _dispatchService.GetByIdAsync(id);
+            if (dispatch == null)
+                return NotFound();
+
+            ViewBag.Recipients = await _recipientService.GetActiveRecipients(cancellationToken);
+            ViewBag.TransportModes = await _transportModeService.GetActiveTransportModes(cancellationToken);
+            ViewBag.ReceivingModes = await _receivingModeService.GetActiveReceivingModesAsync(cancellationToken);
+            ViewBag.ItemClasses = await _itemClassService.GetActives(cancellationToken);
+            ViewBag.VVMStages = await _vvmstageService.GetActives(cancellationToken);
+
+            return View(dispatch);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Update(
+            UpdateDispatchDto updateDispatcheDto,
+            string submitType,
+            CancellationToken cancellationToken)
+        {
+            updateDispatcheDto.SenderId = CurrentUserRecipientId.Value;
+            updateDispatcheDto.EnteredById = CurrentUserId.Value;
+
+
+            await _dispatchService.UpdateDispatchAsync(updateDispatcheDto, submitType, cancellationToken);
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

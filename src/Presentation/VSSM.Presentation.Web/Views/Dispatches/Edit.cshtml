@@ -1,0 +1,317 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
+@model UpdateDispatchDto
+
+@section Styles {
+    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
+    <link href="~/css/components/dispatches/dispatch-create.css" rel="stylesheet" />
+
+}
+
+<style>
+    
+    .form-control {
+        padding: 16px !important;
+    }
+
+    .form-select {
+        padding: 12px !important;
+        width: 100%;
+    }
+
+    .form-label {
+        text-align: right;
+    }
+
+    .input-sec {
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="animated fadeIn">
+
+        <div class="card mt-3">
+            <div class="card-block">
+                <h5 style="font-weight: bolder">ثبت ارسال</h5>
+
+                <form asp-action="Update" method="post" id="createForm">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="col-lg-6 w-100">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">تاریخ ارسال <span class="form-mandatory">(اجباری)</span></label>
+                                <input asp-for="Date" id="Date" class="form-control bg-warning-subtle" />
+                                <input type="hidden" id="DateEn" name="Date" />
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">نوع کالا<span class="form-mandatory">(اجباری)</span></label>
+                                <select id="itemClassSelect" class="form-select">
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var c in ViewBag.ItemClasses)
+                                    {
+                                        <option value="@c.Id">@c.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">کالا<span class="form-mandatory">(اجباری)</span></label>
+                                <select id="itemSelect" class="form-select">
+                                    <option value="">انتخاب کنید</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">شماره درخواست</label>
+                                <input asp-for="RequestNum" class="form-control bg-warning-subtle" />
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">شماره فاکتور</label>
+                                <input asp-for="DispatchVoucherNumber" type="number" class="form-control bg-warning-subtle" />
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">شماره گزارش</label>
+                                <input asp-for="ReportNumber" class="form-control bg-warning-subtle" />
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">تشخیص سرما</label>
+                                <input asp-for="AirwaryWillReference" class="form-control bg-warning-subtle" />
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">گیرنده<span class="form-mandatory">(اجباری)</span></label>
+                                <select asp-for="ReceiverId" class="form-select">
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var r in ViewBag.Recipients)
+                                    {
+                                        <option value="@r.RecipientId">@r.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">طریقه حمل</label>
+                                <select asp-for="TransportModeId" class="form-select">
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var t in ViewBag.TransportModes)
+                                    {
+                                        <option value="@t.TransportModeId">@t.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">روش دریافت</label>
+                                <select asp-for="ReceivingModeId" class="form-select">
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var r in ViewBag.ReceivingModes)
+                                    {
+                                        <option value="@r.ReceivingModeId">@r.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+
+                            <!-- Note (2/3 width) -->
+                            <div class="col-md-8 input-sec">
+                                <label class="form-label">ملاحظات</label>
+                                <textarea asp-for="Note" class="form-control rounded-3" rows="1"></textarea>
+                            </div>
+
+                        </div>
+
+                        <hr />
+
+
+                        <table class="table table-bordered table-striped mt-3" id="itemDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th>انتخاب</th>
+                                    <th>کالا</th>
+                                    <th>انقضا</th>
+                                    <th>مرحله VVM</th>
+                                    <th>سازنده</th>
+                                    <th>موجودی</th>
+                                    <th>انبار</th>
+                                    <th>سری ساخت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="8" class="text-center">کالایی انتخاب نشده</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+
+                        <div class="mt-3" id="itemExtraFields" style="display:none; margin-top: 1rem; margin-bottom: 1rem;">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">تعداد/دوز<span class="form-mandatory">(اجباری)</span></label>
+                                    <input name="DoseCount" class="form-control" disabled />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">مرحله vvm</label>
+                                    <select id="vvmStagesSelect"
+                                            class="form-select"
+                                            disabled>
+                                        <option value="">انتخاب کنید</option>
+                                        @foreach (var d in ViewBag.VVMStages)
+                                        {
+                                            <option value="@d.VvmstageId">@d.FullName</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <!-- Note full row -->
+                                <div class="col-12">
+                                    <label class="form-label">ملاحظات</label>
+                                    <textarea name="ExtraNote" class="form-control" rows="3" disabled></textarea>
+                                </div>
+
+                                <!-- Button aligned right -->
+                                <div class="col-12 text-end mt-2" style="display: flex; justify-content: end; margin-top: 1rem">
+                                    <button type="button"
+                                            id="addItemBtn"
+                                            class="btn btn-success"
+                                            style="background-color: #0071B7; "
+                                            disabled>
+                                        افزودن کالا
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <h6 class="mt-4">کالاهای افزوده‌شده</h6>
+
+                        <table class="dynamic-grid table table-bordered table-hover" style="margin-bottom: 1rem" id="addedItemsTable">
+                            <thead>
+                                <tr>
+                                    <th>کالا</th>
+                                    <th>تاریخ انقضا</th>
+                                    <th class="dose-col">تعداد/دوز</th>
+                                    <th>مرحله VVM</th>
+                                    <th>ملاحظات</th>
+
+                                    <th class="actions-col">عملیات</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @if (Model.Items != null && Model.Items.Any())
+                                {
+                                    for (int i = 0; i < Model.Items.Count; i++)
+                                    {
+                                        var item = Model.Items[i];
+
+                                        <tr data-id="@item.ItemId">
+                                            <td>@item.ItemName</td>
+                                            <td>@item.ExpiryDate?.ToShamsi()</td>
+
+                                            <td class="dose-cell dose-col" data-dose="@item.DoseCount">
+                                                <span class="dose-text">@item.DoseCount</span>
+                                            </td>
+
+                                            <td>@item.VvmstageName</td>
+                                            <td>@item.Note</td>
+
+                                            <td class="text-center actions-col">
+                                                <button type="button" class="item-table-action edit-item">
+                                                    <i class="fa fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="item-table-action remove-item ms-1">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </td>
+
+
+                                            <input type="hidden" name="Items[@i].ItemDetailStoreId" value="@item.ItemDetailStoreId" />
+                                            <input type="hidden" name="Items[@i].ExpiryDate" value="@item.ExpiryDate" />
+                                            <input type="hidden" name="Items[@i].BatchNumber" value="@item.BatchNumber" />
+                                            <input type="hidden" name="Items[@i].StoreId" value="@item.StoreId" />
+                                            <input type="hidden" name="Items[@i].ItemId" value="@item.ItemId" />
+                                            <input type="hidden" name="Items[@i].DoseCount" value="@item.DoseCount" />
+                                            <input type="hidden" name="Items[@i].VvmStageId" value="@item.VvmstageId" />
+                                            <input type="hidden" name="Items[@i].Note" value="@item.Note" />
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr class="empty-row">
+                                        <td colspan="5" class="text-center text-muted">کالایی اضافه نشده</td>
+                                    </tr>
+                                }
+                            </tbody>
+
+                        </table>
+
+                        <div class="text-center mt-4">
+
+                            <button type="submit"
+                                    name="submitType"
+                                    value="final"
+                                    class="btn btn-success px-5"
+                                    @(Model.IsConfirmed ? "disabled" : "")>
+                                ثبت نهایی
+                            </button>
+
+                            <button type="submit"
+                                    name="submitType"
+                                    value="draft"
+                                    class="btn btn-success-outlet px-5"
+                                    @(Model.IsConfirmed ? "disabled" : "")>
+                                ذخیره پیش‌نویس
+                            </button>
+
+                            <button type="submit"
+                                    form="deleteForm"
+                                    class="btn btn-success-outlet px-5">
+                                حذف
+                            </button>
+
+                            <a asp-action="Index" class="btn btn-success-outlet px-5">
+                                بازگشت
+                            </a>
+
+                        </div>
+
+                    </div>
+                </form>
+
+                <form id="deleteForm"
+                      asp-action="Delete"
+                      method="post"
+                      onsubmit="return confirm('آیا از حذف این ارسال مطمئن هستید؟');">
+
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    @Html.AntiForgeryToken()
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/persian-date.js"></script>
+    <script src="~/js/persian-datepicker.js"></script>
+    <script src="~/js/components/dispatches/dispatch-create.js"></script>
+}

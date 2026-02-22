@@ -29,6 +29,7 @@ $.grayLightest = '#f8f9fa';
 $(document).ready(function ($) {
 
 	$(function () {
+		debugger
 		var currentUrl = window.location.pathname.toLowerCase();
 
 		$('.sidebar .nav-link').each(function () {
@@ -45,21 +46,24 @@ $(document).ready(function ($) {
 				return;
 			}
 
-			if (currentUrl === linkUrl || currentUrl.startsWith(linkUrl + '/')) {
+			if (currentUrl === linkUrl) {
 				activateMenu($(this));
 			}
 		});
 
 		function activateMenu($link) {
+
+			// remove previous active (optional)
+			$('.sidebar .nav-link.active').removeClass('active');
+
 			$link.addClass('active');
 
-			var parents = $link.parents('.nav-dropdown');
-			parents.addClass('open');
-			parents.children('.nav-link').addClass('active');
+			var $dropdown = $link.closest('.nav-dropdown');
+			if ($dropdown.length) {
+				$dropdown.addClass('open');
+			}
 		}
-
 	});
-
 
 	/* ---------------------------------
 	   Sidebar Arrow Sync Function

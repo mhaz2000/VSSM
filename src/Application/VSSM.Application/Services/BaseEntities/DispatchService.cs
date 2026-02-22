@@ -32,6 +32,95 @@ public class DispatchService : IDispatchService
 
     }
 
+    public async Task UpdateDispatchAsync(
+    UpdateDispatchDto updateDispatcheDto,
+    string submitType,
+    CancellationToken cancellationToken)
+    {
+        var dispatch = await _context.TblDispatches.FindAsync(updateDispatcheDto.Id);
+
+        dispatch.SenderId = updateDispatcheDto.SenderId;
+        dispatch.ReceiverId = updateDispatcheDto.ReceiverId;
+        dispatch.TransportModeId = updateDispatcheDto.TransportModeId;
+        dispatch.EnteredById = updateDispatcheDto.EnteredById;
+        dispatch.AirwaryWillReference = updateDispatcheDto.AirwaryWillReference;
+        dispatch.RequestNum = updateDispatcheDto.RequestNum;
+        dispatch.Note = updateDispatcheDto.Note;
+        dispatch.Date = string.IsNullOrWhiteSpace(updateDispatcheDto.Date) ? null : DateTimeHelper.ToGregorian(updateDispatcheDto.Date);
+        dispatch.IsDrafted = submitType == "draft" ? true : false;
+        dispatch.ReceivingModeId = updateDispatcheDto.ReceivingModeId;
+        dispatch.IsConfirmed = submitType == "final" ? true : false;
+        dispatch.ConfirmationTime = submitType == "final" ? DateTime.Now : null;
+        dispatch.DispatchVoucherNumber = submitType == "final" ? (int.Parse(dispatch.DispatchVoucherNumber) + 1).ToString() : dispatch.DispatchVoucherNumber;
+        dispatch.ReportNumber = updateDispatcheDto.ReportNumber;
+
+        var dispatchLines = await _context.TblDispatchLines.Where(t => t.DispatchId == updateDispatcheDto.Id).ToListAsync();
+
+        _context.TblDispatchLines.RemoveRange(dispatchLines);
+
+        float totalPrice = 0;
+        float totalVolume = 0;
+
+        foreach (var item in updateDispatcheDto.Items)
+        {
+            var itemInfo = await _context.TblItems.FindAsync(item.ItemId);
+            var itemDetailStore = await _context.TblItemDetailStores.FindAsync(item.ItemDetailStoreId);
+            var itemDetail = await _context.TblItemDetails.FindAsync(itemDetailStore.ItemDetailId);
+
+
+            var line = new TblDispatchLine
+            {
+                DispatchId = updateDispatcheDto.Id,
+                ItemId = item.ItemId,
+                Quantity = item.DoseCount,
+                DosePerVialId = itemDetail.DosePerVialId,
+                StoreId = item.StoreId,
+                VvmtypeId = itemDetail.VvmtypeId,
+                VvmstageId = item.VvmstageId,
+                ManufacturerId = itemDetail.ManufacturerId,
+                ItemDetailStoreId = item.ItemDetailStoreId,
+                Note = item.Note,
+                BatchNumber = item.BatchNumber,
+                ExpiryDate = item.ExpiryDate,
+                EntryDate = DateTime.Now
+            };
+
+            if (itemInfo.DiluentId is not null && itemInfo.DiluentId > 0)
+            {
+                var diluentLine = new TblDispatchLine
+                {
+                    DispatchId = updateDispatcheDto.Id,
+                    ItemId = itemInfo.DiluentId,
+                    Quantity = item.DoseCount,
+                    DosePerVialId = itemDetail.DosePerVialId,
+                    StoreId = item.StoreId,
+                    VvmtypeId = itemDetail.VvmtypeId,
+                    VvmstageId = item.VvmstageId,
+                    ManufacturerId = itemDetail.ManufacturerId,
+                    ItemDetailStoreId = item.ItemDetailStoreId,
+                    Note = item.Note,
+                    BatchNumber = item.BatchNumber,
+                    ExpiryDate = item.ExpiryDate,
+                    EntryDate = DateTime.Now
+                };
+
+                totalVolume += item.Volume ?? 0;
+                _context.TblDispatchLines.Add(diluentLine);
+            }
+
+            totalVolume += item.Volume ?? 0;
+
+            _context.TblDispatchLines.Add(line);
+        }
+
+        dispatch.TotalVolume = totalVolume;
+
+        _context.TblDispatches.Update(dispatch);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+
+
     public async Task CreateDispatchAsync(
     CreateDispatchDto createDispatcheDto,
     string submitType,
@@ -56,7 +145,7 @@ public class DispatchService : IDispatchService
             IsCancelled = false,
             IsConfirmed = submitType == "final" ? true : false,
             DispatchVoucherPrinted = false,
-            ConfirmationTime = DateTime.Now,
+            ConfirmationTime = submitType == "final" ? DateTime.Now : null,
             ReceiverStatus = 0,
             DispatchVoucherNumber = createDispatcheDto.DispatchVoucherNumber.ToString(),
             ReportNumber = createDispatcheDto.ReportNumber
@@ -238,6 +327,50 @@ public class DispatchService : IDispatchService
         await _context.SaveChangesAsync(cancellationToken);
 
     }
+
+    public async Task<UpdateDispatchDto?> GetByIdAsync(int id)
+    {
+        var dispatch = await _context.TblDispatches.FindAsync(id);
+        if (dispatch is null) return null;
+
+        var items = from line in _context.TblDispatchLines.Where(t => t.DispatchId == id)
+                    join item in _context.TblItems on line.ItemId equals item.ItemId
+                    join vvmstage in _context.TblVvmstages on line.VvmstageId equals vvmstage.VvmstageId
+                    select new { line, item, vvmstage };
+
+        var model = new UpdateDispatchDto
+        {
+            IsConfirmed = dispatch.IsConfirmed ?? false,
+            Id = dispatch.DispatchId,
+            Date = dispatch.Date?.ToString("yyyy/MM/dd"),
+            RequestNum = dispatch.RequestNum,
+            DispatchVoucherNumber = ulong.TryParse(dispatch.DispatchVoucherNumber,out ulong res) ? res : 0,
+            ReportNumber = dispatch.ReportNumber,
+            AirwaryWillReference = dispatch.AirwaryWillReference,
+            ReceiverId = dispatch.ReceiverId ?? 0,
+            TransportModeId = dispatch.TransportModeId ?? 0,
+            ReceivingModeId = dispatch.ReceivingModeId ?? 0,
+            Note = dispatch.Note,
+            Items = items.Select(i => new DispatchLineDto
+            {
+                ItemDetailStoreId = i.line.ItemDetailStoreId,
+                ItemClassId = i.item.ItemClassId ?? 0,
+                ItemName = i.item.FullName,
+                ItemId = i.line.ItemId ?? 0,
+                VvmstageName = i.vvmstage.FullName,
+                ExpiryDate = i.line.ExpiryDate,
+                DoseCount = i.line.Quantity ?? 0,
+                VvmstageId = i.line.VvmstageId ?? 0,
+                Note = i.line.Note,
+                BatchNumber = i.line.BatchNumber,
+                StoreId = i.line.StoreId
+
+            }).ToList()
+        };
+
+        return model;
+    }
+
     public Task<List<ToBeArrivedDispatchLineDto>> GetDispatchLinesAsync(long dispatchId, CancellationToken cancellationToken)
     {
         var query = from dispatchLine in _context.TblDispatchLines

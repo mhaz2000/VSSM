@@ -39,66 +39,14 @@
                         <div class="row g-3">
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">تاریخ:</label>
+                                <label class="form-label">تاریخ<span class="form-mandatory">(اجباری)</span></label>
                                 <input asp-for="Date" id="Date" class="form-control bg-warning-subtle" />
                                 <input type="hidden" id="DateEn" name="Date" />
                             </div>
 
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">شماره درخواست:</label>
-                                <input asp-for="RequestNum" class="form-control bg-warning-subtle" />
-                            </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">شماره فاکتور:</label>
-                                <input asp-for="DispatchVoucherNumber" type="number" class="form-control bg-warning-subtle" />
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">شماره گزارش:</label>
-                                <input asp-for="ReportNumber" class="form-control bg-warning-subtle" />
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">تشخیص سرما:</label>
-                                <input asp-for="AirwaryWillReference" class="form-control bg-warning-subtle" />
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">گیرنده:</label>
-                                <select asp-for="ReceiverId" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var r in ViewBag.Recipients)
-                                    {
-                                        <option value="@r.RecipientId">@r.FullName</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">طریقه حمل:</label>
-                                <select asp-for="TransportModeId" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var t in ViewBag.TransportModes)
-                                    {
-                                        <option value="@t.TransportModeId">@t.FullName</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">روش دریافت:</label>
-                                <select asp-for="ReceivingModeId" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var r in ViewBag.ReceivingModes)
-                                    {
-                                        <option value="@r.ReceivingModeId">@r.FullName</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">نوع کالا:</label>
+                                <label class="form-label">نوع کالا<span class="form-mandatory">(اجباری)</span></label>
                                 <select id="itemClassSelect" class="form-select">
                                     <option value="">انتخاب کنید</option>
                                     @foreach (var c in ViewBag.ItemClasses)
@@ -109,15 +57,69 @@
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">کالا:</label>
+                                <label class="form-label">کالا<span class="form-mandatory">(اجباری)</span></label>
                                 <select id="itemSelect" class="form-select">
                                     <option value="">انتخاب کنید</option>
                                 </select>
                             </div>
 
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">شماره درخواست</label>
+                                <input asp-for="RequestNum" class="form-control bg-warning-subtle" />
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">شماره فاکتور</label>
+                                <input asp-for="DispatchVoucherNumber" type="number" class="form-control bg-warning-subtle" />
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">شماره گزارش</label>
+                                <input asp-for="ReportNumber" class="form-control bg-warning-subtle" />
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">تشخیص سرما</label>
+                                <input asp-for="AirwaryWillReference" class="form-control bg-warning-subtle" />
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">گیرنده<span class="form-mandatory">(اجباری)</span></label>
+                                <select asp-for="ReceiverId" class="form-select">
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var r in ViewBag.Recipients)
+                                    {
+                                        <option value="@r.RecipientId">@r.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">طریقه حمل</label>
+                                <select asp-for="TransportModeId" class="form-select">
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var t in ViewBag.TransportModes)
+                                    {
+                                        <option value="@t.TransportModeId">@t.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 input-sec">
+                                <label class="form-label">روش دریافت</label>
+                                <select asp-for="ReceivingModeId" class="form-select">
+                                    <option value="">انتخاب کنید</option>
+                                    @foreach (var r in ViewBag.ReceivingModes)
+                                    {
+                                        <option value="@r.ReceivingModeId">@r.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+
                             <!-- Note (2/3 width) -->
                             <div class="col-md-8 input-sec">
-                                <label class="form-label">ملاحظات:</label>
+                                <label class="form-label">ملاحظات</label>
                                 <textarea asp-for="Note" class="form-control rounded-3" rows="1"></textarea>
                             </div>
 
@@ -152,12 +154,12 @@
                             <div class="row g-3">
 
                                 <div class="col-md-6">
-                                    <label class="form-label">تعداد/دوز:</label>
+                                    <label class="form-label">تعداد/دوز<span class="form-mandatory">(اجباری)</span></label>
                                     <input name="DoseCount" class="form-control" disabled />
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">مرحله vvm:</label>
+                                    <label class="form-label">مرحله vvm</label>
                                     <select id="vvmStagesSelect"
                                             class="form-select"
                                             disabled>
@@ -197,7 +199,7 @@
                             <thead>
                                 <tr>
                                     <th>کالا</th>
-
+                                    <th>تاریخ انقضا</th>
                                     <th class="dose-col">تعداد/دوز</th>
                                     <th>مرحله VVM</th>
                                     <th>ملاحظات</th>
@@ -231,7 +233,7 @@
                                 ذخیره پیش‌نویس
                             </button>
 
-                            <a asp-action="Index" class="btn btn-success-outlet px-5">لیست</a>
+                            <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
                         </div>
 
 

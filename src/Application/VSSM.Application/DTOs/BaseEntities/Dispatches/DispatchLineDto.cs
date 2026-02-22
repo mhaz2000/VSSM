@@ -2,6 +2,7 @@
 public class DispatchLineDto
 {
     public int ItemId { get; set; }
+    public int ItemClassId { get; set; }
     public int ItemDetailId { get; set; }
     public int DoseCount { get; set; }
     public float UnitPrice { get; set; }
@@ -18,4 +19,6 @@ public class DispatchLineDto
     public string BatchNumber { get; set; }
     public DateTime? ExpiryDate { get; set; }
     public int? BundleId { get; set; }
+    public string ItemName { get; internal set; }
+    public string VvmstageName { get; internal set; }
 }

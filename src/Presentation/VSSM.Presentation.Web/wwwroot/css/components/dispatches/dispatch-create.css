@@ -59,3 +59,10 @@
 .item-table-action:focus{
     outline: none;
 }
+
+.form-mandatory {
+    color: grey;
+    position: absolute;
+    font-size: 0.7rem;
+    margin-right: 5px;
+}

@@ -15,4 +15,6 @@ public interface IDispatchService
         string sortField, string sortOrder, string? status, int receiverId, CancellationToken cancellationToken);
     Task<List<ToBeArrivedDispatchLineDto>> GetDispatchLinesAsync(long id, CancellationToken cancellationToken);
     Task DispatchArrivedAsync(DispatchArrivedDto arrivedDto, int userId, int recipientId, CancellationToken cancellationToken);
+    Task<UpdateDispatchDto?> GetByIdAsync(int id);
+    Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken);
 }

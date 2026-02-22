@@ -2,6 +2,7 @@
 using VSSM.Application.DTOs.BaseEntities.Warnings;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Domain.Entities;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities
@@ -18,6 +19,9 @@ namespace VSSM.Application.Services.BaseEntities
                     ItemDetailId = g.Key,
                     Quantity = g.Sum(x => x.CurrentStock ?? 0)
                 };
+
+
+            var today = DateTime.Now.Date;
 
             var query =
                 from line in _context.TblArrivalLines
@@ -40,6 +44,10 @@ namespace VSSM.Application.Services.BaseEntities
                 join store in _context.TblStores
                     on line.StoreId equals store.StoreId
 
+                where line.ExpiryDate != null
+                      && today <= line.ExpiryDate.Value
+                      && today >= line.ExpiryDate.Value.AddDays(-(itm.DayToWarmExpire ?? 0))
+
                 select new CloseToExpirationDto
                 {
                     ItemName = itm.FullName,
@@ -50,7 +58,6 @@ namespace VSSM.Application.Services.BaseEntities
                     ExpiredDate = line.ExpiryDate,
                     Quantity = stock.Quantity
                 };
-
 
             query = query.AsNoTracking();
 

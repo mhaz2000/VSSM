@@ -138,21 +138,34 @@ namespace VSSM.Application.Services.BaseEntities
             var items = await query
                 .Skip(paging.Skip)
                 .Take(paging.PageSize)
-                .Select(x => new ItemListDto
-                {
-                    Id = x.ItemId,
-                    ItemClassId = x.ItemClassId,
-                    FullName = x.FullName,
-                    Code = x.Code,
-                    UniCode = x.UniCode,
-                    OrderInList = x.OrderId.GetValueOrDefault(),
-                    IsActive = x.IsActive.GetValueOrDefault(),
-                })
                 .ToListAsync(cancellationToken);
+
+            List<ItemListDto> result = new List<ItemListDto>();
+
+            foreach (var item in items)
+            {
+                var diluentItem =
+                    await _dbContext.TblItems.FirstOrDefaultAsync(c => c.ItemId == item.DiluentId, cancellationToken);
+
+                var resultItem = new ItemListDto()
+                {
+                    Id = item.ItemId,
+                    ItemClassId = item.ItemClassId,
+                    FullName = item.FullName,
+                    Code = item.Code,
+                    UniCode = item.UniCode,
+                    OrderInList = item.OrderId.GetValueOrDefault(),
+                    IsActive = item.IsActive.GetValueOrDefault(),
+                    DiluentId = item.DiluentId,
+                    DiluentName = diluentItem?.FullName ?? "",
+                };
+                
+                result.Add(resultItem);
+            }
 
             return new PagingSearchOrderDto<ItemListDto>
             {
-                Items = items,
+                Items = result,
                 Paging = paging,
                 SearchText = search,
                 SortField = sortField,

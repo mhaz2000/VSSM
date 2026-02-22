@@ -49,7 +49,10 @@ namespace VSSM.Presentation.Web.Controllers
         public async Task<IActionResult> New()
         {
             await PrepareDropdown(CancellationToken.None);
-            return View();
+            return View(new ItemViewModel()
+            {
+                IsActive = true
+            });
         }
 
         public async Task<IActionResult> Create(ItemViewModel model, CancellationToken cancellationTOken)

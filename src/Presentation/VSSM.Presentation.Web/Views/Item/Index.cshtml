@@ -17,18 +17,18 @@
                 <div class="col-lg-6 d-flex align-items-center justify-content-end">
 
                     <div class="col-lg-5 d-flex align-items-center justify-content-end">
-                            @await Component.InvokeAsync("SearchBar", new
-                            {
-                                searchTerm = Model.SearchText,
-                                pageSize = Model.Paging.PageSize,
-                                sort = Model.SortField,
-                                direction = Model.SortOrder
-                            })
-                        </div>
+                        @await Component.InvokeAsync("SearchBar", new
+                        {
+                            searchTerm = Model.SearchText,
+                            pageSize = Model.Paging.PageSize,
+                            sort = Model.SortField,
+                            direction = Model.SortOrder
+                        })
+                    </div>
 
                     <div class="col-lg-2 d-flex align-items-center justify-content-end">
                         <a class="btn btn-success m-0" asp-controller="Item" asp-action="New">
-                            <i class="fa fa-plus-circle ml-2"></i>جدید
+                            <i class="fa fa-plus-circle ml-2"></i>افزودن
                         </a>
                     </div>
 
@@ -37,27 +37,26 @@
 
             <div class="card-block">
 
-               <div class="table-wrapper">
-                <table class="table table-bordered table-striped table-condensed text-center">
-                    <thead>
+                <div class="table-wrapper">
+                    <table class="table table-bordered table-striped table-condensed text-center">
+                        <thead>
                         <tr>
                             <th>
-                                <a href="?sortField=Code&sortOrder=@(Model.SortOrder=="asc"?"desc":"asc")">
+                                <a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
                                     کد
                                 </a>
                             </th>
 
                             <th>
-                                <a href="?sortField=FullName&sortOrder=@(Model.SortOrder=="asc"?"desc":"asc")">
+                                <a href="?sortField=FullName&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
                                     نام کامل
                                 </a>
                             </th>
 
-                            <th>کد بین المللی</th>
                             <th>حلال</th>
 
                             <th>
-                                <a href="?sortField=OrderId&sortOrder=@(Model.SortOrder=="asc"?"desc":"asc")">
+                                <a href="?sortField=OrderId&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
                                     ترتیب نمایش
                                 </a>
                             </th>
@@ -65,9 +64,9 @@
                             <th>وضعیت</th>
                             <th>عملیات</th>
                         </tr>
-                    </thead>
+                        </thead>
 
-                    <tbody>
+                        <tbody>
 
                         @if (Model != null && Model.Items.Any())
                         {
@@ -76,12 +75,19 @@
                                 <tr>
                                     <td>@item.Code</td>
                                     <td>@item.FullName</td>
-                                    <td>@item.UniCode</td>
-                                    <td>@item.DiluentId</td>
+                                    <td>@item.DiluentName</td>
                                     <td>@item.OrderInList</td>
 
                                     <td>
-                                        @(item.IsActive ? "فعال" : "غیرفعال")
+
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge badge-success">فعال</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger">غیرفعال</span>
+                                        }
                                     </td>
 
                                     <td>
@@ -104,10 +110,10 @@
                             </tr>
                         }
 
-                    </tbody>
-                </table>
-            </div>
-                            <!-- Pagination -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
                 @{
                     int page = Model.Paging.Page;
                     int totalPages = Model.Paging.TotalPages;
@@ -128,12 +134,13 @@
                     if (totalPages >= 1) selected.Add(1);
 
                     for (int p = page - window; p <= page + window; p++)
-                        if (p >= 1 && p <= totalPages) selected.Add(p);
+                        if (p >= 1 && p <= totalPages)
+                            selected.Add(p);
 
                     if (totalPages >= 2) selected.Add(totalPages);
 
                     string PageUrl(int p)
-                    => $"?search={search}&typeId={typeId}&sortField={sortField}&sortOrder={sortOrder}&page={p}";
+                        => $"?search={search}&typeId={typeId}&sortField={sortField}&sortOrder={sortOrder}&page={p}";
                 }
 
                 <nav class="pager-wrap mt-2 m-auto" aria-label="Page navigation">
@@ -141,7 +148,8 @@
 
                         <!-- قبلی -->
                         <li class="page-item @(page == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))" tabindex="@(page == 1 ? "-1" : "0")">
+                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))"
+                               tabindex="@(page == 1 ? "-1" : "0")">
                                 <
                             </a>
                         </li>
@@ -165,12 +173,13 @@
                             }
                         }
                         <li class="page-item @(page == totalPages ? "disabled" : "")">
-                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page + 1))" tabindex="@(page == 1 ? "-1" : "0")">
+                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page + 1))"
+                               tabindex="@(page == 1 ? "-1" : "0")">
                                 >
                             </a>
                         </li>
                 </nav>
-               </div>
+            </div>
         </div>
     </div>
 </div>

@@ -67,13 +67,16 @@ $(function () {
             if (res.success && res.result.length > 0) {
 
                 res.result.forEach(d => {
+                    let diluentAttr = d.diluent ? JSON.stringify(d.diluent).replace(/"/g, "&quot;") : '';
                     tbody.append(`
-                        <tr data-numDosePerVial=${d.numDosePerVial} data-expiryDate=${d.expiryDate} data-item-detail-store-id=${d.itemDetailStoreId} data-batch="${d.batchNumber}" data-store-id="${d.storeId}">
+                        <tr data-numDosePerVial=${d.numDosePerVial} 
+                            data-expiryDate=${d.expiryDate} 
+                            data-item-detail-store-id=${d.itemDetailStoreId} 
+                            data-batch="${d.batchNumber}" 
+                            data-store-id="${d.storeId}" 
+                            data-diluent="${diluentAttr}">
                             <td class="text-center">
-                                <input type="radio"
-                                       name="SelectedItemDetailId"
-                                       value="${d.itemId}"
-                                       class="item-radio" />
+                                <input type="radio" name="SelectedItemDetailId" value="${d.itemId}" class="item-radio" />
                             </td>
                             <td>${d.itemName ?? '-'}</td>
                             <td>${formatDate(d.expiryDate)}</td>
@@ -97,9 +100,20 @@ $(function () {
         $('.item-radio').closest('tr').removeClass('table-primary');
         $(this).closest('tr').addClass('table-primary');
 
+        let row = $(this).closest('tr');
+        let vvmStep = row.find('td:eq(3)').text().trim();
+
         $('#itemExtraFields').show();
-        $('#itemExtraFields input, #itemExtraFields textarea, #itemExtraFields select')
-            .prop('disabled', false);
+        $('#itemExtraFields input, #itemExtraFields textarea').prop('disabled', false);
+
+        if (!vvmStep || vvmStep === '-') {
+            $('#vvmStagesSelect').closest('.col-md-6').hide();
+            $('#vvmStagesSelect').prop('disabled', true);
+        } else {
+            $('#vvmStagesSelect').closest('.col-md-6').show();
+            $('#vvmStagesSelect').prop('disabled', false);
+            $('#vvmStagesSelect').val(row.data('vvmstageid') || '');
+        }
 
         $('#addItemBtn').prop('disabled', false);
     });
@@ -117,7 +131,6 @@ $(function () {
             return;
         }
 
-        debugger
         let row = selectedRadio.closest('tr');
         let itemId = selectedRadio.val();
         let batchNumber = row.data('batch');
@@ -126,6 +139,7 @@ $(function () {
         let itemDetailStoreId = row.data('item-detail-store-id');
         let dosePerVial = row.data('numdosepervial');
 
+        // prevent duplicate main item
         if ($(`#addedItemsTable tbody tr[data-id="${itemId}"]`).length) {
             alert('این کالا قبلاً اضافه شده است');
             return;
@@ -133,78 +147,101 @@ $(function () {
 
         let itemName = row.find('td:eq(1)').text();
         let expiry = row.find('td:eq(2)').text();
-
         let dose = parseInt($('input[name="DoseCount"]').val());
         let vvmStageId = $('#vvmStagesSelect').val();
         let vvmStageText = $('#vvmStagesSelect option:selected').text();
-
-
         let note = $('textarea[name="ExtraNote"]').val();
 
         let tbody = $('#addedItemsTable tbody');
         tbody.find('tr.empty-row').remove();
 
+        // validate dose
         if (!dose || dose <= 0) {
             alert('لطفاً مقدار دوز معتبر وارد کنید');
             return;
         }
-
         if (!dosePerVial || dosePerVial <= 0) {
             alert('لطفاً دوز بر ویال را انتخاب کنید');
             return;
         }
-
         if (dose % dosePerVial !== 0) {
             alert('مقدار وارد شده باید مضربی از دوز بر ویال باشد');
             return;
         }
 
-
+        // Add main item row
         tbody.append(`
-            <tr data-id="${itemId}">
-                <td>${itemName}</td>
-                <td>${expiry}</td>
-            
-                <td class="dose-cell dose-col" data-dose="${dose}">
-                    <span class="dose-text">${dose || '-'}</span>
-                </td>
+        <tr data-id="${itemId}">
+            <td>${itemName}</td>
+            <td>${expiry}</td>
+            <td class="dose-cell dose-col" data-dose="${dose}">
+                <span class="dose-text">${dose}</span>
+            </td>
+            <td>${vvmStageId ? vvmStageText : '-'}</td>
+            <td>${note || '-'}</td>
+            <td class="text-center actions-col">
+                <button type="button" class="item-table-action edit-item" title="ویرایش">
+                    <i class="fa fa-edit"></i>
+                </button>
+                <button type="button" class="item-table-action remove-item ms-1" title="حذف">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </td>
+            <input type="hidden" name="Items[${addedItemsIndex}].ItemDetailStoreId" value="${itemDetailStoreId}" />
+            <input type="hidden" name="Items[${addedItemsIndex}].ExpiryDate" value="${expiryDate}" />
+            <input type="hidden" name="Items[${addedItemsIndex}].BatchNumber" value="${batchNumber}" />
+            <input type="hidden" name="Items[${addedItemsIndex}].StoreId" value="${storeId}" />
+            <input type="hidden" name="Items[${addedItemsIndex}].ItemId" value="${itemId}" />
+            <input type="hidden" name="Items[${addedItemsIndex}].DoseCount" value="${dose}" />
+            <input type="hidden" name="Items[${addedItemsIndex}].VvmStageId" value="${vvmStageId}" />
+            <input type="hidden" name="Items[${addedItemsIndex}].Note" value="${note}" />
+        </tr>
+    `);
 
-                <td>${vvmStageText || '-'}</td>
+        // increment index for main item
+        addedItemsIndex++;
+
+        let diluentData = row.data('diluent'); // pass this from server when generating item table
+        if (diluentData) {
+
+            let diluentDose = parseInt($('input[name="DoseCount"]').val()); // same dose or custom
+            tbody.append(`
+            <tr data-id="diluent-${itemId}">
+                <td>${diluentData.itemName}</td>
+                <td>${formatDate(diluentData.expiryDate)}</td>
+                <td class="dose-cell dose-col" data-dose="${diluentDose}">
+                    <span class="dose-text">${diluentDose}</span>
+                </td>
+                <td>${diluentData.vvmStep || '-'}</td>
                 <td>${note || '-'}</td>
-            
                 <td class="text-center actions-col">
-                    <button type="button"
-                            class="item-table-action edit-item"
-                            title="ویرایش">
+                    <button type="button" class="item-table-action edit-item" title="ویرایش">
                         <i class="fa fa-edit"></i>
                     </button>
-                
-                    <button type="button"
-                            class="item-table-action remove-item ms-1"
-                            title="حذف">
+                    <button type="button" class="item-table-action remove-item ms-1" title="حذف">
                         <i class="fa fa-trash"></i>
                     </button>
                 </td>
-
-
-                <input type="hidden" name="Items[${addedItemsIndex}].ItemDetailStoreId" value="${itemDetailStoreId}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].ExpiryDate" value="${expiryDate}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].BatchNumber" value="${batchNumber}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].StoreId" value="${storeId}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].ItemId" value="${itemId}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].DoseCount" value="${dose}" />
-                <input type="hidden" name="Items[${addedItemsIndex}].VvmStageId" value="${vvmStageId}" />
+                <input type="hidden" name="Items[${addedItemsIndex}].ItemDetailStoreId" value="${diluentData.itemDetailStoreId}" />
+                <input type="hidden" name="Items[${addedItemsIndex}].ExpiryDate" value="${diluentData.expiryDate}" />
+                <input type="hidden" name="Items[${addedItemsIndex}].BatchNumber" value="${diluentData.batchNumber}" />
+                <input type="hidden" name="Items[${addedItemsIndex}].StoreId" value="${diluentData.storeId}" />
+                <input type="hidden" name="Items[${addedItemsIndex}].ItemId" value="${diluentData.itemId}" />
+                <input type="hidden" name="Items[${addedItemsIndex}].DoseCount" value="${diluentDose}" />
+                <input type="hidden" name="Items[${addedItemsIndex}].VvmStageId" value="${diluentData.vvmStageId}" />
                 <input type="hidden" name="Items[${addedItemsIndex}].Note" value="${note}" />
             </tr>
-`);
+        `);
 
+            addedItemsIndex++;
+        }
 
-        addedItemsIndex++;
-
+        // reset form fields
         $('#itemExtraFields input, #itemExtraFields textarea').val('');
         $('#itemExtraFields select').val('');
         $('.item-radio').prop('checked', false).closest('tr').removeClass('table-primary');
         $('#addItemBtn').prop('disabled', true);
+
     });
 
     $(document).on('click', '.remove-item', function () {

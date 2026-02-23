@@ -78,16 +78,6 @@
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">شماره گزارش</label>
-                                <input asp-for="ReportNumber" class="form-control bg-warning-subtle" />
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">تشخیص سرما</label>
-                                <input asp-for="AirwaryWillReference" class="form-control bg-warning-subtle" />
-                            </div>
-
-                            <div class="col-md-4 input-sec">
                                 <label class="form-label">گیرنده<span class="form-mandatory">(اجباری)</span></label>
                                 <select asp-for="ReceiverId" class="form-select">
                                     <option value="">انتخاب کنید</option>
@@ -121,8 +111,7 @@
                             </div>
 
 
-                            <!-- Note (2/3 width) -->
-                            <div class="col-md-8 input-sec">
+                            <div class="col-md-12 input-sec">
                                 <label class="form-label">ملاحظات</label>
                                 <textarea asp-for="Note" class="form-control rounded-3" rows="1"></textarea>
                             </div>
@@ -176,13 +165,13 @@
                                 </div>
 
                                 <!-- Note full row -->
-                                <div class="col-12">
+                                <div class="col-md-12">
                                     <label class="form-label">ملاحظات</label>
                                     <textarea name="ExtraNote" class="form-control" rows="3" disabled></textarea>
                                 </div>
 
                                 <!-- Button aligned right -->
-                                <div class="col-12 text-end mt-2" style="display: flex; justify-content: end; margin-top: 1rem">
+                                <div class="col-md-12 text-end mt-2" style="display: flex; justify-content: end; margin-top: 1rem">
                                     <button type="button"
                                             id="addItemBtn"
                                             class="btn btn-success"
@@ -309,6 +298,20 @@
 
     </div>
 </div>
+
+<script>
+    $(document).ready(function () {
+
+        $('#createForm').on('submit', function () {
+            showToast('عملیات با موفقیت انجام شد.', 'success');
+        });
+
+        $('#deleteForm').on('submit', function () {
+            showToast('عملیات با موفقیت انجام شد.', 'success');
+        });
+
+    });
+</script>
 
 @section Scripts {
     <script src="~/js/persian-date.js"></script>

@@ -29,7 +29,6 @@ $.grayLightest = '#f8f9fa';
 $(document).ready(function ($) {
 
 	$(function () {
-		debugger
 		var currentUrl = window.location.pathname.toLowerCase();
 
 		$('.sidebar .nav-link').each(function () {

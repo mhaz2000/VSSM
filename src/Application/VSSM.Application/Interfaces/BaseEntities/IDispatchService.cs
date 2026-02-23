@@ -11,8 +11,8 @@ public interface IDispatchService
     Task<(List<DispatchListDto> data, int count)> GetPagedDispatchesAsync(string? search, int page, int pageSize,
         string sortField, string sortOrder, string? status, int senderId, CancellationToken cancellationToken);
 
-    Task<PagingSearchOrderDto<ToBeArrivedDispatchListDto>> GetPagedToBeArrivedDispatchesAsync(string? search, int page, int pageSize,
-        string sortField, string sortOrder, string? status, int receiverId, CancellationToken cancellationToken);
+    Task<(List<ToBeArrivedDispatchListDto> data, int count)> GetPagedToBeArrivedDispatchesAsync(string? search, int page, int pageSize,
+        string sortField, string sortOrder, int receiverId, CancellationToken cancellationToken);
     Task<List<ToBeArrivedDispatchLineDto>> GetDispatchLinesAsync(long id, CancellationToken cancellationToken);
     Task DispatchArrivedAsync(DispatchArrivedDto arrivedDto, int userId, int recipientId, CancellationToken cancellationToken);
     Task<UpdateDispatchDto?> GetByIdAsync(int id);

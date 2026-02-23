@@ -85,29 +85,6 @@ public class DispatchService : IDispatchService
                 EntryDate = DateTime.Now
             };
 
-            if (itemInfo.DiluentId is not null && itemInfo.DiluentId > 0)
-            {
-                var diluentLine = new TblDispatchLine
-                {
-                    DispatchId = updateDispatcheDto.Id,
-                    ItemId = itemInfo.DiluentId,
-                    Quantity = item.DoseCount,
-                    DosePerVialId = itemDetail.DosePerVialId,
-                    StoreId = item.StoreId,
-                    VvmtypeId = itemDetail.VvmtypeId,
-                    VvmstageId = item.VvmstageId,
-                    ManufacturerId = itemDetail.ManufacturerId,
-                    ItemDetailStoreId = item.ItemDetailStoreId,
-                    Note = item.Note,
-                    BatchNumber = item.BatchNumber,
-                    ExpiryDate = item.ExpiryDate,
-                    EntryDate = DateTime.Now
-                };
-
-                totalVolume += item.Volume ?? 0;
-                _context.TblDispatchLines.Add(diluentLine);
-            }
-
             totalVolume += item.Volume ?? 0;
 
             _context.TblDispatchLines.Add(line);
@@ -176,27 +153,6 @@ public class DispatchService : IDispatchService
                 ExpiryDate = item.ExpiryDate,
                 EntryDate = DateTime.Now
             };
-
-            if (itemInfo.DiluentId is not null && itemInfo.DiluentId > 0)
-            {
-                var diluentLine = new TblDispatchLine
-                {
-                    ItemId = itemInfo.DiluentId,
-                    Quantity = item.DoseCount,
-                    DosePerVialId = itemDetail.DosePerVialId,
-                    StoreId = item.StoreId,
-                    VvmtypeId = itemDetail.VvmtypeId,
-                    VvmstageId = item.VvmstageId,
-                    ManufacturerId = itemDetail.ManufacturerId,
-                    ItemDetailStoreId = item.ItemDetailStoreId,
-                    Note = item.Note,
-                    BatchNumber = item.BatchNumber,
-                    ExpiryDate = item.ExpiryDate,
-                    EntryDate = DateTime.Now
-                };
-
-                totalVolume += item.Volume ?? 0;
-            }
 
             totalVolume += item.Volume ?? 0;
 
@@ -335,7 +291,8 @@ public class DispatchService : IDispatchService
 
         var items = from line in _context.TblDispatchLines.Where(t => t.DispatchId == id)
                     join item in _context.TblItems on line.ItemId equals item.ItemId
-                    join vvmstage in _context.TblVvmstages on line.VvmstageId equals vvmstage.VvmstageId
+                    join vvmstage in _context.TblVvmstages on line.VvmstageId equals vvmstage.VvmstageId into vvmstages
+                    from vvmstage in vvmstages.DefaultIfEmpty()
                     select new { line, item, vvmstage };
 
         var model = new UpdateDispatchDto
@@ -443,7 +400,7 @@ public class DispatchService : IDispatchService
                         Id = d.DispatchId,
                         Date = d.Date,
                         IsConfirmed = d.IsConfirmed,
-                        ReportNumber = d.ReportNumber,
+                        DispatchVoucherNumber = d.DispatchVoucherNumber,
                         RequestNum = d.RequestNum,
                         TotalVolume = d.TotalVolume,
                         IsDrafted = d.IsDrafted,
@@ -460,7 +417,7 @@ public class DispatchService : IDispatchService
                 query = query.Where(x => x.IsConfirmed == true);
         }
 
-        query = query.AsNoTracking();
+        query = query.OrderByDescending(t=> t.Id).AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -480,13 +437,12 @@ public class DispatchService : IDispatchService
             .ToListAsync(), total);
     }
 
-    public async Task<PagingSearchOrderDto<ToBeArrivedDispatchListDto>> GetPagedToBeArrivedDispatchesAsync(
+    public async Task<(List<ToBeArrivedDispatchListDto> data, int count)> GetPagedToBeArrivedDispatchesAsync(
         string? search,
         int page,
         int pageSize,
         string sortField,
         string sortOrder,
-        string? status,
         int receiverId,
         CancellationToken cancellationToken)
     {
@@ -501,13 +457,14 @@ public class DispatchService : IDispatchService
                     {
                         Id = d.DispatchId,
                         Date = d.Date,
-                        ReportNumber = d.ReportNumber,
+                        DispatchVoucherNumber = d.DispatchVoucherNumber,
                         RequestNum = d.RequestNum,
                         TotalVolume = d.TotalVolume,
                         EntryDate = d.EntryDate,
                         SenderName = r != null ? r.FullName : "-",
                     };
 
+        query = query.OrderByDescending(t => t.Id).AsNoTracking();
 
         // 1) Search
         if (!string.IsNullOrWhiteSpace(search))
@@ -518,35 +475,14 @@ public class DispatchService : IDispatchService
             );
         }
 
-        // 2) Sorting
-        query = (sortField, sortOrder.ToLower()) switch
-        {
-            ("Date", "asc") => query.OrderBy(d => d.Date),
-            ("Date", "desc") => query.OrderByDescending(d => d.Date),
-            ("RequestNum", "asc") => query.OrderBy(d => d.RequestNum),
-            ("RequestNum", "desc") => query.OrderByDescending(d => d.RequestNum),
-            ("SenderName", "asc") => query.OrderBy(d => d.SenderName),
-            ("SenderName", "desc") => query.OrderByDescending(d => d.SenderName),
-            _ => query.OrderByDescending(d => d.Date)
-        };
+        var total = await query.CountAsync();
 
-        // 3) Total count before paging
-        paging.TotalItems = await query.CountAsync(cancellationToken);
+        query = query.ApplySorting(sortField, sortOrder == "desc");
 
-        // 4) Apply paging
-        var items = await query
-            .Skip(paging.Skip)
-            .Take(paging.PageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PagingSearchOrderDto<ToBeArrivedDispatchListDto>
-        {
-            Items = items,
-            Paging = paging,
-            SearchText = search,
-            SortField = sortField,
-            SortOrder = sortOrder
-        };
+        return (await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(), total);
     }
 
 }

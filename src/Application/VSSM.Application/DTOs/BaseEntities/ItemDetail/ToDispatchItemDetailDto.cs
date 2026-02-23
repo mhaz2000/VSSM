@@ -4,6 +4,7 @@ namespace VSSM.Application.DTOs.BaseEntities.ItemDetail;
 public record ToDispatchItemDetailDto
 {
     public int? ItemId { get; internal set; }
+    public int? DiluentId { get; internal set; }
     public string ItemName { get; internal set; }
     public DateTime? ExpiryDate { get; internal set; }
     public string? VVMStep { get; internal set; }
@@ -14,4 +15,6 @@ public record ToDispatchItemDetailDto
     public int StoreId { get; internal set; }
     public int ItemDetailStoreId { get; internal set; }
     public int NumDosePerVial { get; internal set; }
+    public ToDispatchItemDetailDto? Diluent { get; set; }
+
 }

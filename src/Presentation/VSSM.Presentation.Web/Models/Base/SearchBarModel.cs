@@ -1,6 +1,4 @@
 ﻿namespace VSSM.Presentation.Web.Models.Base;
-
-
 public class SearchBarModel
 {
     public string SearchTerm { get; set; }

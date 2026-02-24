@@ -18,23 +18,23 @@
                     <form asp-action="Create" method="post" class="form-horizontal">
                         <input type="hidden" asp-for="ItemClassId"/>
                         <div class="row mb-4 mx-0">
-                            <div class="form-group col-lg-4">
+                            <div class="form-group col-lg-6">
                                 <label class="form-label" for="Code">کد</label>
                                 <input type="text" asp-for="Code" name="Code" class="form-control bg-warning-subtle" required/>
                             </div>
 
-                            <div class="form-group col-lg-4">
+                            <div class="form-group col-lg-6">
                                 <label class="form-label" for="FullName">نام کامل</label>
                                 <input type="text" asp-for="FullName" name="FullName" class="form-control bg-warning-subtle" required/>
                             </div>
 
-                            <div class="form-group col-lg-4">
+                            <div class="form-group col-lg-6">
                                 <label class="form-label" for="Unit">واحد حجم</label>
                                 <select asp-for="UnitName" asp-items="ViewBag.UnitList" class="form-control form-select ">
                                 </select>
                             </div>
 
-                            <div class="form-group col-lg-4">
+                            <div class="form-group col-lg-6">
                                 <label class="form-label" for="DisplayOrder">ترتیب نمایش</label>
                                 <input type="number" asp-for="OrderInList" name="OrderInList" class="form-control" min="0"/>
                             </div>

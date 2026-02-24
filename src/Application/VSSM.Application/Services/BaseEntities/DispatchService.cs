@@ -32,10 +32,7 @@ public class DispatchService : IDispatchService
 
     }
 
-    public async Task UpdateDispatchAsync(
-    UpdateDispatchDto updateDispatcheDto,
-    string submitType,
-    CancellationToken cancellationToken)
+    public async Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken)
     {
         var dispatch = await _context.TblDispatches.FindAsync(updateDispatcheDto.Id);
 
@@ -96,12 +93,7 @@ public class DispatchService : IDispatchService
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-
-
-    public async Task CreateDispatchAsync(
-    CreateDispatchDto createDispatcheDto,
-    string submitType,
-    CancellationToken cancellationToken)
+    public async Task CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken)
     {
         var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
 
@@ -301,7 +293,7 @@ public class DispatchService : IDispatchService
             Id = dispatch.DispatchId,
             Date = dispatch.Date?.ToString("yyyy/MM/dd"),
             RequestNum = dispatch.RequestNum,
-            DispatchVoucherNumber = ulong.TryParse(dispatch.DispatchVoucherNumber,out ulong res) ? res : 0,
+            DispatchVoucherNumber = ulong.TryParse(dispatch.DispatchVoucherNumber, out ulong res) ? res : 0,
             ReportNumber = dispatch.ReportNumber,
             AirwaryWillReference = dispatch.AirwaryWillReference,
             ReceiverId = dispatch.ReceiverId ?? 0,
@@ -375,15 +367,8 @@ public class DispatchService : IDispatchService
         return query.ToListAsync(cancellationToken);
     }
 
-    public async Task<(List<DispatchListDto> data, int count)> GetPagedDispatchesAsync(
-    string? search,
-    int page,
-    int pageSize,
-    string sortField,
-    string sortOrder,
-    string? status,
-    int senderId,
-    CancellationToken cancellationToken)
+    public async Task<(List<DispatchListDto> data, int count)> GetPagedDispatchesAsync(string? search, int page, int pageSize,
+    string sortField, string sortOrder, string? status, int senderId, CancellationToken cancellationToken)
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
@@ -417,7 +402,7 @@ public class DispatchService : IDispatchService
                 query = query.Where(x => x.IsConfirmed == true);
         }
 
-        query = query.OrderByDescending(t=> t.Id).AsNoTracking();
+        query = query.OrderByDescending(t => t.Id).AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -437,14 +422,8 @@ public class DispatchService : IDispatchService
             .ToListAsync(), total);
     }
 
-    public async Task<(List<ToBeArrivedDispatchListDto> data, int count)> GetPagedToBeArrivedDispatchesAsync(
-        string? search,
-        int page,
-        int pageSize,
-        string sortField,
-        string sortOrder,
-        int receiverId,
-        CancellationToken cancellationToken)
+    public async Task<(List<ToBeArrivedDispatchListDto> data, int count)> GetPagedToBeArrivedDispatchesAsync(string? search, int page, int pageSize,
+        string sortField, string sortOrder, int receiverId, CancellationToken cancellationToken)
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 

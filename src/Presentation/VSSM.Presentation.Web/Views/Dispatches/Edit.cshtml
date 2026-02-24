@@ -1,10 +1,20 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
+@using VSSM.Application.DTOs.BaseEntities.ReceivingMode
+@using VSSM.Application.DTOs.BaseEntities.Recipient
+@using VSSM.Application.DTOs.BaseEntities.TransportMode
+@using VSSM.Presentation.Web.Models.Base
 @model UpdateDispatchDto
 
 @section Styles {
     <link href="~/css/persian-datepicker.css" rel="stylesheet" />
     <link href="~/css/components/dispatches/dispatch-create.css" rel="stylesheet" />
 
+}
+@{
+    var transportModes = ViewBag.TransportModes as List<TransportModeDto>;
+    var recipients = ViewBag.Recipients as List<RecipientGetDto>;
+    var receivingModes = ViewBag.ReceivingModes as List<ReceivingModeDto>;
+    var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
 }
 
 <style>
@@ -50,21 +60,34 @@
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">نوع کالا<span class="form-mandatory">(اجباری)</span></label>
-                                <select id="itemClassSelect" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var c in ViewBag.ItemClasses)
-                                    {
-                                        <option value="@c.Id">@c.Name</option>
-                                    }
-                                </select>
+
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                new SearchableSelectModel
+                                {
+                                    Id = "itemClassSelect",
+                                    IsRequired = true,
+                                    Name = "itemClassSelect",
+                                    Label = "نوع کالا",
+                                    Options = itemClasses
+                                .Select(x => new SelectOption
+                                {
+                                    Value = x.Id.ToString(),
+                                    Text = x.Name
+                                }).ToList()
+                                })
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">کالا<span class="form-mandatory">(اجباری)</span></label>
-                                <select id="itemSelect" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                </select>
+
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                                new SearchableSelectModel
+                                                                {
+                                                                    Id = "itemSelect",
+                                                                    IsRequired = true,
+                                                                    Name = "itemSelect",
+                                                                    Label = "کالا",
+                                                                    Options = []
+                                                                })
                             </div>
 
                             <div class="col-md-4 input-sec">
@@ -78,36 +101,59 @@
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">گیرنده<span class="form-mandatory">(اجباری)</span></label>
-                                <select asp-for="ReceiverId" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var r in ViewBag.Recipients)
-                                    {
-                                        <option value="@r.RecipientId">@r.FullName</option>
-                                    }
-                                </select>
+
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                                new SearchableSelectModel
+                                                                {
+                                                                    Id = "ReceiverId",
+                                                                    IsRequired = true,
+                                                                    Name = "ReceiverId",
+                                                                    Label = "گیرنده",
+                                                                    SelectedValue = Model?.ReceiverId.ToString(),
+                                                                    Options = recipients
+                                                                .Select(x => new SelectOption
+                                                                {
+                                                                    Value = x.RecipientId.ToString(),
+                                                                    Text = x.FullName
+                                                                }).ToList()
+                                                                })
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">طریقه حمل</label>
-                                <select asp-for="TransportModeId" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var t in ViewBag.TransportModes)
-                                    {
-                                        <option value="@t.TransportModeId">@t.FullName</option>
-                                    }
-                                </select>
+
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                new SearchableSelectModel
+                                {
+                                    Id = "TransportModeId",
+                                    Name = "TransportModeId",
+                                    Label = "طریقه حمل",
+                                    SelectedValue = Model?.TransportModeId.ToString(),
+                                    Options = transportModes
+                                .Select(x => new SelectOption
+                                {
+                                    Value = x.TransportModeId.ToString(),
+                                    Text = x.FullName
+                                }).ToList()
+                                })
                             </div>
 
+
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">روش دریافت</label>
-                                <select asp-for="ReceivingModeId" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var r in ViewBag.ReceivingModes)
-                                    {
-                                        <option value="@r.ReceivingModeId">@r.FullName</option>
-                                    }
-                                </select>
+
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                                new SearchableSelectModel
+                                                                {
+                                                                    Id = "ReceivingModeId",
+                                                                    Name = "ReceivingModeId",
+                                                                    Label = "روش دریافت",
+                                                                    SelectedValue = Model?.ReceivingModeId.ToString(),
+                                                                    Options = receivingModes
+                                                                .Select(x => new SelectOption
+                                                                {
+                                                                    Value = x.ReceivingModeId.ToString(),
+                                                                    Text = x.FullName
+                                                                }).ToList()
+                                                                })
                             </div>
 
 

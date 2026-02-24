@@ -2,6 +2,8 @@
 
 $(function () {
 
+    setSearchableSelectDisabled('itemSelect', true);
+
     $('#Date').pDatepicker({
         format: "YYYY/MM/DD",
         autoClose: true
@@ -22,26 +24,38 @@ $(function () {
 
     });
 
+    $('#itemClassSelect').on('change', function () {
+        const hasValue = $(this).val();
+
+        if (hasValue) {
+            setSearchableSelectDisabled('itemSelect', false);
+        } else {
+            setSearchableSelectDisabled('itemSelect', true);
+
+            // optional: also clear items
+            setSearchableSelectOptions('itemSelect', []);
+        }
+    });
+
     $('#itemClassSelect').change(function () {
 
         let classId = $(this).val();
-        let itemSelect = $('#itemSelect');
-
-        itemSelect.empty().append('<option>در حال بارگذاری...</option>');
 
         if (!classId) {
-            itemSelect.html('<option>انتخاب کنید</option>');
+            setSearchableSelectOptions('itemSelect', []);
             return;
         }
 
         $.get('/GetItems/' + classId, function (res) {
-            itemSelect.empty().append('<option>انتخاب کنید</option>');
+
             if (res.success) {
-                res.result.forEach(i => {
-                    itemSelect.append(
-                        `<option value="${i.id}">${i.fullName}</option>`
-                    );
-                });
+
+                const items = res.result.map(i => ({
+                    value: i.id,
+                    text: i.fullName
+                }));
+
+                setSearchableSelectOptions('itemSelect', items);
             }
         });
     });

@@ -22,42 +22,27 @@
                     <div class="row mb-4 mx-0">
 
                         <div class="form-group col-lg-4">
-                            <label class="form-label">کد</label>
+                            <label class="form-label">کد 
+                            <span class="form-label-caption">(اجباری)</span></label>
                             <input asp-for="Code"
                                    class="form-control bg-warning-subtle"
                                    required />
                         </div>
 
                         <div class="form-group col-lg-4">
-                            <label class="form-label">نام کامل</label>
+                            <label class="form-label">نام کامل <span class="form-label-caption">(اجباری)</span></label>
                             <input asp-for="FullName"
                                    class="form-control bg-warning-subtle"
                                    required />
                         </div>
                         <div class="form-group col-lg-1"></div>
-                        <div class="form-group col-lg-3">
-                            <label class="form-label" style="margin-bottom:1.5rem;">وضعیت</label>
-
+                        <div class="col-lg-12">
                             <div class="d-flex">
-                                <div class="form-check">
-                                    <input type="radio"
-                                           asp-for="IsActive"
-                                           value="true"
-                                           class="form-check-input"
-                                           id="activeTrue" />
-                                    <label class="form-check-label" for="activeTrue">
-                                        فعال
-                                    </label>
-                                </div>
-
-                                <div class="form-check">
-                                    <input type="radio"
-                                           asp-for="IsActive"
-                                           value="false"
-                                           class="form-check-input"
-                                           id="activeFalse" />
-                                    <label class="form-check-label" for="activeFalse">
-                                        غیرفعال
+                                <div class="form-group" style="margin-left: 20px;">
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" asp-for="IsActive" value="true" checked />
+                                        <span class="checkmark"></span>
+                                        <span class="label-text">فعال</span>
                                     </label>
                                 </div>
                             </div>

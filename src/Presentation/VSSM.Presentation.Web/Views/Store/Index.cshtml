@@ -15,32 +15,35 @@
         <!-- Search Card -->
         <div class="card">
             <div class="row m-0  card-header">
-                <div class="col-lg-8">
+                <div class="col-lg-6">
                     <h5 class="header-title">@ViewData["Title"]</h5>
                 </div>
-                <div class="col-lg-4 row d-flex align-items-center justify-content-between">
+                <div class="col-lg-6 d-flex align-items-center justify-content-end">
+                    <div class="col-lg-12 d-flex align-items-center justify-content-end">
 
-                        <div class="col-lg-3">
-                            <select name="typeId" class="form-control form-select m-0" 
-                            style="height:42px!important"
-                            asp-items="ViewBag.TypeList">
-                                <option value="">نوع انبار</option>
-                            </select>
-                        </div>
-                        <div class="col-lg-6">
-                            @await Component.InvokeAsync("SearchBar", new
-                            {
-                                searchTerm = Model.SearchText,
-                                pageSize = Model.Paging.PageSize,
-                                sort = Model.SortField,
-                                direction = Model.SortOrder
-                            })
-                        </div>
-                        <div class="col-lg-2 d-flex align-items-center justify-content-end">
-                            <a class="btn btn-success m-0" asp-action="New"><i class="fa fa-plus ml-2"></i>افزودن</a>
-                        </div>
+                            <div class="col-lg-3">
+                                <select name="typeId" class="form-control form-select m-0" 
+                                style="height:42px!important"
+                                asp-items="ViewBag.TypeList">
+                                    <option value="">نوع انبار</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-5 mx-2">
+                                @await Component.InvokeAsync("SearchBar", new
+                                {
+                                    searchTerm = Model.SearchText,
+                                    pageSize = Model.Paging.PageSize,
+                                    sort = Model.SortField,
+                                    direction = Model.SortOrder
+                                })
+                            </div>
+                            <div class="col-lg-2 d-flex align-items-center justify-content-end">
+                                <a class="btn btn-success m-0" asp-action="New"><i class="fa fa-plus ml-2"></i>افزودن</a>
+                            </div>
 
+                    </div>
                 </div>
+                
             </div>
             
             <div class="card-block">

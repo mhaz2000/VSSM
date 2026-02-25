@@ -7,6 +7,24 @@
     const hidden = wrapper.querySelector('input[type="hidden"]');
     const text = wrapper.querySelector('.ss-text');
 
+    search.addEventListener('input', () => {
+        const term = search.value.toLowerCase().trim();
+
+        wrapper.querySelectorAll('.ss-option').forEach(opt => {
+            const text = opt.textContent.toLowerCase();
+
+            if (text.includes(term)) {
+                opt.style.display = 'block';
+                if (opt.nextElementSibling?.tagName === 'HR')
+                    opt.nextElementSibling.style.display = 'block';
+            } else {
+                opt.style.display = 'none';
+                if (opt.nextElementSibling?.tagName === 'HR')
+                    opt.nextElementSibling.style.display = 'none';
+            }
+        });
+    });
+
     display.addEventListener('click', (e) => {
         if (wrapper.classList.contains('ss-disabled') || hidden.disabled) {
             e.preventDefault();

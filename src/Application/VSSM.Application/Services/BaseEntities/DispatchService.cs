@@ -172,36 +172,47 @@ public class DispatchService : IDispatchService
     {
         var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
 
-        var query = from line in _context.TblDispatchLines
-                    join dispatch in _context.TblDispatches.Where(d => d.ReceiverStatus == 0 &&
-                            d.ReceiverId == recipientId && d.IsConfirmed.HasValue && d.IsConfirmed.Value) on line.DispatchId equals dispatch.DispatchId
-                    join itemDetailStore in _context.TblItemDetailStores on line.ItemDetailStoreId equals itemDetailStore.ItemDetailStoreId
-                    join itemDetail in _context.TblItemDetails on itemDetailStore.ItemDetailId equals itemDetail.ItemDetailId
-                    select new
-                    {
-                        line.DispatchLineId,
-                        dispatch.DispatchId,
-                        dispatch.SenderId,
-                        line.BatchNumber,
-                        itemDetail.CommercialNameId,
-                        line.DosePerVialId,
-                        line.ExpiryDate,
-                        itemDetail.ItemDetailId,
-                        line.ItemId,
-                        line.ManufacturerId,
-                        line.NumVial,
-                        itemDetail.PackageSize,
-                        itemDetail.PackingTypeId,
-                        itemDetail.ProductionDate,
-                        line.Quantity,
-                        line.TotalVolume,
-                        itemDetail.UnitVolume,
-                        line.UseId,
-                        line.VvmstageId,
-                        line.VvmtypeId,
-                    };
+        var lineIds = arrivedDto.Lines
+    .Select(t => t.DispatchLineId)
+    .ToList();
 
-        var data = await query.ToListAsync();
+        var query =
+            from line in _context.TblDispatchLines
+                .Where(l => lineIds.Contains(l.DispatchLineId))
+            join dispatch in _context.TblDispatches
+                .Where(d => d.ReceiverStatus == 0 &&
+                            d.ReceiverId == recipientId &&
+                            d.IsConfirmed == true)
+                on line.DispatchId equals dispatch.DispatchId
+            join itemDetailStore in _context.TblItemDetailStores
+                on line.ItemDetailStoreId equals itemDetailStore.ItemDetailStoreId
+            join itemDetail in _context.TblItemDetails
+                on itemDetailStore.ItemDetailId equals itemDetail.ItemDetailId
+            select new
+            {
+                line.DispatchLineId,
+                dispatch.DispatchId,
+                dispatch.SenderId,
+                line.BatchNumber,
+                itemDetail.CommercialNameId,
+                line.DosePerVialId,
+                line.ExpiryDate,
+                itemDetail.ItemDetailId,
+                line.ItemId,
+                line.ManufacturerId,
+                line.NumVial,
+                itemDetail.PackageSize,
+                itemDetail.PackingTypeId,
+                itemDetail.ProductionDate,
+                line.Quantity,
+                line.TotalVolume,
+                itemDetail.UnitVolume,
+                line.UseId,
+                line.VvmstageId,
+                line.VvmtypeId,
+            };
+
+            var data = await query.ToListAsync();
 
         var currentDispatch = await _context.TblDispatches.FindAsync(data.FirstOrDefault().DispatchId);
 
@@ -291,7 +302,7 @@ public class DispatchService : IDispatchService
         {
             IsConfirmed = dispatch.IsConfirmed ?? false,
             Id = dispatch.DispatchId,
-            Date = dispatch.Date?.ToString("yyyy/MM/dd"),
+            Date = dispatch.Date?.Date.ToString("yyyy/MM/dd"),
             RequestNum = dispatch.RequestNum,
             DispatchVoucherNumber = ulong.TryParse(dispatch.DispatchVoucherNumber, out ulong res) ? res : 0,
             ReportNumber = dispatch.ReportNumber,

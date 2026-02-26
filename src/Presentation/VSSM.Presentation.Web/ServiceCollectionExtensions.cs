@@ -26,6 +26,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces.RequestEntities;
 using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
+using VSSM.Application.Services.Reports;
 using VSSM.Application.Services.RequestEntities;
 using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web.Authorization;
@@ -112,6 +113,15 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IRequestService, RequestService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMenuService, MenuService>();
+
+
+            /*reports services DI*/
+            #region reports services DI
+            services.AddScoped<IndicatorReportService>();
+
+            #endregion
+
+
 
 
             services.AddAuthentication("Cookies")

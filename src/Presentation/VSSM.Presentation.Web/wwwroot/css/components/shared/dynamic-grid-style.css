@@ -22,7 +22,7 @@
     }
 
     .dynamic-grid tbody tr:hover {
-        background-color: #d8d9da !important;
+        background-color: #3498db26 !important;
     }
 
 .grid-actions .action-btn {

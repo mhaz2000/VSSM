@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Mono.TextTemplating;
 using System.Threading;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -80,7 +81,7 @@ namespace VSSM.Presentation.Web.Controllers
                 {
                     new() { Header = "تاریخ", PropertyName = nameof(DispatchListDto.DateText),  Sortable = false },
                     new() { Header = "شماره درخواست", PropertyName = nameof(DispatchListDto.RequestNum), Sortable = false },
-                    new() { Header = "شماره فاکتور", PropertyName = nameof(DispatchListDto.ReportNumber), Sortable = false },
+                    new() { Header = "شماره فاکتور", PropertyName = nameof(DispatchListDto.DispatchVoucherNumber), Sortable = false },
                     new() { Header = "حجم کل (لیتر)", PropertyName = nameof(DispatchListDto.TotalVolume),  Sortable = false },
                     new() { Header = "پیش نویس", PropertyName = nameof(DispatchListDto.IsDraftedText),  Sortable = false },
                     new() { Header = "وضعیت گیرنده", PropertyName = nameof(DispatchListDto.ReceiverStatusText),  Sortable = false },
@@ -106,14 +107,50 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         public async Task<IActionResult> ToBeArrivedIndex(CancellationToken cancellationToken, string? search,
-                                        int page = 1,
+                                        int pageNumber = 1,
                                         int pageSize = 10,
-                                        string? status = null,
-                                        string sortField = "Orders",
-                                        string sortOrder = "desc")
+                                        string sort = "Orders",
+                                        string direction = "desc")
         {
-            var dispatches = await _dispatchService.GetPagedToBeArrivedDispatchesAsync(search, page, pageSize, sortField, sortOrder, status, CurrentUserRecipientId.Value, cancellationToken);
-            return View(dispatches);
+            var (data, count) = await _dispatchService.GetPagedToBeArrivedDispatchesAsync(search, pageNumber, pageSize, sort, direction, CurrentUserRecipientId.Value, cancellationToken);
+
+            var model = new GridViewModel
+            {
+                SearchTerm = search,
+                CurrentSort = sort,
+                CurrentDirection = direction,
+                Data = new PagedResult<object>
+                {
+                    Items = data.Cast<object>().ToList(),
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = count
+                },
+                Columns = new List<GridColumn>
+                {
+                    new() { Header = "فرستنده", PropertyName = nameof(ToBeArrivedDispatchListDto.SenderName),  Sortable = false },
+                    new() { Header = "تاریخ", PropertyName = nameof(ToBeArrivedDispatchListDto.DateText), Sortable = false },
+                    new() { Header = "شماره درخواست", PropertyName = nameof(ToBeArrivedDispatchListDto.RequestNum),  Sortable = false },
+                    new() { Header = "شماره فاکتور", PropertyName = nameof(ToBeArrivedDispatchListDto.DispatchVoucherNumber),  Sortable = false },
+                    new() { Header = "تاریخ ورود", PropertyName = nameof(ToBeArrivedDispatchListDto.EntryDateText),  Sortable = false },
+                    new() { Header = "عملیات", IsActionColumn = true}
+                },
+                Actions = new List<GridAction>
+                {
+                    new()
+                    {
+                        Title = "دریافت",
+                        Controller = "Dispatches",
+                        Action = "Arrive",
+                        RouteIdProperty = nameof(DispatchListDto.Id),
+                        LinkClass = "",
+                        IconClass = "fa fa-dropbox"
+                    }
+                }
+            };
+
+
+            return View(model);
         }
 
         public async Task<IActionResult> Confirm(int id, CancellationToken token)

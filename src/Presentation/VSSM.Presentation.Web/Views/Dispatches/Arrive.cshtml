@@ -2,6 +2,14 @@
 @using VSSM.Application.DTOs.BaseEntities.Dispatches
 @using VSSM.Application.DTOs.BaseEntities.Store
 
+<style>
+
+    .dynamic-grid-wrapper{
+        margin-top: 2rem;
+    }
+
+</style>
+
 @{
     ViewData["Title"] = "دریافت محموله";
 
@@ -15,56 +23,12 @@
     <div class="container-fluid">
         <div class="animated fadeIn">
 
-            <!-- Header -->
-            <div class="card mb-3">
-                <div class="card-block d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0">
-                        <i class="fa fa-truck"></i>
-                        دریافت محموله
-                    </h5>
-                </div>
-            </div>
-
-            <!-- General Arrival Info -->
-            <div class="card mb-3">
-                <div class="card-block">
-                    <div class="row">
-
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="FrzindcNok" style="margin-bottom: 0px; margin-left: 5px;">
-                                    تشخیص دهنده سرما - غیر معتبر:
-                                </label>
-                                <input type="number"
-                                       id="FrzindcNok"
-                                       name="FrzindcNok"
-                                       class="form-control"
-                                       placeholder="10" />
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="Frzindc" style="margin-bottom: 0px; margin-left: 5px;">
-                                    تشخیص دهنده سرما
-                                </label>
-                                <input type="number"
-                                       id="Frzindc"
-                                       name="Frzindc"
-                                       class="form-control"
-                                       placeholder="10" />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dispatch Lines -->
             <div class="card">
                 <div class="card-block">
+                <h5 style="font-weight: bolder">دریافت محموله</h5>
 
-                    <table class="table table-bordered table-striped table-hover text-center align-middle">
+                    <div class="dynamic-grid-wrapper">
+                        <table class="dynamic-grid table table-bordered table-hover">
                         <thead class="thead-dark">
                             <tr>
                                 <th>نام کالا</th>
@@ -144,16 +108,15 @@
                             }
                         </tbody>
                     </table>
-
+                    </div>
                     <!-- Actions -->
-                    <div class="d-flex justify-content-end mt-3">
+                    <div class="d-flex justify-content-end mt-3" style="margin-top: 2rem;">
                         <a asp-action="ToBeArrivedIndex"
-                           class="btn btn-secondary me-2">
+                           class="btn btn-success-outlet me-2">
                             بازگشت
                         </a>
 
                         <button type="submit" class="btn btn-success">
-                            <i class="fa fa-check"></i>
                             ثبت دریافت
                         </button>
                     </div>

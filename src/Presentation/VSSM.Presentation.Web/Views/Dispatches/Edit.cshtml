@@ -1,10 +1,20 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
+@using VSSM.Application.DTOs.BaseEntities.ReceivingMode
+@using VSSM.Application.DTOs.BaseEntities.Recipient
+@using VSSM.Application.DTOs.BaseEntities.TransportMode
+@using VSSM.Presentation.Web.Models.Base
 @model UpdateDispatchDto
 
 @section Styles {
     <link href="~/css/persian-datepicker.css" rel="stylesheet" />
     <link href="~/css/components/dispatches/dispatch-create.css" rel="stylesheet" />
 
+}
+@{
+    var transportModes = ViewBag.TransportModes as List<TransportModeDto>;
+    var recipients = ViewBag.Recipients as List<RecipientGetDto>;
+    var receivingModes = ViewBag.ReceivingModes as List<ReceivingModeDto>;
+    var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
 }
 
 <style>
@@ -50,21 +60,34 @@
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">نوع کالا<span class="form-mandatory">(اجباری)</span></label>
-                                <select id="itemClassSelect" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var c in ViewBag.ItemClasses)
-                                    {
-                                        <option value="@c.Id">@c.Name</option>
-                                    }
-                                </select>
+
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                new SearchableSelectModel
+                                {
+                                    Id = "itemClassSelect",
+                                    IsRequired = true,
+                                    Name = "itemClassSelect",
+                                    Label = "نوع کالا",
+                                    Options = itemClasses
+                                .Select(x => new SelectOption
+                                {
+                                    Value = x.Id.ToString(),
+                                    Text = x.Name
+                                }).ToList()
+                                })
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">کالا<span class="form-mandatory">(اجباری)</span></label>
-                                <select id="itemSelect" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                </select>
+
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                                new SearchableSelectModel
+                                                                {
+                                                                    Id = "itemSelect",
+                                                                    IsRequired = true,
+                                                                    Name = "itemSelect",
+                                                                    Label = "کالا",
+                                                                    Options = []
+                                                                })
                             </div>
 
                             <div class="col-md-4 input-sec">
@@ -78,51 +101,63 @@
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">شماره گزارش</label>
-                                <input asp-for="ReportNumber" class="form-control bg-warning-subtle" />
+
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                                new SearchableSelectModel
+                                                                {
+                                                                    Id = "ReceiverId",
+                                                                    IsRequired = true,
+                                                                    Name = "ReceiverId",
+                                                                    Label = "گیرنده",
+                                                                    SelectedValue = Model?.ReceiverId.ToString(),
+                                                                    Options = recipients
+                                                                .Select(x => new SelectOption
+                                                                {
+                                                                    Value = x.RecipientId.ToString(),
+                                                                    Text = x.FullName
+                                                                }).ToList()
+                                                                })
                             </div>
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">تشخیص سرما</label>
-                                <input asp-for="AirwaryWillReference" class="form-control bg-warning-subtle" />
+
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                new SearchableSelectModel
+                                {
+                                    Id = "TransportModeId",
+                                    Name = "TransportModeId",
+                                    Label = "طریقه حمل",
+                                    SelectedValue = Model?.TransportModeId.ToString(),
+                                    Options = transportModes
+                                .Select(x => new SelectOption
+                                {
+                                    Value = x.TransportModeId.ToString(),
+                                    Text = x.FullName
+                                }).ToList()
+                                })
                             </div>
+
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">گیرنده<span class="form-mandatory">(اجباری)</span></label>
-                                <select asp-for="ReceiverId" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var r in ViewBag.Recipients)
-                                    {
-                                        <option value="@r.RecipientId">@r.FullName</option>
-                                    }
-                                </select>
-                            </div>
 
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">طریقه حمل</label>
-                                <select asp-for="TransportModeId" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var t in ViewBag.TransportModes)
-                                    {
-                                        <option value="@t.TransportModeId">@t.FullName</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">روش دریافت</label>
-                                <select asp-for="ReceivingModeId" class="form-select">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var r in ViewBag.ReceivingModes)
-                                    {
-                                        <option value="@r.ReceivingModeId">@r.FullName</option>
-                                    }
-                                </select>
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                                new SearchableSelectModel
+                                                                {
+                                                                    Id = "ReceivingModeId",
+                                                                    Name = "ReceivingModeId",
+                                                                    Label = "روش دریافت",
+                                                                    SelectedValue = Model?.ReceivingModeId.ToString(),
+                                                                    Options = receivingModes
+                                                                .Select(x => new SelectOption
+                                                                {
+                                                                    Value = x.ReceivingModeId.ToString(),
+                                                                    Text = x.FullName
+                                                                }).ToList()
+                                                                })
                             </div>
 
 
-                            <!-- Note (2/3 width) -->
-                            <div class="col-md-8 input-sec">
+                            <div class="col-md-12 input-sec">
                                 <label class="form-label">ملاحظات</label>
                                 <textarea asp-for="Note" class="form-control rounded-3" rows="1"></textarea>
                             </div>
@@ -176,13 +211,13 @@
                                 </div>
 
                                 <!-- Note full row -->
-                                <div class="col-12">
+                                <div class="col-md-12">
                                     <label class="form-label">ملاحظات</label>
                                     <textarea name="ExtraNote" class="form-control" rows="3" disabled></textarea>
                                 </div>
 
                                 <!-- Button aligned right -->
-                                <div class="col-12 text-end mt-2" style="display: flex; justify-content: end; margin-top: 1rem">
+                                <div class="col-md-12 text-end mt-2" style="display: flex; justify-content: end; margin-top: 1rem">
                                     <button type="button"
                                             id="addItemBtn"
                                             class="btn btn-success"
@@ -309,6 +344,20 @@
 
     </div>
 </div>
+
+<script>
+    $(document).ready(function () {
+
+        $('#createForm').on('submit', function () {
+            showToast('عملیات با موفقیت انجام شد.', 'success');
+        });
+
+        $('#deleteForm').on('submit', function () {
+            showToast('عملیات با موفقیت انجام شد.', 'success');
+        });
+
+    });
+</script>
 
 @section Scripts {
     <script src="~/js/persian-date.js"></script>

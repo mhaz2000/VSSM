@@ -28,6 +28,7 @@ using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
 using VSSM.Application.Services.Reports;
 using VSSM.Application.Services.RequestEntities;
+using VSSM.Infrastructure.Data.Dapper;
 using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web.Authorization;
 using VSSM.Presentation.Web.Controllers;
@@ -117,6 +118,8 @@ namespace VSSM.Presentation.Web
 
             /*reports services DI*/
             #region reports services DI
+
+            services.AddScoped<DapperContext>();
             services.AddScoped<IndicatorReportService>();
 
             #endregion

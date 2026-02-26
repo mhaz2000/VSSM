@@ -1,281 +1,207 @@
 ﻿@model VSSM.Presentation.Web.Models.Recipient.RecipientViewModel
 
 @{
-    string formName = Model.RecipientId > 0 ? "ویرایش گیرنده" : "ثبت گیرنده جدید";
+    bool isEdit = Model.RecipientId > 0;
+    ViewData["Title"] = isEdit ? "ویرایش گیرنده" : "ثبت گیرنده جدید";
 }
-
-<style>
-    .form-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 12px;
-        direction: rtl;
-    }
-
-    .form-label {
-        width: 140px;
-        margin-left: 10px;
-        font-weight: 600;
-    }
-
-    .form-control, .form-select {
-        flex: 1;
-    }
-
-    .checkstyle {
-        margin-right: 5px;
-    }
-
-    .checkbox-wrapper {
-        display: flex;
-        flex-direction: row-reverse;
-        align-items: center;
-        justify-content: flex-end;
-        margin: 0;
-    }
-
-    .required-marker {
-        color: red;
-    }
-
-    .help-text {
-        color: #0044cc;
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 13px;
-        margin-top: 20px;
-        line-height: 1.9;
-    }
-</style>
 
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <div class="card mb-3">
-            <div class="card-block p-3">
-                <h5>@formName</h5>
+        <div class="card form-card">
+            <div class="card-header card-form-header">
+                <h5 class="header-title">@ViewData["Title"]</h5>
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-block p-4">
+            <div class="card-block">
 
-                <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <form asp-action="Create" method="post" class="form-horizontal">
 
                     <input type="hidden" asp-for="RecipientId" />
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="row mb-4 mx-0" style="flex-wrap: wrap;display: flex;">
 
-                    <div class="row">
-
-                        <!-- ================= RIGHT COLUMN ================= -->
-                        <div class="col-lg-6">
-
-                            <!-- CODE -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    <span class="required-marker">*</span> کد:
-                                </span>
-                                <input asp-for="Code" class="form-control" />
-                            </div>
-                            <span asp-validation-for="Code" class="text-danger"></span>
-
-                            <!-- FULL NAME -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    <span class="required-marker">*</span> نام کامل:
-                                </span>
-                                <input asp-for="FullName" class="form-control" />
-                            </div>
-                            <span asp-validation-for="FullName" class="text-danger"></span>
-
-                            <!-- POPULATION -->
-                            <div class="form-group">
-                                <span class="form-label">جمعیت:</span>
-                                <input asp-for="Population" class="form-control" />
-                            </div>
-
-                            <!-- YEAR -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    سال:
-                                </span>
-                                <input asp-for="Year" class="form-control" />
-                            </div>
-
-                            <!-- ADDRESS 1 -->
-                            <div class="form-group">
-                                <span class="form-label">آدرس ۱:</span>
-                                <input asp-for="Address1" class="form-control" />
-                            </div>
-
-                            <!-- ADDRESS 2 -->
-                            <div class="form-group">
-                                <span class="form-label">آدرس ۲:</span>
-                                <input asp-for="Address2" class="form-control" />
-                            </div>
-
-                            <!-- POSTAL CODE -->
-                            <div class="form-group">
-                                <span class="form-label">کد پستی:</span>
-                                <input asp-for="PostalCode" class="form-control" />
-                                <span class="text-danger" asp-validation-for="PostalCode"></span>
-                            </div>
-
-                            <!-- CITY -->
-                            <div class="form-group">
-                                <span class="form-label">شهر:</span>
-                                <input asp-for="City" class="form-control" />
-                            </div>
-
-                            <!-- PROVINCE -->
-                            <div class="form-group">
-                                <span class="form-label">استان:</span>
-                                <input asp-for="Province" class="form-control" />
-                            </div>
-
-                            <!-- PHONE -->
-                            <div class="form-group">
-                                <span class="form-label">تلفن:</span>
-                                <input asp-for="Phone" class="form-control" />
-                            </div>
-
-                            <!-- EMAIL -->
-                            <div class="form-group">
-                                <span class="form-label">پست الکترونیکی:</span>
-                                <input asp-for="Email" class="form-control" />
-                            </div>
-
+                        <!-- COLUMN 1 -->
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">کد 
+                                <span class="form-label-caption">(اجباری)</span>
+                            </label>
+                            <input asp-for="Code" class="form-control bg-warning-subtle" />
+                            <span class="text-danger" asp-validation-for="Code"></span>
                         </div>
 
-                        <!-- ================= LEFT COLUMN ================= -->
-                        <div class="col-lg-6">
-
-                            <!-- LEAD TIME -->
-                            <div class="form-group">
-                                <span class="form-label">زمان بین درخواست و ورود محموله:</span>
-                                <input asp-for="LeadTime" class="form-control" />
-                            </div>
-
-                            <!-- DISTANCE TIME -->
-                            <div class="form-group">
-                                <span class="form-label">فاصله زمانی (دقیقه):</span>
-                                <input asp-for="DistanceTime" class="form-control" />
-                            </div>
-
-                            <!-- TRANSPORT MODE -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    <span class="required-marker">*</span> طریقه حمل و نقل:
-                                </span>
-                                <select asp-for="TransportModeId" asp-items="ViewBag.TransportList" class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                            </div>
-
-                            <!-- CHAIN LEVEL -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    <span class="required-marker">*</span> سطح در زنجیره:
-                                </span>
-                                <select asp-for="ChainLevel" asp-items="ViewBag.LevelList" class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                                <span asp-validation-for="ChainLevel" class="text-danger"></span>
-                            </div>
-
-                            <!-- RECEIVING MODE -->
-                            <div class="form-group">
-                                <span class="form-label">روش دریافت:</span>
-                                <select asp-for="ReceivingModeId" asp-items="ViewBag.ReceivingList" class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                            </div>
-
-                            <!-- TYPE -->
-                            <div class="form-group">
-                                <span class="form-label">نوع:</span>
-                                <select asp-for="ParentType" asp-items="ViewBag.ParentTypeList" class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                            </div>
-
-                            <!-- CLIMATE -->
-                            <div class="form-group">
-                                <span class="form-label">شرایط اقلیمی:</span>
-                                <select asp-for="ClimateId" asp-items="ViewBag.ClimateList" class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                            </div>
-
-                            <!-- OWNERSHIP -->
-                            <div class="form-group">
-                                <span class="form-label">نوع مالکیت:</span>
-                                <select asp-for="OwnershipId" asp-items="ViewBag.OwnershipList" class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                            </div>
-
-                            <!-- POWER SOURCE -->
-                            <div class="form-group">
-                                <span class="form-label">منبع انرژی:</span>
-                                <select asp-for="PowerSourceId" asp-items="ViewBag.PowerSourceList" class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                            </div>
-
-                            <!-- ROAD TYPE -->
-                            <div class="form-group">
-                                <span class="form-label">نوع راه:</span>
-                                <select asp-for="TypeOfRoadId" asp-items="ViewBag.RoadTypeList" class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                            </div>
-
-
-
-                            <!-- CHECKBOXES -->
-                            <div class="form-group">
-                                <span class="form-label">تلفن ثابت:</span>
-                                <div class="checkbox-wrapper">
-                                    <input type="checkbox" asp-for="HasLandLine" class="form-check-input checkstyle" />
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <span class="form-label">اینترنت:</span>
-                                <div class="checkbox-wrapper">
-                                    <input type="checkbox" asp-for="HasInternet" class="form-check-input checkstyle" />
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <span class="form-label">فعال:</span>
-                                <div class="checkbox-wrapper">
-                                    <input type="checkbox" asp-for="IsActive" class="form-check-input checkstyle" />
-                                </div>
-                            </div>
-
-                            <!-- NOTE -->
-                            <div class="form-group">
-                                <span class="form-label">ملاحظات:</span>
-                                <textarea asp-for="Note" class="form-control"></textarea>
-                            </div>
-
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">نام کامل 
+                                <span class="form-label-caption">(اجباری)</span>
+                            </label>
+                            <input asp-for="FullName" class="form-control bg-warning-subtle" />
+                            <span class="text-danger" asp-validation-for="FullName"></span>
                         </div>
 
-                    </div>
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">جمعیت</label>
+                            <input asp-for="Population" class="form-control" />
+                        </div>
 
-                    <!-- HELP TEXT -->
-                    <div class="help-text">
+                        <!-- COLUMN 2 -->
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">سال</label>
+                            <input asp-for="Year" class="form-control" />
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">آدرس ۱</label>
+                            <input asp-for="Address1" class="form-control" />
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">آدرس ۲</label>
+                            <input asp-for="Address2" class="form-control" />
+                        </div>
+
+                        <!-- COLUMN 3 -->
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">کد پستی</label>
+                            <input asp-for="PostalCode" class="form-control" />
+                            <span class="text-danger" asp-validation-for="PostalCode"></span>
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">شهر</label>
+                            <input asp-for="City" class="form-control" />
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">استان</label>
+                            <input asp-for="Province" class="form-control" />
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">تلفن</label>
+                            <input asp-for="Phone" class="form-control" />
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">پست الکترونیکی</label>
+                            <input asp-for="Email" class="form-control" />
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">زمان بین درخواست و ورود محموله</label>
+                            <input asp-for="LeadTime" class="form-control" />
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">فاصله زمانی (دقیقه)</label>
+                            <input asp-for="DistanceTime" class="form-control" />
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">طریقه حمل و نقل</label>
+                            <select asp-for="TransportModeId" asp-items="ViewBag.TransportList" class="form-control">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">سطح در زنجیره</label>
+                            <select asp-for="ChainLevel" asp-items="ViewBag.LevelList" class="form-control">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                            <span class="text-danger" asp-validation-for="ChainLevel"></span>
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">روش دریافت</label>
+                            <select asp-for="ReceivingModeId" asp-items="ViewBag.ReceivingList" class="form-control">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">نوع</label>
+                            <select asp-for="ParentType" asp-items="ViewBag.ParentTypeList" class="form-control">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">شرایط اقلیمی</label>
+                            <select asp-for="ClimateId" asp-items="ViewBag.ClimateList" class="form-control">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">نوع مالکیت</label>
+                            <select asp-for="OwnershipId" asp-items="ViewBag.OwnershipList" class="form-control">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">منبع انرژی</label>
+                            <select asp-for="PowerSourceId" asp-items="ViewBag.PowerSourceList" class="form-control">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label">نوع راه</label>
+                            <select asp-for="TypeOfRoadId" asp-items="ViewBag.RoadTypeList" class="form-control">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+
+                        <!-- Checkboxes -->
+                        <div class="form-group col-lg-4 d-flex align-items-center" style="padding-top:2rem;">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" asp-for="HasLandLine" />
+                                <span class="checkmark"></span>
+                                <span class="label-text">تلفن ثابت</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group col-lg-4 d-flex align-items-center" style="padding-top:2rem;">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" asp-for="HasInternet" />
+                                <span class="checkmark"></span>
+                                <span class="label-text">اینترنت</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group col-lg-4 d-flex align-items-center" style="padding-top:2rem;">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" asp-for="IsActive" />
+                                <span class="checkmark"></span>
+                                <span class="label-text">فعال</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group col-lg-12">
+                            <label class="form-label">ملاحظات</label>
+                            <textarea asp-for="Note" class="form-control"></textarea>
+                        </div>
+
+                        <div class="alert alert-info help-text mt-4">
                         وقتی شما دکمه ثبت را فشار دهید، گیرنده تعریف می‌گردد و شما می‌توانید هر کالایی را به آن گیرنده ارسال دارید. وقتی این گیرنده هنوز فرد سیستم نشده و نمی‌تواند با سیستم کار کند تا شما دکمه "شروع فعالیت" را فعال نکرده باشید. برای فعال کردن شروع فعالیت به اطلاعات پایه ➜ گیرندگان رفته و گزینه  مدیریت را انتخاب کرده و در جعبه مقابل "شروع فعالیت" علامت بگذارید.
                         پس از این گیرنده به سیستم‌آمده می‌گردد. این عمل وقتی باید انجام شود که گزارش این گیرنده آموزش لازم را دیده و آمادگی شروع فعالیت را داشته باشند. برای اطلاعات بیشتر به قسمت کمک مربوط به گیرندگان مراجعه نمایید. تعریف اقلا  یک کاربر را برای این گیرنده فراموش نکنید!
                     </div>
 
-                    <!-- BUTTONS -->
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-success px-5">ثبت</button>
-                        <a asp-action="Index" class="btn btn-primary px-5">لیست</a>
+                        <!-- Buttons -->
+                        <div class="col-lg-12 text-left  mt-4">
+                            <button type="submit" class="btn btn-success px-5">
+                                @(isEdit ? "ذخیره" : "ثبت")
+                            </button>
+
+                            <a asp-action="Index"
+                               class="btn btn-success-outlet px-5">
+                                بازگشت
+                            </a>
+                        </div>
+
                     </div>
 
                 </form>

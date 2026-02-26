@@ -1,60 +1,77 @@
 ﻿@model VSSM.Presentation.Web.Models.RecipientConfiguration.RecipientConfigurationViewModel
 
+@{
+    ViewData["Title"] = "تنظیمات گیرنده";
+}
+
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <div class="card mb-3">
-            <div class="card-block p-3 d-flex justify-content-between">
-                <h5 class="m-0">تنظیمات گیرنده</h5>
+        <div class="card">
 
-                @if (Model == null)
-                {
-                    <a class="btn btn-success" asp-action="New">ثبت تنظیمات</a>
-                }
-                else
-                {
-                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.RecipientConfigurationId">
-                        ویرایش
-                    </a>
-                }
-            </div>
-        </div>
+            <!-- Header -->
+            <div class="row m-0 card-header">
+                <div class="col-lg-9">
+                    <h5 class="header-title">@ViewData["Title"]</h5>
+                </div>
 
-        @if (Model != null)
-        {
-            <div class="card">
-                <div class="card-block p-4">
-
-                    <table class="table table-bordered text-center">
-                        <tr>
-                            <th>استفاده از بسته‌ها</th>
-                            <td>@(Model.UseBundles ? "بله" : "خیر")</td>
-                        </tr>
-
-                        <tr>
-                            <th>مقدار حلال در ارسالات قابل تغییر نباشد</th>
-                            <td>@(Model.FreezeQtyDispatchedDl ? "بله" : "خیر")</td>
-                        </tr>
-
-                        <tr>
-                            <th>زبان جاری</th>
-                            <td>@(Model.CurrentLang == "fa" ? "فارسی" : "English")</td>
-                        </tr>
-
-                        <tr>
-                            <th>تعداد حلال جاری</th>
-                            <td>@Model.CurrentVoucherNumber</td>
-                        </tr>
-
-                        <tr>
-                            <th>محل خدمت کاربر</th>
-                            <td>@Model.RecipientId</td>
-                        </tr>
-                    </table>
-
+                <div class="col-lg-3 text-left">
+                    @if (Model == null)
+                    {
+                        <a class="btn btn-success m-0"
+                           asp-action="New">
+                            <i class="fa fa-plus ml-2"></i>ثبت تنظیمات
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-success m-0"
+                           asp-action="Edit"
+                           asp-route-id="@Model.RecipientConfigurationId">
+                            <i class="fa fa-edit ml-2"></i>ویرایش
+                        </a>
+                    }
                 </div>
             </div>
-        }
+
+            <!-- Body -->
+            @if (Model != null)
+            {
+                <div class="card-block">
+                    <div class="table-wrapper">
+                        <table class="table table-bordered table-striped table-condensed text-center">
+                            <tbody>
+                                <tr>
+                                    <th>استفاده از بسته‌ها</th>
+                                    <td>@(Model.UseBundles ? "بله" : "خیر")</td>
+                                </tr>
+
+                                <tr>
+                                    <th>مقدار حلال در ارسالات قابل تغییر نباشد</th>
+                                    <td>@(Model.FreezeQtyDispatchedDl ? "بله" : "خیر")</td>
+                                </tr>
+
+                                <tr>
+                                    <th>زبان جاری</th>
+                                    <td>@(Model.CurrentLang == "fa" ? "فارسی" : "English")</td>
+                                </tr>
+
+                                <tr>
+                                    <th>تعداد حلال جاری</th>
+                                    <td>@Model.CurrentVoucherNumber</td>
+                                </tr>
+
+                                <tr>
+                                    <th>محل خدمت کاربر</th>
+                                    <td>@Model.RecipientId</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+        </div>
 
     </div>
 </div>

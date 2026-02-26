@@ -1,81 +1,100 @@
 ﻿@model VSSM.Presentation.Web.Models.RecipientConfiguration.RecipientConfigurationViewModel
 
-<style>
-    .form-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 12px;
-        direction: rtl;
-    }
+@{
+    string formName = Model != null && Model.RecipientConfigurationId != null
+        ? "ویرایش"
+        : "ثبت";
 
-    .form-label {
-        width: 180px;
-        font-weight: 600;
-    }
-
-    .form-control, .form-select {
-        flex: 1;
-    }
-</style>
+    ViewData["Title"] = formName + " تنظیمات گیرنده";
+}
 
 <div class="container-fluid">
     <div class="animated fadeIn">
 
-        <div class="card mb-3">
-            <div class="card-block p-3">
-                <h5>@(Model.RecipientConfigurationId == null ? "ثبت تنظیمات" : "ویرایش تنظیمات")</h5>
+        <div class="card form-card">
+            <!-- Header -->
+            <div class="card-header card-form-header">
+                <h5 class="header-title">@ViewData["Title"]</h5>
             </div>
-        </div>
 
-        <div class="card mt-2">
-            <div class="card-block p-4">
+            <!-- Body -->
+            <div class="card-block">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                <form asp-action="Create" method="post">
+                <form asp-action="Create" method="post" class="form-horizontal">
                     <input type="hidden" asp-for="RecipientConfigurationId" />
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="row equal-height mb-4 mx-0">
 
-                    <!-- UseBundles -->
-                    <div class="form-group">
-                        <span class="form-label">استفاده از بسته‌ها:</span>
-                        <input type="checkbox" asp-for="UseBundles" />
+                        <!-- CurrentLang -->
+                        <div class="form-group col-lg-4">
+                            <label class="form-label" asp-for="CurrentLang">
+                                زبان جاری
+                            </label>
+                            <select asp-for="CurrentLang"
+                                    asp-items="ViewBag.LanguageList"
+                                    class="form-control bg-warning-subtle">
+                            </select>
+                            <span asp-validation-for="CurrentLang" class="text-danger"></span>
+                        </div>
+
+                        <!-- CurrentVoucherNumber -->
+                        <div class="form-group col-lg-4">
+                            <label class="form-label" asp-for="CurrentVoucherNumber">
+                                تعداد حلال جاری
+                            </label>
+                            <input asp-for="CurrentVoucherNumber"
+                                   class="form-control bg-warning-subtle" />
+                        </div>
+
+                        <!-- RecipientId -->
+                        <div class="form-group col-lg-4">
+                            <label class="form-label" asp-for="RecipientId">
+                                محل خدمت کاربر
+                            </label>
+                            <select asp-for="RecipientId"
+                                    asp-items="ViewBag.RecipientList"
+                                    class="form-control bg-warning-subtle">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+
+                        
+                        <!-- UseBundles -->
+                        <div class="form-group col-lg-4">
+                            <label class="form-label d-block">استفاده از بسته‌ها</label>
+                            <div class="form-group">
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" asp-for="UseBundles" />
+                                    <span class="checkmark"></span>
+                                    <span class="label-text">استفاده از بسته‌ها</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-lg-4">
+                            <label class="form-label d-block">مقدار حلال در ارسالات قابل تغییر نباشد</label>
+                            <div class="form-group">
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" asp-for="FreezeQtyDispatchedDl" />
+                                    <span class="checkmark"></span>
+                                    <span class="label-text">مقدار حلال در ارسالات قابل تغییر نباشد</span>
+                                </label>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <!-- Freeze -->
-                    <div class="form-group">
-                        <span class="form-label">مقدار حلال در ارسالات قابل تغییر نباشد:</span>
-                        <input type="checkbox" asp-for="FreezeQtyDispatchedDl" />
-                    </div>
-
-                    <!-- Language -->
-                    <div class="form-group">
-                        <span class="form-label">زبان جاری:</span>
-                        <select asp-for="CurrentLang" asp-items="ViewBag.LanguageList" class="form-select"></select>
-                        <span asp-validation-for="CurrentLang" class="text-danger"></span>
-                    </div>
-
-                    <!-- Voucher Number -->
-                    <div class="form-group">
-                        <span class="form-label">تعداد حلال جاری:</span>
-                        <input asp-for="CurrentVoucherNumber" class="form-control" />
-                    </div>
-
-                    <!-- Recipient -->
-                    <div class="form-group">
-                        <span class="form-label">محل خدمت کاربر:</span>
-                        <select asp-for="RecipientId" asp-items="ViewBag.RecipientList" class="form-select">
-                            <option value="">انتخاب کنید...</option>
-                        </select>
-                    
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-success px-5">ثبت</button>
-                        <a asp-action="Index" class="btn btn-primary px-5">بازگشت</a>
+                    <div class="text-left">
+                        <button type="submit" class="btn btn-success px-5">
+                            ثبت
+                        </button>
+                        <a asp-action="Index" class="btn btn-success-outlet px-5">
+                            بازگشت
+                        </a>
                     </div>
 
                 </form>
-
             </div>
         </div>
 
@@ -83,5 +102,5 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

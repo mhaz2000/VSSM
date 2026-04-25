@@ -237,7 +237,7 @@ namespace VSSM.Application.Services.BaseEntities
             var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
             var reciepients = recipientId is null ? _db.TblRecipients.Where(t => t.RecipientId == currentRecipientId) : _db.TblRecipients.Where(t => t.RecipientId == recipientId);
             
-            var stores = _db.TblStores.AsQueryable();
+            var stores = _db.TblStores.AsQueryable().AsNoTracking();
 
             if (storeTypeId.HasValue && storeTypeId > 0)
             {

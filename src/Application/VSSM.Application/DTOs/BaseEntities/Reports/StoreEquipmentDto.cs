@@ -4,8 +4,9 @@
     {
         public string StoreName { get; set; }
         public string StoreType { get; set; }
-        public int Capacity { get; set; }
-        public int TotalCapacity { get; set; }
-        public int IsActive { get; set; }
+        public float? Capacity { get; set; }
+        public float? TotalCapacity { get; set; }
+        public int? Year { get; set; }
+        public bool? IsActive { get; set; }
     };
 }

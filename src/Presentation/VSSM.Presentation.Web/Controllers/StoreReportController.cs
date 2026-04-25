@@ -13,7 +13,7 @@ using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    public class StoreReportController(IReportService _reportService,
+    public class StoreReportController(IStoreService _storeService,
         IStoreTypeService _storeTypeService,
         IRecipientService _recipientService,
         IFiscalPeriodService _fiscalPeriodService)
@@ -70,7 +70,47 @@ namespace VSSM.Presentation.Web.Controllers
             string direction = "asc",
             CancellationToken cancellationToken = default)
         {
-            return null;
+
+            var (data, count) = await _storeService.GetStoreEquipmentReport(CurrentUserRecipientId.Value,
+                    recipientId,
+                    storeTypeId,
+                    volumeStart,
+                    volumeEnd,
+                    freeVolumeStart,
+                    freeVolumeEnd,
+                    yearStart,
+                    yearEnd,
+                    isActive,
+                    pageNumber,
+                    pageSize,
+                    sort,
+                    direction,
+                    cancellationToken
+                );
+
+            var model = new GridViewModel
+            {
+                CurrentSort = sort,
+                CurrentDirection = direction,
+                Data = new PagedResult<object>
+                {
+                    Items = data.Cast<object>().ToList(),
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = count
+                },
+                Columns = new List<GridColumn>
+                {
+                    new() { Header = "نام انبار", PropertyName = nameof(StoreEquipmentDto.StoreName) },
+                    new() { Header = "نوع انبار", PropertyName = nameof(StoreEquipmentDto.StoreType) },
+                    new() { Header = "حجم(لیتر)", PropertyName = nameof(StoreEquipmentDto.Capacity) },
+                    new() { Header = "حجم کلی فضا", PropertyName = nameof(StoreEquipmentDto.TotalCapacity) },
+                    new() { Header = "سال", PropertyName = nameof(StoreEquipmentDto.Year) },
+                    new() { Header = "وضعیت", PropertyName = nameof(StoreEquipmentDto.IsActive) }
+                }
+            };
+
+            return View(model);
         }
     }
 }

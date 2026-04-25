@@ -37,7 +37,7 @@
                     <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
                 </div>
 
-                <form method="get" class="card p-3 mb-3">
+                <form method="get" action="/StoreReport/StoreEquipmentReport" target="_blank" class="card p-3 mb-3">
 
                     <div class="row g-3">
 
@@ -59,14 +59,68 @@
                             }).ToList()
                             })
                         </div>
-
                         
+                        <div class="row">
+                        <div class="col-md-6 input-sec">
+                            <label class="form-label">نوع انبار</label>
+                            <select name="typeId" class="form-control form-select m-0"
+                                    style="height:42px!important" id="storeTypeId" name="storeTypeId"
+                                    asp-items="ViewBag.TypeList">
+                                <option value="">نوع انبار</option>
+                            </select>
+                        </div>
+                        </div>
+
+                        <div class="col-md-3 input-sec">
+                                <label class="form-label">حجم خالص (لیتر):  از</label>
+                            <input type="number" class="form-control" id="volumeStart" name="volumeStart" />
+                            
+                        </div>
+                        <div class="col-md-3 input-sec">
+                            <label class="form-label">تا</label>
+                            <input type="number" class="form-control" id="volumeEnd" name="volumeEnd" />
+                        </div>
+
+                        <div class="col-md-3 input-sec">
+                            <label class="form-label">حجم کلی فضا :  از</label>
+                            <input type="number" class="form-control" id="freeVolumeStart" name="freeVolumeStart" />
+                        </div>
+                        <div class="col-md-3 input-sec">
+                            <label class="form-label">تا</label>
+                            <input type="number" class="form-control" id="freeVolumeEnd" name="freeVolumeEnd" />
+                        </div>
+                        <div class="col-md-3 input-sec">
+                            <label class="form-label">سال نصب :  از</label>
+                            <select name="typeId" class="form-control form-select m-0"
+                                    style="height:42px!important" id="yearStart" name="yearStart"
+                                    asp-items="ViewBag.Years">
+                                <option value="">سال نصب</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 input-sec">
+                            <label class="form-label">تا</label>
+                            <select name="typeId" class="form-control form-select m-0"
+                                    style="height:42px!important" id="yearEnd" name="yearEnd"
+                                    asp-items="ViewBag.Years">
+                                <option value="">سال نصب</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 input-sec">
+                            <br />
+                            <div><label class="form-label"></label></div>
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox" id="isActive" name="isActive" />
+                                <label class="form-check-label">فعال</label>
+                            </div>
+                        </div>
 
                     </div>
 
                     <div class="text-start mt-3" style="margin-top: 1rem; margin-right: 0px;">
-                        <button type="submit" class="btn btn-primary" id="searchBtn" disabled>
-                            <i class="fa fa-search"></i> جستجو
+                        <button type="submit" class="btn btn-primary" id="searchBtn">
+                            <i class="fa fa-search"></i> خلاصه گزارش
                         </button>
 
                     </div>
@@ -86,5 +140,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/components/reports/item-for-recipient-in-year.js"></script>
+    
 }

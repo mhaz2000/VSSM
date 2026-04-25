@@ -163,7 +163,7 @@ public class StoreTypeService : IStoreTypeService
     public async Task<List<StoreTypeDto>> GetAll(CancellationToken cancellationToken)
     {
 
-        IQueryable<TblStoreType> query = _dbContext.TblStoreTypes;
+        IQueryable<TblStoreType> query = _dbContext.TblStoreTypes.Where(x => x.IsActive == true);
         return await query.Select(x =>
                new StoreTypeDto
                {

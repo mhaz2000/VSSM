@@ -323,6 +323,7 @@
                                 <div class="form-group">
                                     <span class="form-label">مرحله VVM:</span>
                                     <select asp-for="NewLine.VvmStageId"
+                                            asp-items="ViewBag.VvmstageList"
                                             class="form-select"
                                             id="VvmStageId"
                                             disabled>
@@ -522,6 +523,8 @@
             const $itemClass = $("#ItemClassId");
             const $item = $("#ItemId");
             const $dose = $("#DosePerVialId");
+            const $vvmType = $("#VvmTypeId");
+            const $vvmStage = $("#VvmStageId");
 
             async function loadItemsByClass(classId, selectedItemId) {
                 $item.prop("disabled", true).empty()
@@ -567,6 +570,15 @@
 
             $item.on("change", function () {
                 loadDosePerVials($(this).val(), null);
+            });
+
+            $vvmType.on("change", function () {
+                if($vvmType.val() != "")
+                    $vvmStage.prop("disabled", false);
+                else{
+                    $vvmStage.prop("disabled", true);
+                    $vvmStage.val("");
+                }
             });
 
             // ✅ init from server model after return View

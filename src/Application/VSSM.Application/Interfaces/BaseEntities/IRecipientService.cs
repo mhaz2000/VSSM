@@ -21,5 +21,6 @@ namespace VSSM.Application.Interfaces.BaseEntities
         Task<int> Create(RecipientCreateDto dto, CancellationToken token);
         Task<bool> Update(RecipientEditDto dto, CancellationToken token);
         Task<List<RecipientGetDto>> GetActiveRecipients(CancellationToken token);
+        Task<List<RecipientGetDto>> GetActiveRecipientChildren(int currentRecipientId, CancellationToken token);
     }
 }

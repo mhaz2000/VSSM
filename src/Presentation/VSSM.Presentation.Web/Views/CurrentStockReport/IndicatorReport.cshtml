@@ -1,0 +1,27 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@{
+    Layout = "~/Views/Shared/_ReportLayout.cshtml";
+}
+
+@{
+    ViewData["Title"] = "Stock Report";
+}
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("ReportHeader")
+</div>
+
+<div>
+    <div style="font-weight: bolder;">کالا: @ViewBag.ItemDetail.ItemName, سری ساخت: @ViewBag.ItemDetail.BatchNumber ( مقدار موجودی: @ViewBag.ItemDetail.CurrentStock )</div>
+    <div style="display: flex; gap: 3rem;">
+        <div><span style="font-weight: bolder;">سازنده:</span> @ViewBag.ItemDetail.Manufacturer</div>
+        <div><span style="font-weight: bolder;">دوز بر ویال:</span> @ViewBag.ItemDetail.NumDosePerVial</div>
+        <div><span style="font-weight: bolder;">تاریخ انقضا:</span> @ViewBag.ItemDetail.ExpiryDateText</div>
+    </div>
+</div>
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("_DynamicGrid", Model)
+</div>

@@ -1,0 +1,137 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.FiscalPeriod
+@using VSSM.Application.DTOs.BaseEntities.Recipient
+@using VSSM.Application.DTOs.BaseEntities.Source
+@using VSSM.Application.DTOs.BaseEntities.Store
+@using VSSM.Presentation.Web.Models.Base
+
+@{
+    ViewData["Title"] = "گزارش کالا برای گیرندگان در سال";
+}
+
+@{
+    var items = ViewBag.Items as List<ItemListDto>;
+    var recipients = ViewBag.Recipients as List<RecipientGetDto>;
+    var chainLevels = ViewBag.ChainLevels as List<int>;
+    var years = ViewBag.Years as List<int>;
+}
+
+
+@section Styles {
+    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
+}
+
+<style>
+    .form-control {
+        padding: 16px !important;
+    }
+
+</style>
+
+<div class="container-fluid">
+
+    <div class="card mt-3">
+        <div class="card-block">
+
+            <div class="grid-wrapper">
+
+                <div class="grid-header">
+                    <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
+                </div>
+
+                <form method="get" action="/CurrentStockReport/ItemForRecipientInYearReport" target="_blank" class="card p-3 mb-3">
+
+                    <div class="row g-3">
+
+
+                        <div class="col-md-6 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                            new SearchableSelectModel
+                            {
+                                Id = "recipientId",
+                                IsRequired = false,
+                                Name = "recipientId",
+                                Label = "گزارش پایین",
+                                Options = recipients
+                            .Select(x => new SelectOption
+                            {
+                                Value = x.RecipientId.ToString(),
+                                Text = x.FullName
+                            }).ToList()
+                            })
+                        </div>
+
+                        <div class="col-md-6 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "level",
+                                                            IsRequired = false,
+                                                            Name = "level",
+                                                            Label = "سطح در زنجیره",
+                                                            Options = chainLevels
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.ToString(),
+                                                            Text = x.ToString()
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+                        <div class="col-md-6 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                            new SearchableSelectModel
+                            {
+                                Id = "itemId",
+                                IsRequired = true,
+                                Name = "itemId",
+                                Label = "کالا",
+                                Options = items
+                            .Select(x => new SelectOption
+                            {
+                                Value = x.Id.ToString(),
+                                Text = x.FullName
+                            }).ToList()
+                            })
+                        </div>
+
+
+                        <div class="col-md-6 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "year",
+                                                            IsRequired = true,
+                                                            Name = "year",
+                                                            Label = "سال",
+                                                            Options = years
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.ToString(),
+                                                            Text = x.ToString()
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+                    </div>
+
+                    <div class="text-start mt-3" style="margin-top: 1rem; margin-right: 0px;">
+                        <button type="submit" class="btn btn-primary" id="searchBtn" disabled>
+                            <i class="fa fa-search"></i> جستجو
+                        </button>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/components/reports/item-for-recipient-in-year.js"></script>
+}

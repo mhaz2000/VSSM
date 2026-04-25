@@ -159,5 +159,22 @@ namespace VSSM.Application.Services.BaseEntities
 
             return result;
         }
+
+        public async Task<List<FiscalPeriodDto>> GetAllAsListAsync(CancellationToken cancellationToken)
+        {
+            var items = await _dbContext.TblFiscalPeriods
+                                    .AsNoTracking()
+                                    .ToListAsync(cancellationToken);
+
+            var result = items.Select(x => new FiscalPeriodDto
+            {
+                StartDate = x.StartDate,
+                EndTime = x.EndTime,
+                FiscalPeriodId = x.FiscalPeriodId,
+                FullName = x.FullName
+            }).ToList();
+
+            return result;
+        }
     }
 }

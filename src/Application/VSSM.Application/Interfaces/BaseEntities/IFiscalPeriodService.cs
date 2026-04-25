@@ -13,4 +13,5 @@ public interface IFiscalPeriodService
     Task<PagingSearchOrderDto<FiscalPeriodDto>> GetPagedList(
         string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
     Task<bool> Delete(int id, CancellationToken cancellationToken);
+    Task<List<FiscalPeriodDto>> GetAllAsListAsync(CancellationToken cancellationToken);
 }

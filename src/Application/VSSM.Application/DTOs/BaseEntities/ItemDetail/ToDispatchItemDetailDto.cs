@@ -1,6 +1,5 @@
 ﻿
 namespace VSSM.Application.DTOs.BaseEntities.ItemDetail;
-
 public record ToDispatchItemDetailDto
 {
     public int? ItemId { get; internal set; }

@@ -70,6 +70,27 @@
                                                         })
                         </div>
 
+
+                        <div class="col-md-4 input-sec">
+                            @await Html.PartialAsync("Components/SearchableMultiSelect/_SearchableMultiSelect", new SearchableMultiSelectModel
+                                                        {
+                                Id = "Roles",
+                                                        Name = "Roles",
+                                                        Label = "Role Selection",
+                                                        Options = new List<SelectOption>
+                                                        {
+                                                        new SelectOption { Value = "1", Text = "Admin" },
+                                                        new SelectOption { Value = "2", Text = "Manager" },
+                                                        new SelectOption { Value = "5", Text = "Operator" },
+                                                        new SelectOption { Value = "6", Text = "Operator1" },
+                                                        new SelectOption { Value = "7", Text = "Operator2" },
+                                                        new SelectOption { Value = "8", Text = "Operator3" },
+                                                        new SelectOption { Value = "9", Text = "Operator4" },
+                                                        new SelectOption { Value = "10", Text = "Operator5" }
+                                                        }
+                                                        })
+
+                        </div>
                     </div>
 
                     <div class="text-start mt-3" style="margin-top: 1rem; margin-right: 0px;">

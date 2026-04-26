@@ -29,6 +29,28 @@ namespace VSSM.Application.Services.BaseEntities
             return result;
         }
 
+        public Task<List<ItemBatchNumbersDto>> GetItemBatchNumbers(int itemId, int recipientId, CancellationToken none)
+        {
+            var query =
+                from itm in _db.TblItems
+                join itmDtl in _db.TblItemDetails.Where(t => t.ItemId == itemId)
+                    on itm.ItemId equals itmDtl.ItemId
+                join itmDtlStr in _db.TblItemDetailStores.Where(t => t.CurrentStock > 0)
+                    on itmDtl.ItemDetailId equals itmDtlStr.ItemDetailId
+                join str in _db.TblStores.Where(store => store.RecipientId == recipientId)
+                    on itmDtlStr.StoreId equals str.StoreId
+
+                group new { itm, itmDtl, itmDtlStr, str } by itmDtl.BatchNumber into g
+
+                select new ItemBatchNumbersDto
+                {
+                    BatchNumber = g.Key,
+                    CurrentStock = g.Sum(x => x.itmDtlStr.CurrentStock) ?? 0
+                };
+
+            return query.ToListAsync(none);
+        }
+
         public async Task<List<ToDispatchItemDetailDto>> GetItemDetailsAsync(int itemId, int recipientId, CancellationToken cancellationToken)
         {
             var query = from itm in _db.TblItems

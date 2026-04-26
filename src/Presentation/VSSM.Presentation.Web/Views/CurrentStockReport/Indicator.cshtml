@@ -1,0 +1,113 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Source
+@using VSSM.Application.DTOs.BaseEntities.Store
+@using VSSM.Presentation.Web.Models.Base
+
+@{
+    ViewData["Title"] = "کالاهای فاقد موجودی";
+}
+
+@{
+    var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
+}
+
+<div class="container-fluid">
+
+    <div class="card mt-3">
+        <div class="card-block">
+
+            <div class="grid-wrapper">
+
+                <div class="grid-header">
+                    <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
+                </div>
+
+                <form method="get" action="/CurrentStockReport/IndicatorReport" target="_blank" class="card p-3 mb-3">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                            new SearchableSelectModel
+                            {
+                                Id = "itemClassId",
+                                IsRequired = true,
+                                Name = "itemClassId",
+                                Label = "نوع کالا",
+                                Options = itemClasses
+                            .Select(x => new SelectOption
+                            {
+                                Value = x.Id.ToString(),
+                                Text = x.Name
+                            }).ToList()
+                            })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "itemId",
+                                                            IsRequired = true,
+                                                            Name = "itemId",
+                                                            Label = "کالا",
+                                                            Options = []
+                                                        })
+                        </div>
+
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "batchNumber",
+                                                            IsRequired = true,
+                                                            Name = "batchNumber",
+                                                            Label = "سری ساخت",
+                                                            Options = []
+                                                        })
+                        </div>
+
+
+                        <div class="col-md-4 input-sec">
+                            @await Html.PartialAsync("Components/SearchableMultiSelect/_SearchableMultiSelect", new SearchableMultiSelectModel
+                                                        {
+                                Id = "Roles",
+                                                        Name = "Roles",
+                                                        Label = "Role Selection",
+                                                        Options = new List<SelectOption>
+                                                        {
+                                                        new SelectOption { Value = "1", Text = "Admin" },
+                                                        new SelectOption { Value = "2", Text = "Manager" },
+                                                        new SelectOption { Value = "5", Text = "Operator" },
+                                                        new SelectOption { Value = "6", Text = "Operator1" },
+                                                        new SelectOption { Value = "7", Text = "Operator2" },
+                                                        new SelectOption { Value = "8", Text = "Operator3" },
+                                                        new SelectOption { Value = "9", Text = "Operator4" },
+                                                        new SelectOption { Value = "10", Text = "Operator5" }
+                                                        }
+                                                        })
+
+                        </div>
+                    </div>
+
+                    <div class="text-start mt-3" style="margin-top: 1rem; margin-right: 0px;">
+                        <button type="submit" class="btn btn-primary" id="searchBtn" disabled>
+                            <i class="fa fa-search"></i> جستجو
+                        </button>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="~/js/components/reports/indicator-report.js"></script>
+}

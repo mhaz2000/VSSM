@@ -56,6 +56,33 @@
 
 </style>
 
+@functions {
+    string BuildPageUrl(int page, int pageSize, ViewContext viewContext)
+    {
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(
+            viewContext.HttpContext.Request.QueryString.Value ?? ""
+        );
+
+        var dict = new Dictionary<string, string>();
+
+        // Copy existing query params
+        foreach (var item in query)
+        {
+            dict[item.Key] = item.Value;
+        }
+
+        // Override pagination params
+        dict["pageNumber"] = page.ToString();
+        dict["pageSize"] = pageSize.ToString();
+
+        var path = viewContext.HttpContext.Request.Path;
+        var qs = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(path, dict);
+
+        return qs;
+    }
+}
+
+
 @{
     var data = Model.Data;
 
@@ -80,38 +107,22 @@
     <div class="pagination-controls">
 
         <a class="pagination-btn @(currentPage == 1 ? "disabled" : "")"
-           href="?pageNumber=1
-                  &pageSize=@data.PageSize
-                  &search=@Model.Search
-                  &sort=@Model.Sort
-                  &direction=@Model.Direction">
-            |<
+           href="@BuildPageUrl(1, data.PageSize, ViewContext)">
+           |<
         </a>
 
         <a class="pagination-btn @(currentPage == 1 ? "disabled" : "")"
-           href="?pageNumber=@(currentPage - 1)
-                  &pageSize=@data.PageSize
-                  &search=@Model.Search
-                  &sort=@Model.Sort
-                  &direction=@Model.Direction">
+           href="@BuildPageUrl(currentPage - 1, data.PageSize, ViewContext)">
             <
         </a>
 
         <a class="pagination-btn @(currentPage >= totalPages ? "disabled" : "")"
-           href="?pageNumber=@(currentPage + 1)
-                  &pageSize=@data.PageSize
-                  &search=@Model.Search
-                  &sort=@Model.Sort
-                  &direction=@Model.Direction">
+           href="@BuildPageUrl(currentPage + 1, data.PageSize, ViewContext)">
             >
         </a>
 
         <a class="pagination-btn @(currentPage >= totalPages ? "disabled" : "")"
-           href="?pageNumber=@totalPages
-                  &pageSize=@data.PageSize
-                  &search=@Model.Search
-                  &sort=@Model.Sort
-                  &direction=@Model.Direction">
+           href="@BuildPageUrl(totalPages, data.PageSize, ViewContext)">
             >|
         </a>
 

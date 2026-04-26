@@ -1,0 +1,90 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.FiscalPeriod
+@using VSSM.Application.DTOs.BaseEntities.Recipient
+@using VSSM.Application.DTOs.BaseEntities.Source
+@using VSSM.Application.DTOs.BaseEntities.Store
+@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@{
+    ViewData["Title"] = "گزارش تجهیزات انبار";
+}
+
+@{
+    var recipients = ViewBag.Recipients as List<RecipientGetDto>;
+    var years = ViewBag.Years as List<int>;
+}
+
+
+@section Styles {
+    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
+}
+
+<style>
+    .form-control {
+        padding: 16px !important;
+    }
+
+</style>
+
+<div class="container-fluid">
+
+    <div class="card mt-3">
+        <div class="card-block">
+
+            <div class="grid-wrapper">
+
+                <div class="grid-header">
+                    <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
+                </div>
+
+                <form method="get" class="card p-3 mb-3">
+
+                    <div class="row g-3">
+
+
+                        <div class="col-md-6 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                            new SearchableSelectModel
+                            {
+                                Id = "recipientId",
+                                IsRequired = false,
+                                Name = "recipientId",
+                                Label = "گزارش پایین",
+                                Options = recipients
+                            .Select(x => new SelectOption
+                            {
+                                Value = x.RecipientId.ToString(),
+                                Text = x.FullName
+                            }).ToList()
+                            })
+                        </div>
+
+                        
+
+                    </div>
+
+                    <div class="text-start mt-3" style="margin-top: 1rem; margin-right: 0px;">
+                        <button type="submit" class="btn btn-primary" id="searchBtn" disabled>
+                            <i class="fa fa-search"></i> جستجو
+                        </button>
+
+                    </div>
+                </form>
+
+                @if (Model != null)
+                {
+                    <div style="margin-top: 1rem;">
+                        @await Html.PartialAsync("_DynamicGrid", Model)
+                    </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/components/reports/item-for-recipient-in-year.js"></script>
+}

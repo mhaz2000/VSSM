@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace VSSM.Presentation.Web.Views.CurrentStockReport
+namespace VSSM.Presentation.Web.Views.StoreReport
 {
     public class StoreEquipmentReportModel : PageModel
     {

@@ -227,7 +227,7 @@ namespace VSSM.Application.Services.BaseEntities
             int? freeVolumeEnd,
             int? yearStart,
             int? yearEnd,
-            bool isActive,
+            int? isActive,
             int pageNumber,
             int pageSize,
             string sort = "Recipient",
@@ -242,6 +242,13 @@ namespace VSSM.Application.Services.BaseEntities
             if (storeTypeId.HasValue && storeTypeId > 0)
             {
                 stores = stores.Where(x => x.TypeId == storeTypeId.Value);
+            }
+
+
+            if (isActive.HasValue && isActive > -1)
+            {
+                bool active = (isActive.Value == 1) ? true : false;
+                stores = stores.Where(x => x.IsActive == active);
             }
 
 
@@ -284,7 +291,7 @@ namespace VSSM.Application.Services.BaseEntities
                             StoreType = t.FullName,
                             Capacity = s.Volume,
                             TotalCapacity = s.FreeVolume,
-                            IsActive = s.IsActive,
+                            IsActive = s.IsActive.Value ? "فعال" : "غیر فعال",
                             Year = s.Year,
                         };
 

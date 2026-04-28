@@ -1,0 +1,22 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@{
+    Layout = "~/Views/Shared/_ReportLayout.cshtml";
+}
+
+@{
+    ViewData["Title"] = "Stock Report";
+}
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("ReportHeader")
+</div>
+
+<div>
+    
+</div>
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("_DynamicGrid", Model)
+</div>

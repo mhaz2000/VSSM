@@ -29,7 +29,7 @@ namespace VSSM.Application.Interfaces.BaseEntities
             int? freeVolumeEnd,
             int? yearStart,
             int? yearEnd,
-            bool isActive,
+            int? isActive,
             int pageNumber,
             int pageSize,
             string sort = "Recipient",

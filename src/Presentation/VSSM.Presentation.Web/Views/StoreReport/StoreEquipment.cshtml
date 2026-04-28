@@ -91,7 +91,7 @@
                         </div>
                         <div class="col-md-3 input-sec">
                             <label class="form-label">سال نصب :  از</label>
-                            <select name="typeId" class="form-control form-select m-0"
+                            <select class="form-control form-select m-0"
                                     style="height:42px!important" id="yearStart" name="yearStart"
                                     asp-items="ViewBag.Years">
                                 <option value="">سال نصب</option>
@@ -99,7 +99,7 @@
                         </div>
                         <div class="col-md-3 input-sec">
                             <label class="form-label">تا</label>
-                            <select name="typeId" class="form-control form-select m-0"
+                            <select class="form-control form-select m-0"
                                     style="height:42px!important" id="yearEnd" name="yearEnd"
                                     asp-items="ViewBag.Years">
                                 <option value="">سال نصب</option>
@@ -107,13 +107,19 @@
                         </div>
 
                         <div class="col-md-3 input-sec">
-                            <br />
-                            <div><label class="form-label"></label></div>
-                            <div class="form-check">
+                            
+                            <label class="form-label">فعال</label>
+                            <select class="form-control form-select m-0"
+                                    style="height:42px!important" id="isActive" name="isActive">
+                                <option value="-1"></option>
+                                <option value="1">بله</option>
+                                <option value="0">خیر</option>
+                            </select>
+                            @* <div class="form-check">
                                 <input class="form-check-input"
                                        type="checkbox" id="isActive" name="isActive" />
                                 <label class="form-check-label">فعال</label>
-                            </div>
+                            </div> *@
                         </div>
 
                     </div>

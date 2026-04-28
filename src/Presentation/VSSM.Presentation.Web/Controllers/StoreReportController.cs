@@ -63,7 +63,7 @@ namespace VSSM.Presentation.Web.Controllers
             int? freeVolumeEnd,
             int? yearStart,
             int? yearEnd,
-            bool isActive,
+            int? isActive,
             int pageNumber = 1,
             int pageSize = 20,
             string sort = "Recipient",

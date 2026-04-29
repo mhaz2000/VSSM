@@ -14,6 +14,7 @@
         public float? FreeVolume { get; set; }
         public string? Note { get; set; }
         public bool IsActive { get; set; }
+        public int? Year { get; set; }
     }
 
 }

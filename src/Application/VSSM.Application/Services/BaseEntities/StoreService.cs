@@ -2,8 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Reports;
 using VSSM.Application.DTOs.BaseEntities.Store;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Domain.Entities;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities
@@ -214,10 +217,100 @@ namespace VSSM.Application.Services.BaseEntities
             ).ToListAsync(cancellationToken);
         }
 
+
+        public async Task<(List<StoreEquipmentReportDto> data, int count)> GetStoreEquipmentReport(int currentRecipientId,
+            int? recipientId,
+            int? storeTypeId,
+            int? volumeStart,
+            int? volumeEnd,
+            int? freeVolumeStart,
+            int? freeVolumeEnd,
+            int? yearStart,
+            int? yearEnd,
+            int? isActive,
+            int pageNumber,
+            int pageSize,
+            string sort = "Recipient",
+            string direction = "asc",
+            CancellationToken cancellationToken = default)
+        {
+            var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
+            var reciepients = recipientId is null ? _db.TblRecipients.Where(t => t.RecipientId == currentRecipientId) : _db.TblRecipients.Where(t => t.RecipientId == recipientId);
+            
+            var stores = _db.TblStores.AsQueryable().AsNoTracking();
+
+            if (storeTypeId.HasValue && storeTypeId > 0)
+            {
+                stores = stores.Where(x => x.TypeId == storeTypeId.Value);
+            }
+
+
+            if (isActive.HasValue && isActive > -1)
+            {
+                bool active = (isActive.Value == 1) ? true : false;
+                stores = stores.Where(x => x.IsActive == active);
+            }
+
+
+            if (volumeStart.HasValue && volumeStart > 0)
+            {
+                stores = stores.Where(x => x.Volume >= volumeStart.Value);
+            }
+            if (volumeEnd.HasValue && volumeEnd > 0)
+            {
+                stores = stores.Where(x => x.Volume <= volumeEnd.Value);
+            }
+
+
+            if (freeVolumeStart.HasValue && freeVolumeStart > 0)
+            {
+                stores = stores.Where(x => x.FreeVolume >= freeVolumeStart.Value);
+            }
+            if (freeVolumeEnd.HasValue && freeVolumeEnd > 0)
+            {
+                stores = stores.Where(x => x.FreeVolume <= freeVolumeEnd.Value);
+            }
+
+
+            if (yearStart.HasValue && yearStart > 0)
+            {
+                stores = stores.Where(x => x.Year >= yearStart.Value);
+            }
+            if (yearEnd.HasValue && yearEnd > 0)
+            {
+                stores = stores.Where(x => x.Year <= yearEnd.Value);
+            }
+
+
+            var query = from r in reciepients
+                        join s in stores on r.RecipientId equals s.RecipientId
+                        join t in _db.TblStoreTypes on s.TypeId equals t.StoreTypeId
+                        select new StoreEquipmentReportDto()
+                        {
+                            StoreName = s.Name,
+                            StoreType = t.FullName,
+                            Capacity = s.Volume,
+                            TotalCapacity = s.FreeVolume,
+                            IsActive = s.IsActive.Value ? "فعال" : "غیر فعال",
+                            Year = s.Year,
+                        };
+
+
+            var total = await query.CountAsync();
+            query = query.ApplySorting(sort, direction == "desc");
+
+            return (await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(), total);
+
+        }
+
         public async Task<string> GetStoreNamesAsync(List<int> storeIds)
         {
             var stores = await _db.TblStores.Where(t => storeIds.Contains(t.StoreId)).Select(s => s.Name).ToListAsync();
             return string.Join(" - ", stores);
         }
+
     }
 }

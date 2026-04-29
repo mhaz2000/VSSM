@@ -36,5 +36,6 @@ namespace VSSM.Application.Interfaces.BaseEntities
             string direction = "asc",
             CancellationToken cancellationToken = default);
 
+        Task<string> GetStoreNamesAsync(List<int> storeIds);
     }
 }

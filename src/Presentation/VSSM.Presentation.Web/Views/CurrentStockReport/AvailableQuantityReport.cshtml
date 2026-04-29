@@ -1,0 +1,33 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GroupedGridViewModel<object, object>
+
+@{
+    Layout = "~/Views/Shared/_ReportLayout.cshtml";
+}
+
+@{
+    ViewData["Title"] = "مقدار موجود";
+}
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("ReportHeader")
+</div>
+
+
+<h5 style="text-align: center;">
+    @ViewData["Title"]
+</h5>
+
+
+<div>
+    <div>
+        <span>انبار</span>: @ViewBag.StoreList
+    </div>
+    <div>
+        <span>کالاها</span>: @ViewBag.ItemList
+    </div>
+</div>
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("_GroupedDynamicGrid", Model)
+</div>

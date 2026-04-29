@@ -104,9 +104,11 @@ function updateMsTags(wrapper) {
     tagContainer.empty();
 
     var values = [];
+    var MAX_VISIBLE = 2; // show only 2 tags
 
-    selectedOptions.each(function () {
+    selectedOptions.each(function (index) {
         var val = $(this).data("value");
+
         var text = $(this).clone()
             .children()
             .remove()
@@ -116,16 +118,33 @@ function updateMsTags(wrapper) {
 
         values.push(val);
 
-        tagContainer.append(
-            '<span class="ms-tag" data-value="' + val + '">' +
-            text + ' <i class="fa fa-times ms-remove-tag"></i>' +
-            '</span>'
-        );
+        if (index < MAX_VISIBLE) {
+            // visible tag
+            tagContainer.append(
+                '<span class="ms-tag" data-value="' + val + '">' +
+                text + ' <i class="fa fa-times ms-remove-tag"></i>' +
+                '</span>'
+            );
+        }
     });
 
+    // If more than MAX_VISIBLE → add "+X" counter
+    if (selectedOptions.length > MAX_VISIBLE) {
+        var extra = selectedOptions.length - MAX_VISIBLE;
+
+        tagContainer.append(
+            '<span class="ms-more">+' + extra + '</span>'
+        );
+    }
+
+    // No selection case
     if (values.length === 0) {
         tagContainer.html('<span class="ms-placeholder">انتخاب کنید</span>');
     }
 
+    // update hidden input with comma values
     hiddenInput.val(values.join(","));
+
+    $(hiddenInput).trigger("change");
 }
+

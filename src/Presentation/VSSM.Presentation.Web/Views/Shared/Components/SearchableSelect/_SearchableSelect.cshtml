@@ -15,7 +15,7 @@
            value="@Model.SelectedValue" />
 
     <div class="ss-control">
-        <div class="ss-display form-select d-flex justify-content-between align-items-center" style="padding: 14px !important;">
+        <div class="ss-display form-select d-flex justify-content-between align-items-center" style="padding: 14px !important;max-height: 3rem;">
             <span class="ss-text">
                 @(Model.Options.FirstOrDefault(x => x.Value == Model.SelectedValue)?.Text ?? Model.DefaultText)
             </span>

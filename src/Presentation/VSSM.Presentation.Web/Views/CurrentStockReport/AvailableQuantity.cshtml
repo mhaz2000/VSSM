@@ -1,0 +1,287 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.CommercialName
+@using VSSM.Application.DTOs.BaseEntities.FiscalPeriod
+@using VSSM.Application.DTOs.BaseEntities.Manufacturer
+@using VSSM.Application.DTOs.BaseEntities.Recipient
+@using VSSM.Application.DTOs.BaseEntities.Source
+@using VSSM.Application.DTOs.BaseEntities.Store
+@using VSSM.Application.DTOs.BaseEntities.Vvmstage
+@using VSSM.Application.DTOs.BaseEntities.Vvmtype
+@using VSSM.Presentation.Web.Models.Base
+
+@{
+    ViewData["Title"] = "گزارش مقدار موجود";
+}
+
+@{
+    var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
+    var recipients = ViewBag.Recipients as List<RecipientGetDto>;
+    var chainLevels = ViewBag.ChainLevels as List<int>;
+    var items = ViewBag.Items as List<ItemListDto>;
+    var sources = ViewBag.Sources as List<SourceGetDto>;
+    var stores = ViewBag.Stores as List<StoreListDto>;
+    var commercialNames = ViewBag.CommercialNames as List<CommercialNameDto>;
+    var manufacturers = ViewBag.Manufacturers as List<ManufacturerDto>;
+    var vvmstages = ViewBag.Vvmstages as List<VvmstageDto>;
+    var vvmtypes = ViewBag.Vvmtypes as List<VvmtypeDto>;
+}
+
+
+@section Styles {
+    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
+}
+
+<style>
+    .form-control {
+        padding: 16px !important;
+    }
+
+    .big-checkbox {
+        transform: scale(3);
+        transform-origin: center center;
+        cursor: pointer;
+        margin: 0;
+    }
+
+</style>
+
+<div class="container-fluid">
+
+    <div class="card mt-3">
+        <div class="card-block">
+
+            <div class="grid-wrapper">
+
+                <div class="grid-header">
+                    <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
+                </div>
+
+                <form method="post" action="/CurrentStockReport/AvailableQuantityReport" target="_blank" class="card p-3 mb-3">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                            new SearchableSelectModel
+                            {
+                                Id = "itemClassId",
+                                Name = "itemClassId",
+                                Label = "نوع کالا",
+                                Options = itemClasses
+                                    .Select(x => new SelectOption
+                                    {
+                                        Value = x.Id.ToString(),
+                                        Text = x.Name
+                                    }).ToList()
+                            })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableMultiSelect/_SearchableMultiSelect",
+                            new SearchableMultiSelectModel
+                            {
+                                Id = "itemId",
+                                Name = "itemId",
+                                Label = "کالاها",
+                                Options = items
+                                    .Select(x => new SelectOption
+                                    {
+                                        Value = x.Id.ToString(),
+                                        Text = x.FullName
+                                    }).ToList()
+                            })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "recipientId",
+                                                            IsRequired = false,
+                                                            Name = "recipientId",
+                                                            Label = "گزارش پایین",
+                                                            Options = recipients
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.RecipientId.ToString(),
+                                                            Text = x.FullName.ToString()
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "level",
+                                                            IsRequired = false,
+                                                            Name = "level",
+                                                            Label = "سطح در زنجیره",
+                                                            Options = chainLevels
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.ToString(),
+                                                            Text = x.ToString()
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+                            <label class="form-label">سری ساخت</label>
+                            <input id="batchNumber" name="batchNumber" class="form-control bg-warning-subtle" style="max-height: 3rem;"/>
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableMultiSelect/_SearchableMultiSelect",
+                                                        new SearchableMultiSelectModel
+                                                        {
+                                                            Id = "storeId",
+                                                            Name = "storeId",
+                                                            Label = "انبار‌ها",
+                                                            Options = stores
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.StoreId.ToString(),
+                                                            Text = x.FullName
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "sourceId",
+                                                            Name = "sourceId",
+                                                            Label = "منبع",
+                                                            Options = sources
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.SourceId.ToString(),
+                                                            Text = x.FullName
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "manufacturerId",
+                                                            Name = "manufacturerId",
+                                                            Label = "سازنده",
+                                                            Options = manufacturers
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.ManufacturerId.ToString(),
+                                                            Text = x.FullName
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "vvmtypeId",
+                                                            Name = "vvmtypeId",
+                                                            Label = "نوع VVM",
+                                                            Options = vvmtypes
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.VvmtypeId.ToString(),
+                                                            Text = x.FullName
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "vvmstageId",
+                                                            Name = "vvmstageId",
+                                                            Label = "مرحله VVM",
+                                                            Options = vvmstages
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.VvmstageId.ToString(),
+                                                            Text = x.FullName
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+                        <div class="col-md-8 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "commercialNameId",
+                                                            Name = "commercialNameId",
+                                                            Label = "نام تجاری",
+                                                            Options = commercialNames
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.CommercialNameId.ToString(),
+                                                            Text = x.FullName
+                                                        }).ToList()
+                                                        })
+                        </div>
+
+
+                        <div class="col-md-4 input-sec">
+                            <label class="form-label">تاریخ تولید</label>
+                            <input id="fromDate" class="form-control bg-warning-subtle" style="max-height: 3rem;" />
+                            <input type="hidden" id="fromDateEn" name="productinDate" />
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+                            <label class="form-label">تاریخ انقضا</label>
+                            <input id="toDate" class="form-control bg-warning-subtle" style="max-height: 3rem;" />
+                            <input type="hidden" id="toDateEn" name="expiryDate" />
+                        </div>
+
+                        <div class="col-md-4 input-sec" style="height: 8rem; display: flex; align-items: center; gap: 1.5rem; padding: 1rem;">
+                            <input type="checkbox" class="big-checkbox" name="AllSubRecipientStocks" value="true" />
+                            <label>تمام انبار های زیر مجموعه</label>
+                            <input type="hidden" name="AllSubRecipientStocks" value="false" />
+                        </div>
+                    </div>
+
+                    <div class="text-start mt-3" style="margin-top: 1rem; margin-right: 0px;">
+                        <button type="submit" class="btn btn-primary search-button" name="reportType" value="detail" disabled>
+                            <i class="fa fa-search"></i> جزئیات گزارش
+                        </button>
+                        <button type="submit" class="btn btn-primary search-button" name="reportType" value="summary" disabled>
+                            <i class="fa fa-search"></i> خلاصه گزارش
+                        </button>
+                        <button type="submit" class="btn btn-primary search-button" name="reportType" value="summaryWithDosePerVial" disabled>
+                            <i class="fa fa-search"></i> خلاصه گزارش با دوز بر ویال
+                        </button>
+                        <button type="submit" class="btn btn-primary search-button" name="reportType" value="quantitySummary" disabled>
+                            <i class="fa fa-search"></i> گزارش خلاصه موجودی
+                        </button>
+
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/persian-date.js"></script>
+    <script src="~/js/persian-datepicker.js"></script>
+    <script src="~/js/components/reports/available-quantity.js"></script>
+}

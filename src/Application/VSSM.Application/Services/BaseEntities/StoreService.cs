@@ -213,5 +213,11 @@ namespace VSSM.Application.Services.BaseEntities
                 }
             ).ToListAsync(cancellationToken);
         }
+
+        public async Task<string> GetStoreNamesAsync(List<int> storeIds)
+        {
+            var stores = await _db.TblStores.Where(t => storeIds.Contains(t.StoreId)).Select(s => s.Name).ToListAsync();
+            return string.Join(" - ", stores);
+        }
     }
 }

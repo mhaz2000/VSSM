@@ -229,5 +229,11 @@ namespace VSSM.Application.Services.BaseEntities
             return items;
 
         }
+
+        public async Task<string> GetItemNamesAsync(List<int> itemIds)
+        {
+            var items = await _dbContext.TblItems.Where(t => itemIds.Contains(t.ItemId)).Select(s => s.FullName).ToListAsync();
+            return string.Join(" - ", items);
+        }
     }
 }

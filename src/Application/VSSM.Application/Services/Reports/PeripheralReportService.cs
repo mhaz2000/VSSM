@@ -23,13 +23,13 @@ namespace VSSM.Application.Services.Reports
                         join vs in _context.TblVvmstages on ids.VvmstageId equals vs.VvmstageId
                         join cn in _context.TblCommercialNames on id.CommercialNameId equals cn.CommercialNameId
                         join dpv in _context.TblDosePerVials on id.DosePerVialId equals dpv.DosePerVialId
-                        group new { i, id, s } by new
+                        group new { i, /*id, s*/ } by new
                         {
                             i.ItemId,
-                            id.BatchNumber,
-                            s.StoreId
+                            //id.BatchNumber,
+                            //s.StoreId
                         } into g
-                        select new
+                        select new 
                         {
 
                         };

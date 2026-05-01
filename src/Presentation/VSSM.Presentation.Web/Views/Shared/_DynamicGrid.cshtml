@@ -5,6 +5,8 @@
     <table class="dynamic-grid table table-bordered table-hover">
     <thead>
         <tr>
+            <th class="row-col">#</th>
+
             @foreach (var column in Model.Columns)
             {
                 <th>
@@ -28,9 +30,16 @@
     </thead>
 
 <tbody>
+@{
+    int rowIndex = (Model.Data.PageNumber - 1) * Model.Data.PageSize + 1;
+}
 @foreach (var item in Model.Data.Items)
 {
     <tr>
+        <td>@rowIndex</td>
+                    @{
+                        rowIndex++;
+                    }
         @foreach (var column in Model.Columns)
         {
             if (column.IsActionColumn)

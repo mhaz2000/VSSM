@@ -1,18 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using System.Threading;
-using VSSM.Application.Common.Extensions;
+﻿using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Item;
-using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Shared;
-using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.Item;
-using VSSM.Presentation.Web.Models.ItemClass;
 
 namespace VSSM.Presentation.Web.Controllers
 {

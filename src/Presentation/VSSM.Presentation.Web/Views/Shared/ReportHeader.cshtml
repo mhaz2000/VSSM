@@ -1,0 +1,65 @@
+﻿<style>
+    .report-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        border-bottom: 1px solid #ddd;
+        padding: 15px 0;
+    }
+
+        .report-container img {
+            max-height: 80px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .report-container h2 {
+            margin: 5px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .report-container h3 {
+            margin: 5px 0;
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        .report-container span {
+            display: block;
+            margin-top: 5px;
+            font-size: 13px;
+            color: #555;
+        }
+
+    .report-right-side{
+        text-align: right;
+    }
+
+    .report-left-side {
+        text-align: left;
+    }
+
+    .report-middle-side {
+        text-align: center;
+    }
+</style>
+
+
+<div class="report-container">
+    <div class="report-right-side">
+        <img src="~/img/New-VSSMLogo.png" alt="VSSM Logo" />
+        <div>تاریخ @DateTime.Now.ToShortDateString()</div>
+        <div>Time @DateTime.Now.Hour:@DateTime.Now.Minute</div>
+    </div>
+    <div class="report-middle-side">
+        <h2>Web-based Vaccination Supplies Stock Management</h2>
+        <h3>وزارت بهداشت، درمان و آموزش پزشکی - مرکز مدیریت بیماری‌ها</h3>
+        <span style="margin-top: 1rem;">@ViewBag.CurrentUserName</span>
+    </div>
+    <div class="report-left-side">
+        <img src="~/img/VSSMLogo.gif" alt="VSSM Logo" />
+
+    </div>
+</div>

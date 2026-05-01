@@ -1,0 +1,72 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@model SearchableMultiSelectModel
+
+<div class="ms-wrapper">
+    <label class="form-label">
+        @Model.Label
+        @if (Model.IsRequired)
+        {
+            <span class="form-mandatory">(اجباری)</span>
+        }
+    </label>
+
+    <input type="hidden"
+           id="@Model.Id"
+           name="@Model.Name"
+           value="@string.Join(",", Model.SelectedValues)" />
+
+    <div class="ms-control">
+        <div class="ms-display form-select d-flex justify-content-between align-items-center" style="padding: 14px !important; max-height: 3rem;">
+            <div class="ms-tags d-flex flex-wrap">
+                @if (Model.SelectedValues.Any())
+                {
+                    foreach (var val in Model.SelectedValues)
+                    {
+                        var text = Model.Options.FirstOrDefault(x => x.Value == val)?.Text;
+                        if (text != null)
+                        {
+                            <span class="ms-tag" data-value="@val">
+                                @text <i class="fa fa-times ms-remove-tag"></i>
+                            </span>
+                        }
+                    }
+                }
+                else
+                {
+                    <span class="ms-placeholder">@Model.DefaultText</span>
+                }
+            </div>
+
+            <i class="fa fa-chevron-down ms-caret"></i>
+        </div>
+
+        <div class="ms-dropdown">
+            <input type="text"
+                   class="ms-search form-control"
+                   placeholder="جستجو..." />
+
+            <div class="ms-options">
+            
+                <!-- Select All Option -->
+                <div class="ms-option ms-select-all" data-value="__all__">
+                    <input type="checkbox" />
+                    انتخاب همه
+                </div>
+            
+                <hr style="margin: 5px" />
+            
+                @foreach (var item in Model.Options)
+                {
+                    var isSelected = Model.SelectedValues.Contains(item.Value);
+                    <div class="ms-option @(isSelected ? "selected" : "")"
+                         data-value="@item.Value">
+                        <input type="checkbox" @(isSelected ? "checked" : "") />
+                        @item.Text
+                    </div>
+            
+                    <hr style="margin: 5px" />
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -56,6 +56,33 @@
 
 </style>
 
+@functions {
+    string BuildPageUrl(int page, int pageSize, ViewContext viewContext)
+    {
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(
+            viewContext.HttpContext.Request.QueryString.Value ?? ""
+        );
+
+        var dict = new Dictionary<string, string>();
+
+        // Copy existing query params
+        foreach (var item in query)
+        {
+            dict[item.Key] = item.Value;
+        }
+
+        // Override pagination params
+        dict["pageNumber"] = page.ToString();
+        dict["pageSize"] = pageSize.ToString();
+
+        var path = viewContext.HttpContext.Request.Path;
+        var qs = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(path, dict);
+
+        return qs;
+    }
+}
+
+
 @{
     var data = Model.Data;
 
@@ -70,51 +97,106 @@
 }
 
 <nav class="custom-pagination">
-
-    <!-- Range Info -->
     <div class="pagination-info">
         @startItem-@endItem از @data.TotalCount
     </div>
 
-    <!-- Navigation Buttons -->
     <div class="pagination-controls">
-
-        <a class="pagination-btn @(currentPage == 1 ? "disabled" : "")"
-           href="?pageNumber=1
-                  &pageSize=@data.PageSize
-                  &search=@Model.Search
-                  &sort=@Model.Sort
-                  &direction=@Model.Direction">
-            |<
-        </a>
-
-        <a class="pagination-btn @(currentPage == 1 ? "disabled" : "")"
-           href="?pageNumber=@(currentPage - 1)
-                  &pageSize=@data.PageSize
-                  &search=@Model.Search
-                  &sort=@Model.Sort
-                  &direction=@Model.Direction">
-            <
-        </a>
-
-        <a class="pagination-btn @(currentPage >= totalPages ? "disabled" : "")"
-           href="?pageNumber=@(currentPage + 1)
-                  &pageSize=@data.PageSize
-                  &search=@Model.Search
-                  &sort=@Model.Sort
-                  &direction=@Model.Direction">
-            >
-        </a>
-
-        <a class="pagination-btn @(currentPage >= totalPages ? "disabled" : "")"
-           href="?pageNumber=@totalPages
-                  &pageSize=@data.PageSize
-                  &search=@Model.Search
-                  &sort=@Model.Sort
-                  &direction=@Model.Direction">
-            >|
-        </a>
-
+        @* Helper to render either a Link or a JS-Button *@
+        @foreach (var p in new[] {
+                new { Label = "|<", Page = 1, Disabled = currentPage == 1 },
+                new { Label = "<", Page = currentPage - 1, Disabled = currentPage == 1 },
+                new { Label = ">", Page = currentPage + 1, Disabled = currentPage >= totalPages },
+                new { Label = ">|", Page = totalPages, Disabled = currentPage >= totalPages }
+                })
+        {
+            if (ViewBag.IsPost == true)
+            {
+                @* POST VERSION: Uses onclick *@
+                <button type="button"
+                        class="pagination-btn @(p.Disabled ? "disabled" : "")"
+                        onclick="submitPagination(@p.Page)">
+                    @p.Label
+                </button>
+            }
+            else
+            {
+                @* GET VERSION: Uses href *@
+                <a class="pagination-btn @(p.Disabled ? "disabled" : "")"
+                   href="@BuildPageUrl(p.Page, data.PageSize, ViewContext)">
+                    @p.Label
+                </a>
+            }
+        }
     </div>
-
 </nav>
+
+@if (ViewBag.IsPost == true)
+{
+    <script>
+                function submitPagination(pageNum) {
+
+            const form = document.querySelector('form');
+            if (!form) {
+                console.error("No form found for POST pagination.");
+                return;
+            }
+
+            // --- Page number ---
+            let pageInput = form.querySelector('input[name="pageNumber"]');
+            if (!pageInput) {
+                pageInput = document.createElement('input');
+                pageInput.type = 'hidden';
+                pageInput.name = 'pageNumber';
+                form.appendChild(pageInput);
+            }
+            pageInput.value = pageNum;
+
+            // --- Page size ---
+            let sizeInput = form.querySelector('input[name="pageSize"]');
+            if (!sizeInput) {
+                sizeInput = document.createElement('input');
+                sizeInput.type = 'hidden';
+                sizeInput.name = 'pageSize';
+                form.appendChild(sizeInput);
+            }
+            sizeInput.value = '@data.PageSize';
+
+            // --- Additional param from controller ---
+                   @if (ViewBag.AdditionalParam != null)
+        {
+                string raw = ViewBag.AdditionalParam.ToString();
+                var pairs = raw.Split('&');
+
+                foreach (var p in pairs)
+                {
+                        if (string.IsNullOrWhiteSpace(p)) { continue; }
+
+                        var parts = p.Split('=');
+                        var key = parts[0];
+                        var value = parts.Length > 1 ? parts[1] : "";
+
+                        <text>
+                            (function() {
+                                let extra = form.querySelector('input[name="@key"]');
+                                if (!extra) {
+                                    extra = document.createElement('input');
+                                    extra.type = 'hidden';
+                                    extra.name = '@key';
+                                    form.appendChild(extra);
+                                }
+                                extra.value = '@value';
+                            })();
+                        </text>
+                }
+        }
+
+
+            // Always POST
+            form.method = 'post';
+            form.submit();
+        }
+
+    </script>
+}
+

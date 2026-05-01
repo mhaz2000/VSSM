@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddServiceCollectionExtension(builder.Configuration);
 
+builder.Services.AddMemoryCache();
 
 if (builder.Environment.IsDevelopment())
 {

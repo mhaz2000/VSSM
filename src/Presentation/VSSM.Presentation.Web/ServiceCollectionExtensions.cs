@@ -110,6 +110,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IAdjustmentService, AdjustmentService>();
             services.AddScoped<IValidator<AdjustmentDto>, AdjustmentDtoValidator>();
             services.AddScoped<IDispatchService, DispatchService>();
+            services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IItemDetailStoreService, ItemDetailStoreService>();
             services.AddScoped<IRequestService, RequestService>();
             services.AddScoped<IRoleService, RoleService>();

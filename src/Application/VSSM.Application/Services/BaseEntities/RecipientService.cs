@@ -252,5 +252,22 @@ namespace VSSM.Application.Services.BaseEntities
 
             return recipients;
         }
+
+        public async Task<List<RecipientGetDto>> GetActiveRecipientChildren(int currentRecipientId, CancellationToken token)
+        {
+            var recipients = await _db.TblRecipients
+                .AsNoTracking()
+                .Where(recipient => currentRecipientId == recipient.ParentId && recipient.IsActive == true)
+                .Select(recipient => new RecipientGetDto()
+                {
+                    ChainLevel = recipient.ChainLevel,
+                    RecipientId = recipient.RecipientId,
+                    Code = recipient.Code,
+                    FullName = recipient.FullName,
+                    IsActive = recipient.IsActive ?? false,
+                }).ToListAsync(token);
+
+            return recipients;
+        }
     }
 }

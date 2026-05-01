@@ -28,3 +28,27 @@
 .grid-actions .action-btn {
     font-size: 1.3rem;
 }
+
+.row-col{
+    width: 2.5rem;
+}
+.group-section {
+    margin-bottom: 30px;
+    border: 1px solid #e4e5e6;
+    border-radius: 15px;
+    padding: 15px;
+    background: #fdfdfd;
+}
+
+.group-meta {
+    padding: 10px 15px;
+    background: #f4f6f9;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.meta-row {
+    display: inline-block;
+    margin-right: 25px;
+    font-size: 14px;
+}

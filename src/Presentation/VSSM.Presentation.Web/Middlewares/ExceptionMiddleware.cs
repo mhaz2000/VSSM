@@ -24,7 +24,6 @@ public class ExceptionMiddleware
         {
             _logger.LogError(ex, "Unhandled exception occurred.");
 
-            // اگر درخواست API بود JSON بده
             if (context.Request.Path.StartsWithSegments("/api"))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

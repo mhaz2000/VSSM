@@ -8,6 +8,6 @@
 
         public int DoseId { get; set; }
 
-        public float VialPerDoseCm3 { get; set; }
+        public float? VialPerDoseCm3 { get; set; }
     }
 }

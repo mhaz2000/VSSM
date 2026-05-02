@@ -1,23 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Mono.TextTemplating;
-using System.Threading;
-using System.Threading.Tasks;
-using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.DTOs.BaseEntities.Reports;
-using VSSM.Application.DTOs.Reports;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
+using VSSM.Application.Services.ExcelGenerators;
 using VSSM.Application.Shared;
-using VSSM.Domain.Entities;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
     public class CurrentStockReportController(IReportService _reportService,
         IItemClassService _itemClassService,
+        ICurrentStockReportExcelGenerator _reportExcelGenerator,
         IItemService _itemService,
         IStoreService _storeService,
         ISourceService _sourceService,
@@ -62,20 +57,21 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "ItemName",
             string direction = "asc",
+            bool toExcel = false,
             string? reportId = null)
         {
             ViewBag.IsPost = true;
             if (reportType == "detail")
-                return await AvailableQuantityDetailReport(inputModel, pageNumber, pageSize, sort, direction, reportId);
+                return await AvailableQuantityDetailReport(inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId);
 
             if (reportType == "summary")
-                return await AvailableQuantitySummaryReport(inputModel, pageNumber, pageSize, sort, direction, reportId);
+                return await AvailableQuantitySummaryReport(inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId);
 
             if (reportType == "summaryWithDosePerVial")
-                return await AvailableQuantitySummaryWithDosePerVialReport(inputModel, pageNumber, pageSize, sort, direction, reportId);
+                return await AvailableQuantitySummaryWithDosePerVialReport(inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId);
 
             if (reportType == "quantitySummary")
-                return await AvailableQuantityQuantitySummaryWithDosePerVialReport(inputModel, pageNumber, pageSize, sort, direction, reportId);
+                return await AvailableQuantityQuantitySummaryWithDosePerVialReport(inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId);
 
             return View(null);
         }
@@ -86,6 +82,7 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "ItemName",
             string direction = "asc",
+            bool toExcel = false,
             string? reportId = null,
             CancellationToken cancellationToken = default)
         {
@@ -102,6 +99,22 @@ namespace VSSM.Presentation.Web.Controllers
 
             _cache.Set<AvailableQuantityReportQuery>(reportId, inputModel, TimeSpan.FromDays(1));
 
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetAvailableQuantityQuantitySummaryReportAsync(inputModel, CurrentUserRecipientId.Value,
+                    pageNumber,
+                    pageSize,
+                    sort,
+                    direction,
+                    true,
+                    cancellationToken);
+
+                MemoryStream stream = _reportExcelGenerator.AvailableQuantityQuantitySummaryReportExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "مقدار موجود - خلاصه گزارش.xlsx");
+            }
+
             await SetStoresAndItemsViewBagAsync(inputModel.StoreId, inputModel.ItemId, cancellationToken);
 
             var (data, count) = await _reportService.GetAvailableQuantityQuantitySummaryReportAsync(inputModel, CurrentUserRecipientId.Value,
@@ -109,6 +122,7 @@ namespace VSSM.Presentation.Web.Controllers
                 pageSize,
                 sort,
                 direction,
+                false,
                 cancellationToken);
 
             var model = new GridViewModel
@@ -143,6 +157,7 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "ItemName",
             string direction = "asc",
+            bool toExcel = false,
             string? reportId = null,
             CancellationToken cancellationToken = default)
         {
@@ -159,6 +174,22 @@ namespace VSSM.Presentation.Web.Controllers
 
             _cache.Set<AvailableQuantityReportQuery>(reportId, inputModel, TimeSpan.FromDays(1));
 
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetAvailableQuantitySummaryWithDosePerVialReportAsync(inputModel, CurrentUserRecipientId.Value,
+                    pageNumber,
+                    pageSize,
+                    sort,
+                    direction,
+                    true,
+                    cancellationToken);
+
+                MemoryStream stream = _reportExcelGenerator.AvailableQuantitySummaryWithDosePerVialReportExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "مقدار موجود - خلاصه گزارش با دوز بر ویال.xlsx");
+            }
+
             await SetStoresAndItemsViewBagAsync(inputModel.StoreId, inputModel.ItemId, cancellationToken);
 
             var (data, count) = await _reportService.GetAvailableQuantitySummaryWithDosePerVialReportAsync(inputModel, CurrentUserRecipientId.Value,
@@ -166,6 +197,7 @@ namespace VSSM.Presentation.Web.Controllers
                 pageSize,
                 sort,
                 direction,
+                false,
                 cancellationToken);
 
             var model = new GridViewModel
@@ -197,6 +229,7 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "ItemName",
             string direction = "asc",
+            bool toExcel = false,
             string? reportId = null,
             CancellationToken cancellationToken = default)
         {
@@ -213,6 +246,22 @@ namespace VSSM.Presentation.Web.Controllers
 
             _cache.Set<AvailableQuantityReportQuery>(reportId, inputModel, TimeSpan.FromDays(1));
 
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetAvailableQuantitySummaryReportAsync(inputModel, CurrentUserRecipientId.Value,
+                    pageNumber,
+                    pageSize,
+                    sort,
+                    direction,
+                    true,
+                    cancellationToken);
+
+                MemoryStream stream = _reportExcelGenerator.AvailableQuantitySummaryReportExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "مقدار موجود - گزارش خلاصه موجودی.xlsx");
+            }
+
             await SetStoresAndItemsViewBagAsync(inputModel.StoreId, inputModel.ItemId, cancellationToken);
 
             var (data, count) = await _reportService.GetAvailableQuantitySummaryReportAsync(inputModel, CurrentUserRecipientId.Value,
@@ -220,6 +269,7 @@ namespace VSSM.Presentation.Web.Controllers
                 pageSize,
                 sort,
                 direction,
+                false,
                 cancellationToken);
 
             var model = new GridViewModel
@@ -250,6 +300,7 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "ItemName",
             string direction = "asc",
+            bool toExcel = false,
             string? reportId = null,
             CancellationToken cancellationToken = default)
         {
@@ -266,6 +317,22 @@ namespace VSSM.Presentation.Web.Controllers
 
             _cache.Set<AvailableQuantityReportQuery>(reportId, inputModel, TimeSpan.FromDays(1));
 
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetAvailableQuantityDetailReportAsync(inputModel, CurrentUserRecipientId.Value,
+                    pageNumber,
+                    pageSize,
+                    sort,
+                    direction,
+                    true,
+                    cancellationToken);
+
+                MemoryStream stream = _reportExcelGenerator.AvailableQuantityDetailReportExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "مقدار موجود - جزئیات گزارش.xlsx");
+            }
+
             await SetStoresAndItemsViewBagAsync(inputModel.StoreId, inputModel.ItemId, cancellationToken);
 
             var (data, count) = await _reportService.GetAvailableQuantityDetailReportAsync(inputModel, CurrentUserRecipientId.Value,
@@ -273,7 +340,9 @@ namespace VSSM.Presentation.Web.Controllers
                 pageSize,
                 sort,
                 direction,
+                false,
                 cancellationToken);
+
 
             var model = new GroupedGridViewModel<object, object>
             {
@@ -294,9 +363,9 @@ namespace VSSM.Presentation.Web.Controllers
                     new() { Header = "روزهای مانده به انقضا", PropertyName = nameof(AvailableQuantityDetailDto.DaysToBeExpired) },
                     new() { Header = "تعداد", PropertyName = nameof(AvailableQuantityDetailDto.CurrentStock) },
                     new() { Header = "دوز بر ویال", PropertyName = nameof(AvailableQuantityDetailDto.DoesPerVial) },
-                    new() { Header = "انبار", PropertyName = nameof(AvailableQuantityDetailDto.Store) },
+                    new() { Header = "انبار", PropertyName = nameof(AvailableQuantityDetailDto.Stock) },
                     new() { Header = "گیرنده", PropertyName = nameof(AvailableQuantityDetailDto.Recipient) },
-                    new() { Header = "تاریخ تولید", PropertyName = nameof(AvailableQuantityDetailDto.ExpiryDate) },
+                    new() { Header = "تاریخ تولید", PropertyName = nameof(AvailableQuantityDetailDto.ProductionDateText) },
                     new() { Header = "نام تجاری", PropertyName = nameof(AvailableQuantityDetailDto.CommercialName) },
                     new() { Header = "نوع VVM", PropertyName = nameof(AvailableQuantityDetailDto.Vvmtype) },
                     new() { Header = "مرحله VVM", PropertyName = nameof(AvailableQuantityDetailDto.Vvmstage) },
@@ -360,6 +429,7 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "ItemName",
             string direction = "asc",
+            bool toExcel = false,
             CancellationToken cancellationToken = default)
         {
 
@@ -373,8 +443,31 @@ namespace VSSM.Presentation.Web.Controllers
                 sort,
                 direction,
                 CurrentUserRecipientId!.Value,
+                false,
                 cancellationToken
             );
+
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetInventoryQuantitiesAsync(
+                itemClassId,
+                itemId,
+                sourceId,
+                storeId,
+                pageNumber,
+                pageSize,
+                sort,
+                direction,
+                CurrentUserRecipientId!.Value,
+                true,
+                cancellationToken
+                );
+
+                MemoryStream stream = _reportExcelGenerator.PhysicalInventoryExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "PhysicalInventoryReport.xlsx");
+            }
 
             var model = new GridViewModel
             {
@@ -423,6 +516,7 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "Reciever",
             string direction = "asc",
+            bool toExcel = false,
             CancellationToken cancellationToken = default)
         {
 
@@ -435,8 +529,31 @@ namespace VSSM.Presentation.Web.Controllers
                 pageSize,
                 sort,
                 direction,
+                false,
                 cancellationToken
             );
+
+
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetNotDispatchedToRecipientsAsync(
+                    itemId,
+                    fiscalPeriodId,
+                    fromDate,
+                    toDate,
+                    pageNumber,
+                    pageSize,
+                    sort,
+                    direction,
+                    true,
+                    cancellationToken
+                );
+
+                MemoryStream stream = _reportExcelGenerator.NotDispatchedToRecipientsExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "ZeroDispatchReport.xlsx");
+            }
 
             var model = new GridViewModel
             {
@@ -497,6 +614,7 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "Reciever",
             string direction = "asc",
+            bool toExcel = false,
             CancellationToken cancellationToken = default)
         {
 
@@ -510,8 +628,31 @@ namespace VSSM.Presentation.Web.Controllers
                 pageSize,
                 sort,
                 direction,
+                false,
                 cancellationToken
             );
+
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetItemForRecipientInYear(
+                    CurrentUserRecipientId.Value,
+                    itemId,
+                    int.Parse(year),
+                    string.IsNullOrEmpty(level) ? null : int.Parse(level),
+                    recipientId,
+                    pageNumber,
+                    pageSize,
+                    sort,
+                    direction,
+                    true,
+                    cancellationToken
+                );
+
+                MemoryStream stream = _reportExcelGenerator.ItemForRecipientInYearExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "گزارش کالا برای گیرندگان در سال.xlsx");
+            }
 
             var model = new GridViewModel
             {
@@ -564,6 +705,7 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "ItemName",
             string direction = "asc",
+            bool toExcel = false,
             CancellationToken cancellationToken = default)
         {
 
@@ -574,8 +716,29 @@ namespace VSSM.Presentation.Web.Controllers
                 pageSize,
                 sort,
                 direction,
+                false,
                 cancellationToken
             );
+
+
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetOutOfStockItems(
+                    CurrentUserRecipientId.Value,
+                    itemClassId,
+                    pageNumber,
+                    pageSize,
+                    sort,
+                    direction,
+                    true,
+                    cancellationToken
+                );
+
+                MemoryStream stream = _reportExcelGenerator.OutOfStockItemsExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "zeroStock.xlsx");
+            }
 
             var model = new GridViewModel
             {
@@ -616,6 +779,7 @@ namespace VSSM.Presentation.Web.Controllers
             int pageSize = 20,
             string sort = "Recipient",
             string direction = "asc",
+            bool toExcel = false,
             CancellationToken cancellationToken = default)
         {
             var itemDetail = await _reportService.GetItemIndicatorDetail(CurrentUserRecipientId.Value, itemId, batchNumber);
@@ -633,8 +797,29 @@ namespace VSSM.Presentation.Web.Controllers
                 pageSize,
                 sort,
                 direction,
+                false,
                 cancellationToken
             );
+
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetItemIndicator(
+                    CurrentUserRecipientId.Value,
+                    itemId,
+                    batchNumber,
+                    pageNumber,
+                    pageSize,
+                    sort,
+                    direction,
+                    true,
+                    cancellationToken
+                );
+
+                MemoryStream stream = _reportExcelGenerator.ItemIndicatorExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "گزارش اندیکاتور.xlsx");
+            }
 
             var model = new GridViewModel
             {

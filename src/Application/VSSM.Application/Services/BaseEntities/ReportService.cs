@@ -11,7 +11,7 @@ namespace VSSM.Application.Services.BaseEntities
     public class ReportService(VSSMDbContext _context) : IReportService
     {
         public async Task<(List<GroupedAvailableQuantityDetailDto> data, int count)> GetAvailableQuantityDetailReportAsync(AvailableQuantityReportQuery inputModel,
-            int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, CancellationToken cancellationToken)
+            int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
 
@@ -106,7 +106,7 @@ namespace VSSM.Application.Services.BaseEntities
                     ManufacturerName = g.Key.ManufacturerName,
                     ExpiryDate = g.Key.ExpiryDate,
                     DoesPerVial = g.Key.DoesPerVial,
-                    Store = g.Key.StoreName,
+                    Stock = g.Key.StoreName,
                     Recipient = g.Key.Recipient,
                     ProductionDate = g.Key.ProductionDate,
                     CommercialName = g.Key.CommercialName,
@@ -121,7 +121,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             query = query.ApplySorting(sort, direction == "desc");
 
-            var list = await query
+            var list = fetchAll ? await query.ToListAsync() : await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -137,7 +137,7 @@ namespace VSSM.Application.Services.BaseEntities
                     },
                     Details = g.Select(d => new AvailableQuantityDetailDto()
                     {
-                        Store = d.Store,
+                        Stock = d.Stock,
                         Vvmtype = d.Vvmtype,
                         Vvmstage = d.Vvmstage,
                         BatchNumber = d.BatchNumber,
@@ -157,7 +157,7 @@ namespace VSSM.Application.Services.BaseEntities
         }
 
         public async Task<(List<AvailableQuantityQuantitySummaryDto> data, int count)> GetAvailableQuantityQuantitySummaryReportAsync(AvailableQuantityReportQuery inputModel,
-            int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, CancellationToken cancellationToken)
+            int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
 
@@ -229,6 +229,9 @@ namespace VSSM.Application.Services.BaseEntities
 
             query = query.ApplySorting(sort, direction == "desc");
 
+            if (fetchAll)
+                return (await query.ToListAsync(), 0);
+
             return (await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -236,7 +239,7 @@ namespace VSSM.Application.Services.BaseEntities
         }
 
         public async Task<(List<AvailableQuantitySummaryDto> data, int count)> GetAvailableQuantitySummaryReportAsync(AvailableQuantityReportQuery inputModel,
-            int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, CancellationToken cancellationToken)
+            int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
 
@@ -300,6 +303,10 @@ namespace VSSM.Application.Services.BaseEntities
 
             query = query.ApplySorting(sort, direction == "desc");
 
+
+            if (fetchAll)
+                return (await query.ToListAsync(), 0);
+
             return (await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -307,7 +314,7 @@ namespace VSSM.Application.Services.BaseEntities
         }
 
         public async Task<(List<AvailableQuantitySummaryWithDosePerVialDto> data, int count)> GetAvailableQuantitySummaryWithDosePerVialReportAsync(AvailableQuantityReportQuery inputModel,
-            int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, CancellationToken cancellationToken)
+            int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
 
@@ -374,6 +381,10 @@ namespace VSSM.Application.Services.BaseEntities
 
             query = query.ApplySorting(sort, direction == "desc");
 
+
+            if (fetchAll)
+                return (await query.ToListAsync(), 0);
+
             return (await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -384,7 +395,7 @@ namespace VSSM.Application.Services.BaseEntities
 
         public async Task<(List<InventoryQuantityReportDto> data, int count)> GetInventoryQuantitiesAsync(long? itemClassId,
             long? itemId, long? sourceId, long? storeId, int pageNumber, int pageSize, string sort,
-            string direction, int recipientId, CancellationToken cancellationToken)
+            string direction, int recipientId, bool fetchAll, CancellationToken cancellationToken)
         {
 
             var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
@@ -435,6 +446,9 @@ namespace VSSM.Application.Services.BaseEntities
 
             query = query.ApplySorting(sort, direction == "desc");
 
+            if (fetchAll)
+                return (await query.ToListAsync(), 0);
+
             return (await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -442,7 +456,7 @@ namespace VSSM.Application.Services.BaseEntities
         }
 
         public async Task<(List<ItemForRecipientInYearDto> data, int count)> GetItemForRecipientInYear(int currentRecipientId, long? itemId, int? year,
-            int? level, int? recipentId, int pageNumber, int pageSize, string sort, string direction, CancellationToken cancellationToken)
+            int? level, int? recipentId, int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
         {
             var arrivals = _context.TblArrivals.Where(t => t.Date != null && t.Date.Value.Year == year);
             var reciepients = recipentId is null ? _context.TblRecipients : _context.TblRecipients.Where(t => t.RecipientId == recipentId);
@@ -481,12 +495,12 @@ namespace VSSM.Application.Services.BaseEntities
 
             query = query.ApplySorting(sort, direction == "desc");
 
-            var pageData = await query
+            var pageData = fetchAll ? await query.ToListAsync() : await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            if (isLastPage)
+            if (isLastPage || fetchAll)
             {
                 var totalRow = new ItemForRecipientInYearDto
                 {
@@ -515,7 +529,7 @@ namespace VSSM.Application.Services.BaseEntities
         }
 
         public async Task<(List<ItemIndicatorDto> data, int count)> GetItemIndicator(int currentRecipientId, int? itemId, string batchNumber, int pageNumber,
-            int pageSize, string sort, string direction, CancellationToken cancellationToken)
+            int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
         {
             var dispatchQuery = from d in _context.TblDispatches
                                 join r in _context.TblRecipients on d.ReceiverId equals r.RecipientId
@@ -560,6 +574,9 @@ namespace VSSM.Application.Services.BaseEntities
 
             query = query.ApplySorting(sort, direction == "desc");
 
+            if (fetchAll)
+                return (await query.ToListAsync(), 0);
+
             return (await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -588,7 +605,7 @@ namespace VSSM.Application.Services.BaseEntities
 
         public async Task<(List<NotDispatchedToRecipientsDto> data, int count)> GetNotDispatchedToRecipientsAsync(long? itemId,
             long? fiscalPeriodId, string? fromDate, string? toDate, int pageNumber, int pageSize, string sort,
-            string direction, CancellationToken cancellationToken)
+            string direction, bool fetchAll, CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
 
@@ -613,14 +630,17 @@ namespace VSSM.Application.Services.BaseEntities
 
             query = query.ApplySorting(sort, direction == "desc");
 
+            if (fetchAll)
+                return (await query.ToListAsync(), 0);
+
             return (await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(), total);
         }
 
-        public async Task<(List<OutOfStockItemsDto>, int count)> GetOutOfStockItems(int currentRecipientId, int? itemClassId, int pageNumber,
-            int pageSize, string sort, string direction, CancellationToken cancellationToken)
+        public async Task<(List<OutOfStockItemsDto> data, int count)> GetOutOfStockItems(int currentRecipientId, int? itemClassId, int pageNumber,
+            int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
         {
             var nonZeroStockItems = from i in _context.TblItems.Where(t => t.IsActive != null && t.IsActive.Value && t.ItemClassId == itemClassId)
                                     join id in _context.TblItemDetails on i.ItemId equals id.ItemId
@@ -638,14 +658,13 @@ namespace VSSM.Application.Services.BaseEntities
 
             query = query.ApplySorting(sort, direction == "desc");
 
+            if (fetchAll)
+                return (await query.ToListAsync(), 0);
+
             return (await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(), total);
         }
-    
-    
-        
-    
     }
 }

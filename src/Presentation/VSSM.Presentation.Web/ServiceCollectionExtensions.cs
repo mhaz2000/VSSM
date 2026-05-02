@@ -26,6 +26,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces.RequestEntities;
 using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
+using VSSM.Application.Services.ExcelGenerators;
 using VSSM.Application.Services.Reports;
 using VSSM.Application.Services.RequestEntities;
 using VSSM.Infrastructure.Data.Dapper;
@@ -116,6 +117,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMenuService, MenuService>();
 
+            services.AddScoped<ICurrentStockReportExcelGenerator, CurrentStockReportExcelGenerator>();
 
             /*reports services DI*/
             #region reports services DI

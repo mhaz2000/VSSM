@@ -243,6 +243,58 @@ namespace VSSM.Application.Services.ExcelGenerators
             return stream;
         }
 
+        public MemoryStream InventoryHistoryExcel(List<InventoryHistoryDto> data)
+
+        {
+            var stream = new MemoryStream();
+
+            using (var wb = new XLWorkbook())
+            {
+                var ws = wb.Worksheets.Add("تاریخچه موجدی");
+
+                // Right to Left sheet
+                ws.RightToLeft = true;
+
+                // Headers
+                ws.Cell(1, 1).Value = "مقدار در پایان ماه";
+                ws.Cell(1, 2).Value = "سال";
+                ws.Cell(1, 3).Value = "ماه";
+
+                var header = ws.Range(1, 1, 1, 3);
+                header.Style.Font.Bold = true;
+                header.Style.Font.FontSize = 12;
+                header.Style.Fill.BackgroundColor = XLColor.FromHtml("#4472C4");
+                header.Style.Font.FontColor = XLColor.White;
+                header.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                header.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                header.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                header.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                int row = 2;
+
+                foreach (var item in data)
+                {
+                    ws.Cell(row, 1).Value = item.InStock;
+                    ws.Cell(row, 2).Value = item.Year;
+                    ws.Cell(row, 3).Value = item.Month;
+
+                    row++;
+                }
+
+
+                ws.SheetView.FreezeRows(1);
+
+                ws.Columns().AdjustToContents();
+
+                ws.Row(1).Height = 25;
+
+                wb.SaveAs(stream);
+            }
+
+            stream.Position = 0;
+            return stream;
+        }
+
         public MemoryStream ItemForRecipientInYearExcel(List<ItemForRecipientInYearDto> data)
         {
             var stream = new MemoryStream();

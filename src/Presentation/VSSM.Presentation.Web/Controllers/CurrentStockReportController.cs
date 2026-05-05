@@ -690,6 +690,107 @@ namespace VSSM.Presentation.Web.Controllers
 
         #endregion
 
+        #region Inventory History
+
+        public async Task<IActionResult> InventoryHistory(CancellationToken cancellationToken = default)
+        {
+            ViewBag.Items = await _itemService.GetActives(cancellationToken);
+            var recipients = await _recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.Value, cancellationToken);
+            ViewBag.Recipients = recipients;
+
+            var firstChainLevel = recipients.Where(t => t.ChainLevel is not null).OrderBy(t => t.ChainLevel).FirstOrDefault()?.ChainLevel ?? 0;
+            var lastChainLevel = recipients.Where(t => t.ChainLevel is not null).OrderByDescending(t => t.ChainLevel).FirstOrDefault()?.ChainLevel ?? 0;
+
+            List<int> chainLevels = new List<int>();
+            chainLevels = Enumerable.Range(firstChainLevel, lastChainLevel - firstChainLevel + 1).ToList();
+            ViewBag.ChainLevels = chainLevels;
+
+            var fiscalPeriods = await _fiscalPeriodService.GetAllAsListAsync(cancellationToken);
+
+            ViewBag.FiscalPeriods = fiscalPeriods;
+
+            return View(null);
+        }
+
+        public async Task<IActionResult> InventoryHistoryReport(
+        long? itemId,
+        int? fiscalPeriodId,
+        string? level,
+        int? recipientId,
+        string? fromDate,
+        string? toDate,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sort = "Reciever",
+        string direction = "asc",
+        bool toExcel = false,
+        CancellationToken cancellationToken = default)
+        {
+
+            var (data, count) = await _reportService.GetInventoryHistory(
+                CurrentUserRecipientId.Value,
+                itemId,
+                fiscalPeriodId,
+                string.IsNullOrEmpty(level) ? null : int.Parse(level),
+                recipientId,
+                fromDate,
+                toDate,
+                pageNumber,
+                pageSize,
+                sort,
+                direction,
+                false,
+                cancellationToken
+            );
+
+            if (toExcel)
+            {
+                var excelData = await _reportService.GetInventoryHistory(
+                CurrentUserRecipientId.Value,
+                itemId,
+                fiscalPeriodId,
+                string.IsNullOrEmpty(level) ? null : int.Parse(level),
+                recipientId,
+                fromDate,
+                toDate,
+                pageNumber,
+                pageSize,
+                sort,
+                direction,
+                false,
+                cancellationToken
+            );
+
+                MemoryStream stream = _reportExcelGenerator.InventoryHistoryExcel(excelData.data);
+                return File(stream,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "تاریخچه موجودی.xlsx");
+            }
+
+            var model = new GridViewModel
+            {
+                CurrentSort = sort,
+                CurrentDirection = direction,
+                Data = new PagedResult<object>
+                {
+                    Items = data.Cast<object>().ToList(),
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = count
+                },
+                Columns = new List<GridColumn>
+                {
+                    new() { Header = "مقدار در پایان ماه", PropertyName = nameof(InventoryHistoryDto.InStock) },
+                    new() { Header = "سال", PropertyName = nameof(InventoryHistoryDto.Year) },
+                    new() { Header = "ماه", PropertyName = nameof(InventoryHistoryDto.Month) },
+                }
+            };
+
+            return View(model);
+        }
+
+        #endregion
+
         #region  OutOfStockItems
 
         public async Task<IActionResult> OutOfStockItems(CancellationToken cancellationToken = default)

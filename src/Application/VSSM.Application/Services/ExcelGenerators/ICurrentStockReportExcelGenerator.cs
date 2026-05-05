@@ -8,6 +8,7 @@ namespace VSSM.Application.Services.ExcelGenerators
         MemoryStream AvailableQuantityQuantitySummaryReportExcel(List<AvailableQuantityQuantitySummaryDto> data);
         MemoryStream AvailableQuantitySummaryReportExcel(List<AvailableQuantitySummaryDto> data);
         MemoryStream AvailableQuantitySummaryWithDosePerVialReportExcel(List<AvailableQuantitySummaryWithDosePerVialDto> data);
+        MemoryStream InventoryHistoryExcel(List<InventoryHistoryDto> data);
         MemoryStream ItemForRecipientInYearExcel(List<ItemForRecipientInYearDto> data);
         MemoryStream ItemIndicatorExcel(List<ItemIndicatorDto> data);
         MemoryStream NotDispatchedToRecipientsExcel(List<NotDispatchedToRecipientsDto> data);

@@ -1,0 +1,36 @@
+﻿@using Microsoft.AspNetCore.WebUtilities
+@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@{
+    Layout = "~/Views/Shared/_ReportLayout.cshtml";
+}
+
+@{
+    ViewData["Title"] = "تاریخچه موجودی";
+}
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("ReportHeader")
+</div>
+
+<div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+    @{
+        var query = QueryHelpers.ParseQuery(Context.Request.QueryString.ToString());
+
+        query["toExcel"] = "true";
+
+        var newQueryString = QueryHelpers.AddQueryString(
+        Context.Request.Path,
+        query.ToDictionary(k => k.Key, k => k.Value.ToString())
+        );
+    }
+    <a class="btn btn-success" href="@newQueryString">
+        <i class="fas fa-file-excel"></i> خروجی اکسل
+    </a>
+</div>
+
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("_DynamicGrid", Model)
+</div>

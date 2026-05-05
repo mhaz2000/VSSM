@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Reports;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
@@ -391,7 +392,82 @@ namespace VSSM.Application.Services.BaseEntities
                 .ToListAsync(), total);
         }
 
+        public async Task<(List<InventoryHistoryDto> data, int count)> GetInventoryHistory(int currentRecipientId, long? itemId,
+            int? fiscalPeriodId, int? level, int? recipientId, string? fromDate, string? toDate, int pageNumber, int pageSize, string sort,
+            string direction, bool fetchAll, CancellationToken cancellationToken)
+        {
+            var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
 
+            var itemQuery = _context.TblItems.Where(t => t.ItemId == itemId);
+
+            var dispatches = fiscalPeriodId is not null ? _context.TblDispatches.Where(t => t.FiscalPeriodId == fiscalPeriodId) : _context.TblDispatches;
+            var arrivals = fiscalPeriodId is not null ? _context.TblArrivals.Where(t => t.FiscalPeriodId == fiscalPeriodId) : _context.TblArrivals;
+            var reciepients = recipientId is null ? _context.TblRecipients.Where(t => t.ParentId == currentRecipientId) : _context.TblRecipients.Where(t=> t.RecipientId == recipientId);
+            reciepients = level is not null ? reciepients.Where(t => t.ChainLevel == level) : reciepients;
+
+            var query =
+                from a in arrivals
+                join al in _context.TblArrivalLines on a.ArrivalId equals al.ArrivalId
+                join i in itemQuery on al.ItemId equals i.ItemId
+                join r in reciepients on a.ReceiverId equals r.RecipientId
+                join d in dispatches on a.DispatchId equals d.DispatchId into dispatchJoin
+                from d in dispatchJoin.DefaultIfEmpty()
+                join dl in _context.TblDispatchLines on d.DispatchId equals dl.DispatchId into dispatchLineJoin
+                from dl in dispatchLineJoin.DefaultIfEmpty()
+                select new
+                {
+                    ArrivalDate = a.Date,
+                    ArrivalQuantity = al.Quantity,
+                    DispatchDate = d.Date,
+                    DispatchQuantity = dl.Quantity
+                };
+
+            if (!string.IsNullOrEmpty(fromDate))
+            {
+                if (!DateTime.TryParse(fromDate, out DateTime from))
+                    from = DateTimeHelper.ToGregorian(fromDate);
+
+                query = query.Where(x => x.ArrivalDate >= from);
+            }
+
+            if (!string.IsNullOrEmpty(toDate))
+            {
+                if (!DateTime.TryParse(fromDate, out DateTime to))
+                    to = DateTimeHelper.ToGregorian(toDate);
+
+                query = query.Where(x => x.ArrivalDate <= to);
+            }
+
+            var grouped = from q in query
+                          group q by new
+                          {
+                              q.ArrivalDate.Value.Year,
+                              q.ArrivalDate.Value.Month
+                          }
+                          into g
+                          select new InventoryHistoryDto
+                          {
+                              Year = g.Key.Year,
+                              Month = g.Key.Month,
+
+                              InStock = g.Sum(x => x.ArrivalQuantity)
+                                       - g.Sum(x => x.DispatchDate != null ? x.DispatchQuantity : 0) ?? 0
+                          };
+
+            grouped = grouped.OrderBy(t=> t.Year).ThenBy(t=> t.Month).AsNoTracking();
+
+            var total = await grouped.CountAsync();
+
+            grouped = grouped.ApplySorting(sort, direction == "desc");
+
+            if (fetchAll)
+                return (await grouped.ToListAsync(), 0);
+
+            return (await grouped
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(), total);
+        }
 
         public async Task<(List<InventoryQuantityReportDto> data, int count)> GetInventoryQuantitiesAsync(long? itemClassId,
             long? itemId, long? sourceId, long? storeId, int pageNumber, int pageSize, string sort,

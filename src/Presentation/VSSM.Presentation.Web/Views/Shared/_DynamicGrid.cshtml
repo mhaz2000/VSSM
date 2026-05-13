@@ -54,16 +54,29 @@
                     {
                         var routeProp = item.GetType().GetProperty(action.RouteIdProperty);
                         var routeValue = routeProp?.GetValue(item);
+                    
+                        var title = action.DynamicTitle?.Invoke(item) ?? action.Title;
+                    
+                        var controller = action.DynamicController?.Invoke(item) ?? action.Controller;
+                    
+                        var actionName = action.DynamicAction?.Invoke(item) ?? action.Action;
+                    
+                        var iconClass = action.DynamicIconClass?.Invoke(item) ?? action.IconClass;
 
-                        <a asp-controller="@action.Controller"
-                           asp-action="@action.Action"
+                        var iconStyle = action.DynamicIconStyle?.Invoke(item) ?? action.IconStyle;
+                    
+                        var linkClass = action.DynamicLinkClass?.Invoke(item) ?? action.LinkClass;
+                    
+                        <a asp-controller="@controller"
+                           asp-action="@actionName"
                            asp-route-id="@routeValue"
-                           class="action-btn @action.LinkClass"
-                           title="@action.Title">
-
-                            <i class="@action.IconClass"></i>
+                           class="action-btn @linkClass"
+                           title="@title">
+                    
+                            <i class="@iconClass" style="@iconStyle"></i>
                         </a>
                     }
+
                 </td>
             }
             else

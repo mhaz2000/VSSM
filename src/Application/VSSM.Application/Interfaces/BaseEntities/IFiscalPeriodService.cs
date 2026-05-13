@@ -3,7 +3,6 @@ using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
-
 public interface IFiscalPeriodService
 {
     Task<List<FiscalPeriodDto>> GetActives(CancellationToken cancellationToken);

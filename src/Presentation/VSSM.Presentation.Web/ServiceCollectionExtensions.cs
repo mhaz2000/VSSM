@@ -64,6 +64,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IVvmstageService, VvmstageService>();
             services.AddScoped<IDispatchRepConfigService, DispatchRepConfigService>();
             services.AddScoped<IStoreUsageWarningService, StoreUsageWarningService>();
+            services.AddScoped<IOrderInfoService, OrderInfoService>();
             services.AddScoped<IFiscalPeriodService, FiscalPeriodService>();
             services.AddScoped<IRecipientMaxItemService, RecipientMaxItemService>();
             services.AddScoped<IStoreTypeService, StoreTypeService>();

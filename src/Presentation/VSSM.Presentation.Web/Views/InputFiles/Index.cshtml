@@ -1,0 +1,82 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@{
+    ViewData["Title"] = "فایل های ورودی";
+}
+
+<div class="container-fluid">
+
+    <div class="card mt-3">
+        <div class="card-block">
+
+            <div class="grid-wrapper">
+
+                <div class="grid-header mb-4">
+                    <strong style="font-size:1.2rem">@ViewData["Title"]</strong>
+                </div>
+
+                <form asp-controller="InputFiles"
+                      asp-action="Upload"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    <div class="form-group">
+
+                        <label class="mb-2">انتخاب فایل XML</label>
+
+                        <div class="input-group">
+
+                            <input type="file"
+                                   id="xmlFile"
+                                   name="xmlFile"
+                                   class="form-control"
+                                   accept=".xml,text/xml"
+                                   onchange="handleFileSelect(this)" />
+
+                        </div>
+
+                        <small id="fileName" class="text-muted">
+                            هیچ فایلی انتخاب نشده است
+                        </small>
+
+                    </div>
+
+                    <button id="uploadBtn"
+                            type="submit"
+                            class="btn btn-primary mt-3"
+                            disabled>
+                        آپلود فایل
+                    </button>
+
+                </form>
+
+                <div style="margin-top: 1rem;">
+                    @await Html.PartialAsync("_DynamicGrid", Model)
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    function handleFileSelect(input) {
+
+        const button = document.getElementById("uploadBtn");
+        const label = document.getElementById("fileName");
+
+        if (input.files.length > 0) {
+            const file = input.files[0];
+
+            label.textContent = "فایل انتخاب شده: " + file.name;
+            button.disabled = false;
+        }
+        else {
+            label.textContent = "هیچ فایلی انتخاب نشده است";
+            button.disabled = true;
+        }
+    }
+</script>

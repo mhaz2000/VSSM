@@ -19,6 +19,10 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
+    public virtual DbSet<TblOrderInfo> TblOrderInfo { get; set; }
+
+    public virtual DbSet<TblUidInfo> TblUidInfo { get; set; }
+
     public virtual DbSet<RoleMenu> RoleMenus { get; set; }
 
     public virtual DbSet<Sync> Syncs { get; set; }
@@ -1932,6 +1936,114 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.RecpId).HasColumnName("recpID");
             entity.Property(e => e.SyncId).HasColumnName("syncID");
         });
+
+        modelBuilder.Entity<TblOrderInfo>(entity =>
+        {
+            entity.HasKey(e => e.PkOrderInfo);
+
+            entity.ToTable("tblOrderInfo");
+
+            entity.Property(e => e.PkOrderInfo)
+                .HasColumnName("Pk_order_info");
+
+            entity.Property(e => e.NumberOrder)
+                .HasColumnName("Number_order");
+
+            entity.Property(e => e.ManufactureDate)
+                .HasColumnName("Manufacture_date")
+                .HasColumnType("date");
+
+            entity.Property(e => e.ExpirationDate)
+                .HasColumnName("Expiration_date")
+                .HasColumnType("date");
+
+            entity.Property(e => e.Irc)
+                .HasColumnName("IRC")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.BatchNumber)
+                .HasColumnName("Batch_number")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.DistributorCompanyCode)
+                .HasColumnName("Distributor_company_code")
+                .HasMaxLength(20);
+
+            entity.Property(e => e.OrderCompanyCode)
+                .HasColumnName("Order_company_code")
+                .HasMaxLength(20);
+
+            entity.Property(e => e.LicenseCode)
+                .HasColumnName("License_code")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.Prefix)
+                .HasColumnName("prefix")
+                .HasMaxLength(20);
+
+            entity.Property(e => e.CreationTime)
+                .HasColumnName("Creation_time")
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("GETDATE()");
+
+            entity.Property(e => e.CreatedBy)
+                .HasColumnName("Created_by");
+
+            entity.Property(e => e.Status)
+                .HasColumnName("Status");
+
+            entity.Property(e => e.FileName)
+                .HasColumnName("File_Name")
+                .HasMaxLength(255);
+
+            entity.HasMany(d => d.TblUidInfos)
+                .WithOne(p => p.OrderInfo)
+                .HasForeignKey(p => p.FkOrderInfo)
+                .HasConstraintName("FK_tblUidInfo_InfoOrder");
+        });
+
+
+        modelBuilder.Entity<TblUidInfo>(entity =>
+        {
+            entity.HasKey(e => e.PkUidInfo);
+
+            entity.ToTable("tblUidInfo");
+
+            entity.Property(e => e.PkUidInfo)
+                .HasColumnName("Pk_uid_info");
+
+            entity.Property(e => e.PatchBarcode)
+                .HasColumnName("PATCH_BARCODE")
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Barcode)
+                .HasColumnName("BARCODE")
+                .HasMaxLength(100);
+
+            entity.Property(e => e.HashCode)
+                .HasColumnName("HASH_CODE")
+                .HasMaxLength(100);
+
+            entity.Property(e => e.ChildUid)
+                .HasColumnName("CHILD_UID")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.ParentUid)
+                .HasColumnName("PARENT_UID")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.IsActive)
+                .HasColumnName("IS_ACTIVE");
+
+            entity.Property(e => e.FkOrderInfo)
+                .HasColumnName("FK_order_INFO");
+
+            entity.HasOne(d => d.OrderInfo)
+                .WithMany(p => p.TblUidInfos)
+                .HasForeignKey(d => d.FkOrderInfo)
+                .HasConstraintName("FK_tblUidInfo_InfoOrder");
+        });
+
 
         OnModelCreatingPartial(modelBuilder);
     }

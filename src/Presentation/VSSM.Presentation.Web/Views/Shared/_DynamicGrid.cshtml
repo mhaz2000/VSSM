@@ -66,15 +66,39 @@
                         var iconStyle = action.DynamicIconStyle?.Invoke(item) ?? action.IconStyle;
                     
                         var linkClass = action.DynamicLinkClass?.Invoke(item) ?? action.LinkClass;
+
+                        if (string.IsNullOrEmpty(title))
+                            continue;
+
+                        if (action.Method == "GET")
+                        {
+                            <a asp-controller="@controller"
+                               asp-action="@actionName"
+                               asp-route-id="@routeValue"
+                               class="action-btn @linkClass"
+                               title="@title">
                     
-                        <a asp-controller="@controller"
-                           asp-action="@actionName"
-                           asp-route-id="@routeValue"
-                           class="action-btn @linkClass"
-                           title="@title">
-                    
-                            <i class="@iconClass" style="@iconStyle"></i>
-                        </a>
+                                <i class="@iconClass" style="@iconStyle"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <form asp-controller="@controller"
+                                  asp-action="@actionName"
+                                  asp-route-id="@routeValue"
+                                  method="@action.Method"
+                                  style="display:inline">
+                            
+                                <button type="submit" class="action-btn @linkClass" title="@title" style="
+                                    border: none;
+                                    outline: none;
+                                    background: transparent;
+                                ">
+                                    <i class="@iconClass" style="@iconStyle"></i>
+                                </button>
+                            
+                            </form>
+                        }
                     }
 
                 </td>

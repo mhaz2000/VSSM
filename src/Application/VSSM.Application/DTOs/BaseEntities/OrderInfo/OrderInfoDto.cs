@@ -8,5 +8,5 @@ public record OrderInfoDto
     public string CreatedBy { get; internal set; }
     public int Quantity { get; internal set; }
     public string BatchNumber { get; internal set; }
-    public int Status { get; internal set; }
+    public string Status { get; internal set; }
 }

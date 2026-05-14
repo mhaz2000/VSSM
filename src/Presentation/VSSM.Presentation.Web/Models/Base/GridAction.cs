@@ -12,6 +12,7 @@ public class GridAction
     public string IconClass { get; set; } = "fa fa-eye";
     public string IconStyle { get; set; } = "";
 
+    public string Method { get; set; } = "GET";
     // Dynamic values
     public Func<object, string>? DynamicTitle { get; set; }
 

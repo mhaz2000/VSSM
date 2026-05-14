@@ -33,7 +33,7 @@ namespace VSSM.Application.Services.BaseEntities
                         select new OrderInfoDto()
                         {
                             Id = g.Key.PkOrderInfo,
-                            Status = g.Key.Status,
+                            Status = g.Key.Status.ToString(),
                             FileName = g.Key.FileName,
                             CreationTime = g.Key.CreationTime.ToShamsi(),
                             CreatedBy = $"{g.Key.FirstName} {g.Key.LastName}",
@@ -51,6 +51,14 @@ namespace VSSM.Application.Services.BaseEntities
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(), total);
+        }
+
+        public async Task RemoveAsync(int id, CancellationToken cancellationToken)
+        {
+            _dbContext.TblUidInfo.RemoveRange(_dbContext.TblUidInfo.Where(t => t.FkOrderInfo == id));
+            _dbContext.TblOrderInfo.Remove(_dbContext.TblOrderInfo.Find(id));
+
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task UploadAsync(XDocument doc, string fileName, int userId)
@@ -85,7 +93,7 @@ namespace VSSM.Application.Services.BaseEntities
                 CreationTime= DateTime.Now,
                 FileName = fileName,
                 CreatedBy = userId,
-                Status = OrderInfoStatus.READ.GetHashCode(),
+                Status = OrderInfoStatus.READ.ToString(),
             };
 
             _dbContext.TblOrderInfo.Add(ordreInfo);
@@ -105,8 +113,8 @@ namespace VSSM.Application.Services.BaseEntities
                         PatchBarcode = pbc,
                         Barcode = bc,
                         HashCode = hc,
-                        ChildUid = bc.Substring(17, 21),
-                        ParentUid = pbc.Substring(17, 21),
+                        ChildUid = bc.Substring(17, 20),
+                        ParentUid = pbc.Substring(17, 20),
                         IsActive = true,
                         OrderInfo = ordreInfo
                     };

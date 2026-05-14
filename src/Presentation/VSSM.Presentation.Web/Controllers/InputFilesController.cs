@@ -36,6 +36,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService) : BaseCon
                     new() { Header = "ایجاد کننده", PropertyName = nameof(OrderInfoDto.CreatedBy), Sortable = false },
                     new() { Header = "سری ساخت", PropertyName = nameof(OrderInfoDto.BatchNumber), Sortable = false },
                     new() { Header = "تعداد", PropertyName = nameof(OrderInfoDto.Quantity), Sortable = false },
+                    new() { Header = "وضعیت", PropertyName = nameof(OrderInfoDto.Status), Sortable = false },
                     new() { Header = "عملیات", IsActionColumn = true}
                 },
             Actions = new List<GridAction>
@@ -46,38 +47,102 @@ public class InputFilesController(IOrderInfoService _orderInfoService) : BaseCon
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.READ.GetHashCode())
+                            if(row.Status == OrderInfoStatus.READ.ToString())
                                 return "حذف";
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.GetHashCode() || row.Status ==  OrderInfoStatus.APPLY.GetHashCode())
-                                return "فایل خطا";
 
-                            return "تایید نهایی";
+                            return string.Empty;
                         },
                         Controller = "InputFiles",
                         Action = "Remove",
-                        RouteIdProperty = nameof(DispatchListDto.Id),
+                        Method = "Post",
+                        RouteIdProperty = nameof(OrderInfoDto.Id),
                         LinkClass = "",
                         DynamicIconStyle= item =>
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.READ.GetHashCode())
+                            if(row.Status == OrderInfoStatus.READ.ToString())
                                 return "color: red;";
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.GetHashCode() || row.Status ==  OrderInfoStatus.APPLY.GetHashCode())
-                                return "color: blue;";
 
-                            return "color: green;";
+                            return string.Empty;
                         },
                         DynamicIconClass = item =>
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.READ.GetHashCode())
+                            if(row.Status == OrderInfoStatus.READ.ToString())
                                 return "fa fa-trash";
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.GetHashCode() || row.Status ==  OrderInfoStatus.APPLY.GetHashCode())
+
+                            return string.Empty;
+                        },
+                    },
+                     new()
+                    {
+                        DynamicTitle = item =>
+                        {
+                            var row = (OrderInfoDto)item;
+
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLY.ToString())
+                                return "فایل خطا";
+
+                            return string.Empty;
+                        },
+                        Controller = "InputFiles",
+                        Action = "DownloadErrorFile",
+                        RouteIdProperty = nameof(OrderInfoDto.Id),
+                        LinkClass = "",
+                        DynamicIconStyle= item =>
+                        {
+                            var row = (OrderInfoDto)item;
+
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLY.ToString())
+                                return "color: orange;";
+
+                            return string.Empty;
+                        },
+                        DynamicIconClass = item =>
+                        {
+                            var row = (OrderInfoDto)item;
+
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLY.ToString())
                                 return "fa fa-file";
 
-                            return "fa fa-check";
+                            return string.Empty;
+                        },
+                    },
+                     new()
+                    {
+                        DynamicTitle = item =>
+                        {
+                            var row = (OrderInfoDto)item;
+
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString())
+                                return "تایید نهایی";
+
+                            return string.Empty;
+                        },
+                        Controller = "InputFiles",
+                        Action = "Confirm",
+                        RouteIdProperty = nameof(OrderInfoDto.Id),
+                        LinkClass = "",
+                        Method = "Post",
+                        DynamicIconStyle= item =>
+                        {
+                            var row = (OrderInfoDto)item;
+
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString())
+                                return "color: green;";
+
+                            return string.Empty;
+                        },
+                        DynamicIconClass = item =>
+                        {
+                            var row = (OrderInfoDto)item;
+
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString())
+                                return "fa fa-check";
+
+                            return string.Empty;
                         },
                     }
                 }
@@ -101,4 +166,24 @@ public class InputFilesController(IOrderInfoService _orderInfoService) : BaseCon
 
         return RedirectToAction(nameof(Index));
     }
+
+    [HttpPost]
+    public async Task<ActionResult> Remove(int id, CancellationToken cancellationToken)
+    {
+        await _orderInfoService.RemoveAsync(id, cancellationToken);
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> Confirm(int id, CancellationToken cancellationToken)
+    {
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> DownloadErrorFile(int id, CancellationToken cancellationToken)
+    {
+        return RedirectToAction(nameof(Index));
+    }
+
 }

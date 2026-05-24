@@ -113,8 +113,8 @@ namespace VSSM.Application.Services.BaseEntities
                         PatchBarcode = pbc,
                         Barcode = bc,
                         HashCode = hc,
-                        ChildUid = bc.Substring(17, 20),
-                        ParentUid = pbc.Substring(17, 20),
+                        ChildUid = bc.Substring(18, 20),
+                        ParentUid = pbc.Substring(18, 20),
                         IsActive = true,
                         OrderInfo = ordreInfo
                     };

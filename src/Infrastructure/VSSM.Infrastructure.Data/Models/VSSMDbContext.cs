@@ -1990,7 +1990,8 @@ public partial class VSSMDbContext : DbContext
                 .HasColumnName("Created_by");
 
             entity.Property(e => e.Status)
-                .HasColumnName("Status");
+                .HasColumnName("Status")
+                .HasMaxLength(50);
 
             entity.Property(e => e.FileName)
                 .HasColumnName("File_Name")

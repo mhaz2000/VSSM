@@ -10,4 +10,5 @@ public interface IOrderInfoService
 
     Task<(List<OrderInfoDto> data, int count)> GetPagedAsync(string? search, int page, int pageSize,
         string sortField, string sortOrder, CancellationToken cancellationToken);
+    Task RemoveAsync(int id, CancellationToken cancellationToken);
 }

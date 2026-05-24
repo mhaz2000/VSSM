@@ -26,7 +26,7 @@ public partial class TblOrderInfo
 
     public int CreatedBy { get; set; }
 
-    public int Status { get; set; }
+    public string Status { get; set; }
 
     public string FileName { get; set; } = null!;
 

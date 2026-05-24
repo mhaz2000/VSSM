@@ -23,6 +23,8 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblUidInfo> TblUidInfo { get; set; }
 
+    public virtual DbSet<TblUidError> TblUidErrors { get; set; }
+
     public virtual DbSet<RoleMenu> RoleMenus { get; set; }
 
     public virtual DbSet<Sync> Syncs { get; set; }
@@ -2003,6 +2005,36 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblUidInfo_InfoOrder");
         });
 
+
+        modelBuilder.Entity<TblUidError>(entity =>
+        {
+            entity.HasKey(e => e.PkUidError);
+
+            entity.ToTable("tblUidError");
+
+            entity.Property(e => e.PkUidError)
+                .HasColumnName("Pk_uid_error");
+
+            entity.Property(e => e.FkUidInfo)
+                .HasColumnName("Fk_uid_info")
+                .HasMaxLength(100);
+
+            entity.Property(e => e.ErrorCode)
+                .HasColumnName("Error_code")
+                .HasMaxLength(100);
+
+            entity.Property(e => e.ErrorMessage)
+                .HasColumnName("[Error_message]")
+                .HasMaxLength(100);
+
+            entity.Property(e => e.FkOrderInfo)
+                .HasColumnName("FK_order_INFO");
+
+            entity.HasOne(d => d.OrderInfo)
+                .WithMany(p => p.TblUidErrors)
+                .HasForeignKey(d => d.FkOrderInfo)
+                .HasConstraintName("FK_tblUidInfo_InfoOrder");
+        });
 
         modelBuilder.Entity<TblUidInfo>(entity =>
         {

@@ -32,4 +32,7 @@ public partial class TblOrderInfo
 
     public virtual ICollection<TblUidInfo> TblUidInfos { get; set; }
         = new List<TblUidInfo>();
+
+    public virtual ICollection<TblUidError> TblUidErrors { get; set; }
+    = new List<TblUidError>();
 }

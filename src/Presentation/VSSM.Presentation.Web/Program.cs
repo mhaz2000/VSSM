@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using VSSM.Application.Services.BackgroundServices;
 using VSSM.Presentation.Web;
 using VSSM.Presentation.Web.Middlewares;
 
@@ -6,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddServiceCollectionExtension(builder.Configuration);
+
+builder.Services.AddHostedService<OrdersInquiryBackgroundService>();
+
 
 builder.Services.AddMemoryCache();
 

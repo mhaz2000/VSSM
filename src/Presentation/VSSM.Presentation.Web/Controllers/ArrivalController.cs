@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.Arrival;
+using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    
+
     public class ArrivalController : BaseController
     {
         private readonly IArrivalService _arrivalService;
@@ -58,24 +58,109 @@ namespace VSSM.Presentation.Web.Controllers
             _itemClassService = itemClassService;
         }
 
+        //public async Task<IActionResult> Index(
+        //    string? search,
+        //    int status = 3, // 1 Draft, 2 Confirmed, 3 All
+        //    int page = 1,
+        //    int pageSize = 10,
+        //    CancellationToken token = default)
+        //{
+        //    ViewBag.Status = status;
+
+
+        //    var list = await _arrivalService.GetPagedList(
+        //        search,
+        //        status,
+        //        page,
+        //        pageSize,
+        //        token);
+
+        //    return View("Index", list);
+        //}
+
         public async Task<IActionResult> Index(
             string? search,
-            int status = 3, // 1 Draft, 2 Confirmed, 3 All
+            int status = 3,
             int page = 1,
             int pageSize = 10,
+            string sort = "ArrivalId",
+            string direction = "desc",
             CancellationToken token = default)
         {
-            ViewBag.Status = status;
+            var list = await _arrivalService.GetPagedList(search, status, page, pageSize, token);
+
+            var model = new GridViewModel
+            {
+                SearchTerm = search,
+                CurrentSort = sort,
+                CurrentDirection = direction,
+                Data = new PagedResult<object>
+                {
+                    Items = list.Items.Cast<object>().ToList(),
+                    PageNumber = list.Paging.Page,
+                    PageSize = pageSize,
+                    TotalCount = list.Paging.TotalPages
+                },
+                Columns = new List<GridColumn>
+                {
+                    new() { Header = "دوره فعالیت", PropertyName = nameof(ArrivalListDto.FiscalPeriodName), Sortable = false },
+                    new() { Header = "تاریخ ورود",  PropertyName = nameof(ArrivalListDto.DateText),         Sortable = false },
+                    new() { Header = "شماره گزارش", PropertyName = nameof(ArrivalListDto.ReportNumber),     Sortable = false },
+                    new() { Header = "وضعیت",       PropertyName = nameof(ArrivalListDto.StatusText),       Sortable = false },
+                    new() { Header = "عملیات",      IsActionColumn = true }
+                },
+                Actions = new List<GridAction>
+                {
+                    new()
+                    {
+                        Title           = "ویرایش",
+                        Controller      = "Arrival",
+                        Action          = "New",
+                        RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
+                        IconClass       = "fa fa-edit",
+                        LinkClass = "",
+                        DynamicTitle    = item =>
+                        {
+                              var dto = item as ArrivalListDto;
+                              return dto?.IsDrafted == true ? "ویرایش" : "";
+                        }
 
 
-            var list = await _arrivalService.GetPagedList(
-                search,
-                status,
-                page,
-                pageSize,
-                token);
+                    },
+                    new()
+                    {
+                        Title           = "چاپ",
+                        Controller      = "Arrival",
+                        Action          = "CopyFromRow",
+                        RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
+                        IconClass       = "fa fa-print",
+                        LinkClass = "",
+                        DynamicTitle    = item =>
+                        {
+                            var dto = item as ArrivalListDto;
+                            return dto?.IsConfirmed == true ? "چاپ" : "";
+                        }
 
-            return View("Index", list);
+                    },
+                    new()
+                    {
+                        Title           = "حذف",
+                        Controller      = "Arrival",
+                        Action          = "Delete",
+                        RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
+                        IconClass       = "fa fa-trash",
+                        LinkClass = "",
+                        DynamicTitle    = item =>
+                        {
+                             var dto = item as ArrivalListDto;
+                             return dto?.IsDrafted == true ? "حذف" : "";
+                        }
+
+            }
+        }
+            };
+
+            return View(model);
         }
 
         public async Task<IActionResult> New(int? id, CancellationToken token)

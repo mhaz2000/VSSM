@@ -1,267 +1,104 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.Arrival
-@using VSSM.Application.Helpers
-@model PagingSearchOrderDto<ArrivalListDto>
+@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@section Styles {
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
+}
 
 @{
-    ViewData["Title"] = "مدیریت ورودها";
-    var status = (int)(ViewBag.Status ?? 3);
-    int currentStatus = ViewBag.Status is int ? (int)ViewBag.Status : 3;
+    ViewData["Title"] = "مدیریت ورودی";
+    int currentStatus = int.TryParse(Context.Request.Query["status"], out var s) ? s : 3;
 }
+
 <style>
-    .w-full {
-        width: 100%;
+    .btn-add {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: #16a34a; color: #fff; border: none;
+        border-radius: 8px; padding: 0 16px; height: 40px;
+        font-size: 14px; font-weight: 500; text-decoration: none;
+        white-space: nowrap;
     }
-
-    .pager-wrap {
-        display: flex;
-        justify-content: flex-start; /* ← راست‌چین */
-        margin-top: 12px;
-        direction: rtl;
+    .btn-add:hover { background: #15803d; color: #fff; text-decoration: none; }
+    .btn-add .plus-circle {
+        width: 22px; height: 22px; border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.7);
+        display: inline-flex; align-items: center;
+        justify-content: center; font-size: 16px; line-height: 1;
     }
-
-
-    .pager-modern {
-        margin: 0;
-        gap: 0;
+    .search-wrap {
+        display: flex; align-items: stretch; height: 40px;
+        border: 1px solid #d1d5db; border-radius: 8px;
+        overflow: hidden; background: #fff;
+        min-width: 380px;
     }
-
-        .pager-modern .page-item .page-link {
-            min-width: 44px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #e5e7eb;
-            border-radius: 0;
-            margin-left: -1px; /* چسبیدن مثل عکس */
-
-            background: #fff;
-            color: #1d4ed8; /* آبی متن */
-            font-weight: 500;
-        }
-
-        .pager-modern .page-item.active .page-link {
-            background: #0ea5e9; /* آبی/فیروزه‌ای مثل عکس */
-            border-color: #0ea5e9;
-            color: #fff;
-        }
-
-        .pager-modern .page-item.disabled .page-link {
-            background: #f9fafb;
-            color: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .pager-modern .page-item.ellipsis .page-link {
-            pointer-events: none;
-        }
-
+    .search-select {
+        border: none; outline: none;
+        background: #374151; color: #fff;
+        font-size: 13px; font-weight: 500;
+        min-width: 120px; padding: 0 10px 0 28px;
+        appearance: none; -webkit-appearance: none; cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: left 8px center;
+    }
+    .search-select option { background: #374151; color: #fff; }
+    .search-input {
+        flex: 1; border: none; outline: none;
+        padding: 0 12px; font-size: 13px; color: #111827;
+        background: #fff;
+    }
+    .search-input::placeholder { color: #9ca3af; }
+    .search-divider { width: 1px; background: #e5e7eb; }
+    .search-btn {
+        width: 42px; border: none;
+        border-right: 1px solid #e5e7eb;
+        background: #f9fafb; color: #6b7280;
+        display: flex; align-items: center;
+        justify-content: center; cursor: pointer; font-size: 16px;
+        transition: .15s;
+    }
+    .search-btn:hover { background: #eff6ff; color: #2563eb; }
 </style>
-<div class="container-fluid">
-    <div class="animated fadeIn">
 
-        <div class="card mb-2">
-            <div class="card-block">
-                <form method="get">
-                    <div class="row g-2 align-items-center">
+<div class="grid-wrapper">
+    <div class="grid-header" style="direction:rtl;">
 
-                        <!-- سرچ -->
-                        <div class="col-lg-5">
-                            <input class="form-control"
-                                   name="search"
-                                   value="@Model.SearchText"
-                                   placeholder="شماره گزارش..." />
-                        </div>
+        <strong style="font-size:1.4rem; font-weight:600; color:#111827;">
+            @ViewData["Title"]
+        </strong>
 
-                        <!-- وضعیت -->
-                        <div class="col-lg-3">
-                            <select name="status" class="form-select w-100">
-                                <option value="1" selected="@(currentStatus == 1)">پیش‌نویس</option>
-                                <option value="2" selected="@(currentStatus == 2)">تایید شده</option>
-                                <option value="3" selected="@(currentStatus == 3)">همه</option>
-                            </select>
-                        </div>
+        <div class="d-flex align-items-center gap-2">
 
-                        <!-- دکمه‌ها -->
-                        <div class="col-lg-4">
-                            <div class="d-flex gap-2 justify-content-end">
-                                <button type="submit" class="btn btn-primary px-5">جستجو</button>
+            <form method="get" class="m-0">
+                <input type="hidden" name="sort"      value="@Model.CurrentSort" />
+                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
+                <input type="hidden" name="pageSize"  value="@Model.Data.PageSize" />
 
-                                <a class="btn btn-success px-5" asp-action="New">+ جدید</a>
+                <div class="search-wrap">
+                    <select name="status" class="search-select" onchange="this.form.submit()">
+                        <option value="3" selected="@(currentStatus == 3)">همه</option>
+                        <option value="1" selected="@(currentStatus == 1)">پیش‌نویس</option>
+                        <option value="2" selected="@(currentStatus == 2)">تایید شده</option>
+                    </select>
+                    <div class="search-divider"></div>
+                    <input type="text" name="search" class="search-input"
+                           value="@Model.SearchTerm" placeholder="جستجو..." />
+                    <button type="submit" class="search-btn" title="جستجو">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </form>
 
+            <a asp-action="New" class="btn-add">
+                <span class="plus-circle">+</span>
+                افزودن
+            </a>
 
-                            </div>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
         </div>
+    </div>
 
-
-        <div class="card">
-            <div class="card-block">
-
-                <table class="table table-bordered table-striped table-condensed text-center">
-                    <thead>
-                        <tr>
-                            <th>دوره فعالیت</th>
-                            <th>تاریخ ورود</th>
-                            <th>حجم کل (لیتر)</th>
-                            <th>شماره گزارش</th>
-                            <th>وضعیت</th>
-                            <th>عملیات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Items.Any())
-                        {
-                            foreach (var item in Model.Items)
-                            {
-                                var statusText = item.IsCancelled == true ? "حذف شده"
-                                : item.IsConfirmed == true ? "تایید شده"
-                                : item.IsDrafted == true ? "پیش‌نویس" : "نامشخص";
-
-                                <tr ondblclick="onRowDblClick(@item.ArrivalId, '@statusText')">
-                                    <td>@item.FiscalPeriodName</td>
-                                    <td>@item.Date.Value.ToShamsi()</td>
-                                    <td>@item.TotalVolume</td>
-                                    <td>@item.ReportNumber</td>
-                                    <td>@statusText</td>
-                                    <td class="text-nowrap">
-                                        <div class="btn-group" role="group">
-
-                                            @if (item.IsConfirmed == true)
-                                            {
-                                                <a class="btn btn-primary btn-sm"
-                                                   asp-action="Edit"
-                                                   asp-route-id="@item.ArrivalId">
-                                                    مشاهده
-                                                </a>
-                                            }
-                                            else
-                                            {
-                                                <a class="btn btn-primary btn-sm"
-                                                   asp-action="New"
-                                                   asp-route-id="@item.ArrivalId">
-                                                    ویرایش
-                                                </a>
-                                            }
-
-                                            <!-- ✅ Copy from this row -->
-                                            <a class="btn btn-warning btn-sm"
-                                               asp-action="CopyFromRow"
-                                               asp-route-id="@item.ArrivalId"
-                                               title="کپی از این ورود">
-                                                کپی
-                                            </a>
-
-                                            <a class="btn btn-danger btn-sm"
-                                               asp-action="Delete"
-                                               asp-route-id="@item.ArrivalId">
-                                                حذف
-                                            </a>
-
-                                        </div>
-                                    </td>
-
-
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="7" class="text-danger">رکوردی یافت نشد.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-
-                @{
-                    int page = Model.Paging.Page;
-                    int totalPages = Model.Paging.TotalPages;
-
-                    // چند صفحه اطراف صفحه فعلی
-                    int window = 2;
-
-                    // لیست صفحات منتخب: 1, ... , (page-window..page+window), ... , totalPages
-                    var selected = new SortedSet<int>();
-
-                    if (totalPages >= 1)
-                        selected.Add(1);
-
-                    for (int p = page - window; p <= page + window; p++)
-                    {
-                        if (p >= 1 && p <= totalPages)
-                            selected.Add(p);
-                    }
-
-                    if (totalPages >= 2)
-                        selected.Add(totalPages);
-
-                    string PageUrl(int p) => $"?search={Model.SearchText}&status={status}&page={p}";
-                }
-
-                <nav class="pager-wrap" aria-label="Page navigation">
-                    <ul class="pagination pager-modern">
-
-                        <!-- قبلی -->
-                        <li class="page-item @(page == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))" tabindex="@(page == 1 ? "-1" : "0")">
-                                قبلی
-                            </a>
-                        </li>
-
-                        @{
-                            int prev = 0;
-                            foreach (var p in selected)
-                            {
-                                if (prev != 0 && p - prev > 1)
-                                {
-                                    <li class="page-item disabled ellipsis">
-                                        <span class="page-link">…</span>
-                                    </li>
-                                }
-
-                                <li class="page-item @(p == page ? "active" : "")">
-                                    <a class="page-link" href="@PageUrl(p)">@p</a>
-                                </li>
-
-                                prev = p;
-                            }
-                        }
-
-                        <!-- بعدی -->
-                        <li class="page-item @(page == totalPages ? "disabled" : "")">
-                            <a class="page-link" href="@(page == totalPages ? "#" : PageUrl(page + 1))" tabindex="@(page == totalPages ? "-1" : "0")">
-                                بعدی
-                            </a>
-                        </li>
-
-                    </ul>
-                </nav>
-
-
-
-
-            </div>
-        </div>
-
+    <div>
+        @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        function onRowDblClick(id, statusText) {
-            // اگر تایید شده است فقط حالت readonly (مثلاً یک Action دیگر مثل Details)
-            if (statusText === "تایید شده") {
-                window.location.href = '@Url.Action("Edit", "Arrival")' + '?id=' + id; // اگر Details داشتی، تغییر بده
-            } else {
-                window.location.href = '@Url.Action("Edit", "Arrival")' + '/' + id;
-            }
-        }
-
-
-    </script>
-}

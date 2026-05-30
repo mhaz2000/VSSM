@@ -1,19 +1,23 @@
-﻿namespace VSSM.Application.DTOs.BaseEntities.Arrival
+﻿using VSSM.Application.Helpers;
+
+namespace VSSM.Application.DTOs.BaseEntities.Arrival
 {
     public class ArrivalListDto
     {
         public int ArrivalId { get; set; }
         public string ReportNumber { get; set; }
         public DateTime? Date { get; set; }
-
         public string SourceName { get; set; }
         public string FiscalPeriodName { get; set; }
-
         public float? TotalVolume { get; set; }
-
         public bool? IsConfirmed { get; set; }
         public bool? IsDrafted { get; set; }
         public bool? IsCancelled { get; set; }
+        public string DateText => Date is null ? string.Empty : Date.Value.ToShamsi();
+        public string StatusText =>
+            IsCancelled == true ? "حذف شده" :
+            IsConfirmed == true ? "تایید شده" :
+            IsDrafted == true ? "پیش‌نویس" : "نامشخص";
     }
 
 

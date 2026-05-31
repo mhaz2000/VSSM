@@ -2,7 +2,7 @@
 @model ArrivalViewModel
 
 @{
-    string formTitle = Model?.ArrivalId > 0 ? "ویرایش ورود" : "ثبت ورود جدید";
+    string formTitle = Model?.ArrivalId > 0 ? "ویرایش ورودی" : "ثبت ورودی جدید";
 }
 
 @section Styles {
@@ -10,506 +10,649 @@
 }
 
 <style>
-
-    .pale-green-btn {
-        background-color: #e8f5e9; /* سبز خیلی کمرنگ */
-        border: 1px solid #a5d6a7;
-        color: #2e7d32;
+    .arrival-wrap {
+        direction: rtl;
+        padding: 24px 32px;
+        font-size: 13px;
     }
 
-        .pale-green-btn:hover {
-            background-color: #dcedc8;
-            border-color: #81c784;
-            color: #1b5e20;
-        }
-
-    .form-label {
-        width: 140px;
-        margin-left: 10px;
-        text-align: left;
-        font-weight: 600;
+    .a-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 20px;
     }
 
-    .form-group {
+    .a-card-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f8fafc;
         display: flex;
         align-items: center;
-        margin-bottom: 10px;
-        direction: rtl;
+        gap: 8px;
     }
 
-    .form-control, .form-select {
-        flex: 1;
+        .a-card-header h6 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .a-card-header .card-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #e0f2fe;
+            color: #0284c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+    .a-card-body {
+        padding: 20px;
     }
 
-    .required-star {
-        color: red;
-        margin-right: 3px;
+    .fg-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px 20px;
     }
 
-    .card {
-        direction: rtl;
+    .fg-6 {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 14px 12px;
     }
 
-    .lines-table th, .lines-table td {
-        vertical-align: middle;
-        text-align: center;
+    .field-full {
+        grid-column: 1 / -1;
     }
 
-    .allign-text {
-        margin-top: 10px;
+    .f-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
     }
 
-    .calc-box {
-        background: #f5f9ff;
-        border: 1px solid #d0d9f0;
-        padding: 10px 15px;
-        margin-top: 10px;
-        border-radius: 6px;
+    .f-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        text-align: right;
+    }
+
+        .f-label .req-tag {
+            font-size: 10px;
+            font-weight: 500;
+            color: #ef4444;
+            background: #fef2f2;
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin-right: 4px;
+        }
+
+        .f-label .opt {
+            font-size: 11px;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+    .f-control {
+        height: 36px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 0 10px;
+        font-size: 13px;
+        color: #111827;
+        background: #fff;
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+        .f-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+        }
+
+        .f-control[readonly] {
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .f-control[disabled] {
+            background: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .f-control::placeholder {
+            color: #b0b0b0;
+            opacity: 1;
+        }
+
+    select.f-control {
+        cursor: pointer;
+        padding-left: 28px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: left 8px center;
+        appearance: none;
+    }
+
+    textarea.f-control {
+        height: auto;
+        min-height: 72px;
+        padding: 8px 10px;
+        resize: vertical;
+    }
+
+    /* ── تاریخ سه‌بخشی ── */
+    .date-triple {
+        display: grid;
+        grid-template-columns: 1fr 1fr 2fr;
+        gap: 6px;
+    }
+
+    /* ── جدول اقلام ── */
+    .lines-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+
+        .lines-table thead th {
+            background: #f8fafc;
+            color: #374151;
+            font-weight: 700;
+            padding: 9px 10px;
+            text-align: center;
+            border-bottom: 2px solid #e5e7eb;
+            border-left: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+            .lines-table thead th:last-child {
+                border-left: none;
+            }
+
+        .lines-table tbody td {
+            padding: 8px 10px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+            border-left: 1px solid #e5e7eb;
+            color: #111827;
+            vertical-align: middle;
+        }
+
+            .lines-table tbody td:last-child {
+                border-left: none;
+            }
+
+        .lines-table tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .lines-table tbody tr:hover {
+            background: #eff6ff !important;
+        }
+
+    /* ── فوتر ── */
+    .form-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 20px;
+        border-top: 1px solid #e5e7eb;
+        background: #f8fafc;
+    }
+
+    .btn-confirm {
+        height: 38px;
+        padding: 0 24px;
+        border-radius: 9px;
+        border: none;
+        background: #16a34a;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-confirm:hover {
+            background: #15803d;
+        }
+
+    .btn-draft {
+        height: 38px;
+        padding: 0 24px;
+        border-radius: 9px;
+        border: 1px solid #d97706;
+        background: #fff;
+        color: #d97706;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-draft:hover {
+            background: #fffbeb;
+        }
+
+    .btn-back {
+        height: 38px;
+        padding: 0 20px;
+        border-radius: 9px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-back:hover {
+            background: #f3f4f6;
+            color: #111827;
+            text-decoration: none;
+        }
+
+    .btn-add-line {
+        height: 38px;
+        padding: 0 20px;
+        border-radius: 9px;
+        border: none;
+        background: #1d6fb8;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: .15s;
+    }
+
+        .btn-add-line:hover {
+            background: #1558a0;
+        }
+
+    .btn-del-line {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        border: 1px solid #fecaca;
+        background: #fff;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+        transition: .15s;
+    }
+
+        .btn-del-line:hover {
+            background: #fef2f2;
+        }
+
+    .section-divider {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 18px 0;
+    }
+
+    /* لیبل بالای تاریخ‌های ۶تایی */
+    .date-group-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+
+        .date-group-label .req-tag {
+            font-size: 10px;
+            font-weight: 500;
+            color: #ef4444;
+            background: #fef2f2;
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin-right: 4px;
+        }
+
+    .date-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 24px;
+        margin-bottom: 14px;
+    }
+
+    .date-inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr 2fr;
+        gap: 6px;
+    }
+
+    @@media (max-width: 768px) {
+        .fg-3 {
+            grid-template-columns: 1fr;
+        }
+
+        .date-section {
+            grid-template-columns: 1fr;
+        }
+
+        .arrival-wrap {
+            padding: 12px;
+        }
     }
 </style>
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
+<div class="arrival-wrap">
+    <form asp-action="Create" method="post" id="arrivalForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ArrivalId" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size:13px;"></div>
 
-        <!-- عنوان فرم -->
-        <div class="card mb-2">
-            <div class="card-block">
-                <h5>@formTitle</h5>
+        <div class="a-card">
+            <div class="a-card-header">
+
+                <h6>@formTitle</h6>
+            </div>
+            <div class="a-card-body">
+
+                <div class="fg-3" style="margin-bottom:14px;">
+
+                    <div class="f-group">
+                        <label class="f-label">شماره گزارش</label>
+                        <input asp-for="ReportNumber" class="f-control"
+                               placeholder="شماره گزارش را وارد کنید" />
+                        <span asp-validation-for="ReportNumber" class="text-danger" style="font-size:11px;"></span>
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label">
+                            تاریخ ورود <span class="req-tag">اجباری</span>
+                        </label>
+                        <div class="date-triple">
+                            <input type="text" id="DateDay" name="DateDay" class="f-control"
+                                   inputmode="numeric" maxlength="2" placeholder="روز"
+                                   autocomplete="off" style="text-align:center;" />
+                            <input type="text" id="DateMonth" name="DateMonth" class="f-control"
+                                   inputmode="numeric" maxlength="2" placeholder="ماه"
+                                   autocomplete="off" style="text-align:center;" />
+                            <input type="text" id="DateYear" name="DateYear" class="f-control"
+                                   inputmode="numeric" maxlength="4" placeholder="سال"
+                                   autocomplete="off" style="text-align:center;" />
+                        </div>
+                        <input type="hidden" asp-for="Date" id="Date" />
+                        <span asp-validation-for="Date" class="text-danger" style="font-size:11px;"></span>
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label">سری ساخت <span class="req-tag">اجباری</span></label>
+                        <input asp-for="NewLine.BatchNum" class="f-control"
+                               placeholder="سری ساخت را وارد کنید" />
+                        <span asp-validation-for="NewLine.BatchNum" class="text-danger" style="font-size:11px;"></span>
+                    </div>
+
+                </div>
+
+                <div class="f-group">
+                    <label class="f-label">ملاحظات</label>
+                    <textarea asp-for="Note" class="f-control" placeholder="ملاحظات را وارد کنید"></textarea>
+                </div>
+
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-block">
+        <div class="a-card">
+            <div class="a-card-header">
+                <div class="card-icon" style="background:#fef3c7;color:#d97706;">
+                </div>
+                <h6>جزئیات کالا</h6>
+            </div>
+            <div class="a-card-body">
 
-                <form asp-action="Create" method="post" class="form-horizontal">
-                    @Html.AntiForgeryToken()
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
+                        <select id="ItemClassId" asp-for="NewLine.ItemClassId"
+                                asp-items="ViewBag.itemClassList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
+                        <select id="ItemId" asp-for="NewLine.ItemId"
+                                data-selected="@Model?.NewLine?.ItemId"
+                                class="f-control" disabled>
+                            <option value="">ابتدا نوع کالا را انتخاب کنید</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">انبار <span class="req-tag">اجباری</span></label>
+                        <select asp-for="NewLine.StoreId" asp-items="ViewBag.StoreList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                        <span asp-validation-for="NewLine.StoreId" class="text-danger" style="font-size:11px;"></span>
+                    </div>
+                </div>
 
-                    <input type="hidden" asp-for="ArrivalId" />
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">دوز بر ویال <span class="req-tag">اجباری</span></label>
+                        <select asp-for="NewLine.DosePerVialId" asp-items="ViewBag.DosePerVialList"
+                                data-selected="@Model?.NewLine?.DosePerVialId"
+                                class="f-control" id="DosePerVialId" disabled>
+                            <option value="">ابتدا کالا را انتخاب کنید</option>
+                        </select>
+                        <span asp-validation-for="NewLine.DosePerVialId" class="text-danger" style="font-size:11px;"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">نوع VVM</label>
+                        <select asp-for="NewLine.VvmTypeId" asp-items="ViewBag.VvmTypeList"
+                                class="f-control" id="VvmTypeId">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">مرحله VVM</label>
+                        <select asp-for="NewLine.VvmStageId" asp-items="ViewBag.VvmstageList"
+                                class="f-control" id="VvmStageId" disabled>
+                            <option value="">ابتدا نوع VVM را انتخاب کنید</option>
+                        </select>
+                    </div>
+                </div>
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">تعداد ویال <span class="opt">(محاسبه‌ای)</span></label>
+                        <input asp-for="NewLine.NumVials" class="f-control" id="NumVials" readonly
+                               placeholder="خودکار محاسبه می‌شود" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">نام تجاری</label>
+                        <select asp-for="NewLine.CommertialNameId"
+                                asp-items="ViewBag.CommercialNameList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">سازنده</label>
+                        <select asp-for="NewLine.ManufacturerId"
+                                asp-items="ViewBag.ManufacturerList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                </div>
 
-                    <!-- ================== بخش هدر ورود ================== -->
-                    <div class="col-lg-12">
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-star">*</span>
-                                تاریخ ورود:
-                            </span>
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">تعداد <span class="req-tag">اجباری</span></label>
+                        <input asp-for="NewLine.Quantity" class="f-control" id="Quantity"
+                               placeholder="تعداد را وارد کنید" />
+                        <span asp-validation-for="NewLine.Quantity" class="text-danger" style="font-size:11px;"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">مورد استفاده</label>
+                        <select asp-for="NewLine.UseId" asp-items="ViewBag.UseList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div></div>
+                </div>
 
-                            <input type="text" asp-for="Date" class="form-control" />
-                            <span asp-validation-for="Date" class="text-danger"></span>
+                <div class="section-divider"></div>
+
+                <div class="date-section">
+
+                    <div>
+                        <div class="date-group-label">تاریخ تولید</div>
+                        <div class="date-inner">
+                            <input type="text" id="ProdDay" name="ProdDay" class="f-control"
+                                   inputmode="numeric" maxlength="2" placeholder="روز"
+                                   autocomplete="off" style="text-align:center;" />
+                            <input type="text" id="ProdMonth" name="ProdMonth" class="f-control"
+                                   inputmode="numeric" maxlength="2" placeholder="ماه"
+                                   autocomplete="off" style="text-align:center;" />
+                            <input type="text" id="ProdYear" name="ProdYear" class="f-control"
+                                   inputmode="numeric" maxlength="4" placeholder="سال"
+                                   autocomplete="off" style="text-align:center;" />
                         </div>
-
-
-
-                        <!-- منبع (الزامی) -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                منبع:
-                            </span>
-                            <select asp-for="SourceId"
-                                    asp-items="ViewBag.SourceList"
-                                    class="form-select">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                        </div>
-
-                        <!-- شماره گزارش -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                شماره گزارش:
-                            </span>
-                            <input asp-for="ReportNumber" class="form-control" />
-                            <span asp-validation-for="ReportNumber" class="text-danger"></span>
-                        </div>
-
-                        <!-- حجم بسته -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                حجم بسته(لیتر):
-                            </span>
-                            <input asp-for="PackedVolume" class="form-control" />
-
-                        </div>
-
-                        <!-- وزن کل -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                وزن کل (کیلوگرم):
-                            </span>
-                            <input asp-for="TotalWeight" class="form-control" />
-
-                        </div>
-
-                        <!-- حجم کل لیتر (خلاصه) -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                حجم کل (لیتر):
-                            </span>
-                            <input asp-for="TotalVolume" class="form-control" readonly />
-                        </div>
-
-                        <!-- تشخیص دهنده سرما -->
-                        <div class="form-group">
-                            <span class="form-label">تشخیص دهنده سرما:</span>
-                            <input asp-for="Frzindc" class="form-control" />
-                        </div>
-
-                        <!-- تشخیص دهنده سرما غیر معتبر -->
-                        <div class="form-group">
-                            <span class="form-label">تشخیص دهنده سرما غیر معتبر:</span>
-                            <input asp-for="FrzindcNok" class="form-control" />
-                        </div>
-
-                        <!-- ملاحظات -->
-                        <div class="form-group">
-                            <span class="form-label">ملاحظات:</span>
-                            <textarea asp-for="Note" class="form-control"></textarea>
-                        </div>
-
+                        <input type="hidden" asp-for="NewLine.ProductionDate" id="ProductionDate" />
                     </div>
 
-
-
-
-
-
-                    <!-- ================== بخش جزییات کالا (ArrivalLine) ================== -->
-
-                    <div class="col-lg-12">
-                        <h6 class="mb-3">جزئیات کالا</h6>
-
-                        <div class="row">
-
-                            <div class="col-lg-6">
-
-                                <!-- نوع کالا -->
-                                <div class="form-group">
-                                    <span class="form-label">
-                                        <span class="required-star">*</span>
-                                        نوع کالا:
-                                    </span>
-                                    <select id="ItemClassId"
-                                            asp-for="NewLine.ItemClassId"
-                                            asp-items="ViewBag.itemClassList"
-                                            class="form-select">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-
-                                <!-- کالا -->
-                                <div class="form-group">
-                                    <span class="form-label">
-                                        <span class="required-star">*</span>
-                                        کالا:
-                                    </span>
-                                    <select id="ItemId"
-                                            asp-for="NewLine.ItemId"
-                                            data-selected="@Model?.NewLine?.ItemId"
-                                            class="form-select"
-                                            disabled>
-                                        <option value="">ابتدا نوع کالا را انتخاب کنید</option>
-                                    </select>
-                                </div>
-
-
-                                <!-- نام تجاری -->
-                                <div class="form-group">
-                                    <span class="form-label">نام تجاری:</span>
-                                    <select asp-for="NewLine.CommertialNameId"
-                                            asp-items="ViewBag.CommercialNameList"
-                                            class="form-select">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-
-                                <!-- سازنده -->
-                                <div class="form-group">
-                                    <span class="form-label">سازنده:</span>
-                                    <select asp-for="NewLine.ManufacturerId"
-                                            asp-items="ViewBag.ManufacturerList"
-                                            class="form-select">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-
-                                <!-- دوز بر ویال -->
-                                <div class="form-group">
-                                    <span class="form-label">
-                                        <span class="required-star">*</span>
-                                        دوز بر ویال
-                                    </span>
-                                    <select asp-for="NewLine.DosePerVialId"
-                                            asp-items="ViewBag.DosePerVialList"
-                                            data-selected="@Model?.NewLine?.DosePerVialId"
-                                            class="form-select"
-                                            id="DosePerVialId"
-                                            disabled>
-                                        <option value="">ابتدا کالا را انتخاب کنید</option>
-                                    </select>
-
-                                    <span asp-validation-for="NewLine.DosePerVialId" class="text-danger"></span>
-                                </div>
-
-                                <!-- تعداد (الزامی) -->
-                                <div class="form-group">
-                                    <span class="form-label">
-                                        <span class="required-star">*</span>
-                                        تعداد:
-                                    </span>
-                                    <input asp-for="NewLine.Quantity" class="form-control" id="Quantity" />
-                                    <span asp-validation-for="NewLine.Quantity" class="text-danger"></span>
-                                </div>
-
-                                <!-- تعداد ویال (محاسبه‌ای) -->
-                                <div class="form-group">
-                                    <span class="form-label">تعداد ویال:</span>
-                                    <input asp-for="NewLine.NumVials" class="form-control" id="NumVials" readonly />
-                                </div>
-
-                                <!-- حجم واحد (لیتر) -->
-                                <div class="form-group">
-                                    <span class="form-label">حجم واحد (لیتر):</span>
-                                    <input asp-for="NewLine.UnitVolume" class="form-control" id="UnitVolume" />
-                                </div>
-
-                                <!-- حجم کل (لیتر) -->
-                                <div class="form-group">
-                                    <span class="form-label">حجم کل (لیتر):</span>
-                                    <input asp-for="NewLine.TotalVolume" class="form-control" id="LineTotalVolume" />
-                                </div>
-
-                            </div>
-
-                            <div class="col-lg-6">
-
-                                <!-- انبار (الزامی) -->
-                                <div class="form-group">
-                                    <span class="form-label">
-                                        <span class="required-star">*</span>
-                                        انبار:
-                                    </span>
-                                    <select asp-for="NewLine.StoreId"
-                                            asp-items="ViewBag.StoreList"
-                                            class="form-select">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                    <span asp-validation-for="NewLine.StoreId" class="text-danger"></span>
-                                </div>
-
-                                <!-- مورد استفاده -->
-                                <div class="form-group">
-                                    <span class="form-label">مورد استفاده:</span>
-                                    <select asp-for="NewLine.UseId"
-                                            asp-items="ViewBag.UseList"
-                                            class="form-select">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-
-                                <!-- نوع VVM -->
-                                <!-- نوع VVM -->
-                                <div class="form-group">
-                                    <span class="form-label">نوع VVM:</span>
-                                    <select asp-for="NewLine.VvmTypeId"
-                                            asp-items="ViewBag.VvmTypeList"
-                                            class="form-select"
-                                            id="VvmTypeId">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-
-                                <!-- مرحله VVM -->
-                                <div class="form-group">
-                                    <span class="form-label">مرحله VVM:</span>
-                                    <select asp-for="NewLine.VvmStageId"
-                                            asp-items="ViewBag.VvmstageList"
-                                            class="form-select"
-                                            id="VvmStageId"
-                                            disabled>
-                                        <option value="">ابتدا نوع VVM را انتخاب کنید</option>
-                                    </select>
-                                </div>
-
-
-                                <!-- نوع بسته -->
-                                <div class="form-group">
-                                    <span class="form-label">نوع بسته:</span>
-                                    <select asp-for="NewLine.PackingTypeId"
-                                            asp-items="ViewBag.PackingTypeList"
-                                            class="form-select">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-
-                                <!-- سایز بسته -->
-                                <div class="form-group">
-                                    <span class="form-label">سایز بسته:</span>
-                                    <input asp-for="NewLine.PackageSize" class="form-control" />
-                                </div>
-
-                                <!-- سری ساخت -->
-                                <div class="form-group">
-                                    <span class="form-label">
-                                        <span class="required-star">*</span>
-                                        سری ساخت:
-                                    </span>
-                                    <input asp-for="NewLine.BatchNum" class="form-control" />
-                                    <span asp-validation-for="NewLine.BatchNum" class="text-danger"></span>
-                                </div>
-
-
-                                <div class="form-group">
-                                    <label class="form-label">تاریخ تولید:</label>
-                                    <input type="date"
-                                           asp-for="NewLine.ProductionDate"
-                                           class="form-control"
-                                           value="" />
-                                </div>
-
-                                <div class="form-group">
-                                    <span class="form-label">
-                                        <span class="required-star">*</span>
-                                        تاریخ انقضا:
-                                    </span>
-                                    <input type="date"
-                                           asp-for="NewLine.ExpiryDate"
-                                           class="form-control" />
-                                    <span asp-validation-for="NewLine.ExpiryDate" class="text-danger"></span>
-                                </div>
-
-
-
-
-                                <!-- ملاحظات خط -->
-                                <div class="form-group">
-                                    <span class="form-label">ملاحظات:</span>
-                                    <textarea asp-for="NewLine.Note" class="form-control"></textarea>
-                                </div>
-
-                            </div>
+                    <div>
+                        <div class="date-group-label">
+                            تاریخ انقضا <span class="req-tag">اجباری</span>
                         </div>
-
-                        @*      <!-- جعبه پایین برای حداقل/حداکثر/سطح درخواست و محاسبه (طبق منطق تو) -->
-                        <div class="calc-box">
-                            <div class="row">
-                                <div class="col-lg-4">
-                                    <div class="form-group mb-2">
-                                        <span class="form-label">حداقل موجودی:</span>
-                                        <input class="form-control" id="CalcStockMin" />
-                                    </div>
-                                </div>
-                                <div class="col-lg-4">
-                                    <div class="form-group mb-2">
-                                        <span class="form-label">حداکثر موجودی:</span>
-                                        <input class="form-control" id="CalcStockMax" />
-                                    </div>
-                                </div>
-                                <div class="col-lg-4">
-                                    <div class="form-group mb-2">
-                                        <span class="form-label">سطح درخواست:</span>
-                                        <input class="form-control" id="CalcOrderLevel" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="button" class="btn btn-info w-100" onclick="showCalcPopup()">
-                                محاسبه
-                            </button>
-                        </div> *@
-
-                        <!-- دکمه افزودن کالا به گرید -->
-                        <div class="text-center mt-3 allign-text">
-                            <button type="submit"
-                                    name="command"
-                                    value="addLine"
-                                    class="btn btn-light px-4 pale-green-btn">
-                                افزودن کالا
-                            </button>
+                        <div class="date-inner">
+                            <input type="text" id="ExpDay" name="ExpDay" class="f-control"
+                                   inputmode="numeric" maxlength="2" placeholder="روز"
+                                   autocomplete="off" style="text-align:center;" />
+                            <input type="text" id="ExpMonth" name="ExpMonth" class="f-control"
+                                   inputmode="numeric" maxlength="2" placeholder="ماه"
+                                   autocomplete="off" style="text-align:center;" />
+                            <input type="text" id="ExpYear" name="ExpYear" class="f-control"
+                                   inputmode="numeric" maxlength="4" placeholder="سال"
+                                   autocomplete="off" style="text-align:center;" />
                         </div>
-
-
+                        <input type="hidden" asp-for="NewLine.ExpiryDate" id="ExpiryDate" />
+                        <span asp-validation-for="NewLine.ExpiryDate" class="text-danger" style="font-size:11px;"></span>
                     </div>
 
+                </div>
 
+                <div class="f-group" style="margin-bottom:16px;">
+                    <label class="f-label">ملاحظات</label>
+                    <textarea asp-for="NewLine.Note" class="f-control"
+                              placeholder="ملاحظات کالا را وارد کنید"></textarea>
+                </div>
 
-                    <!-- ================== گرید خطوط موجود ================== -->
+                <div style="display:flex; justify-content:flex-end;">
+                    <button type="submit" name="command" value="addLine" class="btn-add-line">
+                        <i class="fa fa-plus"></i>
+                        افزودن کالا
+                    </button>
+                </div>
 
-                    <div class="col-lg-12 allign-text">
-                        <h6 class="mb-2">لیست اقلام این ورود</h6>
+            </div>
+        </div>
 
-                        <table class="table table-bordered table-striped table-condensed lines-table">
-                            <thead>
+        <div class="a-card">
+            <div class="a-card-header">
+                <div class="card-icon" style="background:#f3e8ff;color:#7c3aed;">
+                </div>
+                <h6>لیست اقلام این ورود</h6>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="lines-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>کالا</th>
+                            <th>نام تجاری</th>
+                            <th>سری ساخت</th>
+                            <th>تعداد</th>
+                            <th>تعداد ویال</th>
+                            <th>حجم کل (لیتر)</th>
+                            <th>انبار</th>
+                            <th>انقضا</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model?.Lines != null && Model.Lines.Any())
+                        {
+                            for (int i = 0; i < Model.Lines.Count; i++)
+                            {
+                                var line = Model.Lines[i];
                                 <tr>
-                                    <th>کالا</th>
-                                    <th>نام تجاری</th>
-                                    <th>سری ساخت</th>
-                                    <th>تعداد</th>
-                                    <th>تعداد ویال</th>
-                                    <th>حجم کل (لیتر)</th>
-                                    <th>انبار</th>
-                                    <th>انقضا</th>
-                                    <th>عملیات</th>
+                                    <td>@(i + 1)</td>
+                                    <td>@line.ItemName</td>
+                                    <td>@line.CommertialName</td>
+                                    <td>@line.BatchNum</td>
+                                    <td>@line.Quantity</td>
+                                    <td>@line.NumVials</td>
+                                    <td>@line.TotalVolume</td>
+                                    <td>@line.StoreName</td>
+                                    <td>@line.ExpiryDate?.ToString("yyyy/MM/dd")</td>
+                                    <td>
+                                        <button type="submit"
+                                                name="command"
+                                                value="deleteLine_@line.ArrivalLineId"
+                                                class="btn-del-line"
+                                                title="حذف">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @if (Model.Lines != null && Model.Lines.Any())
-                                {
-                                    for (int i = 0; i < Model.Lines.Count; i++)
-                                    {
-                                        var line = Model.Lines[i];
-                                        <tr>
-                                            <td>@line.ItemName</td> @* یا نام کالا اگر در DTO آورده‌ای *@
-                                            <td>@line.CommertialName</td>
-                                            <td>@line.BatchNum</td>
-                                            <td>@line.Quantity</td>
-                                            <td>@line.NumVials</td>
-                                            <td>@line.TotalVolume</td>
-                                            <td>@line.StoreName</td>
-                                            <td>@line.ExpiryDate?.ToString("yyyy/MM/dd")</td>
-                                            <td>
-                                                <button type="submit"
-                                                        name="command"
-                                                        value="deleteLine_@line.ArrivalLineId"
-                                                        class="btn btn-danger btn-sm">
-                                                    حذف
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    }
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="8" class="text-center text-muted">
-                                            آیتمی ثبت نشده است.
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="10" style="padding:24px; color:#9ca3af;">
+                                    آیتمی ثبت نشده است.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
-                    <!-- دکمه‌های اصلی فرم -->
-                    <div class="text-center mt-4 mb-2">
-                        <button type="submit" name="command" value="draft" class="btn btn-warning px-4">
-                            ذخیره به عنوان پیش‌نویس
-                        </button>
-                        <button type="submit" name="command" value="confirm" class="btn btn-success px-4 mx-2">
-                            تایید
-                        </button>
-                        @*    <button type="submit" name="command" value="deleteAll" class="btn btn-danger px-4">
-                            حذف کل ورود
-                        </button> *@
-                        <a asp-action="Index" class="btn btn-primary px-4 mx-2">بازگشت به لیست</a>
-                    </div>
-
-                </form>
-
+            <div class="form-footer">
+                <button type="submit" name="command" value="confirm" class="btn-confirm">
+                    تایید
+                </button>
+                <button type="submit" name="command" value="draft" class="btn-draft">
+                    ذخیره پیش‌نویس
+                </button>
+                <a asp-action="Index" class="btn-back">
+                    بازگشت
+                </a>
             </div>
         </div>
 
-    </div>
+    </form>
 </div>
 
 @section Scripts {
@@ -518,117 +661,117 @@
     <script src="~/js/persian-datepicker.js"></script>
     <script>
         $(function () {
-
-
             const $itemClass = $("#ItemClassId");
-            const $item = $("#ItemId");
-            const $dose = $("#DosePerVialId");
-            const $vvmType = $("#VvmTypeId");
-            const $vvmStage = $("#VvmStageId");
+            const $item      = $("#ItemId");
+            const $dose      = $("#DosePerVialId");
+            const $vvmType   = $("#VvmTypeId");
+            const $vvmStage  = $("#VvmStageId");
 
             async function loadItemsByClass(classId, selectedItemId) {
                 $item.prop("disabled", true).empty()
                      .append($("<option>").val("").text("در حال دریافت..."));
-
                 if (!classId) {
                     $item.empty().append($("<option>").val("").text("ابتدا نوع کالا را انتخاب کنید"));
                     return;
                 }
-
                 const res = await $.getJSON("/Arrival/GetItemsByClass", { classId });
-
                 $item.empty().append($("<option>").val("").text("انتخاب کنید..."));
                 res.forEach(x => $item.append($("<option>").val(x.id).text(x.text)));
-
                 $item.prop("disabled", false);
-
                 if (selectedItemId) $item.val(selectedItemId).trigger("change");
             }
 
             async function loadDosePerVials(itemId, selectedDoseId) {
                 $dose.prop("disabled", true).empty()
                      .append($("<option>").val("").text("در حال دریافت..."));
-
                 if (!itemId) {
                     $dose.empty().append($("<option>").val("").text("ابتدا کالا را انتخاب کنید"));
                     return;
                 }
-
                 const res = await $.get("@Url.Action("GetDosePerVialsByItem", "Arrival")", { itemId });
-
                 $dose.empty().append($("<option>").val("").text("انتخاب کنید..."));
                 res.forEach(x => $dose.append($("<option>").val(x.value).text(x.text)));
-
                 $dose.prop("disabled", false);
                 if (selectedDoseId) $dose.val(selectedDoseId);
             }
 
-            // events
-            $itemClass.on("change", function () {
-                loadItemsByClass($(this).val(), null);
-            });
-
-            $item.on("change", function () {
-                loadDosePerVials($(this).val(), null);
-            });
+            $itemClass.on("change", function () { loadItemsByClass($(this).val(), null); });
+            $item.on("change", function () { loadDosePerVials($(this).val(), null); });
 
             $vvmType.on("change", function () {
-                if($vvmType.val() != "")
-                    $vvmStage.prop("disabled", false);
-                else{
-                    $vvmStage.prop("disabled", true);
-                    $vvmStage.val("");
-                }
+                if ($(this).val()) $vvmStage.prop("disabled", false);
+                else $vvmStage.prop("disabled", true).val("");
             });
 
-            // ✅ init from server model after return View
             const initClassId = $itemClass.val();
-            const initItemId = $("#ItemId").attr("data-selected");   // می‌سازیم پایین
-            const initDoseId = $("#DosePerVialId").attr("data-selected");
-
+            const initItemId  = $("#ItemId").attr("data-selected");
+            const initDoseId  = $("#DosePerVialId").attr("data-selected");
             if (initClassId) {
                 loadItemsByClass(initClassId, initItemId);
                 if (initItemId) loadDosePerVials(initItemId, initDoseId);
             }
 
-
-
-
-            // ===============================
-            // Calculations (NumVials + TotalVolume)
-            // ===============================
+            // ── محاسبه تعداد ویال ──
             function recalcNumVials() {
-                var qty = parseFloat($("#Quantity").val()) || 0;
+                var qty  = parseFloat($("#Quantity").val()) || 0;
                 var dose = parseFloat($("#DosePerVialId option:selected").text()) || 0;
                 if (dose > 0) $("#NumVials").val(Math.floor(qty / dose));
-                else $("#NumVials").val("");
+                else          $("#NumVials").val("");
+            }
+            $("#Quantity, #DosePerVialId").on("change keyup", recalcNumVials);
+
+            // ── ترکیب تاریخ سه‌بخشی ──
+            function combineDate(dayId, monthId, yearId, hiddenId) {
+                var d = ($("#" + dayId).val() || "").padStart(2, "0");
+                var m = ($("#" + monthId).val() || "").padStart(2, "0");
+                var y = $("#" + yearId).val() || "";
+                if (d !== "00" && m !== "00" && y.length === 4) {
+                    $("#" + hiddenId).val(y + "/" + m + "/" + d);
+                }
             }
 
-
-            $("#Quantity, #DosePerVialId").on("change keyup", function () {
-                recalcNumVials();
-                 ;
+            $("#DateDay, #DateMonth, #DateYear").on("input", function () {
+                combineDate("DateDay", "DateMonth", "DateYear", "Date");
+            });
+            $("#ProdDay, #ProdMonth, #ProdYear").on("input", function () {
+                combineDate("ProdDay", "ProdMonth", "ProdYear", "ProductionDate");
+            });
+            $("#ExpDay, #ExpMonth, #ExpYear").on("input", function () {
+                combineDate("ExpDay", "ExpMonth", "ExpYear", "ExpiryDate");
             });
 
+            function autoAdvance(currentId, nextId, maxLen) {
+                $("#" + currentId).on("input", function () {
+                    if ($(this).val().length >= maxLen) {
+                        $("#" + nextId).focus().select();
+                    }
+                });
+            }
 
-            // ===============================
-            // Datepicker (Persian only for Date)
-            // ===============================
-            $("#Date").pDatepicker({
-                 format: "YYYY/MM/DD",
-                timePicker: {
-                    enabled: false
-                },
-                initialValueType: "1404/10/10",
-                autoClose: true
+            autoAdvance("DateDay",   "DateMonth", 2);
+            autoAdvance("DateMonth", "DateYear",  2);
+            autoAdvance("ProdDay",   "ProdMonth", 2);
+            autoAdvance("ProdMonth", "ProdYear",  2);
+            autoAdvance("ExpDay",    "ExpMonth",  2);
+            autoAdvance("ExpMonth",  "ExpYear",   2);
+
+            function splitDate(val, dayId, monthId, yearId) {
+                if (!val) return;
+                var parts = val.replace(/-/g, "/").split("/");
+                if (parts.length === 3) {
+                    $("#" + yearId).val(parts[0]);
+                    $("#" + monthId).val(parts[1]);
+                    $("#" + dayId).val(parts[2]);
+                }
+            }
+
+            splitDate($("#Date").val(),           "DateDay", "DateMonth", "DateYear");
+            splitDate($("#ProductionDate").val(),  "ProdDay", "ProdMonth", "ProdYear");
+            splitDate($("#ExpiryDate").val(),      "ExpDay",  "ExpMonth",  "ExpYear");
+
+            $("[id$='Day'], [id$='Month'], [id$='Year']").on("keypress", function (e) {
+                if (!/[0-9]/.test(String.fromCharCode(e.which))) e.preventDefault();
             });
-
         });
     </script>
-
-
-
-
-
-
 }

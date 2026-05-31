@@ -20,4 +20,5 @@ public class UpdateDispatchDto
     public ulong DispatchVoucherNumber { get; set; }
     public string ReportNumber { get; set; }
     public bool IsConfirmed { get; internal set; }
+    public bool IsDrafted { get; internal set; }
 }

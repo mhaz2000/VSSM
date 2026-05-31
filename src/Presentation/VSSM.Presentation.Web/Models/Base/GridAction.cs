@@ -11,10 +11,13 @@ public class GridAction
     public string LinkClass { get; set; } = "btn-primary";
     public string IconClass { get; set; } = "fa fa-eye";
     public string IconStyle { get; set; } = "";
+    public bool OpenModal { get; set; } = false;
 
     public string Method { get; set; } = "GET";
     // Dynamic values
     public Func<object, string>? DynamicTitle { get; set; }
+
+    public Func<object, string>? DynamicSkip { get; set; }
 
     public Func<object, string>? DynamicAction { get; set; }
 

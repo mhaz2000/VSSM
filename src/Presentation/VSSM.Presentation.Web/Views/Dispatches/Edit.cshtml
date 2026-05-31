@@ -18,7 +18,7 @@
 }
 
 <style>
-    
+
     .form-control {
         padding: 16px !important;
     }
@@ -122,19 +122,19 @@
                             <div class="col-md-4 input-sec">
 
                                 @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                new SearchableSelectModel
-                                {
-                                    Id = "TransportModeId",
-                                    Name = "TransportModeId",
-                                    Label = "طریقه حمل",
-                                    SelectedValue = Model?.TransportModeId.ToString(),
-                                    Options = transportModes
-                                .Select(x => new SelectOption
-                                {
-                                    Value = x.TransportModeId.ToString(),
-                                    Text = x.FullName
-                                }).ToList()
-                                })
+                                                                new SearchableSelectModel
+                                                                {
+                                                                    Id = "TransportModeId",
+                                                                    Name = "TransportModeId",
+                                                                    Label = "طریقه حمل",
+                                                                    SelectedValue = Model?.TransportModeId.ToString(),
+                                                                    Options = transportModes
+                                                                .Select(x => new SelectOption
+                                                                {
+                                                                    Value = x.TransportModeId.ToString(),
+                                                                    Text = x.FullName
+                                                                }).ToList()
+                                                                })
                             </div>
 
 
@@ -298,13 +298,16 @@
 
                         <div class="text-center mt-4">
 
-                            <button type="submit"
-                                    name="submitType"
-                                    value="final"
-                                    class="btn btn-success px-5"
-                                    @(Model.IsConfirmed ? "disabled" : "")>
-                                ثبت نهایی
-                            </button>
+                            @if (Model.IsDrafted)
+                            {
+                                <button type="submit"
+                                        name="submitType"
+                                        value="final"
+                                        class="btn btn-success px-5"
+                                        @(Model.IsConfirmed ? "disabled" : "")>
+                                    ثبت نهایی
+                                </button>
+                            }
 
                             <button type="submit"
                                     name="submitType"

@@ -1,0 +1,53 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.BaseInfo
+@model BaseInfoInputDto
+
+<div class="modal-header">
+    <h5 class="modal-title">
+        @(Model.BaseInfoId is null || Model.BaseInfoId == 0 ? "افزودن" : "ویرایش")
+    </h5>
+</div>
+
+<form asp-action="Save"
+      asp-controller="BaseInfo"
+      method="post">
+
+    <input asp-for="ParentId" type="hidden" />
+    <input asp-for="BaseInfoId" type="hidden" />
+
+    <div class="modal-body">
+
+
+        <div class="form-group">
+            <label asp-for="Title">عنوان <span style="color: grey">(اجباری)</span></label>
+            <input asp-for="Title" class="form-control" required />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Code">کد</label>
+            <input asp-for="Code" class="form-control" />
+            <span asp-validation-for="Code" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order">ترتیب نمایش</label>
+            <input asp-for="Order" class="form-control" />
+            <span asp-validation-for="Order" class="text-danger"></span>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button"
+                class="btn btn-light"
+                data-dismiss="modal">
+            انصراف
+        </button>
+
+        <button type="submit"
+                class="btn btn-primary">
+            ذخیره
+        </button>
+    </div>
+
+</form>

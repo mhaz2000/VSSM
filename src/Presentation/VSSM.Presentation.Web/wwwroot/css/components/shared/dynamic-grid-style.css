@@ -27,6 +27,8 @@
 
 .grid-actions .action-btn {
     font-size: 1.3rem;
+    outline: none;
+    text-decoration: none;
 }
 
 .row-col{

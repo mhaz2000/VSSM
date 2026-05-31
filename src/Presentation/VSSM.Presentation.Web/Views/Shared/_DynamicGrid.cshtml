@@ -66,11 +66,26 @@
                         var iconStyle = action.DynamicIconStyle?.Invoke(item) ?? action.IconStyle;
                     
                         var linkClass = action.DynamicLinkClass?.Invoke(item) ?? action.LinkClass;
+                        
+                        var skip = action.DynamicSkip?.Invoke(item);
+
+                        if (!string.IsNullOrEmpty(skip) && bool.Parse(skip) == true)
+                            continue;
 
                         if (string.IsNullOrEmpty(title))
                             continue;
 
-                        if (action.Method == "GET")
+                        @if (action.OpenModal)
+                        {
+                            <a href="#"
+                               class="action-btn open-modal"
+                               data-url="@Url.Action(actionName, controller, new { id = routeValue })"
+                               title="@title">
+                        
+                                <i class="@iconClass"></i>
+                            </a>
+                        }
+                        else if (action.Method == "GET")
                         {
                             <a asp-controller="@controller"
                                asp-action="@actionName"

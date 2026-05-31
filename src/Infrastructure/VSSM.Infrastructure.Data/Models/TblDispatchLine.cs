@@ -15,15 +15,9 @@ public partial class TblDispatchLine
 
     public int? Quantity { get; set; }
 
-    public float? UnitPrice { get; set; }
-
     public int? NumVial { get; set; }
 
     public int? DosePerVialId { get; set; }
-
-    public float? TotalVolume { get; set; }
-
-    public float? TotalPrice { get; set; }
 
     public int? StoreId { get; set; }
 
@@ -44,8 +38,7 @@ public partial class TblDispatchLine
     public DateTime? ExpiryDate { get; set; }
 
     public DateTime? EntryDate { get; set; }
-
-    public int? BundleId { get; set; }
+    public Int64 SeqPreview { get; set; }
 
     public virtual TblBundle Bundle { get; set; }
 

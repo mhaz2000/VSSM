@@ -100,6 +100,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IPackService, PackService>();
             services.AddScoped<IRecipientService, RecipientService>();
+            services.AddScoped<IBaseInfoService, BaseInfoService>();
             services.AddScoped<IRecipientConfigurationService, RecipientConfigurationService>();
             services.AddScoped<IDosePerVialService, DosePerVialService>();
             services.AddScoped<IItemDoseAssignmentService, ItemDoseAssignmentService>();

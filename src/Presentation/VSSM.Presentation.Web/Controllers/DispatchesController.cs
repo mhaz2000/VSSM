@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Mono.TextTemplating;
-using System.Threading;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    
+
     public class DispatchesController : BaseController
     {
         private readonly IRecipientService _recipientService;
@@ -181,8 +178,8 @@ namespace VSSM.Presentation.Web.Controllers
 
         public async Task<IActionResult> Arrive(long id, CancellationToken cancellationToken)
         {
-            ViewBag.DispatchLines = await _dispatchService.GetDispatchLinesAsync(id,cancellationToken);
-            ViewBag.Stores = ((await _storeService.GetAll(cancellationToken)).Where(store=> store.RecipientId == CurrentUserRecipientId)).ToList();
+            ViewBag.DispatchLines = await _dispatchService.GetDispatchLinesAsync(id, cancellationToken);
+            ViewBag.Stores = ((await _storeService.GetAll(cancellationToken)).Where(store => store.RecipientId == CurrentUserRecipientId)).ToList();
 
             return View();
         }
@@ -206,7 +203,7 @@ namespace VSSM.Presentation.Web.Controllers
 
         public async Task<IActionResult> ArriveSubmit(DispatchArrivedDto arrivedDto, CancellationToken cancellationToken)
         {
-            await _dispatchService.DispatchArrivedAsync(arrivedDto, CurrentUserId.Value,CurrentUserRecipientId.Value, cancellationToken);
+            await _dispatchService.DispatchArrivedAsync(arrivedDto, CurrentUserId.Value, CurrentUserRecipientId.Value, cancellationToken);
             return RedirectToAction("ToBeArrivedIndex");
         }
 

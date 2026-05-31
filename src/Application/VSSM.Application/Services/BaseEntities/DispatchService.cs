@@ -40,7 +40,6 @@ public class DispatchService : IDispatchService
         dispatch.ReceiverId = updateDispatcheDto.ReceiverId;
         dispatch.TransportModeId = updateDispatcheDto.TransportModeId;
         dispatch.EnteredById = updateDispatcheDto.EnteredById;
-        dispatch.AirwaryWillReference = updateDispatcheDto.AirwaryWillReference;
         dispatch.RequestNum = updateDispatcheDto.RequestNum;
         dispatch.Note = updateDispatcheDto.Note;
         dispatch.Date = string.IsNullOrWhiteSpace(updateDispatcheDto.Date) ? null : DateTimeHelper.ToGregorian(updateDispatcheDto.Date);
@@ -87,8 +86,6 @@ public class DispatchService : IDispatchService
             _context.TblDispatchLines.Add(line);
         }
 
-        dispatch.TotalVolume = totalVolume;
-
         _context.TblDispatches.Update(dispatch);
         await _context.SaveChangesAsync(cancellationToken);
     }
@@ -104,7 +101,6 @@ public class DispatchService : IDispatchService
             FiscalPeriodId = fiscalPeriod.FiscalPeriodId,
             TransportModeId = createDispatcheDto.TransportModeId,
             EnteredById = createDispatcheDto.EnteredById,
-            AirwaryWillReference = createDispatcheDto.AirwaryWillReference,
             RequestNum = createDispatcheDto.RequestNum,
             Note = createDispatcheDto.Note,
             Date = string.IsNullOrWhiteSpace(createDispatcheDto.Date) ? null : DateTimeHelper.ToGregorian(createDispatcheDto.Date),
@@ -150,8 +146,6 @@ public class DispatchService : IDispatchService
 
             dispatch.TblDispatchLines.Add(line);
         }
-
-        dispatch.TotalVolume = totalVolume;
 
         await _context.TblDispatches.AddAsync(dispatch, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
@@ -205,7 +199,6 @@ public class DispatchService : IDispatchService
                 itemDetail.PackingTypeId,
                 itemDetail.ProductionDate,
                 line.Quantity,
-                line.TotalVolume,
                 itemDetail.UnitVolume,
                 line.UseId,
                 line.VvmstageId,
@@ -256,7 +249,6 @@ public class DispatchService : IDispatchService
                 Quantity = item.Quantity,
                 StoreId = arrivedDto.Lines.FirstOrDefault(line => line.DispatchLineId == item.DispatchLineId).StoreId,
                 TempDosePerVial = "0",
-                TotalVolume = item.TotalVolume,
                 UnitVolume = item.UnitVolume,
                 UseId = item.UseId,
                 VvmstageId = item.VvmstageId,
@@ -301,12 +293,12 @@ public class DispatchService : IDispatchService
         var model = new UpdateDispatchDto
         {
             IsConfirmed = dispatch.IsConfirmed ?? false,
+            IsDrafted = dispatch.IsDrafted ?? false,
             Id = dispatch.DispatchId,
             Date = dispatch.Date?.Date.ToString("yyyy/MM/dd"),
             RequestNum = dispatch.RequestNum,
             DispatchVoucherNumber = ulong.TryParse(dispatch.DispatchVoucherNumber, out ulong res) ? res : 0,
             ReportNumber = dispatch.ReportNumber,
-            AirwaryWillReference = dispatch.AirwaryWillReference,
             ReceiverId = dispatch.ReceiverId ?? 0,
             TransportModeId = dispatch.TransportModeId ?? 0,
             ReceivingModeId = dispatch.ReceivingModeId ?? 0,
@@ -398,7 +390,6 @@ public class DispatchService : IDispatchService
                         IsConfirmed = d.IsConfirmed,
                         DispatchVoucherNumber = d.DispatchVoucherNumber,
                         RequestNum = d.RequestNum,
-                        TotalVolume = d.TotalVolume,
                         IsDrafted = d.IsDrafted,
                         ReceiverStatus = d.ReceiverStatus ?? 0,
                         ReceiverName = r != null ? r.FirstName + " " + r.LastName : "-",
@@ -449,7 +440,6 @@ public class DispatchService : IDispatchService
                         Date = d.Date,
                         DispatchVoucherNumber = d.DispatchVoucherNumber,
                         RequestNum = d.RequestNum,
-                        TotalVolume = d.TotalVolume,
                         EntryDate = d.EntryDate,
                         SenderName = r != null ? r.FullName : "-",
                     };

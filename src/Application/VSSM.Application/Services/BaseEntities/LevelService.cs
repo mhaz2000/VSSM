@@ -1,8 +1,11 @@
+using DocumentFormat.OpenXml.InkML;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.Levels;
 using VSSM.Application.DTOs.BaseEntities.Recipient;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
@@ -168,12 +171,12 @@ namespace VSSM.Application.Services.BaseEntities
                        SafetyStockMonth = entity.SafetyStockMonth,
                        Note = entity.Note,
                        MaxDay = entity.MaxDay
-                       
+
 
                    }
                 ).ToListAsync(cancellationToken);
         }
 
-        
+
     }
 }

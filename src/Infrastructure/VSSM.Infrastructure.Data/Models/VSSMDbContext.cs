@@ -2094,8 +2094,12 @@ public partial class VSSMDbContext : DbContext
                 .HasColumnName("HASH_CODE")
                 .HasMaxLength(100);
 
-            entity.Property(e => e.ChildUid)
-                .HasColumnName("CHILD_UID")
+            entity.Property(e => e.FirstLevelUid)
+                .HasColumnName("FIRST_LEVEL_UID")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.SecLevelUid)
+                .HasColumnName("SEC_LEVEL_UID")
                 .HasMaxLength(50);
 
             entity.Property(e => e.ParentUid)
@@ -2105,6 +2109,21 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.IsActive)
                 .HasColumnName("IS_ACTIVE");
 
+            entity.Property(e => e.Used)
+                .HasColumnName("USED");
+
+            entity.Property(e => e.ConsumedCount)
+                .HasColumnName("CONSUMED_COUNT")
+                .IsRequired(false);
+
+            entity.Property(e => e.DoesCount)
+                .HasColumnName("DOES_COUNT")
+                .IsRequired(false);
+
+            entity.Property(e => e.CurrentStore)
+                .HasColumnName("CURRENT_STORE")
+                .IsRequired(false);
+
             entity.Property(e => e.FkOrderInfo)
                 .HasColumnName("FK_order_INFO");
 
@@ -2112,6 +2131,22 @@ public partial class VSSMDbContext : DbContext
                 .WithMany(p => p.TblUidInfos)
                 .HasForeignKey(d => d.FkOrderInfo)
                 .HasConstraintName("FK_tblUidInfo_InfoOrder");
+
+            entity.Property(e => e.FkArrivalId)
+                .HasColumnName("Fk_arrival_id");
+
+            entity.HasOne(d => d.Arrival)
+                .WithMany()
+                .HasForeignKey(d => d.FkArrivalId)
+                .HasConstraintName("FK_tblUidInfo_Arrival");
+
+            entity.Property(e => e.FkItemId)
+                .HasColumnName("Fk_item_id");
+
+            entity.HasOne(d => d.Item)
+                .WithMany()
+                .HasForeignKey(d => d.FkItemId)
+                .HasConstraintName("FK_tblUidInfo_Item");
         });
 
 

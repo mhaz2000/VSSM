@@ -1,55 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace VSSM.Presentation.Web.Models.Arrival
+namespace VSSM.Presentation.Web.Models.Arrival;
+
+public class ArrivalViewModel
 {
-    public class ArrivalViewModel
-    {
+    public int? ArrivalId { get; set; }
 
-        public int? ArrivalId { get; set; }
+    [Display(Name = "تاریخ ورود")]
+    [Required(ErrorMessage = "تاریخ ورود اجباری است.")]
+    public string Date { get; set; }
 
-        [Display(Name = "تاریخ ورود")]
-        [Required(ErrorMessage = "تاریخ ورود اجباری است.")]
-        public string Date { get; set; } // string – بعداً به DateTime تبدیل می‌کنیم
+    [Display(Name = "شماره گزارش")]
+    public string? ReportNumber { get; set; }
 
-        [Display(Name = "شماره گزارش")]
-        public string? ReportNumber { get; set; }
+    [Display(Name = "دوره فعالیت")]
+    public string? FiscalPeriodName { get; set; }
 
-        [Display(Name = "منبع")]
-        public int? SourceId { get; set; }
+    public DateTime? EntryDate { get; set; }
 
-        [Display(Name = "دوره فعالیت")]
-        public string? FiscalPeriodName { get; set; }
-        // فقط نمایش
-        public DateTime? EntryDate { get; set; }
+    public bool IsConfirmed { get; set; }
+    public bool IsCancelled { get; set; }
+    public bool IsDrafted { get; set; }
 
-        public bool IsConfirmed { get; set; }
-        public bool IsCancelled { get; set; }
-        public bool IsDrafted { get; set; }
+    [Display(Name = "ملاحظات")]
+    public string? Note { get; set; }
 
-        [Display(Name = "حجم بسته")]
-        public float? PackedVolume { get; set; }
-
-        [Display(Name = "وزن کل")]
-        public float? TotalWeight { get; set; }
-
-        [Display(Name = "حجم کل (لیتر)")]
-        public float? TotalVolume { get; set; }
-
-        [Display(Name = "ملاحظات")]
-        public string? Note { get; set; }
-
-        [Display(Name = "تشخیص دهنده سرما")]
-        public int? Frzindc { get; set; }
-
-        [Display(Name = "تشخیص دهنده سرما غیر معتبر")]
-        public int? FrzindcNok { get; set; }
-
-        public List<ArrivalLineViewModel> Lines { get; set; } = new();
-        public ArrivalLineViewModel NewLine { get; set; } = new();
-
-
-    }
-
+    public List<ArrivalLineViewModel> Lines { get; set; } = new();
+    public ArrivalLineViewModel NewLine { get; set; } = new();
 }

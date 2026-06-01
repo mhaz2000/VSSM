@@ -9,4 +9,9 @@ public record OrderInfoDto
     public int Quantity { get; internal set; }
     public string BatchNumber { get; internal set; }
     public string Status { get; internal set; }
+
+
+    public DateTime? ExpirationDate { get; internal set; }   
+    public DateTime? ManufactureDate { get; internal set; }  
+    public bool IsConfirmed { get; internal set; }
 }

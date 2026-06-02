@@ -93,17 +93,6 @@
 
 
 
-                            <!-- منبع (الزامی) -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    منبع:
-                                </span>
-                                <select asp-for="SourceId"
-                                        asp-items="ViewBag.SourceList"
-                                        class="form-select">
-                                    <option value="">انتخاب کنید...</option>
-                                </select>
-                            </div>
 
                             <!-- شماره گزارش -->
                             <div class="form-group">
@@ -114,49 +103,7 @@
                                 <span asp-validation-for="ReportNumber" class="text-danger"></span>
                             </div>
 
-                            <!-- حجم بسته -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    حجم بسته(لیتر):
-                                </span>
-                                <input asp-for="PackedVolume" class="form-control" />
-
-                            </div>
-
-                            <!-- وزن کل -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    وزن کل (کیلوگرم):
-                                </span>
-                                <input asp-for="TotalWeight" class="form-control" />
-
-                            </div>
-
-                            <!-- حجم کل لیتر (خلاصه) -->
-                            <div class="form-group">
-                                <span class="form-label">
-                                    حجم کل (لیتر):
-                                </span>
-                                <input asp-for="TotalVolume" class="form-control" readonly />
-                            </div>
-
-                            <!-- تشخیص دهنده سرما -->
-                            <div class="form-group">
-                                <span class="form-label">تشخیص دهنده سرما:</span>
-                                <input asp-for="Frzindc" class="form-control" />
-                            </div>
-
-                            <!-- تشخیص دهنده سرما غیر معتبر -->
-                            <div class="form-group">
-                                <span class="form-label">تشخیص دهنده سرما غیر معتبر:</span>
-                                <input asp-for="FrzindcNok" class="form-control" />
-                            </div>
-
-                            <!-- ملاحظات -->
-                            <div class="form-group">
-                                <span class="form-label">ملاحظات:</span>
-                                <textarea asp-for="Note" class="form-control"></textarea>
-                            </div>
+                        
                         </fieldset>
                     </div>
 
@@ -195,7 +142,6 @@
                                             <td>@line.BatchNum</td>
                                             <td>@line.Quantity</td>
                                             <td>@line.NumVials</td>
-                                            <td>@line.TotalVolume</td>
                                             <td>@line.StoreName</td>
                                             <td>@line.ExpiryDate?.ToString("yyyy/MM/dd")</td>
 

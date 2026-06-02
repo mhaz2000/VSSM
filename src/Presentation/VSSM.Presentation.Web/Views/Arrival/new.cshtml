@@ -362,6 +362,7 @@
         .arrival-wrap {
             padding: 12px;
         }
+
     }
 </style>
 
@@ -371,9 +372,9 @@
         <input type="hidden" asp-for="ArrivalId" />
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size:13px;"></div>
 
+        <!-- ── کارت ۱: اطلاعات اصلی ── -->
         <div class="a-card">
             <div class="a-card-header">
-
                 <h6>@formTitle</h6>
             </div>
             <div class="a-card-body">
@@ -406,11 +407,14 @@
                         <span asp-validation-for="Date" class="text-danger" style="font-size:11px;"></span>
                     </div>
 
+                    <!-- سری ساخت: با blur رویداد Ajax می‌زند -->
                     <div class="f-group">
                         <label class="f-label">سری ساخت <span class="req-tag">اجباری</span></label>
-                        <input asp-for="NewLine.BatchNum" class="f-control"
-                               placeholder="سری ساخت را وارد کنید" />
+                        <input asp-for="NewLine.BatchNum" class="f-control" id="BatchNum"
+                               placeholder="سری ساخت را وارد کنید"
+                               autocomplete="off" />
                         <span asp-validation-for="NewLine.BatchNum" class="text-danger" style="font-size:11px;"></span>
+                        <div id="batchMsg" style="font-size:11px; margin-top:3px;"></div>
                     </div>
 
                 </div>
@@ -423,6 +427,7 @@
             </div>
         </div>
 
+        <!-- ── کارت ۲: جزئیات کالا ── -->
         <div class="a-card">
             <div class="a-card-header">
                 <h6>جزئیات کالا</h6>
@@ -482,11 +487,6 @@
 
                 <div class="fg-3" style="margin-bottom:14px;">
                     <div class="f-group">
-                        <label class="f-label">تعداد ویال <span class="opt">(محاسبه‌ای)</span></label>
-                        <input asp-for="NewLine.NumVials" class="f-control" id="NumVials" readonly
-                               placeholder="خودکار محاسبه می‌شود" />
-                    </div>
-                    <div class="f-group">
                         <label class="f-label">نام تجاری</label>
                         <select asp-for="NewLine.CommertialNameId"
                                 asp-items="ViewBag.CommercialNameList" class="f-control">
@@ -500,61 +500,56 @@
                             <option value="">انتخاب کنید...</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="fg-3" style="margin-bottom:14px;">
-                    <div class="f-group">
-                        <label class="f-label">تعداد <span class="req-tag">اجباری</span></label>
-                        <input asp-for="NewLine.Quantity" class="f-control" id="Quantity"
-                               placeholder="تعداد را وارد کنید" />
-                        <span asp-validation-for="NewLine.Quantity" class="text-danger" style="font-size:11px;"></span>
-                    </div>
                     <div class="f-group">
                         <label class="f-label">مورد استفاده</label>
                         <select asp-for="NewLine.UseId" asp-items="ViewBag.UseList" class="f-control">
                             <option value="">انتخاب کنید...</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- تعداد: disabled — از Ajax پر می‌شود -->
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">تعداد <span class="req-tag">اجباری</span></label>
+                        <input asp-for="NewLine.Quantity" class="f-control" id="Quantity"
+                               disabled readonly placeholder="بر اساس سری ساخت پر می‌شود" />
+                        <input type="hidden" name="NewLine.Quantity" id="QuantityHidden" />
+                        <span asp-validation-for="NewLine.Quantity" class="text-danger" style="font-size:11px;"></span>
+                    </div>
+                    <div></div>
                     <div></div>
                 </div>
 
                 <div class="section-divider"></div>
 
+                <!-- تاریخ تولید و انقضا: disabled — از Ajax پر می‌شوند -->
                 <div class="date-section">
 
                     <div>
-                        <div class="date-group-label">تاریخ تولید</div>
+                        <div class="date-group-label">تاریخ تولید <span class="opt">(خودکار)</span></div>
                         <div class="date-inner">
-                            <input type="text" id="ProdDay" name="ProdDay" class="f-control"
-                                   inputmode="numeric" maxlength="2" placeholder="روز"
-                                   autocomplete="off" style="text-align:center;" />
-                            <input type="text" id="ProdMonth" name="ProdMonth" class="f-control"
-                                   inputmode="numeric" maxlength="2" placeholder="ماه"
-                                   autocomplete="off" style="text-align:center;" />
-                            <input type="text" id="ProdYear" name="ProdYear" class="f-control"
-                                   inputmode="numeric" maxlength="4" placeholder="سال"
-                                   autocomplete="off" style="text-align:center;" />
+                            <input type="text" id="ProdDay" class="f-control"
+                                   placeholder="روز" disabled style="text-align:center;" />
+                            <input type="text" id="ProdMonth" class="f-control"
+                                   placeholder="ماه" disabled style="text-align:center;" />
+                            <input type="text" id="ProdYear" class="f-control"
+                                   placeholder="سال" disabled style="text-align:center;" />
                         </div>
                         <input type="hidden" asp-for="NewLine.ProductionDate" id="ProductionDate" />
                     </div>
 
                     <div>
-                        <div class="date-group-label">
-                            تاریخ انقضا <span class="req-tag">اجباری</span>
-                        </div>
+                        <div class="date-group-label">تاریخ انقضا <span class="opt">(خودکار)</span></div>
                         <div class="date-inner">
-                            <input type="text" id="ExpDay" name="ExpDay" class="f-control"
-                                   inputmode="numeric" maxlength="2" placeholder="روز"
-                                   autocomplete="off" style="text-align:center;" />
-                            <input type="text" id="ExpMonth" name="ExpMonth" class="f-control"
-                                   inputmode="numeric" maxlength="2" placeholder="ماه"
-                                   autocomplete="off" style="text-align:center;" />
-                            <input type="text" id="ExpYear" name="ExpYear" class="f-control"
-                                   inputmode="numeric" maxlength="4" placeholder="سال"
-                                   autocomplete="off" style="text-align:center;" />
+                            <input type="text" id="ExpDay" class="f-control"
+                                   placeholder="روز" disabled style="text-align:center;" />
+                            <input type="text" id="ExpMonth" class="f-control"
+                                   placeholder="ماه" disabled style="text-align:center;" />
+                            <input type="text" id="ExpYear" class="f-control"
+                                   placeholder="سال" disabled style="text-align:center;" />
                         </div>
                         <input type="hidden" asp-for="NewLine.ExpiryDate" id="ExpiryDate" />
-                        <span asp-validation-for="NewLine.ExpiryDate" class="text-danger" style="font-size:11px;"></span>
                     </div>
 
                 </div>
@@ -575,12 +570,13 @@
             </div>
         </div>
 
+        <!-- ── کارت ۳: لیست اقلام ── -->
         <div class="a-card">
             <div class="a-card-header">
                 <h6>لیست اقلام این ورود</h6>
             </div>
-            <div style="overflow-x:auto;">
-                <table class="lines-table">
+            <div style="overflow-x:auto; padding: 0 20px;">
+                <table class="lines-table" style="margin-top: 16px; margin-bottom: 16px;">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -588,8 +584,6 @@
                             <th>نام تجاری</th>
                             <th>سری ساخت</th>
                             <th>تعداد</th>
-                            <th>تعداد ویال</th>
-                            <th>حجم کل (لیتر)</th>
                             <th>انبار</th>
                             <th>انقضا</th>
                             <th>عملیات</th>
@@ -607,26 +601,31 @@
                                     <td>@line.CommertialName</td>
                                     <td>@line.BatchNum</td>
                                     <td>@line.Quantity</td>
-                                    <td>@line.NumVials</td>
-                                    <td>@line.TotalVolume</td>
                                     <td>@line.StoreName</td>
                                     <td>@line.ExpiryDate?.ToString("yyyy/MM/dd")</td>
-                                    <td>
-                                        <button type="submit"
-                                                name="command"
-                                                value="deleteLine_@line.ArrivalLineId"
-                                                class="btn-del-line"
-                                                title="حذف">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                    </td>
+                               <td>
+                                   <a asp-action="EditLine" 
+                                      asp-route-id="@line.ArrivalLineId" 
+                                      class="btn-del-line" 
+                                      title="ویرایش"
+                                      style="color:#2563eb; border-color:#bfdbfe;">
+                                       <i class="fa fa-edit"></i>
+                                   </a>
+                                   <button type="submit"
+                                           name="command"
+                                           value="deleteLine_@line.ArrivalLineId"
+                                           class="btn-del-line"
+                                           title="حذف">
+                                       <i class="fa fa-trash"></i>
+                                   </button>
+                               </td>
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="10" style="padding:24px; color:#9ca3af;">
+                                <td colspan="8" style="padding:24px; color:#9ca3af;">
                                     آیتمی ثبت نشده است.
                                 </td>
                             </tr>
@@ -707,16 +706,7 @@
                 if (initItemId) loadDosePerVials(initItemId, initDoseId);
             }
 
-            // ── محاسبه تعداد ویال ──
-            function recalcNumVials() {
-                var qty  = parseFloat($("#Quantity").val()) || 0;
-                var dose = parseFloat($("#DosePerVialId option:selected").text()) || 0;
-                if (dose > 0) $("#NumVials").val(Math.floor(qty / dose));
-                else          $("#NumVials").val("");
-            }
-            $("#Quantity, #DosePerVialId").on("change keyup", recalcNumVials);
-
-            // ── ترکیب تاریخ سه‌بخشی ──
+            // ── ترکیب تاریخ سه‌بخشی (فقط برای تاریخ ورود) ──
             function combineDate(dayId, monthId, yearId, hiddenId) {
                 var d = ($("#" + dayId).val() || "").padStart(2, "0");
                 var m = ($("#" + monthId).val() || "").padStart(2, "0");
@@ -729,12 +719,6 @@
             $("#DateDay, #DateMonth, #DateYear").on("input", function () {
                 combineDate("DateDay", "DateMonth", "DateYear", "Date");
             });
-            $("#ProdDay, #ProdMonth, #ProdYear").on("input", function () {
-                combineDate("ProdDay", "ProdMonth", "ProdYear", "ProductionDate");
-            });
-            $("#ExpDay, #ExpMonth, #ExpYear").on("input", function () {
-                combineDate("ExpDay", "ExpMonth", "ExpYear", "ExpiryDate");
-            });
 
             function autoAdvance(currentId, nextId, maxLen) {
                 $("#" + currentId).on("input", function () {
@@ -746,10 +730,6 @@
 
             autoAdvance("DateDay",   "DateMonth", 2);
             autoAdvance("DateMonth", "DateYear",  2);
-            autoAdvance("ProdDay",   "ProdMonth", 2);
-            autoAdvance("ProdMonth", "ProdYear",  2);
-            autoAdvance("ExpDay",    "ExpMonth",  2);
-            autoAdvance("ExpMonth",  "ExpYear",   2);
 
             function splitDate(val, dayId, monthId, yearId) {
                 if (!val) return;
@@ -761,13 +741,77 @@
                 }
             }
 
-            splitDate($("#Date").val(),           "DateDay", "DateMonth", "DateYear");
-            splitDate($("#ProductionDate").val(),  "ProdDay", "ProdMonth", "ProdYear");
-            splitDate($("#ExpiryDate").val(),      "ExpDay",  "ExpMonth",  "ExpYear");
+            splitDate($("#Date").val(), "DateDay", "DateMonth", "DateYear");
 
             $("[id$='Day'], [id$='Month'], [id$='Year']").on("keypress", function (e) {
                 if (!/[0-9]/.test(String.fromCharCode(e.which))) e.preventDefault();
             });
+
+            // ── auto-fill از BatchNum ──
+            // وقتی کاربر از فیلد BatchNum خارج می‌شود (blur)، Ajax call می‌رود
+            $("#BatchNum").on("blur", function () {
+                var batchNum = $(this).val().trim();
+                if (!batchNum) return;
+
+                var arrivalId = $("#ArrivalId").val() || 0;
+
+                $.ajax({
+                    url: "@Url.Action("GetBatchInfo", "Arrival")",
+                    type: "GET",
+                    data: { batchNum: batchNum, arrivalId: arrivalId },
+                    success: function (res) {
+                        var $msg = $("#batchMsg");
+                        if (!res.success) {
+                            $msg.css("color", "#dc2626").text(res.message);
+                            clearBatchFields();
+                            return;
+                        }
+                        $msg.css("color", "#16a34a").text("✓ سری ساخت تایید شد");
+
+                        // پر کردن تعداد
+                        $("#Quantity").val(res.quantity);
+                        $("#QuantityHidden").val(res.quantity);
+
+                        // پر کردن تاریخ تولید
+                        if (res.productionDateShamsi) {
+                            var prodParts = res.productionDateShamsi.split("/");
+                            if (prodParts.length === 3) {
+                                $("#ProdYear").val(prodParts[0]);
+                                $("#ProdMonth").val(prodParts[1]);
+                                $("#ProdDay").val(prodParts[2]);
+                                $("#ProductionDate").val(res.productionDateShamsi);
+                            }
+                        }
+
+                        // پر کردن تاریخ انقضا
+                        if (res.expiryDateShamsi) {
+                            var expParts = res.expiryDateShamsi.split("/");
+                            if (expParts.length === 3) {
+                                $("#ExpYear").val(expParts[0]);
+                                $("#ExpMonth").val(expParts[1]);
+                                $("#ExpDay").val(expParts[2]);
+                                $("#ExpiryDate").val(res.expiryDateShamsi);
+                            }
+                        }
+                    },
+                    error: function () {
+                        $("#batchMsg").css("color", "#dc2626").text("خطا در بررسی سری ساخت");
+                        clearBatchFields();
+                    }
+                });
+            });
+
+            function clearBatchFields() {
+                $("#Quantity").val(""); $("#QuantityHidden").val("");
+                $("#ProdDay, #ProdMonth, #ProdYear").val(""); $("#ProductionDate").val("");
+                $("#ExpDay, #ExpMonth, #ExpYear").val(""); $("#ExpiryDate").val("");
+            }
+
+            // init اگر در حالت ویرایش مقادیر از مدل آمده باشند
+            splitDate($("#ProductionDate").val(), "ProdDay", "ProdMonth", "ProdYear");
+            splitDate($("#ExpiryDate").val(),     "ExpDay",  "ExpMonth",  "ExpYear");
+            var qty = $("#QuantityHidden").val();
+            if (qty) { $("#Quantity").val(qty); }
         });
     </script>
 }

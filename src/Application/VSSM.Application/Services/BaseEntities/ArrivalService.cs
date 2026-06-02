@@ -55,13 +55,9 @@ namespace VSSM.Application.Services.BaseEntities
                     ReportNumber = x.ReportNumber,
                     ArrivalId = x.ArrivalId,
                     Date = x.Date,
-                    TotalVolume = x.TotalVolume,
                     IsConfirmed = x.IsConfirmed,
                     IsDrafted = x.IsDrafted,
                     IsCancelled = x.IsCancelled,
-                    SourceName = x.SourceId != null
-                        ? _db.TblSources.Where(s => s.SourceId == x.SourceId).Select(s => s.FullName).FirstOrDefault()
-                        : null,
                     FiscalPeriodName = x.FiscalPeriodId != null
                         ? _db.TblFiscalPeriods.Where(f => f.FiscalPeriodId == x.FiscalPeriodId).Select(f => f.FullName)
                             .FirstOrDefault()
@@ -95,18 +91,12 @@ namespace VSSM.Application.Services.BaseEntities
                 ArrivalId = arrival.ArrivalId,
                 Date = arrival.Date,
                 ReportNumber = arrival.ReportNumber,
-                SourceId = arrival.SourceId,
                 FiscalPeriodId = arrival.FiscalPeriodId,
                 EntryDate = arrival.EntryDate,
                 IsConfirmed = arrival.IsConfirmed,
                 IsDrafted = arrival.IsDrafted,
                 IsCancelled = arrival.IsCancelled,
-                PackedVolume = arrival.PackedVolume,
-                TotalWeight = arrival.TotalWeight,
-                TotalVolume = arrival.TotalVolume,
                 Note = arrival.Note,
-                Frzindc = arrival.Frzindc,
-                FrzindcNok = arrival.FrzindcNok,
                 Lines = arrival.TblArrivalLines
                     .Where(l => l.ArrivalId == arrival.ArrivalId)
                     .Select(l => new ArrivalLineDto
@@ -123,12 +113,8 @@ namespace VSSM.Application.Services.BaseEntities
                         ManufacturerId = l.ManufacturerId,
                         Note = l.Note,
                         NumVials = l.NumVials,
-                        PackageSize = l.PackageSize,
-                        PackingTypeId = l.PackingTypeId,
                         Quantity = l.Quantity,
                         StoreId = l.StoreId,
-                        TotalVolume = l.TotalVolume,
-                        UnitVolume = l.UnitVolume,
                         UseId = l.UseId,
                         VvmStageId = l.VvmstageId,
                         VvmTypeId = l.VvmtypeId
@@ -145,18 +131,12 @@ namespace VSSM.Application.Services.BaseEntities
             {
                 Date = dto.Date,
                 ReportNumber = dto.ReportNumber,
-                SourceId = dto.SourceId,
                 FiscalPeriodId = dto.FiscalPeriodId,
                 EntryDate = DateTime.Now,
                 IsDrafted = true,
                 IsConfirmed = false,
                 IsCancelled = false,
-                PackedVolume = dto.PackedVolume,
-                TotalWeight = dto.TotalWeight,
-                TotalVolume = dto.TotalVolume,
                 Note = dto.Note,
-                Frzindc = dto.Frzindc,
-                FrzindcNok = dto.FrzindcNok,
                 ReceiverId = dto.UserRecipientId,
                 EnteredById = dto.EnterById
             };
@@ -189,15 +169,9 @@ namespace VSSM.Application.Services.BaseEntities
 
             // ----- update arrival -----
             arrival.ReportNumber = dto.ReportNumber;
-            arrival.SourceId = dto.SourceId;
             arrival.EntryDate = now;
             arrival.IsCancelled = false;
-            arrival.PackedVolume = dto.PackedVolume;
-            arrival.TotalWeight = dto.TotalWeight;
-            arrival.TotalVolume = dto.TotalVolume;
             arrival.Note = dto.Note;
-            arrival.Frzindc = dto.Frzindc;
-            arrival.FrzindcNok = dto.FrzindcNok;
             arrival.ReceiverId = dto.UserRecipientId;
             arrival.IsConfirmed = true;
             arrival.IsDrafted = false;
@@ -216,15 +190,11 @@ namespace VSSM.Application.Services.BaseEntities
                     DosePerVialId = line.DosePerVialId,
                     ManufacturerId = line.ManufacturerId,
                     CommercialNameId = line.CommertialNameId,
-                    SourceId = arrival.SourceId, // (arrival.SourceId already set from dto)
                     VvmtypeId = line.VvmtypeId,
                     BatchNumber = line.BatchNum,
                     ExpiryDate = line.ExpiryDate,
                     ProductionDate = line.ProductionDate,
-                    UnitVolume = line.UnitVolume,
                     IsConfirmed = true,
-                    PackingTypeId = line.PackingTypeId,
-                    PackageSize = line.PackageSize
                 };
 
                 map.Add(line, detail);
@@ -268,15 +238,9 @@ namespace VSSM.Application.Services.BaseEntities
             if (arrival == null) return;
 
             arrival.ReportNumber = dto.ReportNumber;
-            arrival.SourceId = dto.SourceId;
             arrival.EntryDate = DateTime.Now;
             arrival.IsCancelled = false;
-            arrival.PackedVolume = dto.PackedVolume;
-            arrival.TotalWeight = dto.TotalWeight;
-            arrival.TotalVolume = dto.TotalVolume;
             arrival.Note = dto.Note;
-            arrival.Frzindc = dto.Frzindc;
-            arrival.FrzindcNok = dto.FrzindcNok;
             arrival.ReceiverId = dto.UserRecipientId;
             arrival.IsDrafted = true;
             arrival.IsConfirmed = false;
@@ -335,18 +299,7 @@ namespace VSSM.Application.Services.BaseEntities
                 .ToListAsync(token);
         }
 
-        public async Task AddToTotal(int? id, float total)
-        {
-            (await _db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == id)).TotalVolume += total;
-            await _db.SaveChangesAsync();
-        }
 
-        public async Task SubtractionToTotal(int lineId, int arrivalId)
-        {
-            (await _db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == arrivalId)).TotalVolume -=
-                _db.TblArrivalLines.FirstOrDefault(z => z.ArrivalLineId == lineId).TotalVolume;
-            await _db.SaveChangesAsync();
-        }
 
         public async Task Delete(int id)
         {
@@ -361,8 +314,8 @@ namespace VSSM.Application.Services.BaseEntities
         public async Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token)
         {
             var does = _db.TblDosePerVials.First(z => z.DosePerVialId == dto.DosePerVialId).NumDosePerVial;
-            if (dto.Quantity % does != 0)
-                throw new ValidationException("تعداد باید مضربی از دوز بر ویال باشد");
+            //if (dto.Quantity % does != 0)
+            //    throw new ValidationException("تعداد باید مضربی از دوز بر ویال باشد");
             //var id = _db.TblArrivalLines.OrderByDescending(z => z.ArrivalLineId).First().ArrivalLineId + 1;
             var line = new TblArrivalLine
             {
@@ -378,12 +331,8 @@ namespace VSSM.Application.Services.BaseEntities
                 ManufacturerId = dto.ManufacturerId,
                 Note = dto.Note,
                 NumVials = dto.NumVials,
-                PackageSize = dto.PackageSize,
-                PackingTypeId = dto.PackingTypeId,
                 Quantity = dto.Quantity,
                 StoreId = dto.StoreId,
-                UnitVolume = dto.UnitVolume,
-                TotalVolume = dto.TotalVolume,
                 UseId = dto.UseId,
                 VvmstageId = dto.VvmStageId,
                 VvmtypeId = dto.VvmTypeId,
@@ -394,9 +343,6 @@ namespace VSSM.Application.Services.BaseEntities
 
             // update header total volume
             var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
-            arrival.TotalVolume = await _db.TblArrivalLines
-                .Where(x => x.ArrivalId == arrivalId)
-                .SumAsync(x => x.TotalVolume ?? 0, token);
 
             await _db.SaveChangesAsync(token);
         }
@@ -435,12 +381,8 @@ namespace VSSM.Application.Services.BaseEntities
                     ManufacturerId = l.ManufacturerId,
                     Note = l.Note,
                     NumVials = l.NumVials,
-                    PackageSize = l.PackageSize,
-                    PackingTypeId = l.PackingTypeId,
                     Quantity = l.Quantity,
                     StoreId = l.StoreId,
-                    TotalVolume = l.TotalVolume,
-                    UnitVolume = l.UnitVolume,
                     UseId = l.UseId,
                     VvmStageId = l.VvmstageId,
                     VvmTypeId = l.VvmtypeId,
@@ -488,12 +430,8 @@ namespace VSSM.Application.Services.BaseEntities
                 ManufacturerId = line.ManufacturerId,
                 Note = line.Note,
                 NumVials = line.NumVials,
-                PackageSize = line.PackageSize,
-                PackingTypeId = line.PackingTypeId,
                 Quantity = line.Quantity,
                 StoreId = line.StoreId,
-                TotalVolume = line.TotalVolume,
-                UnitVolume = line.UnitVolume,
                 UseId = line.UseId,
                 VvmStageId = line.VvmstageId,
                 VvmTypeId = line.VvmtypeId
@@ -520,18 +458,24 @@ namespace VSSM.Application.Services.BaseEntities
                 ManufacturerId = line.ManufacturerId,
                 Note = line.Note,
                 NumVials = line.NumVials,
-                PackageSize = line.PackageSize,
-                PackingTypeId = line.PackingTypeId,
                 Quantity = line.Quantity,
                 StoreId = line.StoreId,
-                TotalVolume = line.TotalVolume,
-                UnitVolume = line.UnitVolume,
                 UseId = line.UseId,
                 VvmStageId = line.VvmstageId,
                 VvmTypeId = line.VvmtypeId
             };
 
             return dto;
+        }
+
+        public Task AddToTotal(int? id, float total)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SubtractionToTotal(int lineId, int arrivalId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

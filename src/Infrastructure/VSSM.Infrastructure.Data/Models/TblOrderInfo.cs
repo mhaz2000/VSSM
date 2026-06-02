@@ -30,6 +30,7 @@ public partial class TblOrderInfo
 
     public string FileName { get; set; } = null!;
 
+
     public virtual ICollection<TblUidInfo> TblUidInfos { get; set; }
         = new List<TblUidInfo>();
 

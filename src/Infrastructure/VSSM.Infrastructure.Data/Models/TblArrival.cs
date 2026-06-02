@@ -11,19 +11,11 @@ public partial class TblArrival
 
     public DateTime? Date { get; set; }
 
-    public float? TotalPrice { get; set; }
-
     public string ReportNumber { get; set; }
-
-    public int? SourceId { get; set; }
 
     public int? FiscalPeriodId { get; set; }
 
-    public float? FrieghtCost { get; set; }
-
     public DateTime? EntryDate { get; set; }
-
-    public bool? IsBeginPeriod { get; set; }
 
     public string EnteredById { get; set; }
 
@@ -33,21 +25,7 @@ public partial class TblArrival
 
     public bool? IsDrafted { get; set; }
 
-    public bool? IsFirstTime { get; set; }
-
     public DateTime? ConfirmationTime { get; set; }
-
-    public bool? IsFirstTimeArrangedAsked { get; set; }
-
-    public int? FirstTimeArrangementItemId { get; set; }
-
-    public int? FirstTimeArrangementStoreId { get; set; }
-
-    public float? PackedVolume { get; set; }
-
-    public float? TotalWeight { get; set; }
-
-    public float? TotalVolume { get; set; }
 
     public int? SenderId { get; set; }
 
@@ -57,29 +35,17 @@ public partial class TblArrival
 
     public string Note { get; set; }
 
-    public int? Frzindc { get; set; }
-
-    public int? FrzindcNok { get; set; }
-
-    public string BiddingNumber { get; set; }
-
-    public int? OrderId { get; set; }
-
-    public string OrderNumber { get; set; }
-
-    public virtual TblItem FirstTimeArrangementItem { get; set; }
-
     public virtual TblFiscalPeriod FiscalPeriod { get; set; }
 
     public virtual TblRecipient Receiver { get; set; }
 
     public virtual TblRecipient Sender { get; set; }
 
-    public virtual TblSource Source { get; set; }
-
     public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
 
     public virtual ICollection<TblArrivalLine> TblArrivalLines { get; set; } = new List<TblArrivalLine>();
 
     public virtual ICollection<TblDispatch> TblDispatches { get; set; } = new List<TblDispatch>();
+    public virtual ICollection<TblUidInfo> TblUidInfos { get; set; } = new List<TblUidInfo>();
+
 }

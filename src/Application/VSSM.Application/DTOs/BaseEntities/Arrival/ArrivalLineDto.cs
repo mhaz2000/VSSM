@@ -21,14 +21,10 @@
         public int? NumVials { get; set; }
         public int? OrderLineId { get; set; }
 
-        public float? PackageSize { get; set; }
-        public int? PackingTypeId { get; set; }
 
         public int? Quantity { get; set; }
         public int? StoreId { get; set; }
 
-        public float? TotalVolume { get; set; }
-        public float? UnitVolume { get; set; }
 
         public int? UseId { get; set; }
         public int? VvmStageId { get; set; }

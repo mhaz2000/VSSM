@@ -31,6 +31,7 @@ using VSSM.Application.Services.Reports;
 using VSSM.Application.Services.RequestEntities;
 using VSSM.Infrastructure.Data.Dapper;
 using VSSM.Infrastructure.Data.Models;
+using VSSM.Infrastructure.Services.BaseEntities;
 using VSSM.Presentation.Web.Authorization;
 using VSSM.Presentation.Web.Controllers;
 
@@ -49,7 +50,7 @@ namespace VSSM.Presentation.Web
             //{
             //    options.LoginPath = "/Account/Login";
             //});
-
+            services.AddScoped<IUidInfoService, UidInfoService>();
             services.AddScoped<IItemClassService, ItemClassService>();
             services.AddScoped<ILevelService, LevelService>();
             services.AddScoped<IItemService, ItemService>();

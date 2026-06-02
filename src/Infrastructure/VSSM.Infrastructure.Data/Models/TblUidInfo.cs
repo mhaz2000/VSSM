@@ -18,5 +18,12 @@ public partial class TblUidInfo
 
     public int FkOrderInfo { get; set; }
 
+    public int? FkArrivalId { get; set; }
+    public int? FkItemId { get; set; }
+    public int? CurrentStore { get; set; }
+    public int? DoseCount { get; set; }
+
+    public virtual TblArrival? FkArrival { get; set; }
+    public virtual TblItem? FkItem { get; set; }
     public virtual TblOrderInfo OrderInfo { get; set; } = null!;
 }

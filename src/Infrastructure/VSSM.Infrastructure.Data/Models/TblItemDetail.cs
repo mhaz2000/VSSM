@@ -17,11 +17,11 @@ public partial class TblItemDetail
 
     public int? ManufacturerId { get; set; }
 
+    [Obsolete("Use FkCommercialNameId instead. This field will be removed after database cleanup.")]
     public int? CommercialNameId { get; set; }
 
+    [Obsolete("Use FkVvmTypeId instead. This field will be removed after database cleanup.")]
     public int? VvmtypeId { get; set; }
-
-    public int? SourceId { get; set; }
 
     public string BatchNumber { get; set; }
 
@@ -31,17 +31,13 @@ public partial class TblItemDetail
 
     public DateTime? ProductionDate { get; set; }
 
-    public float? UnitVolume { get; set; }
-
     public DateTime? EntryDate { get; set; }
 
     public bool? IsConfirmed { get; set; }
 
-    public int? PackingTypeId { get; set; }
+    public int? FkCommercialNameId { get; set; }
 
-    public float? PackageSize { get; set; }
-
-    public string BiddingNumber { get; set; }
+    public int? FkVvmTypeId { get; set; }
 
     public virtual TblCommercialName CommercialName { get; set; }
 
@@ -53,13 +49,10 @@ public partial class TblItemDetail
 
     public virtual TblManufacturer Manufacturer { get; set; }
 
-    public virtual TblPackingType PackingType { get; set; }
-
-    public virtual TblSource Source { get; set; }
-
     public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
 
     public virtual ICollection<TblItemDetailStore> TblItemDetailStores { get; set; } = new List<TblItemDetailStore>();
 
     public virtual TblVvmtype Vvmtype { get; set; }
+
 }

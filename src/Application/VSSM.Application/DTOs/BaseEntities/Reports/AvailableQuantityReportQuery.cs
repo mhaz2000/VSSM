@@ -5,7 +5,6 @@ public record AvailableQuantityReportQuery
     public string ItemId { get; set; }
     public string StoreId { get; set; }
 
-    public int? SourceId { get; set; }
     public int? Level { get; set; }
     public int? RecipientId { get; set; }
     public int? CommercialNameId { get; set; }

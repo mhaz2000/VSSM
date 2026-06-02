@@ -21,7 +21,7 @@ public class OrderInfoService : IOrderInfoService
     {
         return await _dbContext.TblOrderInfo
             .AsNoTracking()
-            .Where(o => o.BatchNumber == batchNum && o.Status == OrderInfoStatus.APPLY.ToString())
+            .Where(o => o.BatchNumber == batchNum && o.Status == OrderInfoStatus.READ.ToString())
             .OrderByDescending(o => o.PkOrderInfo)
             .Select(o => new OrderInfoDto
             {

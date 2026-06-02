@@ -33,7 +33,6 @@ namespace VSSM.Application.Services.BaseEntities
             itemDetailQuery = inputModel.ManufacturerId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
             itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmtypeId == inputModel.VvmtypeId);
             itemDetailQuery = inputModel.CommercialNameId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
-            itemDetailQuery = inputModel.SourceId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.SourceId == inputModel.SourceId);
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ProductinDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ProductionDate.HasValue &&
                 t.ProductionDate == DateTimeHelper.ToGregorian(inputModel.ProductinDate));
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ExpiryDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ExpiryDate.HasValue &&
@@ -178,7 +177,6 @@ namespace VSSM.Application.Services.BaseEntities
             itemDetailQuery = inputModel.ManufacturerId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
             itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmtypeId == inputModel.VvmtypeId);
             itemDetailQuery = inputModel.CommercialNameId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
-            itemDetailQuery = inputModel.SourceId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.SourceId == inputModel.SourceId);
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ProductinDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ProductionDate.HasValue &&
                 t.ProductionDate == DateTimeHelper.ToGregorian(inputModel.ProductinDate));
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ExpiryDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ExpiryDate.HasValue &&
@@ -260,7 +258,6 @@ namespace VSSM.Application.Services.BaseEntities
             itemDetailQuery = inputModel.ManufacturerId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
             itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmtypeId == inputModel.VvmtypeId);
             itemDetailQuery = inputModel.CommercialNameId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
-            itemDetailQuery = inputModel.SourceId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.SourceId == inputModel.SourceId);
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ProductinDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ProductionDate.HasValue &&
                 t.ProductionDate == DateTimeHelper.ToGregorian(inputModel.ProductinDate));
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ExpiryDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ExpiryDate.HasValue &&
@@ -335,7 +332,6 @@ namespace VSSM.Application.Services.BaseEntities
             itemDetailQuery = inputModel.ManufacturerId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
             itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmtypeId == inputModel.VvmtypeId);
             itemDetailQuery = inputModel.CommercialNameId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
-            itemDetailQuery = inputModel.SourceId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.SourceId == inputModel.SourceId);
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ProductinDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ProductionDate.HasValue &&
                 t.ProductionDate == DateTimeHelper.ToGregorian(inputModel.ProductinDate));
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ExpiryDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ExpiryDate.HasValue &&

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using VSSM.Application.Services.BackgroundServices;
+using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web;
 using VSSM.Presentation.Web.Middlewares;
 
@@ -23,6 +24,20 @@ else
 }
 
 var app = builder.Build();
+
+foreach (var entityType in app.Services.GetRequiredService<IServiceScopeFactory>()
+    .CreateScope().ServiceProvider
+    .GetRequiredService<VSSMDbContext>() // نام DbContext خودت رو بذار
+    .Model.GetEntityTypes())
+{
+    var shadows = entityType.GetProperties()
+        .Where(p => p.IsShadowProperty())
+        .ToList();
+
+    if (shadows.Any())
+        foreach (var shadow in shadows)
+            Console.WriteLine($"❌ Entity: {entityType.ClrType.Name} | Shadow: {shadow.Name}");
+}
 
 app.UseGlobalException();
 

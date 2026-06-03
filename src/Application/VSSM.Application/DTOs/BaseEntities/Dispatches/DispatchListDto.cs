@@ -13,8 +13,10 @@ public record DispatchListDto
     public string DispatchVoucherNumber { get; set; }
     public float? TotalVolume { get; set; }
     public bool? IsDrafted { get; set; }
-    public string IsDraftedText => IsDrafted.HasValue && IsDrafted.Value ? "بله" : "خیر";
+    public string IsDraftedText => IsDrafted.HasValue && IsDrafted.Value ? $"بله - {SeqPreview}" : "خیر";
     public bool? IsConfirmed { get; set; }
     public int ReceiverStatus { get; set; }
     public string ReceiverStatusText => ReceiverStatus == 0 ? "جدید" : "تایید";
+
+    public long SeqPreview { get; internal set; }
 }

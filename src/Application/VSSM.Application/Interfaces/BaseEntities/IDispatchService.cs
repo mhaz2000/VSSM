@@ -17,4 +17,5 @@ public interface IDispatchService
     Task DispatchArrivedAsync(DispatchArrivedDto arrivedDto, int userId, int recipientId, CancellationToken cancellationToken);
     Task<UpdateDispatchDto?> GetByIdAsync(int id);
     Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken);
+    Task<(bool isSuccess, string message, int count, int itemId)> SetUidAsync(int dispatchLineId, int id, string uid);
 }

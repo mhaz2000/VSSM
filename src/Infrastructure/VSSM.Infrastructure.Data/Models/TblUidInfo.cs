@@ -1,5 +1,4 @@
 ﻿namespace VSSM.Infrastructure.Data.Models;
-
 public partial class TblUidInfo
 {
     public int PkUidInfo { get; set; }
@@ -26,13 +25,16 @@ public partial class TblUidInfo
 
     public int FkOrderInfo { get; set; }
 
-    public int FkArrivalId { get; set; }
+    public int? FkArrivalId { get; set; }
     
-    public int FkItemId { get; set; }
+    public int? FkItemId { get; set; }
+    public int? FKDispatchUid { get; set; }
 
     public virtual TblItem Item { get; set; } = null!;
 
     public virtual TblArrival Arrival { get; set; } = null!;
 
     public virtual TblOrderInfo OrderInfo { get; set; } = null!;
+
+    public virtual TblDispatchUid DispatchUid { get; set; } = null!;
 }

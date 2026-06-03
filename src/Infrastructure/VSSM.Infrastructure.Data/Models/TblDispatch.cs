@@ -15,7 +15,7 @@ public partial class TblDispatch
 
     public int? FiscalPeriodId { get; set; }
 
-    public int? TransportModeId { get; set; }
+    public string TransportMode { get; set; }
 
     public int? EnteredById { get; set; }
 
@@ -47,9 +47,11 @@ public partial class TblDispatch
 
     public bool? IsDel { get; set; }
 
-    public int? ReceivingModeId { get; set; }
+    public string ReceivingMode { get; set; }
 
     public string ReportNumber { get; set; }
+
+    public long SeqPreview { get; set; }
 
     public virtual TblArrival Arrival { get; set; }
 
@@ -59,11 +61,8 @@ public partial class TblDispatch
 
     public virtual TblRecipient Receiver { get; set; }
 
-    public virtual TblReceivingMode ReceivingMode { get; set; }
-
     public virtual TblRecipient Sender { get; set; }
 
     public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
 
-    public virtual TblTransportMode TransportMode { get; set; }
 }

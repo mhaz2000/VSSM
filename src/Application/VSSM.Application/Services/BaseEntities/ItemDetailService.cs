@@ -124,7 +124,7 @@ namespace VSSM.Application.Services.BaseEntities
                             Diluent = diluent
                         };
 
-            var itemDetails = await query
+            var itemDetails = await query.OrderBy(t=>t.ExpiryDate)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 

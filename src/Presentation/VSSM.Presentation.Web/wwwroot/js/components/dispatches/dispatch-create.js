@@ -2,6 +2,11 @@
 
 $(function () {
 
+    const message = $('#ErrorMessage').val();
+    if (message && message.trim() !== '') {
+        showToast(message, 'error');
+    }
+
     setSearchableSelectDisabled('itemSelect', true);
 
     $('#Date').pDatepicker({
@@ -19,6 +24,13 @@ $(function () {
         if (!hasItem) {
             e.preventDefault();
             alert('حداقل یک کالا باید به لیست اضافه شود');
+            return false;
+        }
+
+        let receiverId = $('#ReceiverId').val();
+        if (!receiverId || receiverId === '') {
+            e.preventDefault();
+            alert('لطفاً گیرنده را انتخاب کنید');
             return false;
         }
 
@@ -161,7 +173,8 @@ $(function () {
 
         let itemName = row.find('td:eq(1)').text();
         let expiry = row.find('td:eq(2)').text();
-        let dose = parseInt($('input[name="DoseCount"]').val());
+        //let dose = parseInt($('input[name="DoseCount"]').val());
+        let dose = 0;
         let vvmStageId = $('#vvmStagesSelect').val();
         let vvmStageText = $('#vvmStagesSelect option:selected').text();
         let note = $('textarea[name="ExtraNote"]').val();
@@ -169,23 +182,39 @@ $(function () {
         let tbody = $('#addedItemsTable tbody');
         tbody.find('tr.empty-row').remove();
 
-        // validate dose
-        if (!dose || dose <= 0) {
-            alert('لطفاً مقدار دوز معتبر وارد کنید');
-            return;
-        }
+        //// validate dose
+        //if (!dose || dose <= 0) {
+        //    alert('لطفاً مقدار دوز معتبر وارد کنید');
+        //    return;
+        //}
+
+
         if (!dosePerVial || dosePerVial <= 0) {
             alert('لطفاً دوز بر ویال را انتخاب کنید');
             return;
         }
-        if (dose % dosePerVial !== 0) {
-            alert('مقدار وارد شده باید مضربی از دوز بر ویال باشد');
-            return;
+        //if (dose % dosePerVial !== 0) {
+        //    alert('مقدار وارد شده باید مضربی از دوز بر ویال باشد');
+        //    return;
+        //}
+        const isDrafted = $('#IsDrafted').val() === 'true';
+
+        let addUidButton = '';
+
+        if (isDrafted) {
+            addUidButton = `
+        <button type="button"
+                class="item-table-action add-item-uid ms-1"
+                title="افزودن">
+            <i class="fa fa-plus"></i>
+        </button>
+    `;
         }
 
         // Add main item row
         tbody.append(`
         <tr data-id="${itemId}">
+            <td>${batchNumber}</td>
             <td>${itemName}</td>
             <td>${expiry}</td>
             <td class="dose-cell dose-col" data-dose="${dose}">
@@ -194,6 +223,8 @@ $(function () {
             <td>${vvmStageId ? vvmStageText : '-'}</td>
             <td>${note || '-'}</td>
             <td class="text-center actions-col">
+                ${addUidButton}
+
                 <button type="button" class="item-table-action edit-item" title="ویرایش">
                     <i class="fa fa-edit"></i>
                 </button>
@@ -218,9 +249,11 @@ $(function () {
         let diluentData = row.data('diluent'); // pass this from server when generating item table
         if (diluentData) {
 
-            let diluentDose = parseInt($('input[name="DoseCount"]').val()); // same dose or custom
+            //let diluentDose = parseInt($('input[name="DoseCount"]').val()); // same dose or custom
+            let diluentDose = 0; // same dose or custom
             tbody.append(`
             <tr data-id="diluent-${itemId}">
+                <td>${diluentData.batchNumber}</td>
                 <td>${diluentData.itemName}</td>
                 <td>${formatDate(diluentData.expiryDate)}</td>
                 <td class="dose-cell dose-col" data-dose="${diluentDose}">
@@ -298,7 +331,6 @@ $(function () {
 
     $(document).on('click', '.save-item', function () {
 
-        debugger
 
         let row = $(this).closest('tr');
         let cell = row.find('.dose-cell');
@@ -341,7 +373,6 @@ function formatDate(d) {
 
 function reindexItems() {
 
-    debugger
     let rows = $('#addedItemsTable tbody tr').not('.empty-row');
 
     rows.each(function (index) {
@@ -355,6 +386,5 @@ function reindexItems() {
         });
     });
 
-    // Update global addedItemsIndex to next available
     addedItemsIndex = rows.length;
 }

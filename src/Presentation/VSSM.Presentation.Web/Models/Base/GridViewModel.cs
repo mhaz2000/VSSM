@@ -9,8 +9,8 @@ public class GridViewModel
 
     public List<GridColumn> Columns { get; set; } = new();
     public List<GridAction> Actions { get; set; } = new();
-    public string CurrentSort { get; set; }
-    public string CurrentDirection { get; set; }
+    public string CurrentSort { get; set; } = "Id";
+    public string CurrentDirection { get; set; } = "desc";
 
     public string SearchTerm { get; set; }
 

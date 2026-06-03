@@ -1,0 +1,61 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
+@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+
+@section Styles {
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
+    <link href="~/css/components/baseInfoModal/base-info-modal.css" rel="stylesheet" />
+
+}
+
+@{
+    ViewData["Title"] = "اطلاعات پایه";
+}
+
+<div class="grid-wrapper">
+    <div class="grid-header">
+
+        <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
+
+        <div class="d-flex align-items-center gap-2">
+
+            <!-- Draft filter -->
+            <form method="get" class="d-flex align-items-center gap-2">
+
+                <!-- keep existing query values -->
+                <input type="hidden" name="search" value="@Model.SearchTerm" />
+                <input type="hidden" name="sort" value="@Model.CurrentSort" />
+                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
+                <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
+
+            </form>
+
+            <!-- shared search component untouched -->
+            @await Component.InvokeAsync("SearchBar", new
+            {
+                searchTerm = Model.SearchTerm,
+                        pageSize = Model.Data.PageSize,
+                        sort = Model.CurrentSort,
+                        direction = Model.CurrentDirection
+                        })
+
+        </div>
+    </div>
+
+    <div>
+        @await Html.PartialAsync("_DynamicGrid", Model)
+    </div>
+
+    <div class="modal fade" id="baseInfoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" id="baseInfoModalContent">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/components/baseInfo/base-info.js"></script>
+}

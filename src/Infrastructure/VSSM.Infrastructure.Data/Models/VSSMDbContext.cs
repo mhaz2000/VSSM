@@ -24,6 +24,7 @@ public partial class VSSMDbContext : DbContext
     public virtual DbSet<TblUidInfo> TblUidInfo { get; set; }
 
     public virtual DbSet<TblUidError> TblUidErrors { get; set; }
+    public virtual DbSet<TblBaseInfo> TblBaseInfo { get; set; }
 
     public virtual DbSet<RoleMenu> RoleMenus { get; set; }
 
@@ -677,24 +678,15 @@ public partial class VSSMDbContext : DbContext
             entity.ToTable("tblDispatches");
 
             entity.Property(e => e.DispatchId).HasColumnName("DispatchID");
-            entity.Property(e => e.AirwaryWillReference)
-                .HasDefaultValueSql("(NULL)")
-                .HasAnnotation("Relational:DefaultConstraintName", "DF_tblDispatches_AirwaryWill_Reference")
-                .HasColumnName("AirwaryWill_Reference");
             entity.Property(e => e.ArrivalId).HasColumnName("ArrivalID");
             entity.Property(e => e.ConfirmationTime).HasColumnType("datetime");
             entity.Property(e => e.Date).HasColumnType("datetime");
             entity.Property(e => e.EnteredById).HasColumnName("EnteredByID");
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.FiscalPeriodId).HasColumnName("FiscalPeriodID");
-            entity.Property(e => e.Frzindc).HasColumnName("frzindc");
-            entity.Property(e => e.FrzindcNok).HasColumnName("frzindc_nok");
             entity.Property(e => e.IsDel)
                 .HasDefaultValue(false)
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_tblDispatches_IsDel");
-            entity.Property(e => e.ParentDispatch)
-                .HasDefaultValue(0)
-                .HasAnnotation("Relational:DefaultConstraintName", "DF_tblDispatches_ParentDispatch");
             entity.Property(e => e.ReceiverId).HasColumnName("ReceiverID");
             entity.Property(e => e.ReceivingModeId).HasColumnName("ReceivingModeID");
             entity.Property(e => e.SenderId).HasColumnName("SenderID");
@@ -735,8 +727,8 @@ public partial class VSSMDbContext : DbContext
 
             entity.ToTable("tblDispatchLines");
 
+            entity.Property(e => e.SeqPreview).HasColumnName("SeqPreview");
             entity.Property(e => e.DispatchLineId).HasColumnName("DispatchLineID");
-            entity.Property(e => e.BundleId).HasColumnName("BundleID");
             entity.Property(e => e.DispatchId).HasColumnName("DispatchID");
             entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
@@ -748,10 +740,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.UseId).HasColumnName("UseID");
             entity.Property(e => e.VvmstageId).HasColumnName("VVMStageID");
             entity.Property(e => e.VvmtypeId).HasColumnName("VVMTypeID");
-
-            entity.HasOne(d => d.Bundle).WithMany(p => p.TblDispatchLines)
-                .HasForeignKey(d => d.BundleId)
-                .HasConstraintName("FK_tblDispatchLines_tblBundles");
 
             entity.HasOne(d => d.Dispatch).WithMany(p => p.TblDispatchLines)
                 .HasForeignKey(d => d.DispatchId)
@@ -1077,6 +1065,55 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.ReqManufacturer).HasColumnName("Req_Manufacturer");
             entity.Property(e => e.ReqVvmtype).HasColumnName("Req_VVMType");
             entity.Property(e => e.VolumeType).HasMaxLength(10);
+        });
+
+        modelBuilder.Entity<TblBaseInfo>(entity =>
+        {
+            entity.ToTable("tblBaseInfo");
+
+            entity.HasKey(e => e.BaseInfoId);
+            entity.Property(e => e.BaseInfoId)
+                .HasColumnName("PK_BASE_INFO_ID")
+                .UseIdentityColumn();
+
+            entity.Property(e => e.Code)
+                .HasColumnName("Code")
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Title)
+                .HasColumnName("Title")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(e => e.ParentId)
+                .HasColumnName("FK_Parent_Id");
+
+            entity.Property(e => e.Order)
+                .HasColumnName("Order");
+
+            entity.Property(e => e.CreateDate)
+                .HasColumnName("Create_date")
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("GETDATE()");
+
+            entity.Property(e => e.CreateBy)
+                .HasColumnName("Create_by")
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(e => e.UpdateBy)
+                .HasColumnName("Update_by")
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(e => e.UpdateDate)
+                .HasColumnName("Update_date")
+                .HasColumnType("datetime");
+
+            entity.HasOne(e => e.Parent)
+                .WithMany(e => e.Children)
+                .HasForeignKey(e => e.ParentId)
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<TblItemsCode>(entity =>
@@ -2052,8 +2089,12 @@ public partial class VSSMDbContext : DbContext
                 .HasColumnName("HASH_CODE")
                 .HasMaxLength(100);
 
-            entity.Property(e => e.ChildUid)
-                .HasColumnName("CHILD_UID")
+            entity.Property(e => e.FirstLevelUid)
+                .HasColumnName("FIRST_LEVEL_UID")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.SecLevelUid)
+                .HasColumnName("SEC_LEVEL_UID")
                 .HasMaxLength(50);
 
             entity.Property(e => e.ParentUid)
@@ -2062,6 +2103,21 @@ public partial class VSSMDbContext : DbContext
 
             entity.Property(e => e.IsActive)
                 .HasColumnName("IS_ACTIVE");
+
+            entity.Property(e => e.Used)
+                .HasColumnName("USED");
+
+            entity.Property(e => e.ConsumedCount)
+                .HasColumnName("CONSUMED_COUNT")
+                .IsRequired(false);
+
+            entity.Property(e => e.DoesCount)
+                .HasColumnName("DOES_COUNT")
+                .IsRequired(false);
+
+            entity.Property(e => e.CurrentStore)
+                .HasColumnName("CURRENT_STORE")
+                .IsRequired(false);
 
             entity.Property(e => e.FkOrderInfo)
                 .HasColumnName("FK_order_INFO");

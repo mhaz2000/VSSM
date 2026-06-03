@@ -1,4 +1,6 @@
-﻿namespace VSSM.Infrastructure.Data.Models;
+﻿using NuGet.Protocol.Plugins;
+
+namespace VSSM.Infrastructure.Data.Models;
 
 public partial class TblUidError
 {

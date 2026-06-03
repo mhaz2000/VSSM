@@ -1,5 +1,4 @@
 namespace VSSM.Application.DTOs.BaseEntities.Levels;
-
 public class LevelDto
 {
     public int LevelId { get; set; }

@@ -19,19 +19,11 @@ public partial class TblDispatch
 
     public int? EnteredById { get; set; }
 
-    public int? ParentDispatch { get; set; }
-
-    public float? TotalVolume { get; set; }
-
-    public string AirwaryWillReference { get; set; }
-
     public string RequestNum { get; set; }
 
     public string DispatchVoucherNumber { get; set; }
 
     public string Note { get; set; }
-
-    public bool? IsEndPeriod { get; set; }
 
     public bool? IsConfirmed { get; set; }
 
@@ -53,13 +45,7 @@ public partial class TblDispatch
 
     public int? ArrivalId { get; set; }
 
-    public float? TotalPrice { get; set; }
-
     public bool? IsDel { get; set; }
-
-    public int? Frzindc { get; set; }
-
-    public int? FrzindcNok { get; set; }
 
     public int? ReceivingModeId { get; set; }
 

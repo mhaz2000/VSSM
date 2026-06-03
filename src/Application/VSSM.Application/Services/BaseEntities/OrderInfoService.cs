@@ -128,16 +128,16 @@ public class OrderInfoService : IOrderInfoService
                 string hc = tc.Attribute("HC")?.Value;
                 string bc = tc.Attribute("BC")?.Value;
 
-                var uidInfo = new TblUidInfo()
-                {
-                    PatchBarcode = pbc,
-                    Barcode = bc,
-                    HashCode = hc,
-                    ChildUid = bc.Substring(18, 20),
-                    ParentUid = pbc.Substring(18, 20),
-                    IsActive = true,
-                    OrderInfo = ordreInfo
-                };
+                    var uidInfo = new TblUidInfo()
+                    {
+                        PatchBarcode = pbc,
+                        Barcode = bc,
+                        HashCode = hc,
+                        SecLevelUid = bc.Substring(18, 20),
+                        FirstLevelUid = pbc.Substring(18, 20),
+                        IsActive = true,
+                        OrderInfo = ordreInfo
+                    };
 
                 _dbContext.TblUidInfo.Add(uidInfo);
             }

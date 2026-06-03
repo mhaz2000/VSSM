@@ -1,0 +1,71 @@
+﻿/* base-info-modal.css */
+
+#baseInfoModal .modal-dialog {
+    max-width: 700px;
+}
+
+#baseInfoModal .modal-content {
+    border-radius: 12px;
+    border: none;
+    overflow: hidden;
+}
+
+#baseInfoModal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+#baseInfoModal .modal-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+#baseInfoModal .modal-body {
+    padding: 1.25rem;
+}
+
+#baseInfoModal .modal-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #e9ecef;
+}
+
+#baseInfoModal .form-group {
+    margin-bottom: 1rem;
+}
+
+#baseInfoModal label {
+    display: block;
+    margin-bottom: .5rem;
+    font-weight: 600;
+}
+
+#baseInfoModal .form-control {
+    width: 100%;
+    min-height: 40px;
+    border-radius: 8px;
+}
+
+#baseInfoModal .btn {
+    min-width: 110px;
+}
+
+#baseInfoModal .btn-primary {
+    background: #0071B7;
+    border-color: #0071B7;
+}
+
+    #baseInfoModal .btn-primary:hover {
+        opacity: .9;
+    }
+
+#baseInfoModal .close {
+    outline: none;
+}
+
+    #baseInfoModal .close:focus {
+        box-shadow: none;
+    }

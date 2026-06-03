@@ -20,6 +20,7 @@ public class ArrivalViewModel
 
     public bool IsConfirmed { get; set; }
     public bool IsCancelled { get; set; }
+    public int? EditingLineId { get; set; }
     public bool IsDrafted { get; set; }
 
     [Display(Name = "ملاحظات")]

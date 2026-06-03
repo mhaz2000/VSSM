@@ -4,6 +4,7 @@ using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Infrastructure.Services.BaseEntities;
 
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.Interfaces.BaseEntities;
 
@@ -113,14 +114,20 @@ public sealed class UidInfoService : IUidInfoService
 
     public async Task ClearArrivalFkByLineId(int arrivalLineId, CancellationToken token)
     {
-        // این متد فقط وقتی معنی دارد که ستون ArrivalLineFkId داشته باشی.
-        // اگر نداری، یا حذفش کن یا NotSupported بده.
+        var uidsToUpdate = await _db.TblUidInfo
+            .Where(x => x.FkArrivalId == arrivalLineId)
+            .ToListAsync(token);
 
-        // اگر داری، این را در TblUidInfo اضافه کن:
-        // public int? ArrivalLineFkId { get; set; }
+        if (uidsToUpdate.Any())
+        {
+            foreach (var uid in uidsToUpdate)
+            {
+                uid.FkArrivalId = null;
+            }
 
-        throw new NotSupportedException(
-            "برای پاکسازی بر اساس ArrivalLineId باید ستون ArrivalLineFkId در TblUidInfo وجود داشته باشد.");
+            await _db.SaveChangesAsync(token);
+        }
     }
+
 }
 

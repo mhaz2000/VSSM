@@ -164,6 +164,15 @@ public class ArrivalController(
         {
             await LoadDropDowns(token);
 
+            if (command != null && (
+                command.StartsWith("deleteLine_", StringComparison.OrdinalIgnoreCase) ||
+                command.StartsWith("editLine_", StringComparison.OrdinalIgnoreCase) ||
+                command == "draft" ||
+                command == "confirm"))
+            {
+                ModelState.Clear();
+            }
+
             if (model.ArrivalId.HasValue)
             {
                 var existing = await arrivalService.GetById(model.ArrivalId.Value, token);
@@ -183,6 +192,9 @@ public class ArrivalController(
                 "deleteAll" => await DeleteAll(model, token),
                 string s when s.StartsWith("deleteLine_", StringComparison.OrdinalIgnoreCase)
                                                                    => await HandleDeleteLine(s, model, token),
+                string s when s.StartsWith("editLine_", StringComparison.OrdinalIgnoreCase)
+                => await HandleEditLine(s, model, token),
+
                 _ => await SaveDraft(model, token)
             };
         }
@@ -192,6 +204,47 @@ public class ArrivalController(
             TempData["ToastType"] = "error";
             return View("New", model);
         }
+    }
+
+    private async Task<IActionResult> HandleEditLine(string command, ArrivalViewModel model, CancellationToken token)
+    {
+        var idPart = command.Split('_').Last();
+        if (!int.TryParse(idPart, out var lineId))
+        {
+            TempData["ToastMessage"] = "شناسه سطر معتبر نیست";
+            TempData["ToastType"] = "error";
+            return View("New", model);
+        }
+
+        if (!model.ArrivalId.HasValue || model.ArrivalId.Value == 0)
+        {
+            TempData["ToastMessage"] = "شناسه ورود معتبر نیست";
+            TempData["ToastType"] = "error";
+            return View("New", model);
+        }
+
+        var dto = await arrivalService.GetById(model.ArrivalId.Value, token);
+        var line = dto?.Lines.FirstOrDefault(l => l.ArrivalLineId == lineId);
+        if (line == null)
+        {
+            TempData["ToastMessage"] = "سطر مورد نظر یافت نشد";
+            TempData["ToastType"] = "error";
+            return View("New", model);
+        }
+
+        await uidInfoService.ClearArrivalFkByLineId(lineId, token);
+        await arrivalService.CancelLine(lineId, token);
+
+        await LoadDropDowns(token);
+
+        var updated = await arrivalService.GetById(model.ArrivalId.Value, token);
+        model.Lines = updated?.Lines.Select(l => MapLineToViewModel(l, token)).ToList()
+                      ?? new List<ArrivalLineViewModel>();
+
+        model.NewLine = MapLineToViewModel(line, token);
+        model.EditingLineId = lineId;
+
+        return View("New", model);
     }
 
 

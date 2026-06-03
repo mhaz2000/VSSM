@@ -947,7 +947,7 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblItems_tblItemsClass");
 
             entity.HasMany(d => d.TblUidInfos)
-                .WithOne(p => p.FkItem)
+                .WithOne(p => p.Item)
                 .HasForeignKey(p => p.FkItemId)
                 .HasConstraintName("FK_tblUidInfo_tblItem");
         });

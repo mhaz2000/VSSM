@@ -28,7 +28,6 @@ public partial class TblUidInfo
 
     public int? FkArrivalId { get; set; }
     public int? FkItemId { get; set; }
-    public int? CurrentStore { get; set; }
     public int? DoseCount { get; set; }
 
     public virtual TblItem Item { get; set; } = null!;

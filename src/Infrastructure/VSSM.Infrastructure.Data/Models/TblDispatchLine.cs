@@ -38,7 +38,6 @@ public partial class TblDispatchLine
     public DateTime? ExpiryDate { get; set; }
 
     public DateTime? EntryDate { get; set; }
-    public Int64 SeqPreview { get; set; }
 
     public virtual TblBundle Bundle { get; set; }
 

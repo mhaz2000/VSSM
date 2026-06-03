@@ -23,7 +23,10 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblUidInfo> TblUidInfo { get; set; }
 
+    public virtual DbSet<TblDispatchUid> TblDispatchUids { get; set; }
+
     public virtual DbSet<TblUidError> TblUidErrors { get; set; }
+
     public virtual DbSet<TblBaseInfo> TblBaseInfo { get; set; }
 
     public virtual DbSet<RoleMenu> RoleMenus { get; set; }
@@ -678,6 +681,12 @@ public partial class VSSMDbContext : DbContext
             entity.ToTable("tblDispatches");
 
             entity.Property(e => e.DispatchId).HasColumnName("DispatchID");
+
+            entity.Property(e => e.SeqPreview)
+                .HasColumnName("seq_preview")
+                .HasDefaultValueSql("NEXT VALUE FOR Dispatch_Seq_Preview")
+                .ValueGeneratedOnAdd();
+
             entity.Property(e => e.ArrivalId).HasColumnName("ArrivalID");
             entity.Property(e => e.ConfirmationTime).HasColumnType("datetime");
             entity.Property(e => e.Date).HasColumnType("datetime");
@@ -688,9 +697,9 @@ public partial class VSSMDbContext : DbContext
                 .HasDefaultValue(false)
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_tblDispatches_IsDel");
             entity.Property(e => e.ReceiverId).HasColumnName("ReceiverID");
-            entity.Property(e => e.ReceivingModeId).HasColumnName("ReceivingModeID");
+            entity.Property(e => e.ReceivingMode).HasColumnName("ReceivingMode");
             entity.Property(e => e.SenderId).HasColumnName("SenderID");
-            entity.Property(e => e.TransportModeId).HasColumnName("TransportModeID");
+            entity.Property(e => e.TransportMode).HasColumnName("TransportMode");
 
             entity.HasOne(d => d.Arrival).WithMany(p => p.TblDispatches)
                 .HasForeignKey(d => d.ArrivalId)
@@ -708,17 +717,9 @@ public partial class VSSMDbContext : DbContext
                 .HasForeignKey(d => d.ReceiverId)
                 .HasConstraintName("FK_tblDispatches_tblRecipients1");
 
-            entity.HasOne(d => d.ReceivingMode).WithMany(p => p.TblDispatches)
-                .HasForeignKey(d => d.ReceivingModeId)
-                .HasConstraintName("FK_tblDispatches_tblReceivingModes");
-
             entity.HasOne(d => d.Sender).WithMany(p => p.TblDispatchSenders)
                 .HasForeignKey(d => d.SenderId)
                 .HasConstraintName("FK_tblDispatches_tblRecipients");
-
-            entity.HasOne(d => d.TransportMode).WithMany(p => p.TblDispatches)
-                .HasForeignKey(d => d.TransportModeId)
-                .HasConstraintName("FK_tblDispatches_tblTransportModes");
         });
 
         modelBuilder.Entity<TblDispatchLine>(entity =>
@@ -727,7 +728,6 @@ public partial class VSSMDbContext : DbContext
 
             entity.ToTable("tblDispatchLines");
 
-            entity.Property(e => e.SeqPreview).HasColumnName("SeqPreview");
             entity.Property(e => e.DispatchLineId).HasColumnName("DispatchLineID");
             entity.Property(e => e.DispatchId).HasColumnName("DispatchID");
             entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
@@ -2068,6 +2068,32 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblUidInfo_InfoOrder");
         });
 
+        modelBuilder.Entity<TblDispatchUid>(entity =>
+        {
+            entity.HasKey(e => e.PKDispatchUid);
+
+            entity.ToTable("tblDispatchUid");
+
+            entity.Property(e => e.PKDispatchUid)
+                .HasColumnName("PK_Dispatch_Uid");
+
+            entity.Property(e => e.FKDispatchId)
+                .HasColumnName("FK_Dispatches");
+
+            entity.HasOne(d => d.Dispatch)
+                .WithMany()
+                .HasForeignKey(d => d.FKDispatchId)
+                .HasConstraintName("FK_tblDispatchUid_Dispatches");
+
+            entity.Property(e => e.FKUidInfo)
+                .HasColumnName("FK_Uid_Info");
+
+            entity.HasOne(d => d.UidInfo)
+                .WithMany()
+                .HasForeignKey(d => d.FKUidInfo)
+                .HasConstraintName("FK_tblDispatchUid_UidInfo");
+        });
+
         modelBuilder.Entity<TblUidInfo>(entity =>
         {
             entity.HasKey(e => e.PkUidInfo);
@@ -2140,6 +2166,18 @@ public partial class VSSMDbContext : DbContext
                 .HasColumnName("Dose_count");
 
 
+            entity.HasOne(d => d.Item)
+                .WithMany()
+                .HasForeignKey(d => d.FkItemId)
+                .HasConstraintName("FK_tblUidInfo_Item");
+
+            entity.Property(e => e.FKDispatchUid)
+                .HasColumnName("FK_Dispatch_Uid");
+
+            entity.HasOne(d => d.DispatchUid)
+                .WithMany()
+                .HasForeignKey(d => d.FKDispatchUid)
+                .HasConstraintName("FK_tblUidInfo_tblDispatchUid");
         });
 
 

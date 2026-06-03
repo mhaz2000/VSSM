@@ -1,7 +1,6 @@
-﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
-@using VSSM.Application.DTOs.BaseEntities.ReceivingMode
+﻿@using VSSM.Application.DTOs.BaseEntities
+@using VSSM.Application.DTOs.BaseEntities.Dispatches
 @using VSSM.Application.DTOs.BaseEntities.Recipient
-@using VSSM.Application.DTOs.BaseEntities.TransportMode
 @using VSSM.Presentation.Web.Models.Base
 @model CreateDispatchDto
 
@@ -12,15 +11,15 @@
 }
 
 @{
-    var transportModes = ViewBag.TransportModes as List<TransportModeDto>;
+    var transportModes = ViewBag.TransportModes as List<EnumListDto>;
     var recipients = ViewBag.Recipients as List<RecipientGetDto>;
-    var receivingModes = ViewBag.ReceivingModes as List<ReceivingModeDto>;
+    var receivingModes = ViewBag.ReceivingModes as List<EnumListDto>;
     var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
 }
 
 <style>
     .form-control {
-        padding: 16px !important;
+        padding: 14px !important;
     }
 
     .form-select {
@@ -122,15 +121,15 @@
                                 @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
                                                                 new SearchableSelectModel
                                                                 {
-                                                                    Id = "TransportModeId",
-                                                                    Name = "TransportModeId",
+                                                                    Id = "TransportMode",
+                                                                    Name = "TransportMode",
                                                                     Label = "طریقه حمل",
-                                                                    SelectedValue = Model?.TransportModeId.ToString(),
+                                                                    SelectedValue = Model?.TransportMode.ToString(),
                                                                     Options = transportModes
                                                                 .Select(x => new SelectOption
                                                                 {
-                                                                    Value = x.TransportModeId.ToString(),
-                                                                    Text = x.FullName
+                                                                    Value = x.Name,
+                                                                    Text = x.Description
                                                                 }).ToList()
                                                                 })
                             </div>
@@ -140,15 +139,15 @@
                                 @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
                                                                 new SearchableSelectModel
                                                                 {
-                                                                    Id = "ReceivingModeId",
-                                                                    Name = "ReceivingModeId",
+                                                                    Id = "ReceivingMode",
+                                                                    Name = "ReceivingMode",
                                                                     Label = "روش دریافت",
-                                                                    SelectedValue = Model?.ReceivingModeId.ToString(),
+                                                                    SelectedValue = Model?.ReceivingMode.ToString(),
                                                                     Options = receivingModes
                                                                 .Select(x => new SelectOption
                                                                 {
-                                                                    Value = x.ReceivingModeId.ToString(),
-                                                                    Text = x.FullName
+                                                                    Value = x.Name,
+                                                                    Text = x.Description
                                                                 }).ToList()
                                                                 })
                             </div>
@@ -188,10 +187,10 @@
                         <div class="mt-3" id="itemExtraFields" style="display:none; margin-top: 1rem; margin-bottom: 1rem;">
                             <div class="row g-3">
 
-                                <div class="col-md-6">
+@*                                 <div class="col-md-6">
                                     <label class="form-label">تعداد/دوز<span class="form-mandatory">(اجباری)</span></label>
                                     <input name="DoseCount" class="form-control" disabled />
-                                </div>
+                                </div> *@
 
                                 <div class="col-md-6">
                                     <label class="form-label">مرحله vvm</label>
@@ -233,6 +232,7 @@
                         <table class="dynamic-grid table table-bordered table-hover" style="margin-bottom: 1rem" id="addedItemsTable">
                             <thead>
                                 <tr>
+                                    <th>سری ساخت</th>
                                     <th>کالا</th>
                                     <th>تاریخ انقضا</th>
                                     <th class="dose-col">تعداد/دوز</th>
@@ -259,7 +259,7 @@
                                     name="submitType"
                                     value="draft"
                                     class="btn btn-success-outlet px-5">
-                                ذخیره پیش‌نویس
+                                ذخیره پیش فاکتور
                             </button>
 
                             <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>

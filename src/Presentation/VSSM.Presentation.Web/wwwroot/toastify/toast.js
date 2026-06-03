@@ -1,7 +1,16 @@
-﻿function showToast(message, type = "success") {
+﻿function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showToast(message, type = "success") {
     const box = document.createElement("div");
     box.className = `toast-box toast-${type}`;
-    box.textContent = message; // هیچ HTML-encoding انجام نمیشه
+
+    const escapedMessage = escapeHtml(message);
+    box.innerHTML = escapedMessage.replace(/\n/g, '<br>');
+
     document.body.appendChild(box);
 
     requestAnimationFrame(() => {

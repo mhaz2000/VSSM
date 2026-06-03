@@ -1,8 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Domain.Enums;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities;
@@ -38,34 +41,50 @@ public class DispatchService : IDispatchService
 
         dispatch.SenderId = updateDispatcheDto.SenderId;
         dispatch.ReceiverId = updateDispatcheDto.ReceiverId;
-        dispatch.TransportModeId = updateDispatcheDto.TransportModeId;
+        dispatch.TransportMode = updateDispatcheDto.TransportMode;
         dispatch.EnteredById = updateDispatcheDto.EnteredById;
         dispatch.RequestNum = updateDispatcheDto.RequestNum;
         dispatch.Note = updateDispatcheDto.Note;
         dispatch.Date = string.IsNullOrWhiteSpace(updateDispatcheDto.Date) ? null : DateTimeHelper.ToGregorian(updateDispatcheDto.Date);
         dispatch.IsDrafted = submitType == "draft" ? true : false;
-        dispatch.ReceivingModeId = updateDispatcheDto.ReceivingModeId;
+        dispatch.ReceivingMode = updateDispatcheDto.ReceivingMode;
         dispatch.IsConfirmed = submitType == "final" ? true : false;
         dispatch.ConfirmationTime = submitType == "final" ? DateTime.Now : null;
         dispatch.DispatchVoucherNumber = submitType == "final" ? (int.Parse(dispatch.DispatchVoucherNumber) + 1).ToString() : dispatch.DispatchVoucherNumber;
         dispatch.ReportNumber = updateDispatcheDto.ReportNumber;
 
+        if (submitType == "final")
+            dispatch.SeqPreview = 0;
+
         var dispatchLines = await _context.TblDispatchLines.Where(t => t.DispatchId == updateDispatcheDto.Id).ToListAsync();
 
         _context.TblDispatchLines.RemoveRange(dispatchLines);
 
+        var removedItems = dispatchLines.Select(s => s.ItemId!.Value).ToList().Except(updateDispatcheDto.Items.Select(s => s.ItemId));
+        
+        var dispatchUids = _context.TblDispatchUids.Where(t => removedItems.Contains(t.UidInfo.FkItemId ?? 0) && t.FKDispatchId == updateDispatcheDto.Id)
+            .Include(t => t.UidInfo);
+
+        _context.TblDispatchUids.RemoveRange(dispatchUids);
+
         float totalPrice = 0;
         float totalVolume = 0;
 
+        StringBuilder stringBuilder = new StringBuilder();
         foreach (var item in updateDispatcheDto.Items)
         {
             var itemInfo = await _context.TblItems.FindAsync(item.ItemId);
             var itemDetailStore = await _context.TblItemDetailStores.FindAsync(item.ItemDetailStoreId);
-            var itemDetail = await _context.TblItemDetails.FindAsync(itemDetailStore.ItemDetailId);
+            var itemDetail = await _context.TblItemDetails.Include(t => t.DosePerVial)
+                .FirstOrDefaultAsync(t=> t.ItemDetailId == itemDetailStore.ItemDetailId);
 
+            int numvial = 0;
+            if(itemDetail is not null && itemDetail.DosePerVial is not null && itemDetail.DosePerVial.NumDosePerVial != 0)
+                numvial = item.DoseCount / itemDetail.DosePerVial.NumDosePerVial;
 
             var line = new TblDispatchLine
             {
+                NumVial = numvial,
                 DispatchId = updateDispatcheDto.Id,
                 ItemId = item.ItemId,
                 Quantity = item.DoseCount,
@@ -85,6 +104,8 @@ public class DispatchService : IDispatchService
 
             _context.TblDispatchLines.Add(line);
         }
+        if (!string.IsNullOrEmpty(stringBuilder.ToString()))
+            throw new ApplicationException(stringBuilder.ToString());
 
         _context.TblDispatches.Update(dispatch);
         await _context.SaveChangesAsync(cancellationToken);
@@ -99,14 +120,14 @@ public class DispatchService : IDispatchService
             SenderId = createDispatcheDto.SenderId,
             ReceiverId = createDispatcheDto.ReceiverId,
             FiscalPeriodId = fiscalPeriod.FiscalPeriodId,
-            TransportModeId = createDispatcheDto.TransportModeId,
+            TransportMode = createDispatcheDto.TransportMode,
             EnteredById = createDispatcheDto.EnteredById,
             RequestNum = createDispatcheDto.RequestNum,
             Note = createDispatcheDto.Note,
             Date = string.IsNullOrWhiteSpace(createDispatcheDto.Date) ? null : DateTimeHelper.ToGregorian(createDispatcheDto.Date),
             EntryDate = DateTime.Now,
             IsDrafted = submitType == "draft" ? true : false,
-            ReceivingModeId = createDispatcheDto.ReceivingModeId,
+            ReceivingMode = createDispatcheDto.ReceivingMode,
             IsCancelled = false,
             IsConfirmed = submitType == "final" ? true : false,
             DispatchVoucherPrinted = false,
@@ -202,7 +223,7 @@ public class DispatchService : IDispatchService
                 line.VvmtypeId,
             };
 
-            var data = await query.ToListAsync();
+        var data = await query.ToListAsync();
 
         var currentDispatch = await _context.TblDispatches.FindAsync(data.FirstOrDefault().DispatchId);
 
@@ -287,11 +308,12 @@ public class DispatchService : IDispatchService
             DispatchVoucherNumber = ulong.TryParse(dispatch.DispatchVoucherNumber, out ulong res) ? res : 0,
             ReportNumber = dispatch.ReportNumber,
             ReceiverId = dispatch.ReceiverId ?? 0,
-            TransportModeId = dispatch.TransportModeId ?? 0,
-            ReceivingModeId = dispatch.ReceivingModeId ?? 0,
+            TransportMode = dispatch.TransportMode,
+            ReceivingMode = dispatch.ReceivingMode,
             Note = dispatch.Note,
             Items = items.Select(i => new DispatchLineDto
             {
+                DispatchLineId = i.line.DispatchLineId,
                 ItemDetailStoreId = i.line.ItemDetailStoreId,
                 ItemClassId = i.item.ItemClassId ?? 0,
                 ItemName = i.item.FullName,
@@ -366,10 +388,6 @@ public class DispatchService : IDispatchService
         var query = from d in _context.TblDispatches.Where(dispatch => dispatch.SenderId == senderId)
                     join r in _context.TblUsers on d.ReceiverId equals r.UserId into rj
                     from r in rj.DefaultIfEmpty()
-                    join t in _context.TblTransportModes on d.TransportModeId equals t.TransportModeId into tj
-                    from t in tj.DefaultIfEmpty()
-                    join rm in _context.TblReceivingModes on d.ReceivingModeId equals rm.ReceivingModeId into rmj
-                    from rm in rmj.DefaultIfEmpty()
                     select new DispatchListDto
                     {
                         Id = d.DispatchId,
@@ -379,6 +397,7 @@ public class DispatchService : IDispatchService
                         RequestNum = d.RequestNum,
                         IsDrafted = d.IsDrafted,
                         ReceiverStatus = d.ReceiverStatus ?? 0,
+                        SeqPreview = d.SeqPreview,
                         ReceiverName = r != null ? r.FirstName + " " + r.LastName : "-",
                     };
 
@@ -452,4 +471,37 @@ public class DispatchService : IDispatchService
             .ToListAsync(), total);
     }
 
+    public async Task<(bool isSuccess, string message, int count, int itemId)> SetUidAsync(int dispatchLineId, int id, string uid)
+    {
+        var uidInfoList = await _context.TblUidInfo.Where(t =>
+                (t.FirstLevelUid == uid || t.SecLevelUid == uid || t.ParentUid == uid) &&
+                t.IsActive && t.FkArrivalId != null && t.OrderInfo.Status == OrderInfoStatus.APPLY.ToString())
+            .Include(t => t.OrderInfo)
+            .Select(s => new { s.PkUidInfo, s.FkItemId, s.OrderInfo.BatchNumber })
+            .ToListAsync();
+
+        var dispatch = await _context.TblDispatches.FindAsync(id);
+
+        if (!uidInfoList.Any())
+            return (false, "برای بارکد اسکن شده، ویالی یافت نشد.", 0, 0 );
+
+        var dispatchItem = await _context.TblDispatchLines.FindAsync(dispatchLineId);
+        if(dispatchItem is null || dispatchItem.ItemId != uidInfoList.FirstOrDefault()!.FkItemId)
+            return (false, "بارکد اسکن شده متعلق به این کالا نمی‌باشد.", 0, 0);
+
+        if(dispatchItem.BatchNumber != uidInfoList.FirstOrDefault()!.BatchNumber)
+            return (false, "بارکد اسکن شده متعلق به این سری ساخت نمی‌باشد.", 0, 0);
+
+        foreach (var item in uidInfoList)
+        {
+            await _context.TblDispatchUids.AddAsync(new TblDispatchUid()
+            {
+                Dispatch = dispatch,
+                FKUidInfo = item.PkUidInfo,
+            });
+        }
+
+        await _context.SaveChangesAsync();
+        return (true, string.Empty, uidInfoList.Count(), dispatchItem.ItemId.Value);
+    }
 }

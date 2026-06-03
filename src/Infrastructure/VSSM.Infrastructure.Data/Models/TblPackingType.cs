@@ -12,6 +12,4 @@ public partial class TblPackingType
     public string FullName { get; set; }
 
     public bool? IsActive { get; set; }
-
-    public virtual ICollection<TblItemDetail> TblItemDetails { get; set; } = new List<TblItemDetail>();
 }

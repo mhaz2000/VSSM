@@ -191,7 +191,7 @@ public class ArrivalController(
                 "confirm" => await Confirm(model, token),
                 "deleteAll" => await DeleteAll(model, token),
                 string s when s.StartsWith("deleteLine_", StringComparison.OrdinalIgnoreCase)
-                                                                   => await HandleDeleteLine(s, model, token),
+                => await HandleDeleteLine(s, model, token),
                 string s when s.StartsWith("editLine_", StringComparison.OrdinalIgnoreCase)
                 => await HandleEditLine(s, model, token),
 
@@ -285,7 +285,7 @@ public class ArrivalController(
             return View("New", model);
         }
 
-        var batchNum = model.NewLine.BatchNum.Trim();
+            var batchNum = model.NewLine.BatchNum.Trim();
 
         if (model.Lines != null && model.Lines.Any(l =>
             string.Equals(l.BatchNum, batchNum, StringComparison.OrdinalIgnoreCase)))
@@ -387,8 +387,14 @@ public class ArrivalController(
 
     private async Task<IActionResult> Confirm(ArrivalViewModel model, CancellationToken token)
     {
-        if (!model.ArrivalId.HasValue || model.ArrivalId == 0 ||
-            !await arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
+        if (!model.ArrivalId.HasValue || model.ArrivalId == 0)
+        {
+            TempData["ToastMessage"] = "ابتدا یک کالا اضافه کنید";
+            TempData["ToastType"] = "error";
+            return View("New", model);
+        }
+
+        if (!await arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
         {
             TempData["ToastMessage"] = "ابتدا یک کالا اضافه کنید";
             TempData["ToastType"] = "error";
@@ -397,13 +403,17 @@ public class ArrivalController(
 
         await arrivalService.Confirm(model.ArrivalId.Value, BuildCreateDto(model), token);
 
-        // Step 3: بروزرسانی tbl_uid_info با arrival_fk_id پس از تایید
+        // Lines رو از DB بخون نه از model
+        var dto = await arrivalService.GetById(model.ArrivalId.Value, token);
+        var batchNums = dto?.Lines.Select(l => l.BatchNum).ToList() ?? new List<string>();
+        var firstLine = dto?.Lines.FirstOrDefault();
+
         await uidInfoService.SetArrivalFkForBatchNums(
-            model.Lines.Select(l => l.BatchNum).ToList(),
+            batchNums,
             model.ArrivalId.Value,
-            model.NewLine.DosePerVialId,
-            model.NewLine.StoreId,
-            model.NewLine.ItemId,
+            firstLine?.DosePerVialId,
+            firstLine?.StoreId,
+            firstLine?.ItemId,
             token);
 
         TempData["ToastMessage"] = "ورود تایید شد";

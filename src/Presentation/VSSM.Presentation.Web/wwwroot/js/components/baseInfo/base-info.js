@@ -3,7 +3,6 @@ $(function () {
 
     $(document).on("click", ".open-modal", function (e) {
 
-        debugger
         e.preventDefault();
 
         const url = $(this).data("url");

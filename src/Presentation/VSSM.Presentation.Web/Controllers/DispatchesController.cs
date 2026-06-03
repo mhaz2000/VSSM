@@ -1,6 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using VSSM.Application.Common.Helpers;
+using VSSM.Application.DTOs.BaseEntities;
+using VSSM.Application.DTOs.BaseEntities.BaseInfo;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
@@ -9,9 +14,7 @@ namespace VSSM.Presentation.Web.Controllers
     public class DispatchesController : BaseController
     {
         private readonly IRecipientService _recipientService;
-        private readonly ITransportModeService _transportModeService;
         private readonly IFiscalPeriodService _fiscalPeriodService;
-        private readonly IReceivingModeService _receivingModeService;
         private readonly IStoreService _storeService;
         private readonly IItemService _itemService;
         private readonly IUseService _useService;
@@ -29,9 +32,7 @@ namespace VSSM.Presentation.Web.Controllers
             IUseService useService,
             IStoreService storeService,
             IRecipientService recipientService,
-            ITransportModeService transportModeService,
             IFiscalPeriodService fiscalPeriodService,
-            IReceivingModeService receivingModeService,
             IDosePerVialService dosePerVialService,
             IItemService itemService,
             IDispatchService dispatchService,
@@ -42,9 +43,7 @@ namespace VSSM.Presentation.Web.Controllers
             _vvmtypeService = vvmtypeService;
             _recipientService = recipientService;
             _storeService = storeService;
-            _transportModeService = transportModeService;
             _fiscalPeriodService = fiscalPeriodService;
-            _receivingModeService = receivingModeService;
             _itemService = itemService;
             _dispatchService = dispatchService;
             _itemClassService = itemClassService;
@@ -79,8 +78,7 @@ namespace VSSM.Presentation.Web.Controllers
                     new() { Header = "تاریخ", PropertyName = nameof(DispatchListDto.DateText),  Sortable = false },
                     new() { Header = "شماره درخواست", PropertyName = nameof(DispatchListDto.RequestNum), Sortable = false },
                     new() { Header = "شماره فاکتور", PropertyName = nameof(DispatchListDto.DispatchVoucherNumber), Sortable = false },
-                    new() { Header = "حجم کل (لیتر)", PropertyName = nameof(DispatchListDto.TotalVolume),  Sortable = false },
-                    new() { Header = "پیش نویس", PropertyName = nameof(DispatchListDto.IsDraftedText),  Sortable = false },
+                    new() { Header = "پیش فاکتور", PropertyName = nameof(DispatchListDto.IsDraftedText),  Sortable = false },
                     new() { Header = "وضعیت گیرنده", PropertyName = nameof(DispatchListDto.ReceiverStatusText),  Sortable = false },
                     new() { Header = "عملیات", IsActionColumn = true}
                 },
@@ -94,6 +92,21 @@ namespace VSSM.Presentation.Web.Controllers
                         RouteIdProperty = nameof(DispatchListDto.Id),
                         LinkClass = "",
                         IconClass = "fa fa-edit"
+                    },
+                    new()
+                    {
+                        Title = "چاپ پیش فاکتور",
+                        Controller = "Dispatches",
+                        Action = "Print",
+                        RouteIdProperty = nameof(DispatchListDto.Id),
+                        LinkClass = "",
+                        IconClass = "fa fa-file",
+                        DynamicSkip = item =>
+                        {
+                            var row = (DispatchListDto)item;
+
+                            return (!(row.IsDrafted.HasValue && row.IsDrafted.Value)).ToString();
+                        }
                     }
                 }
             };
@@ -168,11 +181,9 @@ namespace VSSM.Presentation.Web.Controllers
 
         public async Task<IActionResult> New(CancellationToken cancellationToken)
         {
-            ViewBag.Recipients = await _recipientService.GetActiveRecipients(cancellationToken);
-            ViewBag.TransportModes = await _transportModeService.GetActiveTransportModes(cancellationToken);
-            ViewBag.ReceivingModes = await _receivingModeService.GetActiveReceivingModesAsync(cancellationToken);
-            ViewBag.ItemClasses = await _itemClassService.GetActives(cancellationToken);
-            ViewBag.VVMStages = await _vvmstageService.GetActives(cancellationToken);
+
+            await PopulateViewBagData(cancellationToken);
+
             return View();
         }
 
@@ -213,11 +224,7 @@ namespace VSSM.Presentation.Web.Controllers
             if (dispatch == null)
                 return NotFound();
 
-            ViewBag.Recipients = await _recipientService.GetActiveRecipients(cancellationToken);
-            ViewBag.TransportModes = await _transportModeService.GetActiveTransportModes(cancellationToken);
-            ViewBag.ReceivingModes = await _receivingModeService.GetActiveReceivingModesAsync(cancellationToken);
-            ViewBag.ItemClasses = await _itemClassService.GetActives(cancellationToken);
-            ViewBag.VVMStages = await _vvmstageService.GetActives(cancellationToken);
+            await PopulateViewBagData(cancellationToken);
 
             return View(dispatch);
         }
@@ -232,10 +239,56 @@ namespace VSSM.Presentation.Web.Controllers
             updateDispatcheDto.SenderId = CurrentUserRecipientId.Value;
             updateDispatcheDto.EnteredById = CurrentUserId.Value;
 
+            try
+            {
+                updateDispatcheDto.IsDrafted = true;
+                await _dispatchService.UpdateDispatchAsync(updateDispatcheDto, submitType, cancellationToken);
+            }
+            catch (ApplicationException ex)
+            {
+                await PopulateViewBagData(cancellationToken);
 
-            await _dispatchService.UpdateDispatchAsync(updateDispatcheDto, submitType, cancellationToken);
+                ViewBag.ErrorMessage = ex.Message;
+
+                await PopulateViewBagData(cancellationToken);
+
+                return View("Edit", updateDispatcheDto);
+            }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost("SetUid")]
+        public async Task<IActionResult> SetUid(int dispatchLineId, int id, string uid)
+        {
+            var response = await _dispatchService.SetUidAsync(dispatchLineId, id, uid);
+            return Ok(new { Success = response.isSuccess, Message = response.message, Count = response.count, RowId = response.itemId });
+        }
+
+
+        private async Task PopulateViewBagData(CancellationToken cancellationToken)
+        {
+            ViewBag.TransportModes = Enum.GetValues(typeof(TransportMode))
+                .Cast<TransportMode>()
+                .Select(mode => new EnumListDto
+                {
+                    Name = mode.ToString(),
+                    Description = EnumHelper.GetEnumDescription(mode),
+                    Value = (int)mode
+                }).ToList();
+
+            ViewBag.ReceivingModes = Enum.GetValues(typeof(ReceivingMode))
+                .Cast<ReceivingMode>()
+                .Select(mode => new EnumListDto
+                {
+                    Name = mode.ToString(),
+                    Description = EnumHelper.GetEnumDescription(mode),
+                    Value = (int)mode
+                }).ToList();
+
+            ViewBag.Recipients = await _recipientService.GetActiveRecipients(cancellationToken);
+            ViewBag.ItemClasses = await _itemClassService.GetActives(cancellationToken);
+            ViewBag.VVMStages = await _vvmstageService.GetActives(cancellationToken);
         }
     }
 }

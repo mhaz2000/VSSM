@@ -1,11 +1,14 @@
-﻿namespace VSSM.Application.DTOs.BaseEntities.Dispatches;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace VSSM.Application.DTOs.BaseEntities.Dispatches;
 public class CreateDispatchDto
 {
     public int SenderId { get; set; }
+    [Required(ErrorMessage = "گیرنده اجباری است.")]
     public int ReceiverId { get; set; }
     public int FiscalPeriodId { get; set; }
-    public int TransportModeId { get; set; }
-    public int ReceivingModeId { get; set; }
+    public string TransportMode { get; set; }
+    public string ReceivingMode { get; set; }
     public int EnteredById { get; set; }
     public float TotalVolume { get; set; }
     public string AirwaryWillReference { get; set; } = string.Empty;

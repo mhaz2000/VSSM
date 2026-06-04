@@ -5,6 +5,11 @@
     ViewData["Title"] = "فایل های ورودی";
 }
 
+@{
+    var dosePerVials = ViewBag.DosePerVials as List<DosePerVialListDto>;
+    var items = ViewBag.Items as List<ItemListDto>;
+}
+
 <div class="container-fluid">
 
     <div class="card mt-3">
@@ -21,25 +26,66 @@
                       method="post"
                       enctype="multipart/form-data">
 
-                    <div class="form-group">
+                    <div class="row g-3" style="display: flex; align-items: center; margin-bottom: 2rem;">
 
-                        <label class="mb-2">انتخاب فایل XML</label>
+                        <div class="col-md-4" style="position: relative">
 
-                        <div class="input-group">
+                            <label class="mb-2" style="font-size:18px">انتخاب فایل XML<span class="input-req-tag" style="margin-top: 3px;">(اجباری)</span></label>
 
-                            <input type="file"
-                                   id="xmlFile"
-                                   name="xmlFile"
-                                   style="max-width: 40%"
-                                   class="form-control"
-                                   accept=".xml,text/xml"
-                                   onchange="handleFileSelect(this)" />
+                            <div class="input-group">
+
+                                <input type="file"
+                                       id="xmlFile"
+                                       name="xmlFile"
+                                       class="form-control"
+                                       accept=".xml,text/xml"
+                                       onchange="handleFileSelect(this)" />
+
+                            </div>
+
+                            <small id="fileName" class="text-muted" style="position: absolute">  
+                                هیچ فایلی انتخاب نشده است
+                            </small>
 
                         </div>
 
-                        <small id="fileName" class="text-muted">
-                            هیچ فایلی انتخاب نشده است
-                        </small>
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                            new SearchableSelectModel
+                            {
+                                Id = "ItemId",
+                                IsRequired = true,
+                                Name = "ItemId",
+                                Label = "کالا",
+                                SelectedValue = string.Empty,
+                                Options = items
+                            .Select(x => new SelectOption
+                            {
+                                Value = x.Id.ToString(),
+                                Text = x.FullName
+                            }).ToList()
+                            })
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "DosePerVialId",
+                                                            IsRequired = true,
+                                                            Name = "DosePerVialId",
+                                                            Label = "دوز بر ویال",
+                                                            SelectedValue = string.Empty,
+                                                            Options = dosePerVials
+                                                        .Select(x => new SelectOption
+                                                        {
+                                                            Value = x.DosePerVialId.ToString(),
+                                                            Text = x.NumDosePerVial.ToString()
+                                                        }).ToList()
+                                                        })
+                        </div>
 
                     </div>
 
@@ -49,6 +95,8 @@
                             disabled>
                         آپلود فایل
                     </button>
+
+
 
                 </form>
 
@@ -64,20 +112,100 @@
 </div>
 
 <script>
-    function handleFileSelect(input) {
-
+    function checkFormValidity() {
+        const fileInput = document.getElementById("xmlFile");
+        const itemSelect = document.getElementById("ItemId");
+        const dosePerVialSelect = document.getElementById("DosePerVialId");
         const button = document.getElementById("uploadBtn");
+
+        // For custom searchable selects, check the actual input values
+        let isItemSelected = false;
+        let isDosePerVialSelected = false;
+
+        if (itemSelect) {
+            // If it's a select element
+            if (itemSelect.tagName === 'SELECT') {
+                isItemSelected = itemSelect.value && itemSelect.value !== "";
+            } else {
+                // If it's an input element (custom dropdown)
+                isItemSelected = itemSelect.value && itemSelect.value !== "";
+            }
+        }
+
+        if (dosePerVialSelect) {
+            if (dosePerVialSelect.tagName === 'SELECT') {
+                isDosePerVialSelected = dosePerVialSelect.value && dosePerVialSelect.value !== "";
+            } else {
+                isDosePerVialSelected = dosePerVialSelect.value && dosePerVialSelect.value !== "";
+            }
+        }
+
+        const isFileSelected = fileInput.files.length > 0;
+        const isValid = isFileSelected && isItemSelected && isDosePerVialSelected;
+
+        button.disabled = !isValid;
+
+        // Optional: Add visual feedback
+        if (!isValid) {
+            button.title = "لطفاً فایل، کالا و دوز بر ویال را انتخاب کنید";
+        } else {
+            button.title = "";
+        }
+
+        return isValid;
+    }
+
+    function handleFileSelect(input) {
         const label = document.getElementById("fileName");
 
         if (input.files.length > 0) {
             const file = input.files[0];
-
             label.textContent = "فایل انتخاب شده: " + file.name;
-            button.disabled = false;
-        }
-        else {
+        } else {
             label.textContent = "هیچ فایلی انتخاب نشده است";
-            button.disabled = true;
         }
+
+        checkFormValidity();
     }
+
+    function monitorSelectChanges() {
+        const itemSelect = document.getElementById("ItemId");
+        const dosePerVialSelect = document.getElementById("DosePerVialId");
+
+        if (itemSelect && itemSelect.tagName === 'SELECT') {
+            itemSelect.addEventListener("change", checkFormValidity);
+        } else if (itemSelect) {
+            itemSelect.addEventListener("input", checkFormValidity);
+            itemSelect.addEventListener("change", checkFormValidity);
+        }
+
+        if (dosePerVialSelect && dosePerVialSelect.tagName === 'SELECT') {
+            dosePerVialSelect.addEventListener("change", checkFormValidity);
+        } else if (dosePerVialSelect) {
+            dosePerVialSelect.addEventListener("input", checkFormValidity);
+            dosePerVialSelect.addEventListener("change", checkFormValidity);
+        }
+
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    checkFormValidity();
+                }
+            });
+        });
+
+        if (itemSelect) observer.observe(itemSelect, { attributes: true });
+        if (dosePerVialSelect) observer.observe(dosePerVialSelect, { attributes: true });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const fileInput = document.getElementById("xmlFile");
+
+        if (fileInput) {
+            fileInput.addEventListener("change", function() { handleFileSelect(this); });
+        }
+
+        monitorSelectChanges();
+        checkFormValidity();
+    });
 </script>

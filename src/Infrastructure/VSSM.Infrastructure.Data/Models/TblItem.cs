@@ -58,7 +58,6 @@ public partial class TblItem
     public virtual ICollection<TblRecipientMaxItem> TblRecipientMaxItems { get; set; } = new List<TblRecipientMaxItem>();
 
     public virtual ICollection<TblRequestLine> TblRequestLines { get; set; } = new List<TblRequestLine>();
-    public virtual ICollection<TblUidInfo> TblUidInfos { get; set; } = new List<TblUidInfo>();
 
 
 }

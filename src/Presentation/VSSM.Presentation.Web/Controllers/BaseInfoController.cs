@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Update;
 using VSSM.Application.DTOs.BaseEntities.BaseInfo;
 using VSSM.Application.DTOs.BaseEntities.OrderInfo;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services.BaseEntities;
 using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.Base;
 
@@ -16,6 +17,7 @@ namespace VSSM.Presentation.Web.Controllers
                                           int pageNumber = 1,
                                           int pageSize = 10)
         {
+
             var (data, count) = await baseInfoService.GetPagedBaseInfoAsync(search, pageNumber, pageSize, cancellationToken);
 
             var model = new GridViewModel
@@ -125,6 +127,8 @@ namespace VSSM.Presentation.Web.Controllers
                 await baseInfoService.AddAsync(model, CurrentUserId.Value);
             else
                 await baseInfoService.UpdateAsync(model, CurrentUserId.Value);
+
+            TempData["ToastMessage"] = "عملیات با موفقیت شد";
 
             return RedirectToAction(nameof(Index));
         }

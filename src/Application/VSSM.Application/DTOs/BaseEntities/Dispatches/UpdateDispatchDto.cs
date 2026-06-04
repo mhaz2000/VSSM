@@ -6,8 +6,8 @@ public class UpdateDispatchDto
     public int SenderId { get; set; }
     public int ReceiverId { get; set; }
     public int FiscalPeriodId { get; set; }
-    public string TransportMode { get; set; }
-    public string ReceivingMode { get; set; }
+    public string TransportMode { get; set; } = string.Empty;
+    public string ReceivingMode { get; set; } = string.Empty;
     public int EnteredById { get; set; }
     public float TotalVolume { get; set; }
     public string AirwaryWillReference { get; set; } = string.Empty;

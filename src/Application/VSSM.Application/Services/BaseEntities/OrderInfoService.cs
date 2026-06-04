@@ -81,7 +81,7 @@ public class OrderInfoService : IOrderInfoService
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task UploadAsync(XDocument doc, string fileName, int userId)
+    public async Task UploadAsync(XDocument doc, string fileName, int itemId, int dosePerVialId, int userId)
     {
         XElement od = doc.Root;
 
@@ -114,6 +114,8 @@ public class OrderInfoService : IOrderInfoService
             FileName = fileName,
             CreatedBy = userId,
             Status = OrderInfoStatus.READ.ToString(),
+            FkDosePerVialId = dosePerVialId,
+            FkItemId = itemId,
         };
 
         _dbContext.TblOrderInfo.Add(ordreInfo);
@@ -136,6 +138,9 @@ public class OrderInfoService : IOrderInfoService
                         SecLevelUid = bc.Substring(18, 20),
                         FirstLevelUid = pbc.Substring(18, 20),
                         IsActive = true,
+                        ConsumedCount = 0,
+                        CurrentStore = 0,
+                        DoseCount = 0,
                         OrderInfo = ordreInfo
                     };
 

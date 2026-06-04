@@ -33,17 +33,18 @@ public sealed class UidInfoService : IUidInfoService
 
         // 2) UID آزاد (ورود نخورده) داریم؟
         var list = await _db.TblUidInfo
+            .Include(t => t.OrderInfo)
             .AsNoTracking()
             .Where(u =>
                 u.IsActive &&
-                u.FkArrivalId == null &&
+                u.OrderInfo.FkArrivalId == null &&
                 u.OrderInfo.BatchNumber == batchNum)
             .Select(u => new UidInfoDto
             {
                 Id = u.PkUidInfo,
                 BatchNumber = u.OrderInfo.BatchNumber,
-                ArrivalFkId = u.FkArrivalId,
-                ItemFkId = u.FkItemId,
+                ArrivalFkId = u.OrderInfo.FkArrivalId,
+                ItemFkId = u.OrderInfo.FkItemId,
                 StoreCurrent = u.CurrentStore,
                 DoseCount = u.DoseCount
             })
@@ -81,13 +82,14 @@ public sealed class UidInfoService : IUidInfoService
         // نکته: این آپدیت فقط UIDهای آزاد را می‌گیرد (ArrivalFkId == null)
         // و فقط برای سفارش‌های تایید شده
         var affected = await _db.TblUidInfo
+            .Include(t => t.OrderInfo)
             .Where(u =>
                 u.IsActive &&
-                u.FkArrivalId == null &&
+                u.OrderInfo.FkArrivalId == null &&
                 normalized.Contains(u.OrderInfo.BatchNumber))
             .ExecuteUpdateAsync(setters => setters
-                .SetProperty(u => u.FkArrivalId, arrivalId)
-                .SetProperty(u => u.FkItemId, itemId)
+                .SetProperty(u => u.OrderInfo.FkArrivalId, arrivalId)
+                .SetProperty(u => u.OrderInfo.FkItemId, itemId)
                 .SetProperty(u => u.CurrentStore, storeId)
                 .SetProperty(u => u.DoseCount, doseCount),
                 token);
@@ -103,10 +105,11 @@ public sealed class UidInfoService : IUidInfoService
             throw new ArgumentOutOfRangeException(nameof(arrivalId));
 
         await _db.TblUidInfo
-            .Where(u => u.FkArrivalId == arrivalId)
+            .Include(t => t.OrderInfo)
+            .Where(u => u.OrderInfo.FkArrivalId == arrivalId)
             .ExecuteUpdateAsync(setters => setters
-                .SetProperty(u => u.FkArrivalId, (int?)null)
-                .SetProperty(u => u.FkItemId, (int?)null)
+                .SetProperty(u => u.OrderInfo.FkArrivalId, (int?)null)
+                .SetProperty(u => u.OrderInfo.FkItemId, (int?)null)
                 .SetProperty(u => u.CurrentStore, (int?)null)
                 .SetProperty(u => u.DoseCount, (int?)null),
                 token);
@@ -114,15 +117,15 @@ public sealed class UidInfoService : IUidInfoService
 
     public async Task ClearArrivalFkByLineId(int arrivalLineId, CancellationToken token)
     {
-        var uidsToUpdate = await _db.TblUidInfo
-            .Where(x => x.FkArrivalId == arrivalLineId)
+        var uidsToUpdate = await _db.TblUidInfo.Include(t => t.OrderInfo)
+            .Where(x => x.OrderInfo.FkArrivalId == arrivalLineId)
             .ToListAsync(token);
 
         if (uidsToUpdate.Any())
         {
             foreach (var uid in uidsToUpdate)
             {
-                uid.FkArrivalId = null;
+                uid.OrderInfo.FkArrivalId = null;
             }
 
             await _db.SaveChangesAsync(token);

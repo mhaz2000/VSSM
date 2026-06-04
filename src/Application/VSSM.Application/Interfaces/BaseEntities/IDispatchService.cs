@@ -7,7 +7,7 @@ public interface IDispatchService
 {
     Task DeleteDispatchAsync(int id, CancellationToken cancellationToken);
     Task ConfirmDispatchAsync(int id, CancellationToken cancellationToken);
-    Task CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken);
+    Task<long> CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken);
     Task<(List<DispatchListDto> data, int count)> GetPagedDispatchesAsync(string? search, int page, int pageSize,
         string sortField, string sortOrder, string? status, int senderId, CancellationToken cancellationToken);
 

@@ -23,14 +23,14 @@ $(function () {
 
         if (!hasItem) {
             e.preventDefault();
-            alert('حداقل یک کالا باید به لیست اضافه شود');
+            showToast('حداقل یک کالا باید به لیست اضافه شود', 'warning');
             return false;
         }
 
         let receiverId = $('#ReceiverId').val();
         if (!receiverId || receiverId === '') {
             e.preventDefault();
-            alert('لطفاً گیرنده را انتخاب کنید');
+            showToast('لطفاً گیرنده را انتخاب کنید', 'warning');
             return false;
         }
 
@@ -153,7 +153,7 @@ $(function () {
 
         let selectedRadio = $('.item-radio:checked');
         if (!selectedRadio.length) {
-            alert('لطفاً یک کالا انتخاب کنید');
+            showToast('لطفاً یک کالا انتخاب کنید', 'warning');
             return;
         }
 
@@ -167,7 +167,7 @@ $(function () {
 
         // prevent duplicate main item
         if ($(`#addedItemsTable tbody tr[data-id="${itemId}"]`).length) {
-            alert('این کالا قبلاً اضافه شده است');
+            showToast('این کالا قبلاً اضافه شده است', 'warning');
             return;
         }
 
@@ -190,7 +190,7 @@ $(function () {
 
 
         if (!dosePerVial || dosePerVial <= 0) {
-            alert('لطفاً دوز بر ویال را انتخاب کنید');
+            showToast('لطفاً دوز بر ویال را انتخاب کنید','warning');
             return;
         }
         //if (dose % dosePerVial !== 0) {
@@ -339,12 +339,12 @@ $(function () {
         let dosePerVial = parseInt(row.data('dose-per-vial'));
 
         if (!newDose || newDose <= 0) {
-            alert('دوز معتبر وارد کنید');
+            showToast('دوز معتبر وارد کنید', 'warning');
             return;
         }
 
         if (dosePerVial && newDose % dosePerVial !== 0) {
-            alert('مقدار وارد شده باید مضربی از دوز بر ویال باشد');
+            showToast('مقدار وارد شده باید مضربی از دوز بر ویال باشد', 'warning');
             return;
         }
 

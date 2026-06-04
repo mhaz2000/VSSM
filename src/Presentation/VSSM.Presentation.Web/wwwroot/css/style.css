@@ -7406,3 +7406,15 @@ base-chart.chart {
       margin-left: 200px !important; } }
 
 /*# sourceMappingURL=style.css.map */
+
+
+
+.input-req-tag {
+    font-size: 10px;
+    font-weight: 500;
+    color: #ef4444;
+    background: #fef2f2;
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-right: 4px;
+}

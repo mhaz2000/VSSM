@@ -206,7 +206,10 @@ namespace VSSM.Presentation.Web.Controllers
             createDispatcheDto.EnteredById = CurrentUserId.Value;
 
 
-            await _dispatchService.CreateDispatchAsync(createDispatcheDto, submitType, cancellationToken);
+            var result = await _dispatchService.CreateDispatchAsync(createDispatcheDto, submitType, cancellationToken);
+
+            TempData["ToastMessage"] = $"پیش فاکتور با شماره {result} با موفقیت ثبت شد.";
+            TempData["ToastType"] = "success";
 
             return RedirectToAction(nameof(Index));
         }
@@ -243,6 +246,10 @@ namespace VSSM.Presentation.Web.Controllers
             {
                 updateDispatcheDto.IsDrafted = true;
                 await _dispatchService.UpdateDispatchAsync(updateDispatcheDto, submitType, cancellationToken);
+
+                TempData["ToastMessage"] = "عملیات با موفقیت شد";
+                TempData["ToastType"] = "success";
+
             }
             catch (ApplicationException ex)
             {

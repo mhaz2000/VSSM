@@ -6,6 +6,6 @@
         PROCESS_VALIDATING,
         HAS_ERROR,
         IS_VALID,
-        APPLY
+        APPLIED
     }
 }

@@ -10515,3 +10515,15 @@ body:not(.top-nav)
 .sidebar ul.nav li.nav-item a.nav-link span {
     display: none;
 }
+
+
+.input-req-tag {
+    font-size: 10px;
+    font-weight: 500;
+    color: #ef4444;
+    background: #fef2f2;
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-right: 4px;
+    position: absolute;
+}

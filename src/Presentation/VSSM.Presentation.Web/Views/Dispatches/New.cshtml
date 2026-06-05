@@ -19,13 +19,13 @@
 
 <style>
     .form-control {
-        padding: 14px !important;
+        padding: 10px !important;
     }
 
-    .form-select {
-        padding: 12px !important;
+    /* .form-select {
+        padding: 9px !important;
         width: 100%;
-    }
+    } */
 
     .form-label {
         text-align: right;
@@ -51,7 +51,7 @@
                         <div class="row g-3">
 
                             <div class="col-md-4 input-sec">
-                                <label class="form-label">تاریخ<span class="form-mandatory">(اجباری)</span></label>
+                                <label class="form-label">تاریخ<span class="input-req-tag">(اجباری)</span></label>
                                 <input asp-for="Date" id="Date" class="form-control bg-warning-subtle" />
                                 <input type="hidden" id="DateEn" name="Date" />
                             </div>
@@ -169,8 +169,8 @@
                                     <th>کالا</th>
                                     <th>انقضا</th>
                                     <th>مرحله VVM</th>
-                                    <th>سازنده</th>
                                     <th>موجودی</th>
+                                    <th>سازنده</th>
                                     <th>انبار</th>
                                     <th>سری ساخت</th>
                                 </tr>

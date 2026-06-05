@@ -58,6 +58,24 @@ namespace VSSM.Application.Services.BaseEntities
             return model.ItemId;
         }
 
+        public async Task<List<ItemListDto>> GetActiveVaccines(CancellationToken cancellationToken)
+        {
+            var items = await _dbContext.TblItems
+                                     .Include(t=> t.ItemClass)
+                                    .AsNoTracking()
+                                    .Where(c => c.IsActive == true && c.ItemClass.FullName.Contains("واکسن"))
+                                    .ToListAsync(cancellationToken);
+
+            var result = items.Select(x => new ItemListDto
+            {
+                Id = x.ItemId,
+                FullName = x.FullName,
+                ItemClassId = x.ItemClassId
+            }).ToList();
+
+            return result;
+        }
+
         public async Task<List<ItemListDto>> GetActives(CancellationToken cancellationToken)
         {
             var items = await _dbContext.TblItems

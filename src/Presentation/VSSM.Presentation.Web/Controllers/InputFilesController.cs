@@ -3,18 +3,22 @@ using System.Xml.Linq;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.OrderInfo;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services.BaseEntities;
 using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.Base;
 
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class InputFilesController(IOrderInfoService _orderInfoService) : BaseController
+public class InputFilesController(IOrderInfoService _orderInfoService, IItemService _itemService, IDosePerVialService _dosePerVialService) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> Index(CancellationToken cancellationToken, string? search, int pageNumber = 1,
         int pageSize = 10, string sort = "Id", string direction = "desc")
     {
+        ViewBag.Items = await _itemService.GetActiveVaccines(cancellationToken);
+        ViewBag.DosePerVials = await _dosePerVialService.GetActives(cancellationToken);
+
         var (data, count) = await _orderInfoService.GetPagedAsync(search, pageNumber, pageSize, sort, direction, cancellationToken);
 
         var model = new GridViewModel
@@ -82,7 +86,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService) : BaseCon
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLY.ToString())
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLIED.ToString())
                                 return "فایل خطا";
 
                             return string.Empty;
@@ -95,7 +99,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService) : BaseCon
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLY.ToString())
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLIED.ToString())
                                 return "color: orange;";
 
                             return string.Empty;
@@ -104,7 +108,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService) : BaseCon
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLY.ToString())
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLIED.ToString())
                                 return "fa fa-file";
 
                             return string.Empty;
@@ -153,7 +157,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService) : BaseCon
     }
 
     [HttpPost]
-    public async Task<ActionResult> Upload(IFormFile xmlFile)
+    public async Task<ActionResult> Upload(IFormFile xmlFile, int itemId, int dosePerVialId)
     {
         XDocument doc;
 
@@ -162,7 +166,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService) : BaseCon
             doc = XDocument.Load(stream);
         }
 
-        await _orderInfoService.UploadAsync(doc, xmlFile.FileName, CurrentUserId.Value);
+        await _orderInfoService.UploadAsync(doc, xmlFile.FileName, itemId, dosePerVialId, CurrentUserId.Value);
 
         return RedirectToAction(nameof(Index));
     }

@@ -46,6 +46,5 @@ public partial class TblArrival
     public virtual ICollection<TblArrivalLine> TblArrivalLines { get; set; } = new List<TblArrivalLine>();
 
     public virtual ICollection<TblDispatch> TblDispatches { get; set; } = new List<TblDispatch>();
-    public virtual ICollection<TblUidInfo> TblUidInfos { get; set; } = new List<TblUidInfo>();
 
 }

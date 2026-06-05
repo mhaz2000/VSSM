@@ -13,6 +13,23 @@
     ViewData["Title"] = "اطلاعات پایه";
 }
 
+@if (TempData["ToastMessage"] != null)
+{
+    <script>
+        $(document).ready(function() {
+            var message = '@Html.Raw(TempData["ToastMessage"])';
+            var type = '@TempData["ToastType"]';
+
+            // Assuming your ToastService has a method like this
+            toastService.show(message, type);
+
+            // Or if using a specific toast library:
+            // toastr[type](message);
+            // Swal.fire(message);
+        });
+    </script>
+}
+
 <div class="grid-wrapper">
     <div class="grid-header">
 

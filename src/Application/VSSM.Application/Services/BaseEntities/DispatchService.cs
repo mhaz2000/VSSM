@@ -62,8 +62,8 @@ public class DispatchService : IDispatchService
 
         var removedItems = dispatchLines.Select(s => s.ItemId!.Value).ToList().Except(updateDispatcheDto.Items.Select(s => s.ItemId));
         
-        var dispatchUids = _context.TblDispatchUids.Where(t => removedItems.Contains(t.UidInfo.FkItemId ?? 0) && t.FKDispatchId == updateDispatcheDto.Id)
-            .Include(t => t.UidInfo);
+        var dispatchUids = _context.TblDispatchUids.Where(t => removedItems.Contains(t.UidInfo.OrderInfo.FkItemId) && t.FKDispatchId == updateDispatcheDto.Id)
+            .Include(t => t.UidInfo).ThenInclude(t=> t.OrderInfo);
 
         _context.TblDispatchUids.RemoveRange(dispatchUids);
 
@@ -111,7 +111,7 @@ public class DispatchService : IDispatchService
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken)
+    public async Task<long> CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken)
     {
         var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
 
@@ -168,8 +168,9 @@ public class DispatchService : IDispatchService
             dispatch.TblDispatchLines.Add(line);
         }
 
-        await _context.TblDispatches.AddAsync(dispatch, cancellationToken);
+        var result = await _context.TblDispatches.AddAsync(dispatch, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        return result.Entity.SeqPreview;
     }
 
     public async Task DeleteDispatchAsync(int id, CancellationToken cancellationToken)
@@ -475,9 +476,9 @@ public class DispatchService : IDispatchService
     {
         var uidInfoList = await _context.TblUidInfo.Where(t =>
                 (t.FirstLevelUid == uid || t.SecLevelUid == uid || t.ParentUid == uid) &&
-                t.IsActive && t.FkArrivalId != null && t.OrderInfo.Status == OrderInfoStatus.APPLY.ToString())
+                t.IsActive && t.OrderInfo.FkArrivalId != null && t.OrderInfo.Status == OrderInfoStatus.APPLIED.ToString())
             .Include(t => t.OrderInfo)
-            .Select(s => new { s.PkUidInfo, s.FkItemId, s.OrderInfo.BatchNumber })
+            .Select(s => new { s.PkUidInfo, s.OrderInfo.FkItemId, s.OrderInfo.BatchNumber })
             .ToListAsync();
 
         var dispatch = await _context.TblDispatches.FindAsync(id);

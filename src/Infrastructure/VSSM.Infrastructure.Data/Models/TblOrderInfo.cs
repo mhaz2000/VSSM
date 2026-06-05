@@ -10,6 +10,10 @@ public partial class TblOrderInfo
 
     public DateTime? ExpirationDate { get; set; }
 
+    public int? FkArrivalId { get; set; }
+    public int FkItemId { get; set; }
+    public int FkDosePerVialId { get; set; }
+
     public string Irc { get; set; } = null!;
 
     public string BatchNumber { get; set; } = null!;
@@ -30,6 +34,10 @@ public partial class TblOrderInfo
 
     public string FileName { get; set; } = null!;
 
+
+    public virtual TblItem Item { get; set; }
+    public virtual TblArrival Arrival { get; set; }
+    public virtual TblDosePerVial DosePerVial  { get; set; }
 
     public virtual ICollection<TblUidInfo> TblUidInfos { get; set; }
         = new List<TblUidInfo>();

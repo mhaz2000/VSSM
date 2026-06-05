@@ -701,7 +701,8 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.SenderId).HasColumnName("SenderID");
             entity.Property(e => e.TransportMode).HasColumnName("TransportMode");
 
-            entity.HasOne(d => d.Arrival).WithMany(p => p.TblDispatches)
+            entity.HasOne(d => d.Arrival)
+                .WithMany(p => p.TblDispatches)
                 .HasForeignKey(d => d.ArrivalId)
                 .HasConstraintName("FK_tblDispatches_tblArrivals");
 
@@ -946,10 +947,6 @@ public partial class VSSMDbContext : DbContext
                 .HasForeignKey(d => d.ItemClassId)
                 .HasConstraintName("FK_tblItems_tblItemsClass");
 
-            entity.HasMany(d => d.TblUidInfos)
-                .WithOne(p => p.Item)
-                .HasForeignKey(p => p.FkItemId)
-                .HasConstraintName("FK_tblUidInfo_tblItem");
         });
 
         modelBuilder.Entity<TblItemDetail>(entity =>
@@ -1978,17 +1975,17 @@ public partial class VSSMDbContext : DbContext
             entity.ToTable("tblOrderInfo");
 
             entity.Property(e => e.PkOrderInfo)
-                .HasColumnName("Pk_order_info");
+                .HasColumnName("PK_ORDER_INFO");
 
             entity.Property(e => e.NumberOrder)
-                .HasColumnName("Number_order");
+                .HasColumnName("NUMBER_ORDER");
 
             entity.Property(e => e.ManufactureDate)
-                .HasColumnName("Manufacture_date")
+                .HasColumnName("MANUFACTURE_DATE")
                 .HasColumnType("date");
 
             entity.Property(e => e.ExpirationDate)
-                .HasColumnName("Expiration_date")
+                .HasColumnName("EXPIRATION_DATE")
                 .HasColumnType("date");
 
             entity.Property(e => e.Irc)
@@ -1996,45 +1993,73 @@ public partial class VSSMDbContext : DbContext
                 .HasMaxLength(50);
 
             entity.Property(e => e.BatchNumber)
-                .HasColumnName("Batch_number")
+                .HasColumnName("BATCH_NUMBER")
                 .HasMaxLength(50);
 
             entity.Property(e => e.DistributorCompanyCode)
-                .HasColumnName("Distributor_company_code")
+                .HasColumnName("DISTRIBUTOR_COMPANY_CODE")
                 .HasMaxLength(20);
 
             entity.Property(e => e.OrderCompanyCode)
-                .HasColumnName("Order_company_code")
+                .HasColumnName("ORDER_COMPANY_CODE")
                 .HasMaxLength(20);
 
             entity.Property(e => e.LicenseCode)
-                .HasColumnName("License_code")
+                .HasColumnName("LICENSE_CODE")
                 .HasMaxLength(50);
 
             entity.Property(e => e.Prefix)
-                .HasColumnName("prefix")
+                .HasColumnName("PREFIX")
                 .HasMaxLength(20);
 
             entity.Property(e => e.CreationTime)
-                .HasColumnName("Creation_time")
+                .HasColumnName("CREATION_TIME")
                 .HasColumnType("datetime")
                 .HasDefaultValueSql("GETDATE()");
 
             entity.Property(e => e.CreatedBy)
-                .HasColumnName("Created_by");
+                .HasColumnName("CREATED_BY");
 
             entity.Property(e => e.Status)
-                .HasColumnName("Status")
+                .HasColumnName("STATUS")
                 .HasMaxLength(50);
 
             entity.Property(e => e.FileName)
-                .HasColumnName("File_Name")
+                .HasColumnName("FILE_NAME")
                 .HasMaxLength(255);
 
             entity.HasMany(d => d.TblUidInfos)
                 .WithOne(p => p.OrderInfo)
                 .HasForeignKey(p => p.FkOrderInfo)
                 .HasConstraintName("FK_tblUidInfo_InfoOrder");
+
+
+            entity.Property(e => e.FkArrivalId)
+                .HasColumnName("FK_ARRIVAL_ID");
+
+            entity.Property(e => e.FkItemId)
+                .HasColumnName("FK_ITEM_ID");
+
+            entity.Property(e => e.FkDosePerVialId)
+                .HasColumnName("FK_DOSE_PER_VIAL_ID");
+
+
+            entity.HasOne(d => d.Item)
+                .WithMany()
+                .HasForeignKey(d => d.FkItemId)
+                .HasConstraintName("FK_tblOrderInfo_Item");
+
+
+            entity.HasOne(d => d.DosePerVial)
+                .WithMany()
+                .HasForeignKey(d => d.FkDosePerVialId)
+                .HasConstraintName("FK_tblOrderInfo_DosePerVial");
+
+
+            entity.HasOne(d => d.Arrival)
+                .WithMany()
+                .HasForeignKey(d => d.FkArrivalId)
+                .HasConstraintName("FK_tblOrderInfo_Arrival");
         });
 
 
@@ -2045,22 +2070,22 @@ public partial class VSSMDbContext : DbContext
             entity.ToTable("tblUidError");
 
             entity.Property(e => e.PkUidError)
-                .HasColumnName("Pk_uid_error");
+                .HasColumnName("PK_UID_ERROR");
 
             entity.Property(e => e.FkUidInfo)
-                .HasColumnName("Fk_uid_info")
+                .HasColumnName("FK_UID_INFO")
                 .HasMaxLength(100);
 
             entity.Property(e => e.ErrorCode)
-                .HasColumnName("Error_code")
+                .HasColumnName("ERROR_CODE")
                 .HasMaxLength(100);
 
             entity.Property(e => e.ErrorMessage)
-                .HasColumnName("[Error_message]")
+                .HasColumnName("[ERROR_MESSAGE]")
                 .HasMaxLength(100);
 
             entity.Property(e => e.FkOrderInfo)
-                .HasColumnName("FK_order_INFO");
+                .HasColumnName("FK_ORDER_INFO");
 
             entity.HasOne(d => d.OrderInfo)
                 .WithMany(p => p.TblUidErrors)
@@ -2075,10 +2100,10 @@ public partial class VSSMDbContext : DbContext
             entity.ToTable("tblDispatchUid");
 
             entity.Property(e => e.PKDispatchUid)
-                .HasColumnName("PK_Dispatch_Uid");
+                .HasColumnName("PK_DISPATCH_UID");
 
             entity.Property(e => e.FKDispatchId)
-                .HasColumnName("FK_Dispatches");
+                .HasColumnName("FK_DISPATCHES");
 
             entity.HasOne(d => d.Dispatch)
                 .WithMany()
@@ -2086,7 +2111,7 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblDispatchUid_Dispatches");
 
             entity.Property(e => e.FKUidInfo)
-                .HasColumnName("FK_Uid_Info");
+                .HasColumnName("FK_UID_INFO");
 
             entity.HasOne(d => d.UidInfo)
                 .WithMany()
@@ -2101,7 +2126,7 @@ public partial class VSSMDbContext : DbContext
             entity.ToTable("tblUidInfo");
 
             entity.Property(e => e.PkUidInfo)
-                .HasColumnName("Pk_uid_info");
+                .HasColumnName("PK_UID_INFO");
 
             entity.Property(e => e.PatchBarcode)
                 .HasColumnName("PATCH_BARCODE")
@@ -2137,42 +2162,28 @@ public partial class VSSMDbContext : DbContext
                 .HasColumnName("CONSUMED_COUNT")
                 .IsRequired(false);
 
-            entity.Property(e => e.DoesCount)
-                .HasColumnName("DOES_COUNT")
-                .IsRequired(false);
-
             entity.Property(e => e.CurrentStore)
                 .HasColumnName("CURRENT_STORE")
                 .IsRequired(false);
 
             entity.Property(e => e.FkOrderInfo)
-                .HasColumnName("FK_order_INFO");
+                .HasColumnName("FK_ORDER_INFO");
 
             entity.HasOne(d => d.OrderInfo)
                 .WithMany(p => p.TblUidInfos)
                 .HasForeignKey(d => d.FkOrderInfo)
                 .HasConstraintName("FK_tblUidInfo_InfoOrder");
 
-            entity.Property(e => e.FkArrivalId)
-                .HasColumnName("Fk_arrival_id");
-
-            entity.Property(e => e.FkItemId)
-                .HasColumnName("FK_item_id");
 
             entity.Property(e => e.CurrentStore)
-                .HasColumnName("Current_store");
+                .HasColumnName("CURRENT_STORE");
 
             entity.Property(e => e.DoseCount)
-                .HasColumnName("Dose_count");
+                .HasColumnName("DOSE_COUNT");
 
-
-            entity.HasOne(d => d.Item)
-                .WithMany()
-                .HasForeignKey(d => d.FkItemId)
-                .HasConstraintName("FK_tblUidInfo_Item");
 
             entity.Property(e => e.FKDispatchUid)
-                .HasColumnName("FK_Dispatch_Uid");
+                .HasColumnName("FK_DISPATCH_UID");
 
             entity.HasOne(d => d.DispatchUid)
                 .WithMany()

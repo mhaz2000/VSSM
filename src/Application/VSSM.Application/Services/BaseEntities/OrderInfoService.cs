@@ -141,7 +141,8 @@ public class OrderInfoService : IOrderInfoService
                         ConsumedCount = 0,
                         CurrentStore = 0,
                         DoseCount = 0,
-                        OrderInfo = ordreInfo
+                        OrderInfo = ordreInfo,
+                        FkReceiveDispatchId = null,
                     };
 
                 _dbContext.TblUidInfo.Add(uidInfo);

@@ -2189,6 +2189,10 @@ public partial class VSSMDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(d => d.FKDispatchUid)
                 .HasConstraintName("FK_tblUidInfo_tblDispatchUid");
+
+
+            entity.Property(e => e.FkReceiveDispatchId)
+                  .HasColumnName("FK_RECEIVER_ID");
         });
 
         modelBuilder.Entity<TblReceiveDispatches>(entity =>
@@ -2209,7 +2213,7 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.ReceiveNumber)
                   .HasColumnName("RECEIVE_NUMBER")
                   .IsRequired()
-                  .ValueGeneratedOnAdd();
+                  .HasDefaultValueSql("NEXT VALUE FOR SEQ_RECEIVE_DISPATCH");
 
             entity.Property(e => e.CreationTime)
                   .HasColumnName("CREATION_TIME")

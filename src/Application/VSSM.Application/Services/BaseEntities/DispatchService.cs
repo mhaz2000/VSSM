@@ -184,13 +184,9 @@ public class DispatchService : IDispatchService
     }
 
     public async Task DispatchArrivedAsync(DispatchArrivedDto arrivedDto, int userId, int recipientId, CancellationToken cancellationToken)
-
     {
         var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
-
-        var lineIds = arrivedDto.Lines
-    .Select(t => t.DispatchLineId)
-    .ToList();
+        var lineIds = arrivedDto.Lines.Select(t => t.DispatchLineId).ToList();
 
         var query =
             from line in _context.TblDispatchLines
@@ -225,9 +221,17 @@ public class DispatchService : IDispatchService
             };
 
         var data = await query.ToListAsync();
+        var currentDispatch = await _context.TblDispatches.FindAsync(data.First().DispatchId);
 
-        var currentDispatch = await _context.TblDispatches.FindAsync(data.FirstOrDefault().DispatchId);
-
+        // ── ۱. ساخت رکورد tblReceiveDispatches ──
+        var receiveDispatch = new TblReceiveDispatches
+        {
+            ReceiveDate = DateTime.Today,
+            CreationTime = DateTime.Now,
+            CreatedBy = userId
+        };
+        await _context.TblReceiveDispatches.AddAsync(receiveDispatch, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken); // تا PK بگیریم
 
         var arrival = new TblArrival()
         {
@@ -238,13 +242,16 @@ public class DispatchService : IDispatchService
             IsConfirmed = true,
             IsDrafted = false,
             ConfirmationTime = DateTime.Now,
-            SenderId = data.FirstOrDefault().SenderId,
+            SenderId = data.First().SenderId,
             ReceiverId = recipientId,
-            DispatchId = data.FirstOrDefault().DispatchId,
+            DispatchId = data.First().DispatchId,
         };
 
         foreach (var item in data)
         {
+            var storeId = arrivedDto.Lines
+                .First(line => line.DispatchLineId == item.DispatchLineId).StoreId;
+
             var arrivalLine = new TblArrivalLine()
             {
                 BatchNum = item.BatchNumber,
@@ -255,10 +262,9 @@ public class DispatchService : IDispatchService
                 ItemDetailId = item.ItemDetailId,
                 ItemId = item.ItemId,
                 ManufacturerId = item.ManufacturerId,
-
                 ProductionDate = item.ProductionDate,
                 Quantity = item.Quantity,
-                StoreId = arrivedDto.Lines.FirstOrDefault(line => line.DispatchLineId == item.DispatchLineId).StoreId,
+                StoreId = storeId,
                 UseId = item.UseId,
                 VvmstageId = item.VvmstageId,
                 VvmtypeId = item.VvmtypeId,
@@ -267,27 +273,34 @@ public class DispatchService : IDispatchService
             var itemDetailStore = new TblItemDetailStore()
             {
                 ItemDetailId = item.ItemDetailId,
-                StoreId = arrivedDto.Lines.FirstOrDefault(line => line.DispatchLineId == item.DispatchLineId).StoreId,
+                StoreId = storeId,
                 CurrentStock = item.Quantity,
                 EntryDate = DateTime.Now
             };
 
             await _context.TblItemDetailStores.AddAsync(itemDetailStore);
-
             arrival.TblArrivalLines.Add(arrivalLine);
-        }
 
+            // ── ۲. آپدیت tblUidInfo به ازای هر UID این حواله ──
+            var uids = await _context.TblUidInfo
+               .Where(u => u.OrderInfo.BatchNumber == item.BatchNumber
+                        && u.FkReceiveDispatchId == null)
+               .ToListAsync(cancellationToken);
+
+            foreach (var uid in uids)
+                uid.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
+        }
 
         await _context.TblArrivals.AddAsync(arrival, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
+        // ── ۳. آپدیت tblDispatches ──
         currentDispatch.ArrivalId = arrival.ArrivalId;
         currentDispatch.ReceiverStatus = 2;
+        currentDispatch.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId; // ← بند ۲ سند
 
         await _context.SaveChangesAsync(cancellationToken);
-
     }
-
     public async Task<UpdateDispatchDto?> GetByIdAsync(int id)
     {
         var dispatch = await _context.TblDispatches.FindAsync(id);
@@ -304,7 +317,7 @@ public class DispatchService : IDispatchService
             IsConfirmed = dispatch.IsConfirmed ?? false,
             IsDrafted = dispatch.IsDrafted ?? false,
             Id = dispatch.DispatchId,
-            Date = dispatch.Date?.Date.ToString("yyyy/MM/dd"),
+            Date = dispatch.Date?.Date.ToShamsi(),
             RequestNum = dispatch.RequestNum,
             DispatchVoucherNumber = ulong.TryParse(dispatch.DispatchVoucherNumber, out ulong res) ? res : 0,
             ReportNumber = dispatch.ReportNumber,

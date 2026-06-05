@@ -198,6 +198,7 @@ public partial class VSSMDbContext : DbContext
     public virtual DbSet<UserSync> UserSyncs { get; set; }
 
     public virtual DbSet<UserSync2> UserSync2s { get; set; }
+    public DbSet<TblReceiveDispatches> TblReceiveDispatches { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -721,6 +722,9 @@ public partial class VSSMDbContext : DbContext
             entity.HasOne(d => d.Sender).WithMany(p => p.TblDispatchSenders)
                 .HasForeignKey(d => d.SenderId)
                 .HasConstraintName("FK_tblDispatches_tblRecipients");
+
+            entity.Property(e => e.FkReceiveDispatchId)
+                .HasColumnName("FK_RECEIVER_ID");
         });
 
         modelBuilder.Entity<TblDispatchLine>(entity =>

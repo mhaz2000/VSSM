@@ -2180,6 +2180,56 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblUidInfo_tblDispatchUid");
         });
 
+        modelBuilder.Entity<TblReceiveDispatches>(entity =>
+        {
+            entity.ToTable("tblReceiveDispatches");
+
+            entity.HasKey(e => e.PkReceiveDispatchesId);
+
+            entity.Property(e => e.PkReceiveDispatchesId)
+                  .HasColumnName("PK_RECEIVE_DISPATCHES_ID")
+                  .ValueGeneratedOnAdd();
+
+            entity.Property(e => e.ReceiveDate)
+                  .HasColumnName("RECEIVE_DATE")
+                  .HasColumnType("date")
+                  .IsRequired();
+
+            entity.Property(e => e.ReceiveNumber)
+                  .HasColumnName("RECEIVE_NUMBER")
+                  .IsRequired()
+                  .ValueGeneratedOnAdd();
+
+            entity.Property(e => e.CreationTime)
+                  .HasColumnName("CREATION_TIME")
+                  .HasColumnType("datetime")
+                  .IsRequired();
+
+            entity.Property(e => e.CreatedBy)
+                  .HasColumnName("CREATED_BY")
+                  .IsRequired();
+
+            entity.HasOne(e => e.CreatedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.CreatedBy)
+                  .HasConstraintName("FK_tblReceiveDispatches_tblUsers");
+
+            entity.HasMany(e => e.UidInfos)
+                  .WithOne(e => e.ReceiveDispatch)
+                  .HasForeignKey(e => e.FkReceiveDispatchId)
+                  .IsRequired(false)
+                  .HasConstraintName("FK_tblUidInfo_tblReceiveDispatches");
+
+            entity.HasMany(e => e.Dispatches)
+                  .WithOne(e => e.ReceiveDispatch)
+                  .HasForeignKey(e => e.FkReceiveDispatchId)
+                  .IsRequired(false)
+                  .HasConstraintName("FK_tblDispatches_tblReceiveDispatches");
+        });
+
+
+
+
 
         OnModelCreatingPartial(modelBuilder);
     }

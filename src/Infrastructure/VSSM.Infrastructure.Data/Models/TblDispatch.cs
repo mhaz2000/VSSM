@@ -53,6 +53,9 @@ public partial class TblDispatch
 
     public long SeqPreview { get; set; }
 
+    public int? FkReceiveDispatchId { get; set; }
+    public virtual TblReceiveDispatches ReceiveDispatch { get; set; }
+
     public virtual TblArrival Arrival { get; set; }
 
     public virtual TblUser EnteredBy { get; set; }

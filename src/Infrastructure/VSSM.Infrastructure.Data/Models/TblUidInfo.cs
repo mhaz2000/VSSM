@@ -30,6 +30,9 @@ public partial class TblUidInfo
     public int? DoseCount { get; set; }
     public int? FKDispatchUid { get; set; }
 
+    public int? FkReceiveDispatchId { get; set; }
+    public virtual TblReceiveDispatches ReceiveDispatch { get; set; }
+
 
     public virtual TblItem Item { get; set; } = null!;
     public virtual TblArrival Arrival { get; set; } = null!;

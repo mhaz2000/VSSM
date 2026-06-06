@@ -42,4 +42,9 @@ public class ArrivalLineViewModel
 
     public int? NumVials { get; set; }
     public string? Note { get; set; }
+
+    public string? DoseName { get; set; }
+
+    public string? ProductionDateShamsi { get; set; }
+    public string? ExpiryDateShamsi { get; set; }
 }

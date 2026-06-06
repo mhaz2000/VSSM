@@ -33,6 +33,14 @@ public partial class TblArrivalLine
     public int? FkVvmTypeId { get; set; }
     public int? FkVvmStageId { get; set; }
     public int? FkCommertialNameId { get; set; }
+    public int? FkManufacturerId { get; set; }
+
+    public virtual TblBaseInfo FkUse { get; set; }
+    public virtual TblBaseInfo FkVvmType { get; set; }
+    public virtual TblBaseInfo FkVvmStage { get; set; }
+    public virtual TblBaseInfo FkCommertialName { get; set; }
+    public virtual TblBaseInfo FkManufacturer { get; set; }
+
 
     public string BatchNum { get; set; }
     public string Note { get; set; }

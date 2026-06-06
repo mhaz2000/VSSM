@@ -28,4 +28,6 @@ public class ArrivalViewModel
 
     public List<ArrivalLineViewModel> Lines { get; set; } = new();
     public ArrivalLineViewModel NewLine { get; set; } = new();
+
+
 }

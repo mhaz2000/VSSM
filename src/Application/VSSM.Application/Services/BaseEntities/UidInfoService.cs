@@ -57,12 +57,12 @@ public sealed class UidInfoService : IUidInfoService
     }
 
     public async Task SetArrivalFkForBatchNums(
-        List<string> batchNums,
-        int arrivalId,
-        int? doseCount,
-        int? storeId,
-        int? itemId,
-        CancellationToken token)
+      List<string> batchNums,
+      int arrivalId,
+      int? doseCount,
+      int? storeId,
+      int? itemId,
+      CancellationToken token)
     {
         if (arrivalId <= 0)
             throw new ArgumentOutOfRangeException(nameof(arrivalId));
@@ -79,41 +79,87 @@ public sealed class UidInfoService : IUidInfoService
         if (normalized.Count == 0)
             throw new ArgumentException("لیست سری ساخت معتبر نیست", nameof(batchNums));
 
-        // نکته: این آپدیت فقط UIDهای آزاد را می‌گیرد (ArrivalFkId == null)
-        // و فقط برای سفارش‌های تایید شده
-        var affected = await _db.TblUidInfo
-            .Include(t => t.OrderInfo)
-            .Where(u =>
-                u.IsActive &&
-                u.OrderInfo.FkArrivalId == null &&
-                normalized.Contains(u.OrderInfo.BatchNumber))
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(u => u.OrderInfo.FkArrivalId, arrivalId)
-                .SetProperty(u => u.OrderInfo.FkItemId, itemId)
-                .SetProperty(u => u.CurrentStore, storeId)
-                .SetProperty(u => u.DoseCount, doseCount),
-                token);
+        await using var transaction = await _db.Database.BeginTransactionAsync(token);
 
-        // اگر می‌خواهی وقتی هیچ UID آپدیت نشد خطا بدهی:
-        if (affected == 0)
-            throw new InvalidOperationException("هیچ UID آزادی برای سری ساخت(های) انتخاب‌شده جهت ورود یافت نشد.");
+        try
+        {
+            var affectedOrders = await _db.TblOrderInfo
+                .Where(o =>
+                    o.FkArrivalId == null &&
+                    normalized.Contains(o.BatchNumber) &&
+                    o.TblUidInfos.Any(u => u.IsActive))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(o => o.FkArrivalId, arrivalId)
+                    .SetProperty(o => o.FkItemId, itemId),
+                    token);
+
+            // 2) آپدیت TblUidInfo
+            var affectedUids = await _db.TblUidInfo
+                .Where(u =>
+                    u.IsActive &&
+                    u.OrderInfo.FkArrivalId == arrivalId &&
+                    normalized.Contains(u.OrderInfo.BatchNumber))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.CurrentStore, storeId)
+                    .SetProperty(u => u.DoseCount, doseCount),
+                    token);
+
+            if (affectedOrders == 0 && affectedUids == 0)
+                throw new InvalidOperationException("هیچ UID آزادی برای سری ساخت(های) انتخاب‌شده جهت ورود یافت نشد.");
+
+            await transaction.CommitAsync(token);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(token);
+            throw;
+        }
     }
+
+
+
 
     public async Task ClearArrivalFkByArrivalId(int arrivalId, CancellationToken token)
     {
         if (arrivalId <= 0)
             throw new ArgumentOutOfRangeException(nameof(arrivalId));
 
-        await _db.TblUidInfo
-            .Include(t => t.OrderInfo)
-            .Where(u => u.OrderInfo.FkArrivalId == arrivalId)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(u => u.OrderInfo.FkArrivalId, (int?)null)
-                .SetProperty(u => u.OrderInfo.FkItemId, (int?)null)
-                .SetProperty(u => u.CurrentStore, (int?)null)
-                .SetProperty(u => u.DoseCount, (int?)null),
-                token);
+        await using var transaction = await _db.Database.BeginTransactionAsync(token);
+
+        try
+        {
+            var orderIds = await _db.TblOrderInfo
+                .Where(o => o.FkArrivalId == arrivalId)
+                .Select(o => o.PkOrderInfo)
+                .Distinct()
+                .ToListAsync(token);
+
+            if (orderIds.Count == 0)
+                return;
+
+            await _db.TblOrderInfo
+                .Where(o => orderIds.Contains(o.PkOrderInfo))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(o => o.FkArrivalId, (int?)null)
+                    .SetProperty(o => o.FkItemId, (int?)null),
+                    token);
+
+            await _db.TblUidInfo
+                .Where(u => u.FkOrderInfo != null && orderIds.Contains(u.FkOrderInfo))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.CurrentStore, (int?)null)
+                    .SetProperty(u => u.DoseCount, (int?)null),
+                    token);
+
+            await transaction.CommitAsync(token);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(token);
+            throw;
+        }
     }
+
 
     public async Task ClearArrivalFkByLineId(int arrivalLineId, CancellationToken token)
     {

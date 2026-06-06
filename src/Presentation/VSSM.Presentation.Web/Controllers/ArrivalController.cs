@@ -351,12 +351,16 @@ public class ArrivalController(
         return Json(new
         {
             success = true,
-            expiryDate = orderInfo.ExpirationDate?.ToString("yyyy-MM-dd"),
-            productionDate = orderInfo.ManufactureDate?.ToString("yyyy-MM-dd"),
             quantity = availableUids.Count,
-            // تبدیل به شمسی برای نمایش
             expiryDateShamsi = orderInfo.ExpirationDate?.ToShamsi(),
-            productionDateShamsi = orderInfo.ManufactureDate?.ToShamsi()
+            productionDateShamsi = orderInfo.ManufactureDate?.ToShamsi(),
+
+            itemId = orderInfo.FkItemId,
+            itemName = orderInfo.ItemName,
+
+            dosePerVialId = orderInfo.FkDosePerVialId,
+            doseName = orderInfo.DoseName,
+            itemClassName = "واکسن"
         });
     }
 
@@ -534,9 +538,13 @@ public class ArrivalController(
                                .FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
         ItemName = itemService.GetActives(token).Result
                                .FirstOrDefault(z => z.Id == l.ItemId)?.FullName,
+        DoseName = dosePerVialService.GetActivesByItemId(token, l.ItemId ?? 0).Result
+                   .FirstOrDefault(z => z.DosePerVialId == l.DosePerVialId)?.NumDosePerVial.ToString(),
         DosePerVialId = l.DosePerVialId,
         ExpiryDate = l.ExpiryDate,
         ProductionDate = l.ProductionDate,
+        ExpiryDateShamsi = l.ExpiryDate?.ToShamsi(),
+        ProductionDateShamsi = l.ProductionDate?.ToShamsi(),
         ItemDetailId = l.ItemDetailId,
         ItemId = l.ItemId,
         ManufacturerId = l.ManufacturerId,

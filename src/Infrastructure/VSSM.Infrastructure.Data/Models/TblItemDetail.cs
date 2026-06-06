@@ -35,9 +35,15 @@ public partial class TblItemDetail
 
     public bool? IsConfirmed { get; set; }
 
-    public int? FkCommercialNameId { get; set; }
 
+    public int? FkCommercialNameId { get; set; }
     public int? FkVvmTypeId { get; set; }
+    public int? FkManufacturerId { get; set; }
+
+    public virtual TblBaseInfo FkCommercialName { get; set; }
+    public virtual TblBaseInfo FkVvmType { get; set; }
+    public virtual TblBaseInfo FkManufacturer { get; set; }
+
 
     public virtual TblCommercialName CommercialName { get; set; }
 

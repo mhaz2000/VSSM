@@ -517,6 +517,7 @@ public partial class VSSMDbContext : DbContext
 
         });
 
+        
         modelBuilder.Entity<TblArrivalLine>(entity =>
         {
             entity.HasKey(e => e.ArrivalLineId);
@@ -536,10 +537,7 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.VvmtypeId).HasColumnName("VVMTypeID");
             entity.Property(e => e.VvmstageId).HasColumnName("VVMStageID");
 
-            entity.Property(e => e.FkUseId).HasColumnName("FK_UseID");
-            entity.Property(e => e.FkVvmTypeId).HasColumnName("FK_VVMTypeID");
-            entity.Property(e => e.FkVvmStageId).HasColumnName("FK_VVMStageID");
-            entity.Property(e => e.FkCommertialNameId).HasColumnName("FK_CommertialNameID");
+
 
             entity.Property(e => e.BatchNum).HasMaxLength(50);
             entity.Property(e => e.Note).HasMaxLength(500);
@@ -548,10 +546,37 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.ProductionDate).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Arrival)
-                .WithMany(p => p.TblArrivalLines)
-                .HasForeignKey(d => d.ArrivalId)
-                .HasConstraintName("FK_tblArrivalLines_tblArrivals");
+
+            entity.Property(e => e.FkUseId).HasColumnName("FK_USE_ID");
+            entity.Property(e => e.FkVvmTypeId).HasColumnName("FK_VVM_TYPE_ID");
+            entity.Property(e => e.FkVvmStageId).HasColumnName("FK_VVM_STAGE_ID");
+            entity.Property(e => e.FkCommertialNameId).HasColumnName("FK_COMMERTIAL_NAME_ID");
+            entity.Property(e => e.FkManufacturerId).HasColumnName("FK_MANUFACTURER_ID");
+
+            entity.HasOne(d => d.FkUse)
+                .WithMany()
+                .HasForeignKey(d => d.FkUseId)
+                .HasConstraintName("FK_ARRIVAL_LINE_USE");
+
+            entity.HasOne(d => d.FkVvmType)
+                .WithMany()
+                .HasForeignKey(d => d.FkVvmTypeId)
+                .HasConstraintName("FK_ARRIVAL_LINE_VVM_TYPE");
+
+            entity.HasOne(d => d.FkVvmStage)
+                .WithMany()
+                .HasForeignKey(d => d.FkVvmStageId)
+                .HasConstraintName("FK_ARRIVAL_LINE_VVM_STAGE");
+
+            entity.HasOne(d => d.FkCommertialName)
+                .WithMany()
+                .HasForeignKey(d => d.FkCommertialNameId)
+                .HasConstraintName("FK_ARRIVAL_LINE_COMMERTIAL_NAME");
+
+            entity.HasOne(d => d.FkManufacturer)
+                .WithMany()
+                .HasForeignKey(d => d.FkManufacturerId)
+                .HasConstraintName("FK_ARRIVAL_LINE_MANUFACTURER");
         });
 
 
@@ -974,9 +999,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.ProductionDate).HasColumnType("datetime");
             entity.Property(e => e.VvmtypeId).HasColumnName("VVMTypeID");
 
-            entity.Property(e => e.FkCommercialNameId).HasColumnName("FK_CommercialNameID");
-            entity.Property(e => e.FkVvmTypeId).HasColumnName("FK_VVMTypeID");
-
             entity.HasOne(d => d.CommercialName).WithMany(p => p.TblItemDetails)
                 .HasForeignKey(d => d.CommercialNameId)
                 .HasConstraintName("FK_tblItemDetails_tblCommercialNames");
@@ -1000,6 +1022,25 @@ public partial class VSSMDbContext : DbContext
             entity.HasOne(d => d.Vvmtype).WithMany(p => p.TblItemDetails)
                 .HasForeignKey(d => d.VvmtypeId)
                 .HasConstraintName("FK_tblItemDetails_tblVVMTypes");
+
+            entity.Property(e => e.FkCommercialNameId).HasColumnName("FK_COMMERCIAL_NAME_ID");
+            entity.Property(e => e.FkVvmTypeId).HasColumnName("FK_VVM_TYPE_ID");
+            entity.Property(e => e.FkManufacturerId).HasColumnName("FK_MANUFACTURER_ID");
+
+            entity.HasOne(d => d.FkCommercialName)
+                .WithMany()
+                .HasForeignKey(d => d.FkCommercialNameId)
+                .HasConstraintName("FK_ITEM_DETAIL_COMMERCIAL_NAME");
+
+            entity.HasOne(d => d.FkVvmType)
+                .WithMany()
+                .HasForeignKey(d => d.FkVvmTypeId)
+                .HasConstraintName("FK_ITEM_DETAIL_VVM_TYPE");
+
+            entity.HasOne(d => d.FkManufacturer)
+                .WithMany()
+                .HasForeignKey(d => d.FkManufacturerId)
+                .HasConstraintName("FK_ITEM_DETAIL_MANUFACTURER");
         });
 
 

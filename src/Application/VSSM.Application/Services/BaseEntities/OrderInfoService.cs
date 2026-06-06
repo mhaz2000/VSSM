@@ -9,19 +9,13 @@ using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities;
 
-public class OrderInfoService : IOrderInfoService
+public class OrderInfoService(VSSMDbContext dbContext) : IOrderInfoService
 {
-    private readonly VSSMDbContext _dbContext;
-    public OrderInfoService(VSSMDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
     public async Task<OrderInfoDto?> GetConfirmedByBatchNum(string batchNum, CancellationToken token)
     {
-        return await _dbContext.TblOrderInfo
+        return await dbContext.TblOrderInfo
             .AsNoTracking()
-            .Where(o => o.BatchNumber == batchNum && o.Status == OrderInfoStatus.READ.ToString())
+            .Where(o => o.BatchNumber == batchNum && o.Status == OrderInfoStatus.APPLIED.ToString())
             .OrderByDescending(o => o.PkOrderInfo)
             .Select(o => new OrderInfoDto
             {
@@ -32,7 +26,11 @@ public class OrderInfoService : IOrderInfoService
                 ManufactureDate = o.ManufactureDate,
                 Status = o.Status.ToString(),
                 IsConfirmed = true,
-                CreationTime = o.CreationTime.ToShamsi()
+                CreationTime = o.CreationTime.ToShamsi(),
+                FkItemId = o.FkItemId,
+                FkDosePerVialId = o.FkDosePerVialId,
+                ItemName = o.Item.FullName,
+                DoseName = o.DosePerVial.NumDosePerVial.ToString()
             })
             .FirstOrDefaultAsync(token);
     }
@@ -44,9 +42,9 @@ public class OrderInfoService : IOrderInfoService
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
-        var query = from o in _dbContext.TblOrderInfo
-                    join u in _dbContext.TblUidInfo on o.PkOrderInfo equals u.FkOrderInfo
-                    join user in _dbContext.TblUsers on o.CreatedBy equals user.UserId
+        var query = from o in dbContext.TblOrderInfo
+                    join u in dbContext.TblUidInfo on o.PkOrderInfo equals u.FkOrderInfo
+                    join user in dbContext.TblUsers on o.CreatedBy equals user.UserId
                     group new { o, u, user }
                     by new { o.Status, o.PkOrderInfo, o.FileName, o.CreationTime, o.CreatedBy, o.BatchNumber, user.FirstName, user.LastName }
                     into g
@@ -75,10 +73,10 @@ public class OrderInfoService : IOrderInfoService
 
     public async Task RemoveAsync(int id, CancellationToken cancellationToken)
     {
-        _dbContext.TblUidInfo.RemoveRange(_dbContext.TblUidInfo.Where(t => t.FkOrderInfo == id));
-        _dbContext.TblOrderInfo.Remove(_dbContext.TblOrderInfo.Find(id));
+        dbContext.TblUidInfo.RemoveRange(dbContext.TblUidInfo.Where(t => t.FkOrderInfo == id));
+        dbContext.TblOrderInfo.Remove(dbContext.TblOrderInfo.Find(id));
 
-        await _dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task UploadAsync(XDocument doc, string fileName, int itemId, int dosePerVialId, int userId)
@@ -118,7 +116,7 @@ public class OrderInfoService : IOrderInfoService
             FkItemId = itemId,
         };
 
-        _dbContext.TblOrderInfo.Add(ordreInfo);
+        dbContext.TblOrderInfo.Add(ordreInfo);
 
         foreach (var sp in spNodes)
         {
@@ -130,25 +128,25 @@ public class OrderInfoService : IOrderInfoService
                 string hc = tc.Attribute("HC")?.Value;
                 string bc = tc.Attribute("BC")?.Value;
 
-                    var uidInfo = new TblUidInfo()
-                    {
-                        PatchBarcode = pbc,
-                        Barcode = bc,
-                        HashCode = hc,
-                        SecLevelUid = bc.Substring(18, 20),
-                        FirstLevelUid = pbc.Substring(18, 20),
-                        IsActive = true,
-                        ConsumedCount = 0,
-                        CurrentStore = 0,
-                        DoseCount = 0,
-                        OrderInfo = ordreInfo,
-                        FkReceiveDispatchId = null,
-                    };
+                var uidInfo = new TblUidInfo()
+                {
+                    PatchBarcode = pbc,
+                    Barcode = bc,
+                    HashCode = hc,
+                    SecLevelUid = bc.Substring(18, 20),
+                    FirstLevelUid = pbc.Substring(18, 20),
+                    IsActive = true,
+                    ConsumedCount = 0,
+                    CurrentStore = 0,
+                    DoseCount = 0,
+                    OrderInfo = ordreInfo,
+                    FkReceiveDispatchId = null,
+                };
 
-                _dbContext.TblUidInfo.Add(uidInfo);
+                dbContext.TblUidInfo.Add(uidInfo);
             }
         }
 
-        await _dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
     }
 }

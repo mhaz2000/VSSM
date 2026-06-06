@@ -30,5 +30,6 @@
         public int? VvmStageId { get; set; }
         public int? VvmTypeId { get; set; }
         public string DropDownText { get; set; } = "";
+
     }
 }

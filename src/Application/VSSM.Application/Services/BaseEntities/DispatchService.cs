@@ -19,6 +19,175 @@ public class DispatchService : IDispatchService
         _context = context;
     }
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // بند ۱: لود کالاها بر اساس نوع کالا (برای drop-down ایتم)
+    // ──────────────────────────────────────────────────────────────────────────
+    public async Task<List<ItemLookupDto>> GetItemsByClassAsync(int classId, CancellationToken ct = default)
+    {
+        return await _context.TblItems
+            .Where(i => i.ItemClassId == classId && (i.IsActive == null || i.IsActive == true))
+            .Select(i => new ItemLookupDto
+            {
+                ItemId = i.ItemId,
+                FullName = i.FullName,
+            })
+            .OrderBy(i => i.FullName)
+            .ToListAsync(ct);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // بند ۱۱: لود سری ساخت‌های موجود برای یک کالا
+    // بند ۶: اطلاعات حلال (RequiresDiluent) نیز برگردانده می‌شود
+    // بند ۷a: تاریخ انقضا به شمسی تبدیل می‌شود
+    // بند ۱۰: موجودی جاری (CurrentStock) از tblItemDetailStores
+    // ──────────────────────────────────────────────────────────────────────────
+    public async Task<List<BatchRowDto>> GetBatchesByItemAsync(int itemId, CancellationToken ct = default)
+    {
+        var item = await _context.TblItems.FindAsync(itemId);
+
+        // بند ۶: پیدا کردن حلال مرتبط در صورت RequiresDiluent = true
+        // از فیلد DiluentId در TblItem استفاده می‌شود (IsDiluent وجود ندارد)
+        TblItem? diluentItem = null;
+        TblItemDetailStore? diluentStore = null;
+        if (item?.RequiresDiluent == true && item.DiluentId.HasValue)
+        {
+            diluentItem = await _context.TblItems.FindAsync(item.DiluentId.Value);
+
+            if (diluentItem != null)
+            {
+                diluentStore = await _context.TblItemDetailStores
+                    .Include(s => s.ItemDetail)
+                    .Where(s => s.ItemDetail.ItemId == diluentItem.ItemId && s.CurrentStock > 0)
+                    .OrderByDescending(s => s.ItemDetailId)
+                    .FirstOrDefaultAsync();
+            }
+        }
+
+        // بند ۷a + بند ۶: query بدون ToShamsi (چون EF نمی‌تواند ترجمه کند)
+        // تاریخ‌ها به صورت خام برگشت داده و سپس در حافظه تبدیل می‌شوند
+        var rawRows = await (
+            from ids in _context.TblItemDetailStores
+                .Where(s => s.ItemDetail.ItemId == itemId && s.CurrentStock > 0)
+            join id in _context.TblItemDetails on ids.ItemDetailId equals id.ItemDetailId
+            join mfr in _context.TblManufacturers on id.ManufacturerId equals mfr.ManufacturerId
+                into mfrJ
+            from mfr in mfrJ.DefaultIfEmpty()
+            join dpv in _context.TblDosePerVials on id.DosePerVialId equals dpv.DosePerVialId
+                into dpvJ
+            from dpv in dpvJ.DefaultIfEmpty()
+            join store in _context.TblStores on ids.StoreId equals store.StoreId
+                into storeJ
+            from store in storeJ.DefaultIfEmpty()
+            select new
+            {
+                ids.ItemDetailStoreId,
+                id.BatchNumber,
+                id.ExpiryDate,
+                CurrentStock = ids.CurrentStock ?? 0,
+                DosePerVialStr = dpv != null ? dpv.NumDosePerVial.ToString() : "-",
+                DosePerVialNum = dpv != null ? dpv.NumDosePerVial : 0,
+                ManufacturerName = mfr != null ? mfr.FullName : "-",
+                StoreId = store != null ? store.StoreId : 0,
+                StoreName = store != null ? store.Name : "-",
+            }
+        ).ToListAsync(ct);
+
+        // بند ۷a: تبدیل تاریخ انقضا به شمسی در حافظه (نه داخل EF query)
+        var result = rawRows.Select(r => new BatchRowDto
+        {
+            ItemDetailStoreId = r.ItemDetailStoreId,
+            ItemId = item.ItemId,
+            ItemName = item.FullName,
+            BatchNumber = r.BatchNumber,
+            ExpiryDateShamsi = r.ExpiryDate.HasValue ? r.ExpiryDate.Value.ToShamsi() : null,
+            ExpiryDate = r.ExpiryDate,
+            CurrentStock = (int)r.CurrentStock,
+            DosePerVial = r.DosePerVialStr,
+            DosePerVialNum = r.DosePerVialNum,
+            ManufacturerName = r.ManufacturerName,
+            StoreId = r.StoreId,
+            StoreName = r.StoreName,
+
+            // بند ۶: اطلاعات حلال — در حافظه محاسبه می‌شود
+            RequiresDiluent = item.RequiresDiluent == true,
+            DiluentItemDetailStoreId = diluentStore?.ItemDetailStoreId,
+            DiluentItemId = diluentItem?.ItemId,
+            DiluentItemName = diluentItem?.FullName,
+            DiluentBatchNumber = diluentStore?.ItemDetail?.BatchNumber,
+            // بند ۷a: تبدیل تاریخ انقضا حلال نیز در حافظه
+            DiluentExpiryDateShamsi = diluentStore?.ItemDetail?.ExpiryDate.HasValue == true
+                                               ? diluentStore.ItemDetail.ExpiryDate.Value.ToShamsi()
+                                               : null,
+            DiluentExpiryDate = diluentStore?.ItemDetail?.ExpiryDate,
+            DiluentManufacturerName = null,
+        }).ToList();
+
+        return result;
+    }
+    // ──────────────────────────────────────────────────────────────────────────
+    // بند ۱۰a + بند ۹: کسر CurrentStock از tblItemDetailStores هنگام ثبت نهایی
+    // این متد پس از CreateDispatchAsync یا UpdateDispatchAsync صدا زده می‌شود
+    // ──────────────────────────────────────────────────────────────────────────
+    public async Task DecrementStockOnFinalAsync(List<DispatchLineDto> lines, CancellationToken ct = default)
+    {
+        foreach (var line in lines)
+        {
+            var store = await _context.TblItemDetailStores.FindAsync(line.ItemDetailStoreId);
+            if (store == null) continue;
+
+            store.CurrentStock = (store.CurrentStock ?? 0) - line.DoseCount;
+            if (store.CurrentStock < 0) store.CurrentStock = 0;
+        }
+
+        await _context.SaveChangesAsync(ct);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // بند ۱۰c: برگشت موجودی هنگام حذف dispatch یا dispatch lines
+    // در DeleteDispatchAsync این متد نیز فراخوانی شود
+    // ──────────────────────────────────────────────────────────────────────────
+    public async Task RestoreStockAsync(int dispatchId, CancellationToken ct = default)
+    {
+        var lines = await _context.TblDispatchLines
+            .Where(l => l.DispatchId == dispatchId)
+            .ToListAsync(ct);
+
+        foreach (var line in lines)
+        {
+            if (line.ItemDetailStoreId == null) continue;
+            var store = await _context.TblItemDetailStores.FindAsync(line.ItemDetailStoreId);
+            if (store == null) continue;
+
+            store.CurrentStock = (store.CurrentStock ?? 0) + (line.Quantity ?? 0);
+        }
+
+        await _context.SaveChangesAsync(ct);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // بند ۹: بروزرسانی FK_DISPATCH_UID در tblUidInfo هنگام ثبت نهایی
+    // برای هر UID انتخاب‌شده، فیلد FKDispatchUid با PK جدول tblDispatchUid
+    // بروز می‌شود
+    // ──────────────────────────────────────────────────────────────────────────
+    public async Task LinkUidsToDispatchUidAsync(int dispatchId, CancellationToken ct = default)
+    {
+        // تمام رکوردهای tblDispatchUid مرتبط با این dispatch
+        var dispatchUids = await _context.TblDispatchUids
+            .Where(du => du.FKDispatchId == dispatchId)
+            .ToListAsync(ct);
+
+        foreach (var du in dispatchUids)
+        {
+            // بند ۹: بروزرسانی FK_DISPATCH_UID در tblUidInfo
+            var uidInfo = await _context.TblUidInfo.FindAsync(du.FKUidInfo);
+            if (uidInfo == null) continue;
+
+            uidInfo.FKDispatchUid = du.PKDispatchUid;
+        }
+
+        await _context.SaveChangesAsync(ct);
+    }
+
     public async Task ConfirmDispatchAsync(int id, CancellationToken cancellationToken)
     {
         var dispatch = await _context.TblDispatches.FindAsync(id);

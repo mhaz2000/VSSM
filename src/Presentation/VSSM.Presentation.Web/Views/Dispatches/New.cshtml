@@ -4,293 +4,1301 @@
 @using VSSM.Presentation.Web.Models.Base
 @model CreateDispatchDto
 
-@section Styles {
-    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
-    <link href="~/css/components/dispatches/dispatch-create.css" rel="stylesheet" />
-
-}
-
 @{
     var transportModes = ViewBag.TransportModes as List<EnumListDto>;
     var recipients = ViewBag.Recipients as List<RecipientGetDto>;
     var receivingModes = ViewBag.ReceivingModes as List<EnumListDto>;
     var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
+
+    /* ── بند ۵: عنوان دکمه پیش‌فاکتور هم در New هم Edit یکسان است ── */
+    string draftBtnLabel = "پیش فاکتور";
+}
+
+@section Styles {
+    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
 }
 
 <style>
-    .form-control {
-        padding: 10px !important;
+    /* ══════════════════════════════════════════════
+           استایل‌های مشترک با فرم Arrival (بند ۱)
+           ══════════════════════════════════════════════ */
+    .dispatch-wrap {
+        direction: rtl;
+        padding: 24px 32px;
+        font-size: 13px;
     }
 
-    /* .form-select {
-        padding: 9px !important;
-        width: 100%;
-    } */
+    .a-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
 
-    .form-label {
+    .a-card-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .a-card-header h6 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+    .a-card-body {
+        padding: 20px;
+    }
+
+    .fg-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px 20px;
+    }
+
+    .fg-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px 20px;
+    }
+
+    .f-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .f-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
         text-align: right;
     }
 
-    .input-sec {
-        margin-top: 1rem;
+        .f-label .req-tag {
+            font-size: 10px;
+            font-weight: 500;
+            color: #ef4444;
+            background: #fef2f2;
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin-right: 4px;
+        }
+
+        .f-label .opt {
+            font-size: 11px;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+    .f-control {
+        height: 36px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 0 10px;
+        font-size: 13px;
+        color: #111827;
+        background: #fff;
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+        .f-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+        }
+
+        .f-control[readonly], .f-control[disabled] {
+            background: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .f-control::placeholder {
+            color: #b0b0b0;
+        }
+
+    select.f-control {
+        cursor: pointer;
+        padding-left: 28px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: left 8px center;
+        appearance: none;
+    }
+
+    textarea.f-control {
+        height: auto;
+        min-height: 60px;
+        padding: 8px 10px;
+        resize: vertical;
+    }
+
+    /* ── جدول انتخاب سری ساخت ── */
+    .lines-table-wrap {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .lines-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin: 0;
+    }
+
+        .lines-table thead th {
+            background: #f8fafc;
+            color: #374151;
+            font-weight: 700;
+            padding: 9px 10px;
+            text-align: center;
+            border-bottom: 2px solid #e5e7eb;
+            border-left: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+            .lines-table thead th:last-child {
+                border-left: none;
+            }
+
+        .lines-table tbody td {
+            padding: 8px 10px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+            border-left: 1px solid #e5e7eb;
+            color: #111827;
+            vertical-align: middle;
+        }
+
+            .lines-table tbody td:last-child {
+                border-left: none;
+            }
+
+        .lines-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .lines-table tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .lines-table tbody tr:hover {
+            background: #eff6ff !important;
+        }
+
+    /* ── دکمه‌های عملیات ── */
+    .btn-action {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        border: 1px solid;
+        background: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+        transition: .15s;
+    }
+
+    /* بند ۷c: ترتیب آیکن‌ها: uid | ویرایش | حذف */
+    .btn-action-uid {
+        border-color: #a7f3d0;
+        color: #059669;
+    }
+
+        .btn-action-uid:hover {
+            background: #ecfdf5;
+        }
+
+    /* بند ۷b: آیکن ویرایش تعداد برداشته شده — فقط uid و حذف باقی‌اند */
+    .btn-action-del {
+        border-color: #fecaca;
+        color: #dc2626;
+    }
+
+        .btn-action-del:hover {
+            background: #fef2f2;
+        }
+
+    /* ── فوتر ── */
+    .form-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 20px;
+        border-top: 1px solid #e5e7eb;
+        background: #f8fafc;
+    }
+
+    .btn-confirm {
+        height: 38px;
+        padding: 0 24px;
+        border-radius: 9px;
+        border: 2px solid #15803d;
+        background: #16a34a;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-confirm:hover {
+            background: #15803d;
+        }
+
+    /* ── بند ۵: دکمه پیش فاکتور ── */
+    .btn-draft {
+        height: 38px;
+        padding: 0 24px;
+        border-radius: 9px;
+        border: 2px solid #15803d;
+        background: #fff;
+        color: #16a34a;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-draft:hover {
+            background: #f0fdf4;
+        }
+
+    .btn-back {
+        height: 38px;
+        padding: 0 20px;
+        border-radius: 9px;
+        border: 2px solid #15803d;
+        background: #fff;
+        color: #16a34a;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-back:hover {
+            background: #f0fdf4;
+            color: #15803d;
+            text-decoration: none;
+        }
+
+    .btn-add-line {
+        height: 38px;
+        padding: 0 20px;
+        border-radius: 9px;
+        border: none;
+        background: #1d6fb8;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-add-line:hover {
+            background: #1558a0;
+        }
+
+    .btn-show-more {
+        background: none;
+        border: none;
+        color: #2563eb;
+        font-size: 12px;
+        cursor: pointer;
+        padding: 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* ── بند ۱۰d: مودال uid ── */
+    .uid-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        z-index: 9000;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .uid-modal-overlay.open {
+            display: flex;
+        }
+
+    .uid-modal {
+        background: #fff;
+        border-radius: 14px;
+        width: 480px;
+        max-width: 95vw;
+        direction: rtl;
+        overflow: hidden;
+        box-shadow: 0 8px 40px rgba(0,0,0,.18);
+    }
+
+    .uid-modal-header {
+        padding: 14px 20px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+        .uid-modal-header h6 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+    .uid-modal-body {
+        padding: 20px;
+    }
+
+    .uid-stat-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .uid-stat {
+        flex: 1;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        text-align: center;
+    }
+
+        .uid-stat .lbl {
+            font-size: 11px;
+            color: #374151;
+        }
+
+        .uid-stat .val {
+            font-size: 20px;
+            font-weight: 800;
+            color: #15803d;
+            margin-top: 2px;
+        }
+
+    .uid-input-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .uid-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .uid-chip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 6px;
+        padding: 5px 10px;
+        margin-bottom: 6px;
+        font-size: 12px;
+    }
+
+    .uid-chip-del {
+        border: none;
+        background: none;
+        color: #dc2626;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    /* ── Toast (بند ۳) ── */
+    #toastContainer {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 12px;
+        align-items: flex-start;
+        pointer-events: none;
+    }
+
+    .toast-msg {
+        width: 340px;
+        padding: 18px 20px;
+        border-radius: 16px;
+        direction: rtl;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        box-shadow: 0 6px 24px rgba(0,0,0,.13);
+        animation: toastIn .25s ease;
+        pointer-events: all;
+    }
+
+        .toast-msg.error {
+            background: #ffd5d5;
+            border: 1.5px solid #f5b7b7;
+        }
+
+        .toast-msg.success {
+            background: #d4f5d4;
+            border: 1.5px solid #a8e6a8;
+        }
+
+        .toast-msg.info {
+            background: #dbeafe;
+            border: 1.5px solid #bfdbfe;
+        }
+
+    .toast-close-btn {
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1.5px solid;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .toast-msg.error .toast-close-btn {
+        border-color: #dc2626;
+        color: #dc2626;
+    }
+
+    .toast-msg.success .toast-close-btn {
+        border-color: #16a34a;
+        color: #16a34a;
+    }
+
+    .toast-msg.info .toast-close-btn {
+        border-color: #1d4ed8;
+        color: #1d4ed8;
+    }
+
+    .toast-body {
+        flex: 1;
+        text-align: right;
+    }
+
+    .toast-title {
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .toast-msg.error .toast-title {
+        color: #dc2626;
+    }
+
+    .toast-msg.success .toast-title {
+        color: #15803d;
+    }
+
+    .toast-msg.info .toast-title {
+        color: #1d4ed8;
+    }
+
+    .toast-text {
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .toast-msg.error .toast-text {
+        color: #7f1d1d;
+    }
+
+    .toast-msg.success .toast-text {
+        color: #14532d;
+    }
+
+    .toast-msg.info .toast-text {
+        color: #1e3a8a;
+    }
+
+    @@keyframes toastIn {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .fg-3, .fg-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .dispatch-wrap {
+            padding: 12px;
+        }
     }
 </style>
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
+<!-- ── Toast container (بند ۳) ── -->
+<div id="toastContainer"></div>
 
-        <div class="card mt-3">
-            <div class="card-block">
-                <h5 style="font-weight: bolder">ثبت ارسال</h5>
+<!-- ── مودال افزودن UID (بند ۱۰) ── -->
+<div class="uid-modal-overlay" id="uidModalOverlay">
+    <div class="uid-modal">
+        <div class="uid-modal-header">
+            <h6><i class="fa fa-qrcode"></i> افزودن UID</h6>
+            <!-- بند ۱۰e: مودال فقط توسط کاربر بسته می‌شود -->
+            <button type="button" onclick="closeUidModal()" style="background:none;border:none;font-size:18px;cursor:pointer;">✕</button>
+        </div>
+        <div class="uid-modal-body">
+            <!-- بند ۱۰d: نمایش موجودی جاری و تعداد uid -->
+            <div class="uid-stat-row">
+                <div class="uid-stat">
+                    <div class="lbl">موجودی جاری (RAM)</div>
+                    <div class="val" id="uidModalStock">0</div>
+                </div>
+                <div class="uid-stat">
+                    <div class="lbl">تعداد UID افزوده‌شده</div>
+                    <div class="val" id="uidModalCount">0</div>
+                </div>
+            </div>
+            <!-- بند ۱۰e: با هر بار ورود UID مودال بسته نمی‌شود -->
+            <div class="uid-input-row">
+                <input type="text" id="uidInput" class="f-control" placeholder="UID را اسکن یا وارد کنید" style="flex:1;" />
+                <button type="button" class="btn-add-line" onclick="submitUid()">
+                    <i class="fa fa-plus"></i> افزودن
+                </button>
+            </div>
+            <div class="uid-list" id="uidList"></div>
+        </div>
+    </div>
+</div>
 
-                <form asp-action="Create" method="post" id="createForm">
-                    @Html.AntiForgeryToken()
+<div class="dispatch-wrap">
 
-                    <div class="col-lg-6 w-100">
+    <form id="dispatchForm" asp-action="Create" method="post" novalidate>
+        @Html.AntiForgeryToken()
 
-                        <div class="row g-3">
+        <!-- ══════════════════════════════════════════════
+             کارت ۱: اطلاعات اصلی ارسال
+             ══════════════════════════════════════════════ -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <h6><i class="fa fa-paper-plane" style="color:#1d6fb8;"></i> ثبت ارسال</h6>
+            </div>
+            <div class="a-card-body">
 
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">تاریخ<span class="input-req-tag">(اجباری)</span></label>
-                                <input asp-for="Date" id="Date" class="form-control bg-warning-subtle" />
-                                <input type="hidden" id="DateEn" name="Date" />
-                            </div>
+                <div class="fg-3" style="margin-bottom:14px;">
 
-                            <div class="col-md-4 input-sec">
-
-                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                new SearchableSelectModel
-                                {
-                                    Id = "itemClassSelect",
-                                    IsRequired = true,
-                                    Name = "itemClassSelect",
-                                    Label = "نوع کالا",
-                                    Options = itemClasses
-                                .Select(x => new SelectOption
-                                {
-                                    Value = x.Id.ToString(),
-                                    Text = x.Name
-                                }).ToList()
-                                })
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-
-                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                                                new SearchableSelectModel
-                                                                {
-                                                                    Id = "itemSelect",
-                                                                    IsRequired = true,
-                                                                    Name = "itemSelect",
-                                                                    Label = "کالا",
-                                                                    Options = []
-                                                                })
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">شماره درخواست</label>
-                                <input asp-for="RequestNum" class="form-control bg-warning-subtle" />
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-                                <label class="form-label">شماره فاکتور</label>
-                                <input asp-for="DispatchVoucherNumber" type="number" class="form-control bg-warning-subtle" />
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-
-                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                                                new SearchableSelectModel
-                                                                {
-                                                                    Id = "ReceiverId",
-                                                                    IsRequired = true,
-                                                                    Name = "ReceiverId",
-                                                                    Label = "گیرنده",
-                                                                    SelectedValue = Model?.ReceiverId.ToString(),
-                                                                    Options = recipients
-                                                                .Select(x => new SelectOption
-                                                                {
-                                                                    Value = x.RecipientId.ToString(),
-                                                                    Text = x.FullName
-                                                                }).ToList()
-                                                                })
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-
-                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                                                new SearchableSelectModel
-                                                                {
-                                                                    Id = "TransportMode",
-                                                                    Name = "TransportMode",
-                                                                    Label = "طریقه حمل",
-                                                                    SelectedValue = Model?.TransportMode.ToString(),
-                                                                    Options = transportModes
-                                                                .Select(x => new SelectOption
-                                                                {
-                                                                    Value = x.Name,
-                                                                    Text = x.Description
-                                                                }).ToList()
-                                                                })
-                            </div>
-
-                            <div class="col-md-4 input-sec">
-
-                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                                                new SearchableSelectModel
-                                                                {
-                                                                    Id = "ReceivingMode",
-                                                                    Name = "ReceivingMode",
-                                                                    Label = "روش دریافت",
-                                                                    SelectedValue = Model?.ReceivingMode.ToString(),
-                                                                    Options = receivingModes
-                                                                .Select(x => new SelectOption
-                                                                {
-                                                                    Value = x.Name,
-                                                                    Text = x.Description
-                                                                }).ToList()
-                                                                })
-                            </div>
-
-                            <div class="col-md-12 input-sec">
-                                <label class="form-label">ملاحظات</label>
-                                <textarea asp-for="Note" class="form-control rounded-3" rows="1"></textarea>
-                            </div>
-
-                        </div>
-
-                        <hr />
-
-
-                        <table class="table table-bordered table-striped mt-3" id="itemDetailsTable">
-                            <thead>
-                                <tr>
-                                    <th>انتخاب</th>
-                                    <th>کالا</th>
-                                    <th>انقضا</th>
-                                    <th>مرحله VVM</th>
-                                    <th>موجودی</th>
-                                    <th>سازنده</th>
-                                    <th>انبار</th>
-                                    <th>سری ساخت</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="8" class="text-center">کالایی انتخاب نشده</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-
-
-                        <div class="mt-3" id="itemExtraFields" style="display:none; margin-top: 1rem; margin-bottom: 1rem;">
-                            <div class="row g-3">
-
-@*                                 <div class="col-md-6">
-                                    <label class="form-label">تعداد/دوز<span class="form-mandatory">(اجباری)</span></label>
-                                    <input name="DoseCount" class="form-control" disabled />
-                                </div> *@
-
-                                <div class="col-md-6">
-                                    <label class="form-label">مرحله vvm</label>
-                                    <select id="vvmStagesSelect"
-                                            class="form-select"
-                                            disabled>
-                                        <option value="">انتخاب کنید</option>
-                                        @foreach (var d in ViewBag.VVMStages)
-                                        {
-                                            <option value="@d.VvmstageId">@d.FullName</option>
-                                        }
-                                    </select>
-                                </div>
-
-                                <!-- Note full row -->
-                                <div class="col-md-12">
-                                    <label for="note-id" class="form-label">ملاحظات:</label>
-                                    <textarea id="note-id" name="ExtraNote" class="form-control" rows="3" disabled></textarea>
-                                </div>
-
-                                <!-- Button aligned right -->
-                                <div class="col-md-12 text-end mt-2" style="display: flex; justify-content: end; margin-top: 1rem">
-                                    <button type="button"
-                                            id="addItemBtn"
-                                            class="btn btn-success"
-                                            style="background-color: #0071B7; "
-                                            disabled>
-                                        افزودن کالا
-                                    </button>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <hr />
-
-                        <h6 class="mt-4">کالاهای افزوده‌شده</h6>
-
-                        <table class="dynamic-grid table table-bordered table-hover" style="margin-bottom: 1rem" id="addedItemsTable">
-                            <thead>
-                                <tr>
-                                    <th>سری ساخت</th>
-                                    <th>کالا</th>
-                                    <th>تاریخ انقضا</th>
-                                    <th class="dose-col">تعداد/دوز</th>
-                                    <th>مرحله VVM</th>
-                                    <th>ملاحظات</th>
-
-                                    <th class="actions-col">عملیات</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr class="empty-row">
-                                    <td colspan="12" class="text-center text-muted">
-                                        کالایی اضافه نشده
-                                    </td>
-                                </tr>
-                            </tbody>
-
-                        </table>
-
-                        <div class="text-center mt-4">
-
-                            <button type="submit"
-                                    name="submitType"
-                                    value="draft"
-                                    class="btn btn-success-outlet px-5">
-                                ذخیره پیش فاکتور
-                            </button>
-
-                            <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
-                        </div>
-
-
+                    <!-- تاریخ ارسال -->
+                    <div class="f-group">
+                        <label class="f-label">تاریخ ارسال <span class="req-tag">اجباری</span></label>
+                        <input asp-for="Date" id="Date" class="f-control"
+                               placeholder="مثال: ۱۴۰۴/۰۱/۱۵" autocomplete="off" />
+                        <span asp-validation-for="Date" class="text-danger" style="font-size:11px;"></span>
                     </div>
-                </form>
+
+                    <!-- نوع کالا -->
+                    <div class="f-group">
+                        <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
+                        <select id="itemClassSelect" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                            @foreach (var ic in itemClasses)
+                            {
+                                <option value="@ic.Id">@ic.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- کالا -->
+                    <div class="f-group">
+                        <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
+                        <select id="itemSelect" class="f-control">
+                            <option value="">ابتدا نوع کالا را انتخاب کنید</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="fg-3" style="margin-bottom:14px;">
+
+                    <!-- گیرنده -->
+                    <div class="f-group">
+                        <label class="f-label">گیرنده <span class="req-tag">اجباری</span></label>
+                        <select asp-for="ReceiverId" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                            @foreach (var r in recipients)
+                            {
+                                <option value="@r.RecipientId">@r.FullName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="ReceiverId" class="text-danger" style="font-size:11px;"></span>
+                    </div>
+
+                    <!-- شماره فاکتور -->
+                    <div class="f-group">
+                        <label class="f-label">شماره فاکتور</label>
+                        <input asp-for="DispatchVoucherNumber" type="number" class="f-control"
+                               placeholder="شماره فاکتور را وارد کنید" />
+                    </div>
+
+                    <!-- شماره درخواست -->
+                    <div class="f-group">
+                        <label class="f-label">شماره درخواست</label>
+                        <input asp-for="RequestNum" class="f-control"
+                               placeholder="شماره درخواست را وارد کنید" />
+                    </div>
+
+                </div>
+
+                <div class="fg-3" style="margin-bottom:14px;">
+
+                    <!-- روش دریافت -->
+                    <div class="f-group">
+                        <label class="f-label">روش دریافت</label>
+                        <select asp-for="ReceivingMode" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                            @foreach (var m in receivingModes)
+                            {
+                                <option value="@m.Name">@m.Description</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- طریقه حمل -->
+                    <div class="f-group">
+                        <label class="f-label">طریقه حمل</label>
+                        <select asp-for="TransportMode" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                            @foreach (var m in transportModes)
+                            {
+                                <option value="@m.Name">@m.Description</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- تعداد / دوز -->
+                    <div class="f-group">
+                        <label class="f-label">تعداد / دوز <span class="req-tag">اجباری</span></label>
+                        <input type="number" id="doseCountInput" class="f-control"
+                               placeholder="تعداد را وارد کنید" min="1" />
+                    </div>
+
+                </div>
+
+                <div class="fg-2" style="margin-bottom:14px;">
+
+                    <!-- مرحله VVM -->
+                    <div class="f-group">
+                        <label class="f-label">مرحله VVM</label>
+                        <select id="vvmStagesSelect" class="f-control">
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var s in ViewBag.VVMStages)
+                            {
+                                <option value="@s.VvmstageId">@s.FullName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- ملاحظات -->
+                    <div class="f-group">
+                        <label class="f-label">ملاحظات</label>
+                        <textarea asp-for="Note" class="f-control" rows="1"
+                                  placeholder="ملاحظات مورد نیاز ..."></textarea>
+                    </div>
+
+                </div>
 
             </div>
         </div>
 
-    </div>
+        <!-- ══════════════════════════════════════════════
+             کارت ۲: انتخاب سری ساخت
+             بند ۱۱: نمایش فقط ۵ رکورد + دکمه نمایش بیشتر
+             ══════════════════════════════════════════════ -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <h6><i class="fa fa-list" style="color:#1d6fb8;"></i> انتخاب سری ساخت</h6>
+            </div>
+            <div class="a-card-body" style="padding:0;">
+                <div class="lines-table-wrap" style="border:none; border-radius:0;">
+                    <table class="lines-table" id="itemDetailsTable">
+                        <thead>
+                            <tr>
+                                <th>انتخاب</th>
+                                <th>کالا</th>
+                                <th>انقضا</th>
+                                <th>سازنده</th>
+                                <th>موجودی</th>
+                                <th>دوز/ویال</th>
+                                <th>انبار</th>
+                                <th>سری ساخت</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemDetailsTbody">
+                            <tr id="noItemRow">
+                                <td colspan="8" style="padding:24px; color:#9ca3af; text-align:center;">
+                                    کالایی انتخاب نشده
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- بند ۱۱: دکمه نمایش بیشتر -->
+                <div style="padding:10px 20px; text-align:center; display:none;" id="showMoreWrap">
+                    <button type="button" class="btn-show-more" id="showMoreBtn" onclick="showMoreRows()">
+                        <i class="fa fa-chevron-down"></i> نمایش بیشتر
+                    </button>
+                </div>
+                <div style="padding:10px 20px; display:flex; justify-content:flex-start;">
+                    <button type="button" id="addItemBtn" class="btn-add-line" onclick="addSelectedItem()">
+                        <i class="fa fa-plus"></i> افزودن
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- hidden inputs برای آیتم‌های افزوده‌شده -->
+        <div id="hiddenInputsContainer"></div>
+
+        <!-- ══════════════════════════════════════════════
+             کارت ۳: کالاهای افزوده‌شده
+             بند ۷: ستون انقضا فارسی | بند ۷b: بدون آیکن ویرایش تعداد
+             بند ۷c: ترتیب آیکن‌ها | بند ۸: در confirm=1 هیچ آیکنی نباشد
+             ══════════════════════════════════════════════ -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <h6><i class="fa fa-check-square" style="color:#1d6fb8;"></i> کالاهای افزوده‌شده</h6>
+            </div>
+            <div class="lines-table-wrap" style="margin:0; border-radius:0; border:none; border-top:1px solid #e5e7eb;">
+                <table class="lines-table" id="addedItemsTable">
+                    <thead>
+                        <tr>
+                            <th>سری ساخت</th>
+                            <th>کالا</th>
+                            <!-- بند ۷a: تاریخ انقضا فارسی -->
+                            <th>انقضا (شمسی)</th>
+                            <th>تعداد/دوز</th>
+                            <th>تعداد ویال</th>
+                            <th>نوع VVM</th>
+                            <th>مرحله VVM</th>
+                            <th>سازنده</th>
+                            <th>ملاحظات</th>
+                            <!-- بند ۷c: ترتیب: uid | حذف -->
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="addedItemsTbody">
+                        <tr id="noAddedRow">
+                            <td colspan="10" style="padding:24px; color:#9ca3af; text-align:center;">
+                                کالایی اضافه نشده
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── فوتر ── -->
+        <div class="form-footer">
+            <!-- ثبت نهایی -->
+            <button type="button" class="btn-confirm js-footer-btn" data-submit="final">
+                <i class="fa fa-check"></i> ثبت
+            </button>
+
+            <!-- بند ۵: دکمه پیش فاکتور (نه ذخیره پیش نویس) -->
+            <button type="button" class="btn-draft js-footer-btn" data-submit="draft">
+                <i class="fa fa-file-text"></i> @draftBtnLabel
+            </button>
+
+            <!-- حذف -->
+            <button type="button" class="btn-back" style="border-color:#dc2626;color:#dc2626;"
+                    onclick="confirmDelete()">
+                <i class="fa fa-trash"></i> حذف
+            </button>
+
+            <a asp-action="Index" class="btn-back">
+                <i class="fa fa-arrow-right"></i> بازگشت
+            </a>
+        </div>
+
+    </form>
 </div>
-
-<script>
-    $(document).ready(function () {
-
-        $('#createForm').on('submit', function () {
-            showToast('عملیات با موفقیت انجام شد.', 'success');
-        });
-
-        $('#deleteForm').on('submit', function () {
-            showToast('عملیات با موفقیت انجام شد.', 'success');
-        });
-
-    });
-</script>
 
 @section Scripts {
     <script src="~/js/persian-date.js"></script>
     <script src="~/js/persian-datepicker.js"></script>
-    <script src="~/js/components/dispatches/dispatch-create.js"></script>
+    <script>
+        $(function () {
+
+            /* ══════════════════════════════════════════════
+               متغیرهای کلی
+               ══════════════════════════════════════════════ */
+            let addedItems       = [];   // آرایه آیتم‌های افزوده‌شده در RAM
+            let allBatchRows     = [];   // تمام سری‌ساخت‌های لود شده
+            let visibleCount     = 5;    // بند ۱۱: پیش‌فرض ۵ رکورد
+            let currentLineIndex = null; // ایندکس ردیف در حال ثبت UID
+            let currentStock     = 0;    // بند ۱۰b: موجودی جاری در RAM
+
+            /* ══════════════════════════════════════════════
+               Toast — بند ۳: فقط یک پیغام
+               ══════════════════════════════════════════════ */
+            function showToast(msg, type) {
+                var titles = { success: "موفق", error: "خطا", info: "اطلاعات" };
+                var $t = $(
+                    '<div class="toast-msg ' + type + '">' +
+                    '  <div class="toast-body">' +
+                    '    <div class="toast-title">' + titles[type] + '</div>' +
+                    '    <div class="toast-text">' + msg + '</div>' +
+                    '  </div>' +
+                    '  <button class="toast-close-btn" onclick="$(this).closest(\'.toast-msg\').remove()">✕</button>' +
+                    '</div>'
+                );
+                $("#toastContainer").append($t);
+                setTimeout(function () { $t.fadeOut(300, function () { $t.remove(); }); }, 5000);
+            }
+
+            // نمایش toast از server (TempData) — بند ۳
+            var serverMsg  = "@(TempData["ToastMessage"] as string ?? "")";
+            var serverType = "@(TempData["ToastType"] as string ?? "info")";
+            if (serverMsg) showToast(serverMsg, serverType);
+
+            /* ══════════════════════════════════════════════
+               تاریخ‌پیکر شمسی
+               ══════════════════════════════════════════════ */
+            if ($.fn.pDatepicker) {
+                $('#Date').pDatepicker({ format: 'YYYY/MM/DD', autoClose: true });
+            }
+
+            /* ══════════════════════════════════════════════
+               لود آیتم‌ها بر اساس نوع کالا
+               ══════════════════════════════════════════════ */
+            $('#itemClassSelect').on('change', function () {
+                var classId = $(this).val();
+                $('#itemSelect').html('<option value="">در حال بارگذاری...</option>');
+                allBatchRows = [];
+                renderBatchTable([]);
+
+                if (!classId) {
+                    $('#itemSelect').html('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("GetItemsByClass", "Dispatches")',
+                    data: { classId: classId },
+                    success: function (items) {
+                        var opts = '<option value="">انتخاب کنید...</option>';
+                        $.each(items, function (_, item) {
+                            opts += '<option value="' + item.itemId + '">' + item.fullName + '</option>';
+                        });
+                        $('#itemSelect').html(opts);
+                    }
+                });
+            });
+
+            /* ══════════════════════════════════════════════
+               لود سری ساخت‌ها بر اساس کالا
+               بند ۱۱: نمایش ۵ رکورد + دکمه نمایش بیشتر
+               ══════════════════════════════════════════════ */
+            $('#itemSelect').on('change', function () {
+                var itemId = $(this).val();
+                allBatchRows = [];
+                visibleCount = 5;
+                renderBatchTable([]);
+
+                if (!itemId) return;
+
+                $.ajax({
+                    url: '@Url.Action("GetBatchesByItem", "Dispatches")',
+                    data: { itemId: itemId },
+                    success: function (rows) {
+                        allBatchRows = rows;
+                        renderBatchTable(rows);
+                    }
+                });
+            });
+
+            /* بند ۱۱: رندر جدول سری ساخت با محدودیت ۵ رکورد */
+            function renderBatchTable(rows) {
+                var tbody  = $('#itemDetailsTbody');
+                var toShow = rows.slice(0, visibleCount);
+                var hasMore = rows.length > visibleCount;
+
+                if (rows.length === 0) {
+                    tbody.html('<tr id="noItemRow"><td colspan="8" style="padding:24px;color:#9ca3af;text-align:center;">کالایی انتخاب نشده</td></tr>');
+                    $('#showMoreWrap').hide();
+                    return;
+                }
+
+                var html = '';
+                $.each(toShow, function (_, r) {
+                    /* بند ۷a: تاریخ انقضا فارسی */
+                    html += '<tr>' +
+                        '<td><input type="checkbox" class="batch-chk" value="' + r.itemDetailStoreId + '" data-row=\'' + JSON.stringify(r).replace(/'/g,"&#39;") + '\'></td>' +
+                        '<td>' + (r.itemName || '-') + '</td>' +
+                        '<td>' + (r.expiryDateShamsi || '-') + '</td>' +
+                        '<td>' + (r.manufacturerName || '-') + '</td>' +
+                        '<td class="stock-cell-' + r.itemDetailStoreId + '">' + (r.currentStock || 0) + '</td>' +
+                        '<td>' + (r.dosePerVial || '-') + '</td>' +
+                        '<td>' + (r.storeName || '-') + '</td>' +
+                        '<td>' + (r.batchNumber || '-') + '</td>' +
+                        '</tr>';
+                });
+
+                tbody.html(html);
+                $('#showMoreWrap').toggle(hasMore);
+            }
+
+            /* بند ۱۱: نمایش بیشتر */
+            window.showMoreRows = function () {
+                visibleCount += 5;
+                renderBatchTable(allBatchRows);
+            };
+
+            /* ══════════════════════════════════════════════
+               افزودن آیتم به لیست
+               بند ۴: جلوگیری از quantity=0
+               بند ۶: افزودن خودکار حلال (RequiresDiluent)
+               ══════════════════════════════════════════════ */
+            window.addSelectedItem = function () {
+                var $checked = $('.batch-chk:checked');
+                if ($checked.length === 0) {
+                    showToast('لطفاً یک سری ساخت را انتخاب کنید.', 'error');
+                    return;
+                }
+
+                /* بند ۴: بررسی تعداد */
+                var doseCount = parseInt($('#doseCountInput').val()) || 0;
+                if (doseCount <= 0) {
+                    showToast('برای کلیه کالاهای ارسالی تعداد را مشخص نمایید', 'error');
+                    return;
+                }
+
+                var row = JSON.parse($checked.first().attr('data-row').replace(/&#39;/g, "'"));
+                var vvmStageId   = $('#vvmStagesSelect').val();
+                var vvmStageName = $('#vvmStagesSelect option:selected').text();
+                var note         = '';
+
+                var item = {
+                    idx              : addedItems.length,
+                    itemDetailStoreId: row.itemDetailStoreId,
+                    itemId           : row.itemId,
+                    itemName         : row.itemName,
+                    batchNumber      : row.batchNumber,
+                    expiryDateShamsi : row.expiryDateShamsi,
+                    expiryDate       : row.expiryDate,
+                    storeId          : row.storeId,
+                    storeName        : row.storeName,
+                    manufacturerName : row.manufacturerName,
+                    doseCount        : doseCount,
+                    numVial          : row.dosePerVialNum > 0 ? Math.floor(doseCount / row.dosePerVialNum) : 0,
+                    vvmStageId       : vvmStageId,
+                    vvmStageName     : vvmStageName,
+                    note             : note,
+                    uids             : [],
+                    /* بند ۱۰a: موجودی در RAM کسر می‌شود */
+                    stockInRam       : row.currentStock - doseCount,
+                    requiresDiluent  : row.requiresDiluent,
+                    diluentItemDetailStoreId: row.diluentItemDetailStoreId,
+                    diluentItemId    : row.diluentItemId,
+                    diluentItemName  : row.diluentItemName,
+                };
+
+                addedItems.push(item);
+                renderAddedItems();
+
+                /* بند ۶: افزودن خودکار حلال اگر requiresDiluent=1 */
+                if (row.requiresDiluent && row.diluentItemDetailStoreId) {
+                    var diluentItem = {
+                        idx              : addedItems.length,
+                        itemDetailStoreId: row.diluentItemDetailStoreId,
+                        itemId           : row.diluentItemId,
+                        itemName         : row.diluentItemName + ' (حلال - خودکار)',
+                        batchNumber      : row.diluentBatchNumber || '',
+                        expiryDateShamsi : row.diluentExpiryDateShamsi || '-',
+                        expiryDate       : row.diluentExpiryDate || null,
+                        storeId          : row.storeId,
+                        storeName        : row.storeName,
+                        manufacturerName : row.diluentManufacturerName || '-',
+                        doseCount        : doseCount,
+                        numVial          : 0,
+                        vvmStageId       : '',
+                        vvmStageName     : '-',
+                        note             : 'حلال خودکار',
+                        uids             : [],
+                        stockInRam       : 0,
+                        requiresDiluent  : false,
+                    };
+                    addedItems.push(diluentItem);
+                    renderAddedItems();
+                }
+
+                /* reset انتخاب */
+                $checked.prop('checked', false);
+                $('#doseCountInput').val('');
+            };
+
+            /* ══════════════════════════════════════════════
+               رندر جدول کالاهای افزوده‌شده
+               بند ۷a: تاریخ فارسی | بند ۷b: بدون آیکن ویرایش
+               بند ۷c: ترتیب uid | حذف | بند ۸: confirm=1 بدون آیکن
+               ══════════════════════════════════════════════ */
+            function renderAddedItems() {
+                var tbody = $('#addedItemsTbody');
+                if (addedItems.length === 0) {
+                    tbody.html('<tr id="noAddedRow"><td colspan="10" style="padding:24px;color:#9ca3af;text-align:center;">کالایی اضافه نشده</td></tr>');
+                    rebuildHiddenInputs();
+                    return;
+                }
+
+                var html = '';
+                $.each(addedItems, function (i, item) {
+                    html += '<tr>' +
+                        '<td>' + (item.batchNumber || '-') + '</td>' +
+                        '<td>' + (item.itemName || '-') + '</td>' +
+                        /* بند ۷a: فقط فارسی */
+                        '<td>' + (item.expiryDateShamsi || '-') + '</td>' +
+                        '<td>' + item.doseCount + '</td>' +
+                        '<td>' + item.numVial + '</td>' +
+                        '<td>-</td>' +
+                        '<td>' + (item.vvmStageName || '-') + '</td>' +
+                        '<td>' + (item.manufacturerName || '-') + '</td>' +
+                        '<td>' + (item.note || '-') + '</td>' +
+                        '<td style="white-space:nowrap;">' +
+                            /* بند ۷c: ترتیب: uid اول، سپس حذف */
+                            /* بند ۸: در این فرم Create هنوز confirm=false پس آیکن‌ها نمایش دارند */
+                            '<button type="button" class="btn-action btn-action-uid" title="افزودن UID" onclick="openUidModal(' + i + ')">' +
+                                '<i class="fa fa-qrcode"></i>' +
+                            '</button> ' +
+                            '<button type="button" class="btn-action btn-action-del" title="حذف" onclick="removeItem(' + i + ')">' +
+                                '<i class="fa fa-trash"></i>' +
+                            '</button>' +
+                        '</td>' +
+                        '</tr>';
+                });
+
+                tbody.html(html);
+                rebuildHiddenInputs();
+            }
+
+            /* ══════════════════════════════════════════════
+               حذف آیتم
+               بند ۱۰c: با حذف dispatch line موجودی به currentStock برگردد
+               ══════════════════════════════════════════════ */
+            window.removeItem = function (idx) {
+                var item = addedItems[idx];
+                /* بند ۱۰c: برگشت موجودی به RAM — عملیات روی جدول سری ساخت */
+                var $stockCell = $('.stock-cell-' + item.itemDetailStoreId);
+                if ($stockCell.length) {
+                    var cur = parseInt($stockCell.text()) || 0;
+                    $stockCell.text(cur + item.doseCount);
+                }
+                addedItems.splice(idx, 1);
+                /* re-index */
+                $.each(addedItems, function (i, it) { it.idx = i; });
+                renderAddedItems();
+            };
+
+            /* ══════════════════════════════════════════════
+               ساخت hidden inputs برای submit فرم
+               ══════════════════════════════════════════════ */
+            function rebuildHiddenInputs() {
+                var container = $('#hiddenInputsContainer');
+                container.empty();
+
+                $.each(addedItems, function (i, item) {
+                    var add = function (name, val) {
+                        container.append('<input type="hidden" name="Items[' + i + '].' + name + '" value="' + (val || '') + '">');
+                    };
+                    add('ItemDetailStoreId', item.itemDetailStoreId);
+                    add('ItemId',            item.itemId);
+                    add('StoreId',           item.storeId);
+                    add('DoseCount',         item.doseCount);
+                    add('VvmStageId',        item.vvmStageId);
+                    add('BatchNumber',       item.batchNumber);
+                    add('ExpiryDate',        item.expiryDate);
+                    add('Note',              item.note);
+
+                    /* UID‌ها */
+                    $.each(item.uids, function (j, uid) {
+                        container.append('<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uid + '">');
+                    });
+                });
+            }
+
+            /* ══════════════════════════════════════════════
+               مودال UID
+               بند ۱۰: مودال افزودن uid
+               ══════════════════════════════════════════════ */
+            window.openUidModal = function (idx) {
+                currentLineIndex = idx;
+                var item = addedItems[idx];
+                currentStock = item.stockInRam !== undefined ? item.stockInRam : 0;
+
+                $('#uidModalStock').text(currentStock);
+                $('#uidModalCount').text(item.uids.length);
+                $('#uidList').html('');
+                renderUidList(item);
+
+                /* بند ۱۰e: مودال باز می‌شود و بسته نمی‌شود تا کاربر خودش ببندد */
+                $('#uidModalOverlay').addClass('open');
+                $('#uidInput').val('').focus();
+            };
+
+            window.closeUidModal = function () {
+                $('#uidModalOverlay').removeClass('open');
+                currentLineIndex = null;
+            };
+
+            /* بند ۱۰e: با Enter هم submit می‌شود اما مودال بسته نمی‌شود */
+            $('#uidInput').on('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitUid();
+                }
+            });
+
+            window.submitUid = function () {
+                var uid = $('#uidInput').val().trim();
+                if (!uid || currentLineIndex === null) return;
+
+                var item = addedItems[currentLineIndex];
+
+                /* بند ۱۰b: بررسی موجودی در RAM */
+                if (currentStock <= 0) {
+                    showToast('موجودی این سری ساخت به اتمام رسیده است', 'error');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("SetUid", "Dispatches")',
+                    type: 'POST',
+                    data: {
+                        dispatchLineId: item.itemDetailStoreId,  /* temp: با ID ردیف جدید جایگزین شود */
+                        id: 0,
+                        uid: uid
+                    },
+                    success: function (res) {
+                        if (!res.success) {
+                            showToast(res.message, 'error');
+                            return;
+                        }
+
+                        /* بند ۱۰a: کسر از موجودی RAM */
+                        currentStock -= res.count;
+                        item.stockInRam = currentStock;
+                        item.uids.push(uid);
+
+                        /* بند ۱۰d: بروزرسانی نمایش */
+                        $('#uidModalStock').text(currentStock);
+                        $('#uidModalCount').text(item.uids.length);
+                        renderUidList(item);
+
+                        /* بند ۱۰e: مودال بسته نمی‌شود */
+                        $('#uidInput').val('').focus();
+                    },
+                    error: function () {
+                        showToast('خطا در ارتباط با سرور', 'error');
+                    }
+                });
+            };
+
+            function renderUidList(item) {
+                var html = '';
+                $.each(item.uids, function (j, uid) {
+                    html += '<div class="uid-chip">' +
+                        '<span>' + uid + '</span>' +
+                        '<button type="button" class="uid-chip-del" onclick="removeUid(' + item.idx + ',' + j + ')">✕</button>' +
+                        '</div>';
+                });
+                $('#uidList').html(html || '<div style="color:#9ca3af;font-size:12px;text-align:center;">UID‌ای اضافه نشده</div>');
+            }
+
+            window.removeUid = function (itemIdx, uidIdx) {
+                var item = addedItems[itemIdx];
+                item.uids.splice(uidIdx, 1);
+                /* بند ۱۰c: برگشت موجودی به RAM */
+                currentStock++;
+                item.stockInRam = currentStock;
+                $('#uidModalStock').text(currentStock);
+                $('#uidModalCount').text(item.uids.length);
+                renderUidList(item);
+            };
+
+            /* ══════════════════════════════════════════════
+               Submit فرم
+               بند ۳: فقط یک پیغام هنگام ذخیره پیش نویس
+               بند ۴: بررسی quantity > 0
+               ══════════════════════════════════════════════ */
+            $('.js-footer-btn').on('click', function () {
+                var submitType = $(this).data('submit');
+
+                /* بند ۴: اگر آیتمی با تعداد صفر وجود داشت */
+                var hasZero = false;
+                $.each(addedItems, function (_, it) {
+                    if (!it.doseCount || it.doseCount <= 0) { hasZero = true; return false; }
+                });
+                if (hasZero) {
+                    showToast('برای کلیه کالاهای ارسالی تعداد را مشخص نمایید', 'error');
+                    return;
+                }
+
+                if (addedItems.length === 0) {
+                    showToast('حداقل یک کالا را اضافه کنید.', 'error');
+                    return;
+                }
+
+                /* بند ۳: حذف toast قبلی موفق (فقط یک پیغام داشته باشیم) */
+                $('#toastContainer').empty();
+
+                /* hidden input برای submitType */
+                $('#dispatchForm').find('input[name="submitType"]').remove();
+                $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
+                            .appendTo('#dispatchForm');
+
+                $('#dispatchForm').submit();
+            });
+
+            window.confirmDelete = function () {
+                if (confirm('آیا از حذف این ارسال اطمینان دارید؟')) {
+                    $('#dispatchForm').find('input[name="submitType"]').remove();
+                    $('<input>').attr({ type: 'hidden', name: 'submitType', value: 'delete' })
+                                .appendTo('#dispatchForm');
+                    $('#dispatchForm').submit();
+                }
+            };
+
+        }); // end document.ready
+    </script>
 }

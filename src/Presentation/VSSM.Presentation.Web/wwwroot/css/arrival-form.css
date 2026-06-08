@@ -1,0 +1,52 @@
+﻿/* ═══════════════════════════════════════════
+   arrival-form.css  —  استایل اختصاصی صفحه ورودی
+   فقط چیزهایی که مختص این صفحه هستند
+   ═══════════════════════════════════════════ */
+
+/* ── ظرف اصلی صفحه ── */
+.arrival-wrap {
+    direction: rtl;
+    padding: 24px 32px;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .arrival-wrap {
+        padding: 12px;
+    }
+}
+
+
+/* ── سکشن تاریخ (تولید / انقضا) ── */
+.date-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
+    margin-bottom: 14px;
+}
+
+.date-group-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.date-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 6px;
+}
+
+/* ── گرید تاریخ سه‌بخشی (روز/ماه/سال) ── */
+.date-triple {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 6px;
+}
+
+@media (max-width: 768px) {
+    .date-section {
+        grid-template-columns: 1fr;
+    }
+}

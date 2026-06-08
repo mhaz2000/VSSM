@@ -1,0 +1,73 @@
+﻿/* ═══════════════════════════════════════════
+   lines-table.css  —  جدول سری‌ساخت / اقلام (shared)
+   قابل استفاده در: Arrival، Dispatch، و هر فرمی با جدول مشابه
+
+   استفاده:
+     <div class="lines-table-wrap">
+       <table class="lines-table"> ... </table>
+     </div>
+   ═══════════════════════════════════════════ */
+
+/* ── ظرف جدول ── */
+.lines-table-wrap {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    /* در فرم Arrival حاشیه اضافه دارد */
+    .lines-table-wrap.inset {
+        margin: 16px 20px;
+    }
+
+/* ── جدول ── */
+.lines-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 0;
+}
+
+    /* ── هدر ── */
+    .lines-table thead th {
+        background: #f8fafc;
+        color: #374151;
+        font-weight: 700;
+        padding: 9px 10px;
+        text-align: center;
+        border-bottom: 2px solid #e5e7eb;
+        border-left: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+        .lines-table thead th:last-child {
+            border-left: none;
+        }
+
+    /* ── سلول‌های بدنه ── */
+    .lines-table tbody td {
+        padding: 8px 10px;
+        text-align: center;
+        border-bottom: 1px solid #e5e7eb;
+        border-left: 1px solid #e5e7eb;
+        color: #111827;
+        vertical-align: middle;
+    }
+
+        .lines-table tbody td:last-child {
+            border-left: none;
+        }
+
+    .lines-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* ── zebra stripe ── */
+    .lines-table tbody tr:nth-child(even) {
+        background: #f9fafb;
+    }
+
+    /* ── hover ── */
+    .lines-table tbody tr:hover {
+        background: #eff6ff !important;
+    }

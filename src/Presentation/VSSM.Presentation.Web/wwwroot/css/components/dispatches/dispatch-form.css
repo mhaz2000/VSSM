@@ -1,0 +1,57 @@
+﻿/* ═══════════════════════════════════════════
+   dispatch-form.css  —  استایل اختصاصی صفحه ارسال
+   فقط چیزهایی که مختص این صفحه هستند
+   ═══════════════════════════════════════════ */
+
+/* ── ظرف اصلی صفحه ── */
+.dispatch-wrap {
+    direction: rtl;
+    padding: 24px 32px;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .dispatch-wrap {
+        padding: 12px;
+    }
+}
+
+/* ── گرید دو‌ستونه (اختصاصی این فرم) ── */
+.fg-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+}
+
+@media (max-width: 768px) {
+    .fg-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── دکمه نمایش بیشتر ── */
+.btn-show-more {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+    .btn-show-more:hover {
+        color: #1d4ed8;
+    }
+
+/* ── دکمه uid در جدول عملیات ── */
+.btn-action-uid {
+    border-color: #a7f3d0;
+    color: #059669;
+}
+
+    .btn-action-uid:hover {
+        background: #ecfdf5;
+    }

@@ -1,0 +1,32 @@
+﻿/* ═══════════════════════════════════════════
+   a-card.css  —  کامپوننت کارت (shared)
+   قابل استفاده در تمام فرم‌های پروژه
+   ═══════════════════════════════════════════ */
+
+.a-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.a-card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .a-card-header h6 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 800;
+        color: #111827;
+    }
+
+.a-card-body {
+    padding: 20px;
+}

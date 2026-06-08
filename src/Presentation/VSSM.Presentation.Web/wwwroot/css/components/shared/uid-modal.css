@@ -1,0 +1,136 @@
+﻿/* ═══════════════════════════════════════════
+   uid-modal.css  —  مودال افزودن UID (shared)
+   قابل استفاده در: Dispatch و هر فرمی با UID scanning
+
+   پیش‌نیاز HTML:
+     <div class="uid-modal-overlay" id="uidModalOverlay">
+       <div class="uid-modal"> ... </div>
+     </div>
+   ═══════════════════════════════════════════ */
+
+/* ── overlay ── */
+.uid-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    z-index: 9000;
+    align-items: center;
+    justify-content: center;
+}
+
+    .uid-modal-overlay.open {
+        display: flex;
+    }
+
+/* ── پنجره مودال ── */
+.uid-modal {
+    background: #fff;
+    border-radius: 14px;
+    width: 480px;
+    max-width: 95vw;
+    direction: rtl;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, .18);
+}
+
+/* ── هدر مودال ── */
+.uid-modal-header {
+    padding: 14px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+    .uid-modal-header h6 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+.uid-modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #6b7280;
+    line-height: 1;
+}
+
+    .uid-modal-close:hover {
+        color: #111827;
+    }
+
+/* ── بدنه مودال ── */
+.uid-modal-body {
+    padding: 20px;
+}
+
+/* ── ردیف آمار (موجودی / تعداد uid) ── */
+.uid-stat-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.uid-stat {
+    flex: 1;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+}
+
+    .uid-stat .lbl {
+        font-size: 11px;
+        color: #374151;
+    }
+
+    .uid-stat .val {
+        font-size: 20px;
+        font-weight: 800;
+        color: #15803d;
+        margin-top: 2px;
+    }
+
+/* ── ردیف ورودی uid ── */
+.uid-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* ── لیست uid های افزوده‌شده ── */
+.uid-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* ── chip هر uid ── */
+.uid-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.uid-chip-del {
+    border: none;
+    background: none;
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+}
+
+    .uid-chip-del:hover {
+        color: #991b1b;
+    }

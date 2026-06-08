@@ -18,4 +18,29 @@ public interface IDispatchService
     Task<UpdateDispatchDto?> GetByIdAsync(int id);
     Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken);
     Task<(bool isSuccess, string message, int count, int itemId)> SetUidAsync(int dispatchLineId, int id, string uid);
+
+    /// <summary>
+    /// بند ۱: لود کالاها بر اساس نوع کالا برای دراپ‌دان
+    /// </summary>
+    Task<List<ItemLookupDto>> GetItemsByClassAsync(int classId, CancellationToken ct = default);
+
+    /// <summary>
+    /// بند ۱۱، ۶، ۷a و ۱۰: لود سری ساخت‌های موجود به همراه اطلاعات حلال و موجودی جاری
+    /// </summary>
+    Task<List<BatchRowDto>> GetBatchesByItemAsync(int itemId, CancellationToken ct = default);
+
+    /// <summary>
+    /// بند ۱۰a و ۹: کسر موجودی از انبار هنگام ثبت نهایی
+    /// </summary>
+    Task DecrementStockOnFinalAsync(List<DispatchLineDto> lines, CancellationToken ct = default);
+
+    /// <summary>
+    /// بند ۱۰c: برگشت موجودی به انبار هنگام حذف حواله یا سطرهای آن
+    /// </summary>
+    Task RestoreStockAsync(int dispatchId, CancellationToken ct = default);
+
+    /// <summary>
+    /// بند ۹: لینک کردن UIDها به ردیف‌های حواله در جدول اطلاعات UID
+    /// </summary>
+    Task LinkUidsToDispatchUidAsync(int dispatchId, CancellationToken ct = default);
 }

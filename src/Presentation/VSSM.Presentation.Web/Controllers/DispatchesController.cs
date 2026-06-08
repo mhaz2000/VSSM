@@ -3,11 +3,11 @@ using VSSM.Application.Common.Helpers;
 using VSSM.Application.DTOs.BaseEntities;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services.BaseEntities;
 using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
-
 
 public class DispatchesController(
     IManufacturerService manufacturerService,
@@ -134,24 +134,24 @@ public class DispatchesController(
         return View(model);
     }
 
-    public async Task<IActionResult> Confirm(int id, CancellationToken token)
-    {
-        await dispatchService.ConfirmDispatchAsync(id, token);
+        public async Task<IActionResult> Confirm(int id, CancellationToken token)
+        {
+            await _dispatchService.ConfirmDispatchAsync(id, token);
 
-        return RedirectToAction("Index");
+            return RedirectToAction("Index");
 
-    }
+        }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id, CancellationToken token)
-    {
-        await dispatchService.DeleteDispatchAsync(id, token);
-        return RedirectToAction("Index");
-    }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id, CancellationToken token)
+        {
+            await _dispatchService.DeleteDispatchAsync(id, token);
+            return RedirectToAction("Index");
+        }
 
-    public async Task<IActionResult> New(CancellationToken cancellationToken)
-    {
+        public async Task<IActionResult> New(CancellationToken cancellationToken)
+        {
 
         await PopulateViewBagData(cancellationToken);
 
@@ -166,24 +166,24 @@ public class DispatchesController(
         return View();
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(
-        CreateDispatchDto createDispatcheDto,
-        string submitType,
-        CancellationToken cancellationToken)
-    {
-        createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
-        createDispatcheDto.EnteredById = CurrentUserId.Value;
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(
+            CreateDispatchDto createDispatcheDto,
+            string submitType,
+            CancellationToken cancellationToken)
+        {
+            createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
+            createDispatcheDto.EnteredById = CurrentUserId.Value;
 
 
-        var result = await dispatchService.CreateDispatchAsync(createDispatcheDto, submitType, cancellationToken);
+            var result = await _dispatchService.CreateDispatchAsync(createDispatcheDto, submitType, cancellationToken);
 
-        TempData["ToastMessage"] = $"پیش فاکتور با شماره {result} با موفقیت ثبت شد.";
-        TempData["ToastType"] = "success";
+            TempData["ToastMessage"] = $"پیش فاکتور با شماره {result} با موفقیت ثبت شد.";
+            TempData["ToastType"] = "success";
 
-        return RedirectToAction(nameof(Index));
-    }
+            return RedirectToAction(nameof(Index));
+        }
 
 
     public async Task<IActionResult> ArriveSubmit(DispatchArrivedDto arrivedDto, CancellationToken cancellationToken)

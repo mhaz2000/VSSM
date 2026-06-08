@@ -2,63 +2,155 @@
 @using VSSM.Presentation.Web.Models.Base
 @model GridViewModel
 
-
 @section Styles {
     <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
 }
 
 @{
     ViewData["Title"] = "ارسالات";
+    var currentStatus = Context.Request.Query["status"].ToString();
 }
 
+<style>
+    .btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #16a34a;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0 16px;
+        height: 40px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+        .btn-add:hover {
+            background: #15803d;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .btn-add .plus-circle {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.7);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+    .search-wrap {
+        display: flex;
+        align-items: stretch;
+        height: 40px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        min-width: 380px;
+    }
+
+    .search-select {
+        border: none;
+        outline: none;
+        background: #374151;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 500;
+        min-width: 120px;
+        padding: 0 10px 0 28px;
+        appearance: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: left 8px center;
+    }
+
+        .search-select option {
+            background: #374151;
+            color: #fff;
+        }
+
+    .search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 0 12px;
+        font-size: 13px;
+        color: #111827;
+        background: #fff;
+    }
+
+        .search-input::placeholder {
+            color: #9ca3af;
+        }
+
+    .search-divider {
+        width: 1px;
+        background: #e5e7eb;
+    }
+
+    .search-btn {
+        width: 42px;
+        border: none;
+        border-right: 1px solid #e5e7eb;
+        background: #f9fafb;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        transition: .15s;
+    }
+
+        .search-btn:hover {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+</style>
 
 <div class="grid-wrapper">
-    <div class="grid-header">
+    <div class="grid-header" style="direction:rtl;">
 
-        <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
+        <strong style="font-size:1.4rem; font-weight:600; color:#111827;">
+            @ViewData["Title"]
+        </strong>
 
         <div class="d-flex align-items-center gap-2">
 
-            <!-- Draft filter -->
-            <form method="get" class="d-flex align-items-center gap-2">
-
-                <!-- keep existing query values -->
-                <input type="hidden" name="search" value="@Model.SearchTerm" />
+            <form method="get" class="m-0">
                 <input type="hidden" name="sort" value="@Model.CurrentSort" />
                 <input type="hidden" name="direction" value="@Model.CurrentDirection" />
                 <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
 
-
-                <div class="form-group">
-
-                    <select name="status"
-                            class="form-select form-select-sm"
-                            onchange="this.form.submit()"
-                            style="padding: 7px; margin-left: 10px;">
-
-                        <option value="">همه</option>
-                        <option value="draft" selected="@(Context.Request.Query["status"] == "draft")">
-                            پیش نویس
-                        </option>
-                        <option value="final" selected="@(Context.Request.Query["status"] == "final")">
-                            نهایی
-                        </option>
+                <div class="search-wrap">
+                    <select name="status" class="search-select" onchange="this.form.submit()">
+                        <option value="" selected="@(currentStatus == "")">همه</option>
+                        <option value="draft" selected="@(currentStatus == "draft")">پیش‌نویس</option>
+                        <option value="final" selected="@(currentStatus == "final")">نهایی</option>
                     </select>
+                    <div class="search-divider"></div>
+                    <input type="text" name="search" class="search-input"
+                           value="@Model.SearchTerm" placeholder="جستجو..." />
+                    <button type="submit" class="search-btn" title="جستجو">
+                        <i class="fa fa-search"></i>
+                    </button>
                 </div>
             </form>
 
-            <!-- shared search component untouched -->
-            @await Component.InvokeAsync("SearchBar", new
-            {
-                searchTerm = Model.SearchTerm,
-                        pageSize = Model.Data.PageSize,
-                        sort = Model.CurrentSort,
-                        direction = Model.CurrentDirection
-                        })
-
-            <div class="col-lg-3 mb-2 text-end">
-                <a class="btn btn-success" asp-action="New"><i class="fa fa-plus-circle"></i> ثبت ارسال جدید</a>
-            </div>
+            <a asp-action="New" class="btn-add">
+                <span class="plus-circle">+</span>
+                ثبت ارسال جدید
+            </a>
 
         </div>
     </div>
@@ -71,11 +163,9 @@
 @if (TempData["ToastMessage"] != null)
 {
     <script>
-        $(document).ready(function() {
-            debugger
+        $(document).ready(function () {
             var message = '@Html.Raw(TempData["ToastMessage"])';
-            var type = '@TempData["ToastType"]';
-
+            var type    = '@TempData["ToastType"]';
             showToast(message, type);
         });
     </script>

@@ -22,6 +22,114 @@ public class DispatchesController(
     IDispatchService dispatchService,
     IItemClassService itemClassService) : BaseController
 {
+
+    // ══════════════════════════════════════════════════════════════════════════════
+    // اکشن‌های جدید برای DispatchesController.cs
+    // این متدها به کنترلر موجود اضافه شوند
+    // ══════════════════════════════════════════════════════════════════════════════
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // بند ۱: لود آیتم‌ها بر اساس نوع کالا
+    // ──────────────────────────────────────────────────────────────────────────────
+    [HttpGet]
+    public async Task<IActionResult> GetItemsByClass(int classId, CancellationToken ct)
+    {
+        var items = await dispatchService.GetItemsByClassAsync(classId, ct);
+        return Json(items.Select(i => new { i.ItemId, i.FullName }));
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // بند ۱۱: لود سری ساخت‌ها بر اساس کالا
+    // بند ۶: RequiresDiluent و اطلاعات حلال نیز در پاسخ است
+    // بند ۷a: تاریخ انقضا شمسی از سرویس بر می‌گردد
+    // ──────────────────────────────────────────────────────────────────────────────
+    [HttpGet]
+    public async Task<IActionResult> GetBatchesByItem(int itemId, CancellationToken ct)
+    {
+        var rows = await dispatchService.GetBatchesByItemAsync(itemId, ct);
+        return Json(rows);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // بروزرسانی Create — بند ۳ + بند ۴ + بند ۹ + بند ۱۰a
+    // ──────────────────────────────────────────────────────────────────────────────
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(
+        CreateDispatchDto createDispatcheDto,
+        string submitType,
+        CancellationToken cancellationToken)
+    {
+        createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
+        createDispatcheDto.EnteredById = CurrentUserId.Value;
+
+        // بند ۴: بررسی quantity > 0 در سمت سرور (دفاعی)
+        if (createDispatcheDto.Items.Any(i => i.DoseCount <= 0))
+        {
+            TempData["ToastMessage"] = "برای کلیه کالاهای ارسالی تعداد را مشخص نمایید";
+            TempData["ToastType"] = "error";
+            await PopulateViewBagData(cancellationToken);
+            return View(createDispatcheDto);
+        }
+
+        var result = await dispatchService.CreateDispatchAsync(
+            createDispatcheDto, submitType, cancellationToken);
+
+        // بند ۱۰a: کسر موجودی از دیتابیس پس از ثبت (draft یا final)
+        await dispatchService.DecrementStockOnFinalAsync(
+            createDispatcheDto.Items, cancellationToken);
+
+        // بند ۹: لینک کردن UID‌ها به tblDispatchUid هنگام ثبت نهایی
+        if (submitType == "final")
+            await dispatchService.LinkUidsToDispatchUidAsync((int)result, cancellationToken);
+
+        // بند ۳: فقط یک پیغام — پیغام پیش‌فاکتور با شماره
+        TempData["ToastMessage"] = $"پیش فاکتور با شماره {result} با موفقیت ثبت شد.";
+        TempData["ToastType"] = "success";
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // بروزرسانی Delete — بند ۱۰c: برگشت موجودی هنگام حذف
+    // ──────────────────────────────────────────────────────────────────────────────
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id, CancellationToken token)
+    {
+        // بند ۱۰c: قبل از حذف، موجودی را به tblItemDetailStores برگردان
+        await dispatchService.RestoreStockAsync(id, token);
+
+        await dispatchService.DeleteDispatchAsync(id, token);
+        return RedirectToAction("Index");
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────────
+    // بروزرسانی Index (Grid) — بند ۲ + بند ۸
+    // ──────────────────────────────────────────────────────────────────────────────
+    // در Index، آیکن چاپ پیش‌فاکتور (بند ۲) از fa-file به fa-print تغییر کند:
+    //
+    //   new GridAction
+    //   {
+    //       Title        = "چاپ پیش فاکتور",
+    //       Controller   = "Dispatches",
+    //       Action       = "Print",
+    //       RouteIdProperty = nameof(DispatchListDto.Id),
+    //       IconClass    = "fa fa-print",   // ← بند ۲: آیکن پرینتر
+    //       DynamicSkip  = item =>
+    //       {
+    //           var row = (DispatchListDto)item;
+    //           return (!(row.IsDrafted.HasValue && row.IsDrafted.Value)).ToString();
+    //       }
+    //   },
+    //
+    // بند ۸: آیکن ویرایش در گرید نیز DynamicSkip داشته باشد:
+    //   DynamicSkip = item =>
+    //   {
+    //       var row = (DispatchListDto)item;
+    //       return (row.IsConfirmed.HasValue && row.IsConfirmed.Value).ToString();
+    //   }
+    // ══════════════════════════════════════════════════════════════════════════════
     public async Task<IActionResult> Index(CancellationToken cancellationToken, string? search,
                                             int pageNumber = 1,
                                             int pageSize = 10,
@@ -62,7 +170,15 @@ public class DispatchesController(
                     Action = "Edit",
                     RouteIdProperty = nameof(DispatchListDto.Id),
                     LinkClass = "",
-                    IconClass = "fa fa-edit"
+                    IconClass = "fa fa-edit",
+                    DynamicSkip = item =>
+                    {
+                        var row = (DispatchListDto)item;
+                  
+                        // اگر Confirm شده باشد، ویرایش نمایش داده نشود
+                        return (row.IsConfirmed.HasValue && row.IsConfirmed.Value).ToString();
+                    }
+
                 },
                 new()
                 {
@@ -134,24 +250,17 @@ public class DispatchesController(
         return View(model);
     }
 
-        public async Task<IActionResult> Confirm(int id, CancellationToken token)
-        {
-            await _dispatchService.ConfirmDispatchAsync(id, token);
+    public async Task<IActionResult> Confirm(int id, CancellationToken token)
+    {
+        await dispatchService.ConfirmDispatchAsync(id, token);
 
-            return RedirectToAction("Index");
+        return RedirectToAction("Index");
 
-        }
+    }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id, CancellationToken token)
-        {
-            await _dispatchService.DeleteDispatchAsync(id, token);
-            return RedirectToAction("Index");
-        }
 
-        public async Task<IActionResult> New(CancellationToken cancellationToken)
-        {
+    public async Task<IActionResult> New(CancellationToken cancellationToken)
+    {
 
         await PopulateViewBagData(cancellationToken);
 
@@ -165,25 +274,6 @@ public class DispatchesController(
 
         return View();
     }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            CreateDispatchDto createDispatcheDto,
-            string submitType,
-            CancellationToken cancellationToken)
-        {
-            createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
-            createDispatcheDto.EnteredById = CurrentUserId.Value;
-
-
-            var result = await _dispatchService.CreateDispatchAsync(createDispatcheDto, submitType, cancellationToken);
-
-            TempData["ToastMessage"] = $"پیش فاکتور با شماره {result} با موفقیت ثبت شد.";
-            TempData["ToastType"] = "success";
-
-            return RedirectToAction(nameof(Index));
-        }
 
 
     public async Task<IActionResult> ArriveSubmit(DispatchArrivedDto arrivedDto, CancellationToken cancellationToken)

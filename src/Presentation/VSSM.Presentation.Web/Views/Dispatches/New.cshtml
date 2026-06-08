@@ -584,7 +584,7 @@
             <!-- بند ۱۰d: نمایش موجودی جاری و تعداد uid -->
             <div class="uid-stat-row">
                 <div class="uid-stat">
-                    <div class="lbl">موجودی جاری (RAM)</div>
+                    <div class="lbl">موجودی جاری</div>
                     <div class="val" id="uidModalStock">0</div>
                 </div>
                 <div class="uid-stat">
@@ -614,7 +614,7 @@
              ══════════════════════════════════════════════ -->
         <div class="a-card">
             <div class="a-card-header">
-                <h6><i class="fa fa-paper-plane" style="color:#1d6fb8;"></i> ثبت ارسال</h6>
+                <h6><i class="fa fa-truck" style="color:#1d6fb8;"></i> ثبت ارسال</h6>
             </div>
             <div class="a-card-body">
 
@@ -683,7 +683,14 @@
 
                 <div class="fg-3" style="margin-bottom:14px;">
 
-                    <!-- روش دریافت -->
+                    <!-- تعداد / دوز — ستون اول (راست) -->
+                    <div class="f-group">
+                        <label class="f-label">تعداد / دوز <span class="req-tag">اجباری</span></label>
+                        <input type="number" id="doseCountInput" class="f-control"
+                               placeholder="تعداد را وارد کنید" min="1" />
+                    </div>
+
+                    <!-- روش دریافت — ستون دوم (وسط) -->
                     <div class="f-group">
                         <label class="f-label">روش دریافت</label>
                         <select asp-for="ReceivingMode" class="f-control">
@@ -695,7 +702,7 @@
                         </select>
                     </div>
 
-                    <!-- طریقه حمل -->
+                    <!-- طریقه حمل — ستون سوم (چپ) -->
                     <div class="f-group">
                         <label class="f-label">طریقه حمل</label>
                         <select asp-for="TransportMode" class="f-control">
@@ -705,13 +712,6 @@
                                 <option value="@m.Name">@m.Description</option>
                             }
                         </select>
-                    </div>
-
-                    <!-- تعداد / دوز -->
-                    <div class="f-group">
-                        <label class="f-label">تعداد / دوز <span class="req-tag">اجباری</span></label>
-                        <input type="number" id="doseCountInput" class="f-control"
-                               placeholder="تعداد را وارد کنید" min="1" />
                     </div>
 
                 </div>
@@ -750,8 +750,8 @@
             <div class="a-card-header">
                 <h6><i class="fa fa-list" style="color:#1d6fb8;"></i> انتخاب سری ساخت</h6>
             </div>
-            <div class="a-card-body" style="padding:0;">
-                <div class="lines-table-wrap" style="border:none; border-radius:0;">
+            <div class="a-card-body" style="padding:16px;">
+                <div class="lines-table-wrap">
                     <table class="lines-table" id="itemDetailsTable">
                         <thead>
                             <tr>
@@ -775,12 +775,13 @@
                     </table>
                 </div>
                 <!-- بند ۱۱: دکمه نمایش بیشتر -->
-                <div style="padding:10px 20px; text-align:center; display:none;" id="showMoreWrap">
+                <div style="padding:10px 0 4px; text-align:center; display:none;" id="showMoreWrap">
                     <button type="button" class="btn-show-more" id="showMoreBtn" onclick="showMoreRows()">
                         <i class="fa fa-chevron-down"></i> نمایش بیشتر
                     </button>
                 </div>
-                <div style="padding:10px 20px; display:flex; justify-content:flex-start;">
+                <!-- دکمه افزودن — justify-content:flex-end یعنی از راست به چپ می‌رود -->
+                <div style="padding:12px 0 0; display:flex; justify-content:flex-end;">
                     <button type="button" id="addItemBtn" class="btn-add-line" onclick="addSelectedItem()">
                         <i class="fa fa-plus"></i> افزودن
                     </button>
@@ -800,35 +801,36 @@
             <div class="a-card-header">
                 <h6><i class="fa fa-check-square" style="color:#1d6fb8;"></i> کالاهای افزوده‌شده</h6>
             </div>
-            <div class="lines-table-wrap" style="margin:0; border-radius:0; border:none; border-top:1px solid #e5e7eb;">
-                <table class="lines-table" id="addedItemsTable">
-                    <thead>
-                        <tr>
-                            <th>سری ساخت</th>
-                            <th>کالا</th>
-                            <!-- بند ۷a: تاریخ انقضا فارسی -->
-                            <th>انقضا (شمسی)</th>
-                            <th>تعداد/دوز</th>
-                            <th>تعداد ویال</th>
-                            <th>نوع VVM</th>
-                            <th>مرحله VVM</th>
-                            <th>سازنده</th>
-                            <th>ملاحظات</th>
-                            <!-- بند ۷c: ترتیب: uid | حذف -->
-                            <th>عملیات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="addedItemsTbody">
-                        <tr id="noAddedRow">
-                            <td colspan="10" style="padding:24px; color:#9ca3af; text-align:center;">
-                                کالایی اضافه نشده
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
+            <div class="a-card-body" style="padding:16px;">
+                <div class="lines-table-wrap">
+                    <table class="lines-table" id="addedItemsTable">
+                        <thead>
+                            <tr>
+                                <th>سری ساخت</th>
+                                <th>کالا</th>
+                                <!-- بند ۷a: تاریخ انقضا فارسی -->
+                                <th>انقضا (شمسی)</th>
+                                <th>تعداد/دوز</th>
+                                <th>تعداد ویال</th>
+                                <th>نوع VVM</th>
+                                <th>مرحله VVM</th>
+                                <th>سازنده</th>
+                                <th>ملاحظات</th>
+                                <!-- بند ۷c: ترتیب: uid | حذف -->
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="addedItemsTbody">
+                            <tr id="noAddedRow">
+                                <td colspan="10" style="padding:24px; color:#9ca3af; text-align:center;">
+                                    کالایی اضافه نشده
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div><!-- /lines-table-wrap -->
+            </div><!-- /a-card-body -->
+        </div><!-- /a-card -->
         <!-- ── فوتر ── -->
         <div class="form-footer">
             <!-- ثبت نهایی -->

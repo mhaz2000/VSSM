@@ -984,6 +984,10 @@ public partial class VSSMDbContext : DbContext
 
             entity.ToTable("tblItemDetails");
 
+            entity.Property(e => e.FkCommercialNameId).HasColumnName("CommercialNameID");
+entity.Property(e => e.FkVvmTypeId).HasColumnName("VVMTypeID");
+entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
+
             entity.Property(e => e.ItemDetailId).HasColumnName("ItemDetailID");
             entity.Property(e => e.BatchNumber).HasMaxLength(50);
             entity.Property(e => e.CommercialNameId).HasColumnName("CommercialNameID");

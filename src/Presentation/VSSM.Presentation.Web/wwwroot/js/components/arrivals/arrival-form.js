@@ -11,35 +11,37 @@
 
 $(function () {
 
-    // ════════════════════════════════════════
-    //  ۱. متغیرهای کمکی
-    // ════════════════════════════════════════
-
-    /** جلوگیری از اجرای blur هنگام submit */
     var isSubmitting = false;
 
     $("#arrivalForm").on("submit", function () {
         isSubmitting = true;
         setTimeout(function () { isSubmitting = false; }, 500);
+
+        // ذخیره تاریخ ورود در hidden قبل از submit
+        combineDate("DateDay", "DateMonth", "DateYear", "Date");
+
+        // ذخیره تاریخ تولید در hidden (برای postback)
+        if ($("#ProdYear").val()) {
+            $("#ProductionDate").val(
+                $("#ProdYear").val() + "/" + $("#ProdMonth").val() + "/" + $("#ProdDay").val()
+            );
+        }
+
+        // ذخیره تاریخ انقضا در hidden (برای postback)
+        if ($("#ExpYear").val()) {
+            $("#ExpiryDate").val(
+                $("#ExpYear").val() + "/" + $("#ExpMonth").val() + "/" + $("#ExpDay").val()
+            );
+        }
     });
 
-    // ════════════════════════════════════════
-    //  ۲. نمایش toast سرور (TempData)
-    // ════════════════════════════════════════
-
-    /* مقادیر توسط View تزریق می‌شوند — ر.ک. بخش View */
     if (typeof arrivalServerMsg !== "undefined" && arrivalServerMsg) {
         showToast(arrivalServerMsg, arrivalServerType || "info");
     }
 
-    // ════════════════════════════════════════
-    //  ۳. مقداردهی اولیه ماژول‌های shared
-    // ════════════════════════════════════════
 
-    // cascade VVM
     initVvmCascade("VvmTypeId", "VvmStageId");
 
-    // تاریخ ورود
     initDateAutoAdvance("DateDay", "DateMonth", "DateYear");
     initDateValidation("DateDay", "DateMonth", "DateYear");
 
@@ -47,32 +49,20 @@ $(function () {
         combineDate("DateDay", "DateMonth", "DateYear", "Date");
     });
 
-    // تفکیک تاریخ‌های موجود (حالت ویرایش)
     splitDate($("#Date").val(), "DateDay", "DateMonth", "DateYear");
     splitDate($("#ProductionDate").val(), "ProdDay", "ProdMonth", "ProdYear");
     splitDate($("#ExpiryDate").val(), "ExpDay", "ExpMonth", "ExpYear");
 
-    // ════════════════════════════════════════
-    //  ۴. مقداردهی فیلدهای خودکار (کالا / دوز)
-    // ════════════════════════════════════════
 
-    /**
-     * پر کردن فیلدهای نمایشی و hidden مربوط به سری ساخت
-     * @param {string} itemName
-     * @param {string|number} itemId
-     * @param {string} doseName
-     * @param {string|number} dosePerVialId
-     */
     function setAutoFields(itemName, itemId, doseName, dosePerVialId) {
         $("#ItemClassDisplay").val("واکسن");
         $("#ItemDisplay").val(itemName || "");
         $("#DoseDisplay").val(doseName || "");
-        $("#ItemClassIdHidden").val("");                  // نوع کالا پیش‌فرض واکسن
+        $("#ItemClassIdHidden").val("");
         $("#ItemIdHidden").val(itemId || "");
         $("#DosePerVialIdHidden").val(dosePerVialId || "");
     }
 
-    /** پاک کردن فیلدهای خودکار */
     function clearAutoFields() {
         $("#ItemClassDisplay").val("");
         $("#ItemDisplay").val("");
@@ -82,13 +72,48 @@ $(function () {
         $("#DosePerVialIdHidden").val("");
     }
 
-    /** پاک کردن فیلدهای تاریخ و تعداد مرتبط با سری ساخت */
     function clearBatchFields() {
         $("#QuantityHidden").val("");
         $("#ProdDay, #ProdMonth, #ProdYear").val("");
         $("#ProductionDate").val("");
         $("#ExpDay, #ExpMonth, #ExpYear").val("");
         $("#ExpiryDate").val("");
+        $("#ProdDayM, #ProdMonthM, #ProdYearM").val("");
+        $("#ExpDayM, #ExpMonthM, #ExpYearM").val("");
+        // reset نمایش به حالت اولیه
+        $("#prod-shamsi-wrap, #exp-shamsi-wrap").show();
+        $("#prod-miladi-wrap, #exp-miladi-wrap").hide();
+        $(".btn-date-toggle").hide();
+    }
+
+    // ── helpers نمایش تاریخ ──
+
+    function applyDateDisplay(target, hasShamsi, hasMiladi) {
+        var $toggle = $(".btn-date-toggle[data-target='" + target + "']");
+        var $shamsiWrap = $("#" + target + "-shamsi-wrap");
+        var $miladiWrap = $("#" + target + "-miladi-wrap");
+
+        if (hasShamsi && hasMiladi) {
+            // هر دو موجودند — دکمه toggle نشان داده می‌شود، پیش‌فرض شمسی
+            $toggle.show().attr("title", "نمایش میلادی");
+            $shamsiWrap.show();
+            $miladiWrap.hide();
+        } else if (hasMiladi) {
+            // فقط میلادی
+            $toggle.hide();
+            $shamsiWrap.hide();
+            $miladiWrap.show();
+        } else if (hasShamsi) {
+            // فقط شمسی
+            $toggle.hide();
+            $shamsiWrap.show();
+            $miladiWrap.hide();
+        } else {
+            // هیچکدام (مثلاً انقضا ندارد)
+            $toggle.hide();
+            $shamsiWrap.hide();
+            $miladiWrap.hide();
+        }
     }
 
     // مقداردهی اولیه در حالت ویرایش
@@ -103,7 +128,6 @@ $(function () {
         $("#ItemClassDisplay").val("واکسن");
     }
 
-    // مقادیر نمایشی کالا و دوز در حالت ویرایش
     if (typeof arrivalItemName !== "undefined") $("#ItemDisplay").val(arrivalItemName);
     if (typeof arrivalDoseName !== "undefined") $("#DoseDisplay").val(arrivalDoseName);
 
@@ -111,73 +135,111 @@ $(function () {
     //  ۵. GetBatchInfo — بررسی سری ساخت
     // ════════════════════════════════════════
 
-    $("#BatchNum").on("blur", function () {
-        if (isSubmitting) return;
-        var batchNum = $(this).val().trim();
-        if (!batchNum) return;
+    var batchTimer = null;
 
-        var arrivalId = $("#ArrivalId").val() || 0;
+    $("#BatchNum").on("input", function () {
+        clearTimeout(batchTimer);
+        var $input = $(this);
 
-        $.ajax({
-            url: arrivalGetBatchInfoUrl,   // مقدار از View تزریق می‌شود
-            type: "GET",
-            data: { batchNum: batchNum, arrivalId: arrivalId },
-            success: function (res) {
-                if (!res.success) {
-                    showToast(res.message, "error");
-                    clearBatchFields();
-                    clearAutoFields();
-                    return;
-                }
+        batchTimer = setTimeout(function () {
+            if (isSubmitting) return;
+            var batchNum = $input.val().trim();
+            if (!batchNum) {
+                clearBatchFields();
+                clearAutoFields();
+                return;
+            }
 
-                showToast("سری ساخت تایید شد", "success");
-                $("#QuantityHidden").val(res.quantity);
+            var arrivalId = $("#ArrivalId").val() || 0;
 
-                // تاریخ تولید
-                if (res.productionDateShamsi) {
-                    var p = res.productionDateShamsi.split("/");
-                    if (p.length === 3) {
+            $.ajax({
+                url: arrivalGetBatchInfoUrl,
+                type: "GET",
+                data: { batchNum: batchNum, arrivalId: arrivalId },
+                success: function (res) {
+                    if (!res.success) {
+                        showToast(res.message, "error");
+                        clearBatchFields();
+                        clearAutoFields();
+                        return;
+                    }
+
+                    showToast("سری ساخت تایید شد", "success");
+                    $("#QuantityHidden").val(res.quantity);
+
+                    if (res.hasProdShamsi) {
+                        var p = res.productionDateShamsi.split("/");
                         $("#ProdYear").val(p[0]);
                         $("#ProdMonth").val(p[1]);
                         $("#ProdDay").val(p[2]);
                         $("#ProductionDate").val(res.productionDateShamsi);
                     }
-                }
-
-                // تاریخ انقضا
-                if (res.expiryDateShamsi) {
-                    var e = res.expiryDateShamsi.split("/");
-                    if (e.length === 3) {
-                        $("#ExpYear").val(e[0]);
-                        $("#ExpMonth").val(e[1]);
-                        $("#ExpDay").val(e[2]);
-                        $("#ExpiryDate").val(res.expiryDateShamsi);
+                    if (res.hasProdMiladi) {
+                        var pm = res.productionDateMiladi.split("/");
+                        $("#ProdYearM").val(pm[0]);
+                        $("#ProdMonthM").val(pm[1]);
+                        $("#ProdDayM").val(pm[2]);
                     }
-                }
+                    applyDateDisplay("prod", res.hasProdShamsi, res.hasProdMiladi);
 
-                // فیلدهای خودکار کالا و دوز
-                setAutoFields(res.itemName, res.itemId, res.doseName, res.dosePerVialId);
-            },
-            error: function () {
-                showToast("خطا در بررسی سری ساخت", "error");
-                clearBatchFields();
-                clearAutoFields();
-            }
-        });
+                    if (res.hasExpiry) {
+                        if (res.hasExpShamsi) {
+                            var e = res.expiryDateShamsi.replace(/-/g, "/").split("/");
+                            $("#ExpYear").val(e[0]);
+                            $("#ExpMonth").val(e[1]);
+                            $("#ExpDay").val(e[2]);
+                            $("#ExpiryDate").val(res.expiryDateShamsi);
+                        }
+                        if (res.hasExpMiladi) {
+                            var em = res.expiryDateMiladi.replace(/-/g, "/").split("/");
+                            $("#ExpYearM").val(em[0]);
+                            $("#ExpMonthM").val(em[1]);
+                            $("#ExpDayM").val(em[2]);
+                        }
+                        applyDateDisplay("exp", res.hasExpShamsi, res.hasExpMiladi);
+                    } else {
+                        applyDateDisplay("exp", false, false);
+                    }
+
+                    console.log("expiryDateMiladi:", res.expiryDateMiladi);
+                    console.log("split result:", res.expiryDateMiladi.replace(/-/g, "/").split("/"));
+
+                    setAutoFields(res.itemName, res.itemId, res.doseName, res.dosePerVialId);
+                },
+                error: function () {
+                    showToast("خطا در ارتباط با سرور، لطفاً دوباره تلاش کنید", "error");
+                    clearBatchFields();
+                    clearAutoFields();
+                }
+            });
+        }, 600);
     });
 
     // ════════════════════════════════════════
-    //  ۶. دکمه‌های footer (ثبت / پیش‌نویس)
+    //  ۶. toggle شمسی / میلادی
+    // ════════════════════════════════════════
+
+    $(document).on("click", ".btn-date-toggle", function () {
+        var target = $(this).data("target");
+        var $shamsiWrap = $("#" + target + "-shamsi-wrap");
+        var $miladiWrap = $("#" + target + "-miladi-wrap");
+        var isShowing = $shamsiWrap.is(":visible");
+
+        $shamsiWrap.toggle(!isShowing);
+        $miladiWrap.toggle(isShowing);
+        $(this).attr("title", isShowing ? "نمایش شمسی" : "نمایش میلادی");
+    });
+
+    // ════════════════════════════════════════
+    //  ۷. دکمه‌های footer (ثبت / پیش‌نویس)
     // ════════════════════════════════════════
 
     $(".js-footer-btn").on("click", function () {
         var command = $(this).val();
 
-        // غیرفعال کردن validation برای این submit
         var $v = $("#arrivalForm").data("validator");
         if ($v) $v.settings.ignore = "*";
 
-        // حذف command قبلی و افزودن جدید
         $("#arrivalForm").find("input[name='command']").remove();
         $("<input>").attr({ type: "hidden", name: "command", value: command })
             .appendTo("#arrivalForm");

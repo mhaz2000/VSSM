@@ -5,369 +5,89 @@ using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace VSSM.Application.Services.BaseEntities
+namespace VSSM.Application.Services.BaseEntities;
+
+public class ArrivalService(VSSMDbContext db) : IArrivalService
 {
-    public class ArrivalService : IArrivalService
+    public async Task<PagingSearchOrderDto<ArrivalListDto>> GetPagedList(
+        string? search,
+        int statusFilter,
+        int page,
+        int pageSize,
+        CancellationToken token)
     {
-        private readonly VSSMDbContext _db;
+        var query = db.TblArrivals
+            .AsNoTracking()
+            .AsQueryable();
 
-        public ArrivalService(VSSMDbContext db)
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(x => x.ReportNumber.Contains(search));
+
+        if (statusFilter == 1)
+            query = query.Where(x => x.IsDrafted == true && x.IsCancelled != true);
+        else if (statusFilter == 2)
+            query = query.Where(x => x.IsConfirmed == true && x.IsCancelled != true);
+
+        var totalItems = await query.CountAsync(token);
+
+        var paging = new PagingModel
         {
-            _db = db;
-        }
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalItems
+        };
 
-        /* =========================
-           GRID
-        ========================= */
-        public async Task<PagingSearchOrderDto<ArrivalListDto>> GetPagedList(
-            string? search,
-            int statusFilter,
-            int page,
-            int pageSize,
-            CancellationToken token)
-        {
-            var query = _db.TblArrivals.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(x => x.ReportNumber.Contains(search));
-
-
-            if (statusFilter == 1) // Draft
-                query = query.Where(x => x.IsDrafted == true && x.IsCancelled != true);
-            else if (statusFilter == 2) // Confirmed
-                query = query.Where(x => x.IsConfirmed == true && x.IsCancelled != true);
-
-            var paging = new PagingModel
+        var list = await (
+            from a in query.OrderByDescending(x => x.Date).Skip(paging.Skip).Take(paging.PageSize)
+            join f in db.TblFiscalPeriods on a.FiscalPeriodId equals f.FiscalPeriodId into fj
+            from f in fj.DefaultIfEmpty()
+            select new ArrivalListDto
             {
-                Page = page,
-                PageSize = pageSize,
-                TotalItems = await query.CountAsync(token)
-            };
-
-            var list = await query
-                .OrderByDescending(x => x.Date)
-                .Skip(paging.Skip)
-                .Take(paging.PageSize)
-                .Select(x => new ArrivalListDto
-                {
-                    ReportNumber = x.ReportNumber,
-                    ArrivalId = x.ArrivalId,
-                    Date = x.Date,
-                    IsConfirmed = x.IsConfirmed,
-                    IsDrafted = x.IsDrafted,
-                    IsCancelled = x.IsCancelled,
-                    FiscalPeriodName = x.FiscalPeriodId != null
-                        ? _db.TblFiscalPeriods.Where(f => f.FiscalPeriodId == x.FiscalPeriodId).Select(f => f.FullName)
-                            .FirstOrDefault()
-                        : null
-                })
-                .ToListAsync(token);
-
-            return new PagingSearchOrderDto<ArrivalListDto>
-            {
-                Items = list,
-                Paging = paging,
-                SearchText = search,
-                SortField = "Date",
-                SortOrder = "desc"
-            };
-        }
-
-        /* =========================
-           GET BY ID
-        ========================= */
-        public async Task<ArrivalGetDto?> GetById(int id, CancellationToken token)
-        {
-            var arrival = await _db.TblArrivals
-                .Include(x => x.TblArrivalLines)
-                .FirstOrDefaultAsync(x => x.ArrivalId == id, token);
-
-            if (arrival == null) return null;
-
-            return new ArrivalGetDto
-            {
-                ArrivalId = arrival.ArrivalId,
-                Date = arrival.Date,
-                ReportNumber = arrival.ReportNumber,
-                FiscalPeriodId = arrival.FiscalPeriodId,
-                EntryDate = arrival.EntryDate,
-                IsConfirmed = arrival.IsConfirmed,
-                IsDrafted = arrival.IsDrafted,
-                IsCancelled = arrival.IsCancelled,
-                Note = arrival.Note,
-                Lines = arrival.TblArrivalLines
-                    .Where(l => l.ArrivalId == arrival.ArrivalId)
-                    .Select(l => new ArrivalLineDto
-                    {
-                        ArrivalLineId = l.ArrivalLineId,
-                        ArrivalId = l.ArrivalId,
-                        ItemId = l.ItemId,
-                        BatchNum = l.BatchNum,
-                        CommertialNameId = l.CommertialNameId,
-                        DosePerVialId = l.DosePerVialId,
-                        ExpiryDate = l.ExpiryDate,
-                        ProductionDate = l.ProductionDate,
-                        ItemDetailId = l.ItemDetailId,
-                        ManufacturerId = l.ManufacturerId,
-                        Note = l.Note,
-                        NumVials = l.NumVials,
-                        Quantity = l.Quantity,
-                        StoreId = l.StoreId,
-                        UseId = l.UseId,
-                        VvmStageId = l.VvmstageId,
-                        VvmTypeId = l.VvmtypeId
-                    }).ToList()
-            };
-        }
-
-        /* =========================
-           CREATE HEADER ONLY
-        ========================= */
-        public async Task<int> Create(ArrivalCreateDto dto, CancellationToken token)
-        {
-            var arrival = new TblArrival
-            {
-                Date = dto.Date,
-                ReportNumber = dto.ReportNumber,
-                FiscalPeriodId = dto.FiscalPeriodId,
-                EntryDate = DateTime.Now,
-                IsDrafted = true,
-                IsConfirmed = false,
-                IsCancelled = false,
-                Note = dto.Note,
-                ReceiverId = dto.UserRecipientId,
-                EnteredById = dto.EnterById
-            };
-
-            _db.TblArrivals.Add(arrival);
-            await _db.SaveChangesAsync(token);
-            return arrival.ArrivalId;
-        }
-
-
-        /* =========================
-           CONFIRM
-        ========================= */
-
-
-        public async Task Confirm(int arrivalId, ArrivalCreateDto dto, CancellationToken token)
-        {
-            var now = DateTime.Now;
-
-            var arrival = await _db.TblArrivals
-                .FirstOrDefaultAsync(x => x.ArrivalId == arrivalId, token);
-
-            if (arrival == null) return;
-
-            var lines = await _db.TblArrivalLines
-                .Where(x => x.ArrivalId == arrivalId)
-                .ToListAsync(token);
-
-            await using var tx = await _db.Database.BeginTransactionAsync(token);
-
-            // ----- update arrival -----
-            arrival.ReportNumber = dto.ReportNumber;
-            arrival.EntryDate = now;
-            arrival.IsCancelled = false;
-            arrival.Note = dto.Note;
-            arrival.ReceiverId = dto.UserRecipientId;
-            arrival.IsConfirmed = true;
-            arrival.IsDrafted = false;
-            arrival.ConfirmationTime = now;
-
-            // ----- 1) create ItemDetails first -----
-            var map = new Dictionary<TblArrivalLine, TblItemDetail>(lines.Count);
-
-            foreach (var line in lines)
-            {
-                var detail = new TblItemDetail
-                {
-                    EntryDate = now,
-                    FiscalPeriodId = arrival.FiscalPeriodId,
-                    ItemId = line.ItemId,
-                    DosePerVialId = line.DosePerVialId,
-                    ManufacturerId = line.ManufacturerId,
-                    CommercialNameId = line.CommertialNameId,
-                    VvmtypeId = line.VvmtypeId,
-                    BatchNumber = line.BatchNum,
-                    ExpiryDate = line.ExpiryDate,
-                    ProductionDate = line.ProductionDate,
-                    IsConfirmed = true,
-                };
-
-                map.Add(line, detail);
-                _db.TblItemDetails.Add(detail);
+                ReportNumber = a.ReportNumber,
+                ArrivalId = a.ArrivalId,
+                Date = a.Date,
+                IsConfirmed = a.IsConfirmed,
+                IsDrafted = a.IsDrafted,
+                IsCancelled = a.IsCancelled,
+                FiscalPeriodName = f != null ? f.FullName : null
             }
+        ).ToListAsync(token);
 
-            // Save so ItemDetailId is generated (no more 0)
-            await _db.SaveChangesAsync(token);
-
-            // ----- 2) now set ArrivalLine.ItemDetailId + create stores using ONLY IDs -----
-            var stores = new List<TblItemDetailStore>(lines.Count);
-
-            foreach (var (line, detail) in map)
-            {
-                // FK on line (now we have real detail.ItemDetailId)
-                line.ItemDetailId = detail.ItemDetailId;
-
-                stores.Add(new TblItemDetailStore
-                {
-                    ItemDetailId = detail.ItemDetailId, // FK only (no object relation)
-                    StoreId = line.StoreId,
-                    CurrentStock = line.Quantity,
-                    EntryDate = now,
-                    VvmstageId = line.VvmstageId
-                });
-            }
-
-            _db.TblItemDetailStores.AddRange(stores);
-
-            await _db.SaveChangesAsync(token);
-            await tx.CommitAsync(token);
-        }
-
-
-        /* =========================
-           DRAFT
-        ========================= */
-        public async Task SetDraft(int arrivalId, ArrivalCreateDto dto, CancellationToken token)
+        return new PagingSearchOrderDto<ArrivalListDto>
         {
-            var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
-            if (arrival == null) return;
+            Paging = paging,
+            Items = list,
+            SortField = "Date",
+            SortOrder = "desc"
+        };
+    }
 
-            arrival.ReportNumber = dto.ReportNumber;
-            arrival.EntryDate = DateTime.Now;
-            arrival.IsCancelled = false;
-            arrival.Note = dto.Note;
-            arrival.ReceiverId = dto.UserRecipientId;
-            arrival.IsDrafted = true;
-            arrival.IsConfirmed = false;
+    /* =========================
+       GET BY ID
+    ========================= */
+    public async Task<ArrivalGetDto?> GetById(int id, CancellationToken token)
+    {
+        var arrival = await db.TblArrivals
+            .Include(x => x.TblArrivalLines)
+            .FirstOrDefaultAsync(x => x.ArrivalId == id, token);
 
-            await _db.SaveChangesAsync(token);
-        }
+        if (arrival == null) return null;
 
-        /* =========================
-           DELETE WHOLE ARRIVAL
-        ========================= */
-        public async Task Cancel(int id, CancellationToken token)
+        return new ArrivalGetDto
         {
-            var arrival = await _db.TblArrivals.FindAsync(new object[] { id }, token);
-            if (arrival == null) return;
-
-            arrival.IsCancelled = true;
-            await _db.SaveChangesAsync(token);
-        }
-
-        /* =========================
-           DELETE ONE LINE
-        ========================= */
-        public async Task CancelLine(int arrivalLineId, CancellationToken token)
-        {
-            var line = await _db.TblArrivalLines.FindAsync(new object[] { arrivalLineId }, token);
-            if (line == null) return;
-
-            _db.TblArrivalLines.Remove(line);
-            await _db.SaveChangesAsync(token);
-        }
-
-        public async Task<List<ArrivalCopyDto>> GetForCopy(
-            string? reportNumber,
-            CancellationToken token)
-        {
-            var query = _db.TblArrivals
-                .Where(x => x.IsCancelled != true); // ⬅ only cancelled excluded
-
-            if (!string.IsNullOrWhiteSpace(reportNumber))
-            {
-                query = query.Where(x => x.ReportNumber.Contains(reportNumber));
-            }
-
-            return await query
-                .OrderByDescending(x => x.EntryDate)
-                .Select(x => new ArrivalCopyDto
-                {
-                    ArrivalId = x.ArrivalId,
-                    DisplayText =
-                        _db.TblFiscalPeriods
-                            .Where(f => f.FiscalPeriodId == x.FiscalPeriodId)
-                            .Select(f => f.FullName)
-                            .FirstOrDefault()
-                        + " - " + x.ReportNumber
-                })
-                .ToListAsync(token);
-        }
-
-
-
-        public async Task Delete(int id)
-        {
-            var entity = await _db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == id);
-            _db.TblArrivals.Remove(entity);
-            await _db.SaveChangesAsync();
-        }
-
-        /* =========================
-   ADD LINE (INCREMENTAL)
-========================= */
-        public async Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token)
-        {
-            var does = _db.TblDosePerVials.First(z => z.DosePerVialId == dto.DosePerVialId).NumDosePerVial;
-            if (dto.Quantity % does != 0)
-                throw new ValidationException("تعداد باید مضربی از دوز بر ویال باشد");
-            //var id = _db.TblArrivalLines.OrderByDescending(z => z.ArrivalLineId).First().ArrivalLineId + 1;
-            var line = new TblArrivalLine
-            {
-                //ArrivalLineId = id,
-                ArrivalId = arrivalId,
-                ItemId = dto.ItemId,
-                BatchNum = dto.BatchNum,
-                CommertialNameId = dto.CommertialNameId,
-                DosePerVialId = dto.DosePerVialId,
-                ExpiryDate = dto.ExpiryDate,
-                ProductionDate = dto.ProductionDate,
-                ItemDetailId = dto.ItemDetailId,
-                ManufacturerId = dto.ManufacturerId,
-                Note = dto.Note,
-                NumVials = dto.NumVials,
-                Quantity = dto.Quantity,
-                StoreId = dto.StoreId,
-                UseId = dto.UseId,
-                VvmstageId = dto.VvmStageId,
-                VvmtypeId = dto.VvmTypeId,
-                EntryDate = DateTime.Now
-            };
-
-            _db.TblArrivalLines.Add(line);
-
-            // update header total volume
-            var arrival = await _db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
-
-            await _db.SaveChangesAsync(token);
-        }
-
-        public async Task<List<ArrivalLineDto>> GetArrivalLines(int userRecipientId)
-        {
-            var lines = await _db.TblArrivalLines
-                .Where(l => _db.TblArrivals
-                    .Any(a => a.ReceiverId == userRecipientId && a.ArrivalId == l.ArrivalId))
-                .Select(l => new
-                {
-                    Line = l,
-                    Item = _db.TblItems.FirstOrDefault(i => i.ItemId == l.ItemId),
-                    Manufacturer = _db.TblManufacturers.FirstOrDefault(m => m.ManufacturerId == l.ManufacturerId),
-                    Store = _db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
-                    DoseVial = _db.TblDosePerVials.FirstOrDefault(d => d.DosePerVialId == l.DosePerVialId)
-                })
-                .AsNoTracking()
-                .ToListAsync();
-
-            var result = lines.Select(x =>
-            {
-                var l = x.Line;
-
-                return new ArrivalLineDto
+            ArrivalId = arrival.ArrivalId,
+            Date = arrival.Date,
+            ReportNumber = arrival.ReportNumber,
+            FiscalPeriodId = arrival.FiscalPeriodId,
+            EntryDate = arrival.EntryDate,
+            IsConfirmed = arrival.IsConfirmed,
+            IsDrafted = arrival.IsDrafted,
+            IsCancelled = arrival.IsCancelled,
+            Note = arrival.Note,
+            Lines = arrival.TblArrivalLines
+                .Where(l => l.ArrivalId == arrival.ArrivalId)
+                .Select(l => new ArrivalLineDto
                 {
                     ArrivalLineId = l.ArrivalLineId,
                     ArrivalId = l.ArrivalId,
@@ -385,97 +105,364 @@ namespace VSSM.Application.Services.BaseEntities
                     StoreId = l.StoreId,
                     UseId = l.UseId,
                     VvmStageId = l.VvmstageId,
-                    VvmTypeId = l.VvmtypeId,
-                    DropDownText = string.Format(
-                        "کالا: {0} | سازنده: {1} | تاریخ انقضا: {2} | سری ساخت: {3} | انبار: {4} | دوز بر ویال: {5} | مقدار موجود: {6}",
-                        x.Item != null ? x.Item.FullName : "",
-                        x.Manufacturer != null ? x.Manufacturer.FullName : "",
-                        l.ExpiryDate != null ? l.ExpiryDate.Value.ToShamsi() : "",
-                        l.BatchNum,
-                        x.Store != null ? x.Store.Name : "",
-                        x.DoseVial != null ? x.DoseVial.NumDosePerVial : "",
-                        l.Quantity
-                    )
-                };
-            }).ToList();
+                    VvmTypeId = l.VvmtypeId
+                }).ToList()
+        };
+    }
 
-            return result;
-        }
-
-        public async Task<bool> DoesHaveArrivalLineByArrivalId(int id)
+    /* =========================
+       CREATE HEADER ONLY
+    ========================= */
+    public async Task<int> Create(ArrivalCreateDto dto, CancellationToken token)
+    {
+        var arrival = new TblArrival
         {
+            Date = dto.Date,
+            ReportNumber = dto.ReportNumber,
+            FiscalPeriodId = dto.FiscalPeriodId,
+            EntryDate = DateTime.Now,
+            IsDrafted = true,
+            IsConfirmed = false,
+            IsCancelled = false,
+            Note = dto.Note,
+            ReceiverId = dto.UserRecipientId,
+            EnteredById = dto.EnterById
+        };
 
-            if (await _db.TblArrivalLines.AnyAsync(c => c.ArrivalId == id))
-                return true;
-            return false;
+        db.TblArrivals.Add(arrival);
+        await db.SaveChangesAsync(token);
+        return arrival.ArrivalId;
+    }
 
 
+    /* =========================
+       CONFIRM
+    ========================= */
 
-        }
-        public async Task<ArrivalLineDto> GetArrivalLineById(int id)
+
+    public async Task Confirm(int arrivalId, ArrivalCreateDto dto, CancellationToken token)
+    {
+        var now = DateTime.Now;
+
+        var arrival = await db.TblArrivals
+            .FirstOrDefaultAsync(x => x.ArrivalId == arrivalId, token);
+
+        if (arrival == null) return;
+
+        var lines = await db.TblArrivalLines
+            .Where(x => x.ArrivalId == arrivalId)
+            .ToListAsync(token);
+
+        await using var tx = await db.Database.BeginTransactionAsync(token);
+
+        // ----- update arrival -----
+        arrival.ReportNumber = dto.ReportNumber;
+        arrival.EntryDate = now;
+        arrival.IsCancelled = false;
+        arrival.Note = dto.Note;
+        arrival.ReceiverId = dto.UserRecipientId;
+        arrival.IsConfirmed = true;
+        arrival.IsDrafted = false;
+        arrival.ConfirmationTime = now;
+
+        // ----- 1) create ItemDetails first -----
+        var map = new Dictionary<TblArrivalLine, TblItemDetail>(lines.Count);
+
+        foreach (var line in lines)
         {
-            var line = await _db.TblArrivalLines.FirstOrDefaultAsync(c => c.ArrivalLineId == id);
-
-            var dto = new ArrivalLineDto
+            var detail = new TblItemDetail
             {
-                ArrivalLineId = line.ArrivalLineId,
-                ArrivalId = line.ArrivalId,
+                EntryDate = now,
+                FiscalPeriodId = arrival.FiscalPeriodId,
                 ItemId = line.ItemId,
-                BatchNum = line.BatchNum,
-                CommertialNameId = line.CommertialNameId,
                 DosePerVialId = line.DosePerVialId,
+                ManufacturerId = line.ManufacturerId,
+                CommercialNameId = line.CommertialNameId,
+                VvmtypeId = line.VvmtypeId,
+                BatchNumber = line.BatchNum,
                 ExpiryDate = line.ExpiryDate,
                 ProductionDate = line.ProductionDate,
-                ItemDetailId = line.ItemDetailId,
-                ManufacturerId = line.ManufacturerId,
-                Note = line.Note,
-                NumVials = line.NumVials,
-                Quantity = line.Quantity,
-                StoreId = line.StoreId,
-                UseId = line.UseId,
-                VvmStageId = line.VvmstageId,
-                VvmTypeId = line.VvmtypeId
+                IsConfirmed = true,
             };
 
-            return dto;
+            map.Add(line, detail);
+            db.TblItemDetails.Add(detail);
         }
 
-        public async Task<ArrivalLineDto> GetArrivalLineByStoreIdAndItemDetailId(long storeId, long itemDetailId)
-        {
-            var line = await _db.TblArrivalLines.FirstOrDefaultAsync(c => c.StoreId == storeId && c.ItemDetailId == itemDetailId);
+        // Save so ItemDetailId is generated (no more 0)
+        await db.SaveChangesAsync(token);
 
-            var dto = new ArrivalLineDto
+        // ----- 2) now set ArrivalLine.ItemDetailId + create stores using ONLY IDs -----
+        var stores = new List<TblItemDetailStore>(lines.Count);
+
+        foreach (var (line, detail) in map)
+        {
+            // FK on line (now we have real detail.ItemDetailId)
+            line.ItemDetailId = detail.ItemDetailId;
+
+            stores.Add(new TblItemDetailStore
             {
-                ArrivalLineId = line.ArrivalLineId,
-                ArrivalId = line.ArrivalId,
-                ItemId = line.ItemId,
-                BatchNum = line.BatchNum,
-                CommertialNameId = line.CommertialNameId,
-                DosePerVialId = line.DosePerVialId,
-                ExpiryDate = line.ExpiryDate,
-                ProductionDate = line.ProductionDate,
-                ItemDetailId = line.ItemDetailId,
-                ManufacturerId = line.ManufacturerId,
-                Note = line.Note,
-                NumVials = line.NumVials,
-                Quantity = line.Quantity,
+                ItemDetailId = detail.ItemDetailId, // FK only (no object relation)
                 StoreId = line.StoreId,
-                UseId = line.UseId,
-                VvmStageId = line.VvmstageId,
-                VvmTypeId = line.VvmtypeId
+                CurrentStock = line.Quantity,
+                EntryDate = now,
+                VvmstageId = line.VvmstageId
+            });
+        }
+
+        db.TblItemDetailStores.AddRange(stores);
+
+        await db.SaveChangesAsync(token);
+        await tx.CommitAsync(token);
+    }
+
+
+    /* =========================
+       DRAFT
+    ========================= */
+    public async Task SetDraft(int arrivalId, ArrivalCreateDto dto, CancellationToken token)
+    {
+        var arrival = await db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
+        if (arrival == null) return;
+
+        arrival.ReportNumber = dto.ReportNumber;
+        arrival.EntryDate = DateTime.Now;
+        arrival.IsCancelled = false;
+        arrival.Note = dto.Note;
+        arrival.ReceiverId = dto.UserRecipientId;
+        arrival.IsDrafted = true;
+        arrival.IsConfirmed = false;
+
+        await db.SaveChangesAsync(token);
+    }
+
+    /* =========================
+       DELETE WHOLE ARRIVAL
+    ========================= */
+    public async Task Cancel(int id, CancellationToken token)
+    {
+        var arrival = await db.TblArrivals.FindAsync(new object[] { id }, token);
+        if (arrival == null) return;
+
+        arrival.IsCancelled = true;
+        await db.SaveChangesAsync(token);
+    }
+
+    /* =========================
+       DELETE ONE LINE
+    ========================= */
+    public async Task CancelLine(int arrivalLineId, CancellationToken token)
+    {
+        var line = await db.TblArrivalLines.FindAsync(new object[] { arrivalLineId }, token);
+        if (line == null) return;
+
+        db.TblArrivalLines.Remove(line);
+        await db.SaveChangesAsync(token);
+    }
+
+    public async Task<List<ArrivalCopyDto>> GetForCopy(
+        string? reportNumber,
+        CancellationToken token)
+    {
+        var query = db.TblArrivals
+            .Where(x => x.IsCancelled != true); // ⬅ only cancelled excluded
+
+        if (!string.IsNullOrWhiteSpace(reportNumber))
+        {
+            query = query.Where(x => x.ReportNumber.Contains(reportNumber));
+        }
+
+        return await query
+            .OrderByDescending(x => x.EntryDate)
+            .Select(x => new ArrivalCopyDto
+            {
+                ArrivalId = x.ArrivalId,
+                DisplayText =
+                    db.TblFiscalPeriods
+                        .Where(f => f.FiscalPeriodId == x.FiscalPeriodId)
+                        .Select(f => f.FullName)
+                        .FirstOrDefault()
+                    + " - " + x.ReportNumber
+            })
+            .ToListAsync(token);
+    }
+
+
+
+    public async Task Delete(int id)
+    {
+        var entity = await db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == id);
+        db.TblArrivals.Remove(entity);
+        await db.SaveChangesAsync();
+    }
+
+    /* =========================
+ADD LINE (INCREMENTAL)
+========================= */
+    public async Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token)
+    {
+        var does = db.TblDosePerVials.First(z => z.DosePerVialId == dto.DosePerVialId).NumDosePerVial;
+        if (dto.Quantity % does != 0)
+            throw new ValidationException("تعداد باید مضربی از دوز بر ویال باشد");
+        //var id = _db.TblArrivalLines.OrderByDescending(z => z.ArrivalLineId).First().ArrivalLineId + 1;
+        var line = new TblArrivalLine
+        {
+            //ArrivalLineId = id,
+            ArrivalId = arrivalId,
+            ItemId = dto.ItemId,
+            BatchNum = dto.BatchNum,
+            CommertialNameId = dto.CommertialNameId,
+            DosePerVialId = dto.DosePerVialId,
+            ExpiryDate = dto.ExpiryDate,
+            ProductionDate = dto.ProductionDate,
+            ItemDetailId = dto.ItemDetailId,
+            ManufacturerId = dto.ManufacturerId,
+            Note = dto.Note,
+            NumVials = dto.NumVials,
+            Quantity = dto.Quantity,
+            StoreId = dto.StoreId,
+            UseId = dto.UseId,
+            VvmstageId = dto.VvmStageId,
+            VvmtypeId = dto.VvmTypeId,
+            EntryDate = DateTime.Now
+        };
+
+        db.TblArrivalLines.Add(line);
+
+        // update header total volume
+        var arrival = await db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
+
+        await db.SaveChangesAsync(token);
+    }
+
+    public async Task<List<ArrivalLineDto>> GetArrivalLines(int userRecipientId)
+    {
+        var lines = await db.TblArrivalLines
+            .Where(l => db.TblArrivals
+                .Any(a => a.ReceiverId == userRecipientId && a.ArrivalId == l.ArrivalId))
+            .Select(l => new
+            {
+                Line = l,
+                Item = db.TblItems.FirstOrDefault(i => i.ItemId == l.ItemId),
+                Manufacturer = db.TblManufacturers.FirstOrDefault(m => m.ManufacturerId == l.ManufacturerId),
+                Store = db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
+                DoseVial = db.TblDosePerVials.FirstOrDefault(d => d.DosePerVialId == l.DosePerVialId)
+            })
+            .AsNoTracking()
+            .ToListAsync();
+
+        var result = lines.Select(x =>
+        {
+            var l = x.Line;
+
+            return new ArrivalLineDto
+            {
+                ArrivalLineId = l.ArrivalLineId,
+                ArrivalId = l.ArrivalId,
+                ItemId = l.ItemId,
+                BatchNum = l.BatchNum,
+                CommertialNameId = l.CommertialNameId,
+                DosePerVialId = l.DosePerVialId,
+                ExpiryDate = l.ExpiryDate,
+                ProductionDate = l.ProductionDate,
+                ItemDetailId = l.ItemDetailId,
+                ManufacturerId = l.ManufacturerId,
+                Note = l.Note,
+                NumVials = l.NumVials,
+                Quantity = l.Quantity,
+                StoreId = l.StoreId,
+                UseId = l.UseId,
+                VvmStageId = l.VvmstageId,
+                VvmTypeId = l.VvmtypeId,
+                DropDownText = string.Format(
+                    "کالا: {0} | سازنده: {1} | تاریخ انقضا: {2} | سری ساخت: {3} | انبار: {4} | دوز بر ویال: {5} | مقدار موجود: {6}",
+                    x.Item != null ? x.Item.FullName : "",
+                    x.Manufacturer != null ? x.Manufacturer.FullName : "",
+                    l.ExpiryDate != null ? l.ExpiryDate.Value.ToShamsi() : "",
+                    l.BatchNum,
+                    x.Store != null ? x.Store.Name : "",
+                    x.DoseVial != null ? x.DoseVial.NumDosePerVial : "",
+                    l.Quantity
+                )
             };
+        }).ToList();
 
-            return dto;
-        }
+        return result;
+    }
 
-        public Task AddToTotal(int? id, float total)
+    public async Task<bool> DoesHaveArrivalLineByArrivalId(int id)
+    {
+
+        if (await db.TblArrivalLines.AnyAsync(c => c.ArrivalId == id))
+            return true;
+        return false;
+
+
+
+    }
+    public async Task<ArrivalLineDto> GetArrivalLineById(int id)
+    {
+        var line = await db.TblArrivalLines.FirstOrDefaultAsync(c => c.ArrivalLineId == id);
+
+        var dto = new ArrivalLineDto
         {
-            throw new NotImplementedException();
-        }
+            ArrivalLineId = line.ArrivalLineId,
+            ArrivalId = line.ArrivalId,
+            ItemId = line.ItemId,
+            BatchNum = line.BatchNum,
+            CommertialNameId = line.CommertialNameId,
+            DosePerVialId = line.DosePerVialId,
+            ExpiryDate = line.ExpiryDate,
+            ProductionDate = line.ProductionDate,
+            ItemDetailId = line.ItemDetailId,
+            ManufacturerId = line.ManufacturerId,
+            Note = line.Note,
+            NumVials = line.NumVials,
+            Quantity = line.Quantity,
+            StoreId = line.StoreId,
+            UseId = line.UseId,
+            VvmStageId = line.VvmstageId,
+            VvmTypeId = line.VvmtypeId
+        };
 
-        public Task SubtractionToTotal(int lineId, int arrivalId)
+        return dto;
+    }
+
+    public async Task<ArrivalLineDto> GetArrivalLineByStoreIdAndItemDetailId(long storeId, long itemDetailId)
+    {
+        var line = await db.TblArrivalLines.FirstOrDefaultAsync(c => c.StoreId == storeId && c.ItemDetailId == itemDetailId);
+
+        var dto = new ArrivalLineDto
         {
-            throw new NotImplementedException();
-        }
+            ArrivalLineId = line.ArrivalLineId,
+            ArrivalId = line.ArrivalId,
+            ItemId = line.ItemId,
+            BatchNum = line.BatchNum,
+            CommertialNameId = line.CommertialNameId,
+            DosePerVialId = line.DosePerVialId,
+            ExpiryDate = line.ExpiryDate,
+            ProductionDate = line.ProductionDate,
+            ItemDetailId = line.ItemDetailId,
+            ManufacturerId = line.ManufacturerId,
+            Note = line.Note,
+            NumVials = line.NumVials,
+            Quantity = line.Quantity,
+            StoreId = line.StoreId,
+            UseId = line.UseId,
+            VvmStageId = line.VvmstageId,
+            VvmTypeId = line.VvmtypeId
+        };
+
+        return dto;
+    }
+
+    public Task AddToTotal(int? id, float total)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SubtractionToTotal(int lineId, int arrivalId)
+    {
+        throw new NotImplementedException();
     }
 }

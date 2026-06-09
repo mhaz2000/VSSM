@@ -98,5 +98,22 @@ namespace VSSM.Application.Services.BaseEntities
             await dbContext.SaveChangesAsync();
 
         }
+
+        public async Task<List<BaseInfoDto>> GetByParentIdAsync(int parentId, CancellationToken cancellationToken = default)
+        {
+            return await dbContext.TblBaseInfo
+                .Where(x => x.ParentId == parentId)
+                .OrderBy(x => x.Order)
+                .Select(x => new BaseInfoDto
+                {
+                    Id = x.BaseInfoId,
+                    ParentId = x.ParentId,
+                    Title = x.Title,
+                    Code = x.Code,
+                    Order = x.Order,
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
     }
 }

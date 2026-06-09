@@ -169,28 +169,54 @@
 
                 <div class="section-divider"></div>
 
-                @* تاریخ تولید و انقضا *@
                 <div class="date-section">
-                    <div>
-                        <div class="date-group-label">تاریخ تولید <span class="opt">(خودکار)</span></div>
-                        <div class="date-inner">
+
+                    @* تاریخ تولید *@
+                    <div class="date-block">
+                        <div class="date-block-header">
+                            <div class="date-group-label">تاریخ تولید <span class="opt">(خودکار)</span></div>
+                            <button type="button" class="btn-date-toggle" data-target="prod"
+                                    style="display:none;" title="نمایش میلادی">
+                                <i class="fa fa-exchange"></i>
+                            </button>
+                        </div>
+                        <div class="date-inner" id="prod-shamsi-wrap">
                             <input type="text" id="ProdDay" class="f-control" placeholder="روز" disabled style="text-align:center;" />
                             <input type="text" id="ProdMonth" class="f-control" placeholder="ماه" disabled style="text-align:center;" />
                             <input type="text" id="ProdYear" class="f-control" placeholder="سال" disabled style="text-align:center;" />
                         </div>
+                        <div class="date-inner" id="prod-miladi-wrap" style="display:none;">
+                            <input type="text" id="ProdDayM" class="f-control" placeholder="Day" disabled style="text-align:center;" />
+                            <input type="text" id="ProdMonthM" class="f-control" placeholder="Month" disabled style="text-align:center;" />
+                            <input type="text" id="ProdYearM" class="f-control" placeholder="Year" disabled style="text-align:center;" />
+                        </div>
                         <input type="hidden" id="ProductionDate" value="@Model?.NewLine?.ProductionDateShamsi" />
                         <input type="hidden" asp-for="NewLine.ProductionDate" />
                     </div>
-                    <div>
-                        <div class="date-group-label">تاریخ انقضا <span class="opt">(خودکار)</span></div>
-                        <div class="date-inner">
+
+                    @* تاریخ انقضا *@
+                    <div class="date-block">
+                        <div class="date-block-header">
+                            <div class="date-group-label">تاریخ انقضا <span class="opt">(خودکار)</span></div>
+                            <button type="button" class="btn-date-toggle" data-target="exp"
+                                    style="display:none;" title="نمایش میلادی">
+                                <i class="fa fa-exchange"></i>
+                            </button>
+                        </div>
+                        <div class="date-inner" id="exp-shamsi-wrap">
                             <input type="text" id="ExpDay" class="f-control" placeholder="روز" disabled style="text-align:center;" />
                             <input type="text" id="ExpMonth" class="f-control" placeholder="ماه" disabled style="text-align:center;" />
                             <input type="text" id="ExpYear" class="f-control" placeholder="سال" disabled style="text-align:center;" />
                         </div>
+                        <div class="date-inner" id="exp-miladi-wrap" style="display:none;">
+                            <input type="text" id="ExpDayM" class="f-control" placeholder="Day" disabled style="text-align:center;" />
+                            <input type="text" id="ExpMonthM" class="f-control" placeholder="Month" disabled style="text-align:center;" />
+                            <input type="text" id="ExpYearM" class="f-control" placeholder="Year" disabled style="text-align:center;" />
+                        </div>
                         <input type="hidden" id="ExpiryDate" value="@Model?.NewLine?.ExpiryDateShamsi" />
                         <input type="hidden" asp-for="NewLine.ExpiryDate" />
                     </div>
+
                 </div>
 
                 <div class="f-group" style="margin-bottom:16px;">
@@ -224,7 +250,7 @@
             <table class="lines-table">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        <th>ردیف</th>
                         <th>کالا</th>
                         <th>نام تجاری</th>
                         <th>سری ساخت</th>
@@ -249,14 +275,6 @@
                                 <td>@line.StoreName</td>
                                 <td>@line.ExpiryDate?.ToShamsi()</td>
                                 <td style="white-space:nowrap;">
-                                    <form asp-action="Create" method="post" style="display:inline;">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="ArrivalId" value="@Model?.ArrivalId" />
-                                        <input type="hidden" name="command" value="editLine_@line.ArrivalLineId" />
-                                        <button type="submit" class="btn-action btn-action-edit" title="ویرایش">
-                                            <i class="fa fa-edit"></i>
-                                        </button>
-                                    </form>
                                     <form asp-action="Create" method="post" style="display:inline;">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="ArrivalId" value="@Model?.ArrivalId" />
@@ -322,5 +340,5 @@
     </script>
 
     @* ── لاجیک اختصاصی فرم ── *@
-    <script src="~/js/arrival-form.js"></script>
+    <script src="~/js/components/arrivals/arrival-form.js"></script>
 }

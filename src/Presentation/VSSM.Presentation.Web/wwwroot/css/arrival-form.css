@@ -50,3 +50,25 @@
         grid-template-columns: 1fr;
     }
 }
+
+.date-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.btn-date-toggle {
+    background: none;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: #1d6fb8;
+    cursor: pointer;
+    line-height: 1.6;
+}
+
+    .btn-date-toggle:hover {
+        background: #eff6ff;
+    }

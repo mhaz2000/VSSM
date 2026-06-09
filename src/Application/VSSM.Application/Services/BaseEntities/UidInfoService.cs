@@ -23,16 +23,7 @@ public sealed class UidInfoService : IUidInfoService
 
         batchNum = batchNum.Trim();
 
-        // 1) آیا فایل/سفارش تایید شده برای این Batch وجود دارد؟
-        var hasConfirmedOrder = await _db.TblOrderInfo
-            .AsNoTracking()
-            .AnyAsync(o => o.BatchNumber == batchNum, token);
-
-        if (!hasConfirmedOrder)
-            throw new InvalidOperationException("فایل مربوط به سری ساخت مورد نظر آپلود نشده است");
-
-        // 2) UID آزاد (ورود نخورده) داریم؟
-        var list = await _db.TblUidInfo
+           var list = await _db.TblUidInfo
             .Include(t => t.OrderInfo)
             .AsNoTracking()
             .Where(u =>
@@ -49,9 +40,6 @@ public sealed class UidInfoService : IUidInfoService
                 DoseCount = u.DoseCount
             })
             .ToListAsync(token);
-
-        if (list.Count == 0)
-            throw new InvalidOperationException("کلیه ویالهای مربوط به سری ساخت وارد شده ورود خورده‌اند");
 
         return list;
     }

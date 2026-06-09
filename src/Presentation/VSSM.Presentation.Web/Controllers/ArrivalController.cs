@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -19,6 +20,7 @@ public class ArrivalController(
     IVvmstageService vvmstageService,
     ICommercialNameService commercialNameService,
     IItemDetailsService itemDetailService,
+    IBaseInfoService baseInfoService,      
     IUseService useService,
     IItemClassService itemClassService,
     IOrderInfoService orderInfoService,
@@ -326,6 +328,24 @@ public class ArrivalController(
         var lineDto = MapNewLineToDto(model);
         await arrivalService.AddLine(model.ArrivalId.Value, lineDto, token);
 
+        var itemInfo = await itemService.GetById(model.NewLine.ItemId.Value, token);
+        if (itemInfo?.RequiresDiluent == true && itemInfo.DiluentId.HasValue)
+        {
+            var diluentLineDto = new ArrivalLineDto
+            {
+                ArrivalId = model.ArrivalId.Value,
+                BatchNum = model.NewLine.BatchNum,
+                StoreId = model.NewLine.StoreId,
+                ItemId = itemInfo.DiluentId.Value,
+                DosePerVialId = model.NewLine.DosePerVialId,
+                Quantity = model.NewLine.Quantity,
+                ExpiryDate = model.NewLine.ExpiryDate,
+                ProductionDate = model.NewLine.ProductionDate,
+                Note = "حلال خودکار",
+            };
+            await arrivalService.AddLine(model.ArrivalId.Value, diluentLineDto, token);
+        }
+            
         TempData["ToastMessage"] = "کالا اضافه شد";
         TempData["ToastType"] = "success";
 
@@ -348,16 +368,34 @@ public class ArrivalController(
         if (!availableUids.Any())
             return Json(new { success = false, message = "کلیه ویال‌های مربوط به سری ساخت وارد شده ورود خورده‌اند" });
 
+        var productionDateShamsi = orderInfo.ManufactureDate?.ToShamsi();
+        var productionDateMiladi = orderInfo.ManufactureDate.HasValue
+            ? orderInfo.ManufactureDate.Value.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)
+            : null;
+
+        var expiryDateShamsi = orderInfo.ExpirationDate?.ToShamsi();
+        var expiryDateMiladi = orderInfo.ExpirationDate.HasValue
+            ? orderInfo.ExpirationDate.Value.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)
+            : null;
+
         return Json(new
         {
             success = true,
             quantity = availableUids.Count,
-            expiryDateShamsi = orderInfo.ExpirationDate?.ToShamsi(),
-            productionDateShamsi = orderInfo.ManufactureDate?.ToShamsi(),
+
+            productionDateShamsi,
+            productionDateMiladi,
+            hasProdShamsi = !string.IsNullOrEmpty(productionDateShamsi),
+            hasProdMiladi = !string.IsNullOrEmpty(productionDateMiladi),
+
+            expiryDateShamsi,
+            expiryDateMiladi,
+            hasExpShamsi = !string.IsNullOrEmpty(expiryDateShamsi),
+            hasExpMiladi = !string.IsNullOrEmpty(expiryDateMiladi),
+            hasExpiry = orderInfo.ExpirationDate.HasValue,
 
             itemId = orderInfo.FkItemId,
             itemName = orderInfo.ItemName,
-
             dosePerVialId = orderInfo.FkDosePerVialId,
             doseName = orderInfo.DoseName,
             itemClassName = "واکسن"
@@ -491,8 +529,8 @@ public class ArrivalController(
     [HttpGet]
     public async Task<IActionResult> GetVvmStages(int vvmTypeId, CancellationToken token)
     {
-        var stages = await vvmstageService.GetActives(token);
-        return Json(stages.Select(x => new { id = x.VvmstageId, text = x.FullName }));
+        var stages = await baseInfoService.GetByParentIdAsync(30, token);
+        return Json(stages.Select(x => new { id = x.Id, text = x.Title }));
     }
 
     private ArrivalCreateDto BuildCreateDto(ArrivalViewModel model) => new()
@@ -570,30 +608,68 @@ public class ArrivalController(
             .Select(x => new SelectListItem { Value = x.StoreId.ToString(), Text = x.FullName })
             .ToList();
 
-        ViewBag.ManufacturerList = (await manufacturerService.GetActives(token))
-            .Select(x => new SelectListItem { Value = x.ManufacturerId.ToString(), Text = x.FullName })
-            .ToList();
-
         ViewBag.DosePerVialList = new List<SelectListItem>();
 
-        ViewBag.VvmTypeList = (await vvmtypeService.GetActives(token))
-            .Select(x => new SelectListItem { Value = x.VvmtypeId.ToString(), Text = x.FullName })
+        ViewBag.VvmTypeList = (await baseInfoService.GetByParentIdAsync(22, token))
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Title })
             .ToList();
 
-        ViewBag.VvmstageList = (await vvmstageService.GetActives(token))
-            .Select(x => new SelectListItem { Value = x.VvmstageId.ToString(), Text = x.FullName })
+        ViewBag.VvmstageList = (await baseInfoService.GetByParentIdAsync(30, token))
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Title })
             .ToList();
 
-        ViewBag.CommercialNameList = (await commercialNameService.GetActives(token))
-            .Select(x => new SelectListItem { Value = x.CommercialNameId.ToString(), Text = x.FullName })
+        ViewBag.ManufacturerList = (await baseInfoService.GetByParentIdAsync(48, token))
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Title })
             .ToList();
 
-        ViewBag.UseList = (await useService.GetActives(token))
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName })
+        ViewBag.CommercialNameList = (await baseInfoService.GetByParentIdAsync(35, token))
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Title })
+            .ToList();
+
+        ViewBag.UseList = (await baseInfoService.GetByParentIdAsync(7, token))
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Title })
             .ToList();
 
         ViewBag.itemClassList = (await itemClassService.GetActives(token))
             .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
             .ToList();
     }
+
+    //private async Task LoadDropDowns(CancellationToken token)
+    //{
+    //    ViewBag.ItemList = (await itemService.GetActives(token))
+    //        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName })
+    //        .ToList();
+
+    //    ViewBag.StoreList = (await storeService.GetAll(token))
+    //        .Where(z => z.RecipientId == CurrentUserRecipientId)
+    //        .Select(x => new SelectListItem { Value = x.StoreId.ToString(), Text = x.FullName })
+    //        .ToList();
+
+    //    ViewBag.ManufacturerList = (await manufacturerService.GetActives(token))
+    //        .Select(x => new SelectListItem { Value = x.ManufacturerId.ToString(), Text = x.FullName })
+    //        .ToList();
+
+    //    ViewBag.DosePerVialList = new List<SelectListItem>();
+
+    //    ViewBag.VvmTypeList = (await vvmtypeService.GetActives(token))
+    //        .Select(x => new SelectListItem { Value = x.VvmtypeId.ToString(), Text = x.FullName })
+    //        .ToList();
+
+    //    ViewBag.VvmstageList = (await vvmstageService.GetActives(token))
+    //        .Select(x => new SelectListItem { Value = x.VvmstageId.ToString(), Text = x.FullName })
+    //        .ToList();
+
+    //    ViewBag.CommercialNameList = (await commercialNameService.GetActives(token))
+    //        .Select(x => new SelectListItem { Value = x.CommercialNameId.ToString(), Text = x.FullName })
+    //        .ToList();
+
+    //    ViewBag.UseList = (await useService.GetActives(token))
+    //        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName })
+    //        .ToList();
+
+    //    ViewBag.itemClassList = (await itemClassService.GetActives(token))
+    //        .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+    //        .ToList();
+    //}
 }

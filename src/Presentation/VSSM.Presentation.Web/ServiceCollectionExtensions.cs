@@ -32,6 +32,7 @@ using VSSM.Application.Services.RequestEntities;
 using VSSM.Infrastructure.Data.Dapper;
 using VSSM.Infrastructure.Data.Models;
 using VSSM.Infrastructure.Services.BaseEntities;
+using VSSM.Presentation.Web.Authentication;
 using VSSM.Presentation.Web.Authorization;
 using VSSM.Presentation.Web.Controllers;
 
@@ -138,7 +139,8 @@ namespace VSSM.Presentation.Web
                 {
                     options.LoginPath = "/Account/Login";
                     options.AccessDeniedPath = "/Account/AccessDenied";
-                });
+                })
+                .AddScheme<BasicAuthenticationOptions, BasicAuthenticationHandler>("Basic", null);
             services.AddScoped<IMenuPermissionService, MenuPermissionService>();
             services.AddAuthorization(options =>
             {

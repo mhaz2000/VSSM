@@ -19,6 +19,8 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
+    public virtual DbSet<TblConsumerPerson> TblConsumerPeople { get; set; }
+
     public virtual DbSet<TblOrderInfo> TblOrderInfo { get; set; }
 
     public virtual DbSet<TblUidInfo> TblUidInfo { get; set; }
@@ -2242,6 +2244,44 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
 
             entity.Property(e => e.FkReceiveDispatchId)
                   .HasColumnName("FK_RECEIVER_ID");
+        });
+
+        modelBuilder.Entity<TblConsumerPerson>(entity =>
+        {
+            entity.HasKey(e => e.PkConsumerPersonId);
+
+            entity.ToTable("tblConsumerPerson");
+
+            entity.Property(e => e.PkConsumerPersonId)
+                .HasColumnName("PK_CONSUMER_PERSON_ID");
+
+            entity.Property(e => e.ConsumerPerson)
+                .HasColumnName("CONSUMER_PERSON");
+
+            entity.Property(e => e.Vaccinator)
+                .HasColumnName("VACCINATOR");
+
+            entity.Property(e => e.VaccinationRank)
+                .HasColumnName("VACCINATION_RANK");
+
+            entity.Property(e => e.EntryDate)
+                .HasColumnName("ENTRYDATE");
+
+            entity.Property(e => e.FkUid)
+                .HasColumnName("FK_UID");
+
+            entity.HasOne(d => d.UidInfo)
+                .WithMany()
+                .HasForeignKey(d => d.FkUid)
+                .HasConstraintName("FK_tblConsumerPerson_tblUidInfo");
+
+            entity.Property(e => e.FkConsumerRecipientId)
+                .HasColumnName("FK_CONSUMER_RECIPIENT_ID");
+
+            entity.HasOne(d => d.Recipient)
+                .WithMany()
+                .HasForeignKey(d => d.FkConsumerRecipientId)
+                .HasConstraintName("FK_tblConsumerPerson_tblRecipients");
         });
 
         modelBuilder.Entity<TblReceiveDispatches>(entity =>

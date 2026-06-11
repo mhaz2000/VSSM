@@ -1,0 +1,247 @@
+/* ═══════════════════════════════════════════
+   destroy-uid.css  —  صفحه امحا UID
+   ═══════════════════════════════════════════ */
+
+.du-page-wrapper {
+    margin: 1.5rem;
+}
+
+/* ── Segmented Control ── */
+.du-seg-ctrl {
+    display: inline-flex;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+    margin-bottom: 20px;
+}
+
+.du-seg-btn {
+    padding: 7px 22px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .15s, color .15s, box-shadow .15s;
+}
+
+    .du-seg-btn i {
+        font-size: 14px;
+    }
+
+    .du-seg-btn.active {
+        background: #fff;
+        color: #111827;
+        box-shadow: 0 1px 3px rgba(0,0,0,.1), 0 0 0 1px #e5e7eb;
+    }
+
+/* ── Search Box ── */
+.du-search-wrap {
+    display: flex;
+    align-items: stretch;
+    height: 40px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.du-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #111827;
+    background: #fff;
+}
+
+    .du-search-input::placeholder {
+        color: #9ca3af;
+    }
+
+    .du-search-input:disabled,
+    .du-search-btn:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+.du-search-btn {
+    width: 42px;
+    border: none;
+    border-right: 1px solid #e5e7eb;
+    background: #f9fafb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background .15s, color .15s;
+}
+
+    .du-search-btn:hover:not(:disabled) {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+/* ── Progress Bar UID ── */
+.du-uid-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.du-uid-progress-bg {
+    flex: 1;
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.du-uid-progress-fill {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 2px;
+    transition: width .08s, background .15s;
+}
+
+.du-uid-counter {
+    font-size: 11px;
+    color: #9ca3af;
+    min-width: 36px;
+    text-align: left;
+}
+
+/* ── سطر خالی ── */
+.du-empty-cell {
+    padding: 44px 0 !important;
+    text-align: center !important;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.du-empty-icon {
+    font-size: 30px;
+    display: block;
+    margin-bottom: 8px;
+    color: #d1d5db;
+}
+
+/* ── سطر یافت نشد ── */
+.du-notfound-cell {
+    padding: 44px 0 !important;
+    text-align: center !important;
+    color: #ef4444;
+    font-size: 13px;
+}
+
+.du-notfound-icon {
+    font-size: 30px;
+    display: block;
+    margin-bottom: 8px;
+    color: #fca5a5;
+}
+
+/* ── select و input داخل جدول ── */
+#resultsTable select.f-control,
+#resultsTable input.f-control {
+    height: 32px;
+    font-size: 12px;
+    min-width: 150px;
+}
+
+/* ── req-tag داخل th ── */
+.lines-table thead th .req-tag {
+    font-size: 9px;
+    padding: 1px 4px;
+}
+
+/* ══════════════════════════════════════════════
+   دکمه ثبت امحا — آبی، چپ‌چین
+   ══════════════════════════════════════════════ */
+#submitBtn {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0 22px;
+    height: 38px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    transition: background .15s, box-shadow .15s, transform .1s;
+    box-shadow: 0 1px 3px rgba(37,99,235,.25);
+}
+
+    #submitBtn:hover:not(:disabled) {
+        background: #1d4ed8;
+        box-shadow: 0 4px 12px rgba(37,99,235,.35);
+        transform: translateY(-1px);
+    }
+
+    #submitBtn:active:not(:disabled) {
+        background: #1e40af;
+        transform: translateY(0);
+        box-shadow: 0 1px 3px rgba(37,99,235,.2);
+    }
+
+    #submitBtn:disabled {
+        opacity: .65;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+/* ── spinner داخل دکمه ── */
+.du-submit-spinner {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.du-spin {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: du-rotate .65s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes du-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* فوتر — دکمه به سمت چپ */
+.form-footer {
+    justify-content: flex-start !important;
+}
+
+/* ══════════════════════════════════════════════
+   حالت قفل فرم در حین لودینگ / ثبت
+   ══════════════════════════════════════════════ */
+.a-card-body.du-locked {
+    pointer-events: none;
+    user-select: none;
+    opacity: .6;
+    transition: opacity .2s;
+}
+
+    .a-card-body.du-locked .du-seg-btn {
+        cursor: not-allowed;
+    }

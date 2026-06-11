@@ -100,4 +100,6 @@ public partial class TblRecipient
     public virtual TblTransportMode TransportMode { get; set; }
 
     public virtual TblRoadType TypeOfRoad { get; set; }
+
+    public virtual ICollection<TblDestroyUid> DestroyUids { get; set; } = new List<TblDestroyUid>();
 }

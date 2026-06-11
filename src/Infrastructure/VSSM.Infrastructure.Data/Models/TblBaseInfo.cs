@@ -14,4 +14,6 @@ public partial class TblBaseInfo
 
     public virtual TblBaseInfo? Parent { get; set; }
     public virtual ICollection<TblBaseInfo> Children { get; set; } = new List<TblBaseInfo>();
+    public virtual ICollection<TblDestroyUid> DestroyUids { get; set; } = new List<TblDestroyUid>();
+
 }

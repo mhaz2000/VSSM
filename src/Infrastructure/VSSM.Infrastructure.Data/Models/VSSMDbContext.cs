@@ -160,6 +160,7 @@ public partial class VSSMDbContext : DbContext
     public virtual DbSet<TblStore> TblStores { get; set; }
 
     public virtual DbSet<TblStoreType> TblStoreTypes { get; set; }
+    public virtual DbSet<TblDestroyUid> TblDestroyUids { get; set; }
 
     public virtual DbSet<TblStoreUsageWarning> TblStoreUsageWarnings { get; set; }
 
@@ -203,6 +204,79 @@ public partial class VSSMDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<TblDestroyUid>(entity =>
+        {
+            entity.ToTable("tblDestroyUid");
+            entity.HasKey(e => e.PkDestroyUid);
+
+            entity.Property(e => e.PkDestroyUid)
+                  .HasColumnName("PK_DESTROY_UID")
+                  .ValueGeneratedOnAdd();
+
+            entity.Property(e => e.FkUid)
+                  .HasColumnName("FK_UID")
+                  .IsRequired();
+
+            entity.Property(e => e.DestroyDate)
+                  .HasColumnName("DESTROY_DATE")
+                  .HasMaxLength(10)
+                  .IsRequired();
+
+            entity.Property(e => e.DestroyNumber)
+                  .HasColumnName("DESTROY_NUMBER")
+                  .IsRequired();
+
+            entity.Property(e => e.FkLocationDestroy)
+                  .HasColumnName("FK_LOCATION_DESTROY")
+                  .IsRequired();
+
+            entity.Property(e => e.FkDestroyeBy)
+                  .HasColumnName("FK_DESTROYE_BY")
+                  .IsRequired();
+
+            entity.Property(e => e.FkDestroyReasonId)
+                  .HasColumnName("FK_DESTROY_REASON_ID")
+                  .IsRequired();
+
+            entity.Property(e => e.CreationTime)
+                  .HasColumnName("CREATION_TIME")
+                  .IsRequired();
+
+            entity.Property(e => e.FkCreatedBy)
+                  .HasColumnName("FK_CREATED_BY")
+                  .IsRequired();
+
+            // FK → tblUidInfo
+            entity.HasOne(e => e.UidInfo)
+                  .WithOne(u => u.DestroyUid)
+                  .HasForeignKey<TblDestroyUid>(e => e.FkUid)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // FK → tblRecipients
+            entity.HasOne(e => e.Location)
+                  .WithMany(r => r.DestroyUids)
+                  .HasForeignKey(e => e.FkLocationDestroy)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // FK → tblUsers (DestroyedBy)
+            entity.HasOne(e => e.DestroyedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.FkDestroyeBy)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // FK → tblBaseInfo
+            entity.HasOne(e => e.DestroyReason)
+                  .WithMany(b => b.DestroyUids)
+                  .HasForeignKey(e => e.FkDestroyReasonId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // FK → tblUsers (CreatedBy)
+            entity.HasOne(e => e.CreatedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.FkCreatedBy)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<AppLog>(entity =>
         {
             entity.Property(e => e.Host).IsUnicode(false);
@@ -2242,6 +2316,16 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
 
             entity.Property(e => e.FkReceiveDispatchId)
                   .HasColumnName("FK_RECEIVER_ID");
+
+            entity.Property(e => e.FkDestroyId)
+                  .HasColumnName("FK_DESTROY_ID")
+                  .IsRequired(false);
+
+            entity.HasOne(e => e.DestroyUid)
+                  .WithOne(d => d.UidInfo)
+                  .HasForeignKey<TblUidInfo>(e => e.FkDestroyId)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<TblReceiveDispatches>(entity =>

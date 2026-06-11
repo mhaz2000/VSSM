@@ -34,4 +34,7 @@ public partial class TblUidInfo
     public virtual TblOrderInfo OrderInfo { get; set; } = null!;
 
     public virtual TblDispatchUid DispatchUid { get; set; } = null!;
+
+    public int? FkDestroyId { get; set; }
+    public virtual TblDestroyUid? DestroyUid { get; set; }
 }

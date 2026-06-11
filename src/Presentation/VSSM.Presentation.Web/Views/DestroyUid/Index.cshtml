@@ -1,0 +1,151 @@
+﻿@{
+    ViewBag.Title = "امحا UID";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@* ── CSS های shared پروژه ── *@
+<link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+<link href="~/css/components/shared/btn.css" rel="stylesheet" />
+<link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+<link href="~/css/components/shared/lines-table.css" rel="stylesheet" />
+<link href="~/css/components/shared/toast.css" rel="stylesheet" />
+<link href="~/css/components/shared/skeleton.css" rel="stylesheet" />
+<link href="~/css/components/shared/datepicker.css" rel="stylesheet" />
+<link href="~/css/components/DestroyUid/destroy-uid.css" rel="stylesheet" />
+
+<div id="toastContainer"></div>
+<div class="du-page-wrapper">
+    <div class="a-card">
+
+        <div class="a-card-header">
+            <i class="fa fa-trash-o" style="color:#dc2626;font-size:15px;"></i>
+            <h6>امحا UID</h6>
+        </div>
+
+        <div class="a-card-body">
+
+            @* ── Segmented Control ── *@
+            <div class="du-seg-ctrl" role="group">
+                <button class="du-seg-btn active" id="btnBatch" onclick="switchMode('batch')">
+                    <i class="fa fa-barcode"></i>
+                    سری ساخت
+                </button>
+                <button class="du-seg-btn" id="btnUid" onclick="switchMode('uid')">
+                    <i class="fa fa-qrcode"></i>
+                    UID
+                </button>
+            </div>
+
+            <div class="section-divider"></div>
+
+            @* ── بخش سری ساخت ── *@
+            <div id="secBatch">
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">
+                            سری ساخت
+                            <span class="req-tag">اجباری</span>
+                        </label>
+                        <div class="du-search-wrap">
+                            <input type="text"
+                                   id="batchInput"
+                                   class="du-search-input"
+                                   placeholder="سری ساخت را وارد کنید" />
+                            <button type="button" class="du-search-btn" onclick="doSearch()" title="جستجو">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── بخش UID ── *@
+            <div id="secUid" style="display:none;">
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">
+                            UID
+                            <span class="req-tag">اجباری</span>
+                        </label>
+                        <div class="du-search-wrap">
+                            <input type="text"
+                                   id="uidInput"
+                                   class="du-search-input"
+                                   placeholder="20 رقم عددی وارد کنید"
+                                   maxlength="20"
+                                   inputmode="numeric" />
+                            <button type="button" class="du-search-btn" onclick="doSearch()" title="جستجو">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="du-uid-progress-wrap" id="uidProgressWrap">
+                            <div class="du-uid-progress-bg">
+                                <div class="du-uid-progress-fill" id="uidBar" style="width:0%"></div>
+                            </div>
+                            <span class="du-uid-counter" id="uidCounter">0 / 20</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        @* ── جدول ── *@
+        <div class="lines-table-wrap inset">
+            <table class="lines-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>ردیف</th>
+                        <th>سری ساخت</th>
+                        <th>نام کالا</th>
+                        <th>دوز بر ویال</th>
+                        <th>تاریخ تولید</th>
+                        <th>تاریخ انقضا</th>
+                        <th>تعداد UID موجود</th>
+                        <th>دلیل تعدیل <span class="req-tag">اجباری</span></th>
+                        <th>تاریخ تعدیل <span class="req-tag">اجباری</span></th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTbody">
+                    <tr>
+                        <td colspan="9" class="du-empty-cell">
+                            <i class="fa fa-inbox du-empty-icon"></i>
+                            <span>اطلاعاتی وارد نشد</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        @* ── فوتر — دکمه چپ ── *@
+        <div class="form-footer">
+            <button type="button"
+                    class="btn-confirm"
+                    id="submitBtn"
+                    onclick="submitDestroy()"
+                    style="display:none;">
+                <i class="fa fa-check"></i>
+                ثبت امحا
+            </button>
+        </div>
+
+    </div>
+</div>
+
+@* ── داده‌های سرور برای JS ── *@
+<script>
+    var searchByBatchUrl = '@Url.Action("SearchByBatch", "DestroyUid")';
+    var searchByUidUrl   = '@Url.Action("SearchByUid", "DestroyUid")';
+    var submitDestroyUrl = '@Url.Action("SubmitDestroy", "DestroyUid")';
+    var todayShamsi      = '@ViewBag.TodayShamsi';
+
+    var reasonList = @Html.Raw(
+                Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ReasonList ?? new object[0])
+        );
+</script>
+
+@* ── JS ها — ترتیب مهم است ── *@
+<script src="~/js/shared/toast.js"></script>
+<script src="~/js/shared/skeleton.js"></script>
+<script src="~/js/shared/datepicker.js"></script>
+<script src="~/js/components/DestroyUid/destroy-uid.js"></script>

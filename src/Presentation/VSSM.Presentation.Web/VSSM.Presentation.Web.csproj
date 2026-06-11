@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Application\VSSM.Application\VSSM.Application.csproj" />
     <ProjectReference Include="..\..\Domain\VSSM.Domain\VSSM.Domain.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\VSSM.Infrastructure.Services\VSSM.Infrastructure.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>

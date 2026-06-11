@@ -6,7 +6,6 @@
 }
 
 @{
-    var dosePerVials = ViewBag.DosePerVials as List<DosePerVialListDto>;
     var items = ViewBag.Items as List<ItemListDto>;
 }
 
@@ -43,7 +42,7 @@
 
                             </div>
 
-                            <small id="fileName" class="text-muted" style="position: absolute">  
+                            <small id="fileName" class="text-muted" style="position: absolute">
                                 هیچ فایلی انتخاب نشده است
                             </small>
 
@@ -78,12 +77,7 @@
                                                             Name = "DosePerVialId",
                                                             Label = "دوز بر ویال",
                                                             SelectedValue = string.Empty,
-                                                            Options = dosePerVials
-                                                        .Select(x => new SelectOption
-                                                        {
-                                                            Value = x.DosePerVialId.ToString(),
-                                                            Text = x.NumDosePerVial.ToString()
-                                                        }).ToList()
+                                                            Options = []
                                                         })
                         </div>
 
@@ -111,101 +105,6 @@
 
 </div>
 
-<script>
-    function checkFormValidity() {
-        const fileInput = document.getElementById("xmlFile");
-        const itemSelect = document.getElementById("ItemId");
-        const dosePerVialSelect = document.getElementById("DosePerVialId");
-        const button = document.getElementById("uploadBtn");
-
-        // For custom searchable selects, check the actual input values
-        let isItemSelected = false;
-        let isDosePerVialSelected = false;
-
-        if (itemSelect) {
-            // If it's a select element
-            if (itemSelect.tagName === 'SELECT') {
-                isItemSelected = itemSelect.value && itemSelect.value !== "";
-            } else {
-                // If it's an input element (custom dropdown)
-                isItemSelected = itemSelect.value && itemSelect.value !== "";
-            }
-        }
-
-        if (dosePerVialSelect) {
-            if (dosePerVialSelect.tagName === 'SELECT') {
-                isDosePerVialSelected = dosePerVialSelect.value && dosePerVialSelect.value !== "";
-            } else {
-                isDosePerVialSelected = dosePerVialSelect.value && dosePerVialSelect.value !== "";
-            }
-        }
-
-        const isFileSelected = fileInput.files.length > 0;
-        const isValid = isFileSelected && isItemSelected && isDosePerVialSelected;
-
-        button.disabled = !isValid;
-
-        // Optional: Add visual feedback
-        if (!isValid) {
-            button.title = "لطفاً فایل، کالا و دوز بر ویال را انتخاب کنید";
-        } else {
-            button.title = "";
-        }
-
-        return isValid;
-    }
-
-    function handleFileSelect(input) {
-        const label = document.getElementById("fileName");
-
-        if (input.files.length > 0) {
-            const file = input.files[0];
-            label.textContent = "فایل انتخاب شده: " + file.name;
-        } else {
-            label.textContent = "هیچ فایلی انتخاب نشده است";
-        }
-
-        checkFormValidity();
-    }
-
-    function monitorSelectChanges() {
-        const itemSelect = document.getElementById("ItemId");
-        const dosePerVialSelect = document.getElementById("DosePerVialId");
-
-        if (itemSelect && itemSelect.tagName === 'SELECT') {
-            itemSelect.addEventListener("change", checkFormValidity);
-        } else if (itemSelect) {
-            itemSelect.addEventListener("input", checkFormValidity);
-            itemSelect.addEventListener("change", checkFormValidity);
-        }
-
-        if (dosePerVialSelect && dosePerVialSelect.tagName === 'SELECT') {
-            dosePerVialSelect.addEventListener("change", checkFormValidity);
-        } else if (dosePerVialSelect) {
-            dosePerVialSelect.addEventListener("input", checkFormValidity);
-            dosePerVialSelect.addEventListener("change", checkFormValidity);
-        }
-
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
-                    checkFormValidity();
-                }
-            });
-        });
-
-        if (itemSelect) observer.observe(itemSelect, { attributes: true });
-        if (dosePerVialSelect) observer.observe(dosePerVialSelect, { attributes: true });
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const fileInput = document.getElementById("xmlFile");
-
-        if (fileInput) {
-            fileInput.addEventListener("change", function() { handleFileSelect(this); });
-        }
-
-        monitorSelectChanges();
-        checkFormValidity();
-    });
-</script>
+@section Scripts {
+    <script src="~/js/components/InputFiles/input-files.js"></script>
+}

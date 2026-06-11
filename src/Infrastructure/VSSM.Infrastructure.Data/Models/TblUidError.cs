@@ -1,6 +1,8 @@
-﻿using NuGet.Protocol.Plugins;
+﻿using Humanizer;
+using NuGet.Protocol.Plugins;
 
 namespace VSSM.Infrastructure.Data.Models;
+
 
 public partial class TblUidError
 {

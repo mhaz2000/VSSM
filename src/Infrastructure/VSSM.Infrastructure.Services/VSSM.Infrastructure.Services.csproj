@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Application\VSSM.Application\VSSM.Application.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\VSSM.Infrastructure.Data\VSSM.Infrastructure.Data.csproj" />
+  </ItemGroup>
+
 </Project>

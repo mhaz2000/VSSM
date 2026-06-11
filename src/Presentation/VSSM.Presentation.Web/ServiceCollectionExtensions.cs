@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.Common.Authorization;
@@ -26,15 +25,14 @@ using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces.RequestEntities;
 using VSSM.Application.Services;
 using VSSM.Application.Services.BaseEntities;
+using VSSM.Infrastructure.Services.BaseEntities;
 using VSSM.Application.Services.ExcelGenerators;
 using VSSM.Application.Services.Reports;
 using VSSM.Application.Services.RequestEntities;
 using VSSM.Infrastructure.Data.Dapper;
 using VSSM.Infrastructure.Data.Models;
-using VSSM.Infrastructure.Services.BaseEntities;
 using VSSM.Presentation.Web.Authentication;
 using VSSM.Presentation.Web.Authorization;
-using VSSM.Presentation.Web.Controllers;
 
 namespace VSSM.Presentation.Web
 {
@@ -52,6 +50,7 @@ namespace VSSM.Presentation.Web
             //    options.LoginPath = "/Account/Login";
             //});
             services.AddScoped<IUidInfoService, UidInfoService>();
+            services.AddScoped<IConsumerService, ConsumerService>();
             services.AddScoped<IItemClassService, ItemClassService>();
             services.AddScoped<ILevelService, LevelService>();
             services.AddScoped<IItemService, ItemService>();

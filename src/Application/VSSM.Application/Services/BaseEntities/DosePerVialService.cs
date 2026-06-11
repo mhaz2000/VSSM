@@ -101,6 +101,18 @@ namespace VSSM.Application.Services.BaseEntities
             return dto;
         }
 
+        public async Task<IEnumerable<DosePerVialListDto>> GetItemDoesPerVialsAsync(int itemId, CancellationToken token)
+        {
+            var query = _dbContext.TblItemDoseAssignments.Include(t => t.Dose).Where(t => t.ItemId == itemId && (t.Dose.IsActive.HasValue && t.Dose.IsActive.Value))
+                .Select(s => new DosePerVialListDto()
+                {
+                    DosePerVialId = s.Dose.DosePerVialId,
+                    NumDosePerVial = s.Dose.NumDosePerVial
+                });
+
+            return await query.ToListAsync();
+        }
+
         public async Task<PagingSearchOrderDto<DosePerVialListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = page, PageSize = pageSize };

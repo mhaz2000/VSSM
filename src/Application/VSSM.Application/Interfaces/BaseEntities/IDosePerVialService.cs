@@ -18,5 +18,6 @@ namespace VSSM.Application.Interfaces.BaseEntities
         Task<List<DosePerVialListDto>> GetActives(CancellationToken cancellationToken);
         Task<List<DosePerVialListDto>> GetActivesByItemId(CancellationToken cancellationToken , int itemId);
         Task<PagingSearchOrderDto<DosePerVialListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
+        Task<IEnumerable<DosePerVialListDto>> GetItemDoesPerVialsAsync(int itemId, CancellationToken token);
     }
 }

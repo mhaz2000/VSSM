@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Xml.Linq;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
+using VSSM.Application.DTOs.BaseEntities.DosePerVial;
+using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.DTOs.BaseEntities.OrderInfo;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Services.BaseEntities;
+using VSSM.Application.Shared;
 using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.Base;
 
@@ -190,4 +193,18 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
         return RedirectToAction(nameof(Index));
     }
 
+
+    [HttpGet("GetItemDoesPerVials/{itemId}")]
+    public async Task<IActionResult> GetItemDoesPerVials(int itemId, CancellationToken token)
+    {
+        var list = (await _dosePerVialService.GetItemDoesPerVialsAsync(itemId, token));
+        var apiResult = new ApiResult<List<DosePerVialListDto>>
+        {
+            Success = true,
+            Message = string.Empty,
+            Result = list.ToList()
+        };
+
+        return Json(apiResult);
+    }
 }

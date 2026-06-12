@@ -11,6 +11,7 @@
 <link href="~/css/components/shared/toast.css" rel="stylesheet" />
 <link href="~/css/components/shared/skeleton.css" rel="stylesheet" />
 <link href="~/css/components/shared/datepicker.css" rel="stylesheet" />
+<link href="~/css/components/shared/progress-bar.css" rel="stylesheet" />
 <link href="~/css/components/DestroyUid/destroy-uid.css" rel="stylesheet" />
 
 <div id="toastContainer"></div>
@@ -102,13 +103,14 @@
                         <th>تاریخ تولید</th>
                         <th>تاریخ انقضا</th>
                         <th>تعداد UID موجود</th>
-                        <th>دلیل تعدیل <span class="req-tag">اجباری</span></th>
-                        <th>تاریخ تعدیل <span class="req-tag">اجباری</span></th>
+                        <th>دلیل امحا <span class="req-tag">اجباری</span></th>
+                        <th>تاریخ امحا <span class="req-tag">اجباری</span></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="resultsTbody">
                     <tr>
-                        <td colspan="9" class="du-empty-cell">
+                        <td colspan="10" class="du-empty-cell">
                             <i class="fa fa-inbox du-empty-icon"></i>
                             <span>اطلاعاتی وارد نشد</span>
                         </td>
@@ -129,23 +131,27 @@
             </button>
         </div>
 
+        @* ── Progress Bar container ── *@
+        <div id="submitProgressWrap" style="padding: 0 16px 16px;"></div>
+
     </div>
 </div>
 
 @* ── داده‌های سرور برای JS ── *@
 <script>
-    var searchByBatchUrl = '@Url.Action("SearchByBatch", "DestroyUid")';
-    var searchByUidUrl   = '@Url.Action("SearchByUid", "DestroyUid")';
-    var submitDestroyUrl = '@Url.Action("SubmitDestroy", "DestroyUid")';
-    var todayShamsi      = '@ViewBag.TodayShamsi';
+    var searchByBatchUrl         = '@Url.Action("SearchByBatch", "DestroyUid")';
+    var searchByUidUrl           = '@Url.Action("SearchByUid", "DestroyUid")';
+    var submitDestroyProgressUrl = '@Url.Action("SubmitDestroyProgress", "DestroyUid")';
+    var todayShamsi              = '@ViewBag.TodayShamsi';
 
     var reasonList = @Html.Raw(
-                Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ReasonList ?? new object[0])
-        );
+                                Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ReasonList ?? new object[0])
+                );
 </script>
 
 @* ── JS ها — ترتیب مهم است ── *@
 <script src="~/js/shared/toast.js"></script>
 <script src="~/js/shared/skeleton.js"></script>
 <script src="~/js/shared/datepicker.js"></script>
+<script src="~/js/shared/progress-bar.js"></script>
 <script src="~/js/components/DestroyUid/destroy-uid.js"></script>

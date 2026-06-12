@@ -72,17 +72,17 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
             return (false, "UID وارد شده معتبر نمی‌باشد", []);
 
         var uidRecord = await db.TblUidInfo
-            .AsNoTracking()
-            .Include(u => u.OrderInfo)
-            .FirstOrDefaultAsync(u =>
-                (u.Barcode == uid) &&
-                u.IsActive == true &&
-                u.Used == false &&
-                u.FkDestroyId == null &&
-                u.CurrentStore == userStoreId, token);
+              .AsNoTracking()
+              .Include(u => u.OrderInfo)
+              .FirstOrDefaultAsync(u =>
+                  (u.FirstLevelUid == uid || u.SecLevelUid == uid || u.ParentUid == uid) &&
+                  u.IsActive == true &&
+                  u.Used == false &&
+                  u.FkDestroyId == null &&
+                  u.CurrentStore == userStoreId, token);
 
         if (uidRecord == null)
-                return (false, "UID یافت نشد", []);
+            return (false, "UID یافت نشد", []);
 
         var order = uidRecord.OrderInfo;
 
@@ -113,8 +113,63 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
         return (true, string.Empty, [result]);
     }
 
+    //public async Task<(bool Success, string Message)>
+    //    SubmitDestroyAsync(List<DestroyUidSubmitDto> items, int userId, int userStoreId, CancellationToken token)
+    //{
+    //    var lastNumber = await db.TblDestroyUids.AnyAsync(token)
+    //        ? await db.TblDestroyUids.MaxAsync(d => d.DestroyNumber, token)
+    //        : 0;
+    //    var destroyNumber = lastNumber + 1;
+    //    var now = DateTime.Now;
+
+    //    await using var transaction = await db.Database.BeginTransactionAsync(token);
+    //    try
+    //    {
+    //        foreach (var item in items)
+    //        {
+    //            var uids = await db.TblUidInfo
+    //                .Where(u =>
+    //                    u.FkOrderInfo == item.PkOrderInfo &&
+    //                    u.IsActive == true &&
+    //                    u.Used == false &&
+    //                    u.FkDestroyId == null &&
+    //                    u.CurrentStore == userStoreId)
+    //                .ToListAsync(token);
+
+    //            foreach (var uid in uids)
+    //            {
+    //                var destroy = new TblDestroyUid
+    //                {
+    //                    FkUid = uid.PkUidInfo,
+    //                    DestroyDate = item.DestroyDate,
+    //                    DestroyNumber = destroyNumber,
+    //                    FkLocationDestroy = userStoreId,
+    //                    FkDestroyeBy = userId,
+    //                    FkDestroyReasonId = item.DestroyReasonId,
+    //                    CreationTime = now,
+    //                    FkCreatedBy = userId
+    //                };
+
+    //                db.TblDestroyUids.Add(destroy);
+    //                await db.SaveChangesAsync(token);
+
+    //                uid.FkDestroyId = destroy.PkDestroyUid;
+    //                await db.SaveChangesAsync(token);
+    //            }
+    //        }
+
+    //        await transaction.CommitAsync(token);
+    //        return (true, "امحا با موفقیت ثبت شد");
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        await transaction.RollbackAsync(token);
+    //        return (false, "خطا در ثبت: " + ex.Message);
+    //    }
+    //}
+
     public async Task<(bool Success, string Message)>
-        SubmitDestroyAsync(List<DestroyUidSubmitDto> items, int userId, int userStoreId, CancellationToken token)
+    SubmitDestroyAsync(List<DestroyUidSubmitDto> items, int userId, int userStoreId, CancellationToken token)
     {
         var lastNumber = await db.TblDestroyUids.AnyAsync(token)
             ? await db.TblDestroyUids.MaxAsync(d => d.DestroyNumber, token)
@@ -127,6 +182,7 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
         {
             foreach (var item in items)
             {
+                // ── یکجا بگیر، نه در حلقه ──
                 var uids = await db.TblUidInfo
                     .Where(u =>
                         u.FkOrderInfo == item.PkOrderInfo &&
@@ -136,26 +192,32 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
                         u.CurrentStore == userStoreId)
                     .ToListAsync(token);
 
-                foreach (var uid in uids)
+                if (uids.Count == 0) continue;
+
+                // ── Bulk insert: همه TblDestroyUid ها یکجا Add ──
+                var destroys = uids.Select(uid => new TblDestroyUid
                 {
-                    var destroy = new TblDestroyUid
-                    {
-                        FkUid = uid.PkUidInfo,
-                        DestroyDate = item.DestroyDate,
-                        DestroyNumber = destroyNumber,
-                        FkLocationDestroy = userStoreId,
-                        FkDestroyeBy = userId,
-                        FkDestroyReasonId = item.DestroyReasonId,
-                        CreationTime = now,
-                        FkCreatedBy = userId
-                    };
+                    FkUid = uid.PkUidInfo,
+                    DestroyDate = item.DestroyDate,
+                    DestroyNumber = destroyNumber,
+                    FkLocationDestroy = userStoreId,
+                    FkDestroyeBy = userId,
+                    FkDestroyReasonId = item.DestroyReasonId,
+                    CreationTime = now,
+                    FkCreatedBy = userId
+                }).ToList();
 
-                    db.TblDestroyUids.Add(destroy);
-                    await db.SaveChangesAsync(token);
+                db.TblDestroyUids.AddRange(destroys);
 
-                    uid.FkDestroyId = destroy.PkDestroyUid;
-                    await db.SaveChangesAsync(token);
-                }
+                await db.SaveChangesAsync(token);
+
+                // ── حالا FkDestroyId را bulk update کن ──
+                // destroys[i].PkDestroyUid بعد از SaveChanges پر شده
+                for (int i = 0; i < uids.Count; i++)
+                    uids[i].FkDestroyId = destroys[i].PkDestroyUid;
+
+                // ── یک SaveChanges دیگه برای آپدیت UIDs ──
+                await db.SaveChangesAsync(token);
             }
 
             await transaction.CommitAsync(token);
@@ -167,4 +229,82 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
             return (false, "خطا در ثبت: " + ex.Message);
         }
     }
+
+    public async Task<int> CountDestroyableUidsAsync(
+    List<DestroyUidSubmitDto> items, int userStoreId, CancellationToken token)
+    {
+        var orderIds = items.Select(i => i.PkOrderInfo).ToList();
+
+        return await db.TblUidInfo
+            .Where(u => orderIds.Contains(u.FkOrderInfo) &&
+                        u.IsActive == true &&
+                        u.Used == false &&
+                        u.FkDestroyId == null &&
+                        u.CurrentStore == userStoreId)
+            .CountAsync(token);
+    }
+
+    public async Task<(bool Success, string Message)> SubmitDestroyAsync(
+        List<DestroyUidSubmitDto> items, int userId, int userStoreId, CancellationToken token,
+        Func<int, Task>? onProgress = null)
+    {
+        var lastNumber = await db.TblDestroyUids.AnyAsync(token)
+            ? await db.TblDestroyUids.MaxAsync(d => d.DestroyNumber, token)
+            : 0;
+        var destroyNumber = lastNumber + 1;
+        var now = DateTime.Now;
+        int done = 0;
+
+        await using var transaction = await db.Database.BeginTransactionAsync(token);
+        try
+        {
+            foreach (var item in items)
+            {
+                var uids = await db.TblUidInfo
+                    .Where(u => u.FkOrderInfo == item.PkOrderInfo &&
+                                u.IsActive == true &&
+                                u.Used == false &&
+                                u.FkDestroyId == null &&
+                                u.CurrentStore == userStoreId)
+                    .ToListAsync(token);
+
+                if (uids.Count == 0) continue;
+
+                // ── Bulk insert ──
+                var destroys = uids.Select(uid => new TblDestroyUid
+                {
+                    FkUid = uid.PkUidInfo,
+                    DestroyDate = item.DestroyDate,
+                    DestroyNumber = destroyNumber,
+                    FkLocationDestroy = userStoreId,
+                    FkDestroyeBy = userId,
+                    FkDestroyReasonId = item.DestroyReasonId,
+                    CreationTime = now,
+                    FkCreatedBy = userId
+                }).ToList();
+
+                db.TblDestroyUids.AddRange(destroys);
+                await db.SaveChangesAsync(token);
+
+                for (int i = 0; i < uids.Count; i++)
+                    uids[i].FkDestroyId = destroys[i].PkDestroyUid;
+
+                await db.SaveChangesAsync(token);
+
+                // ── progress callback ──
+                done += uids.Count;
+                if (onProgress != null)
+                    await onProgress(done);
+            }
+
+            await transaction.CommitAsync(token);
+            return (true, "امحا با موفقیت ثبت شد");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(token);
+            return (false, "خطا در ثبت: " + ex.Message);
+        }
+    }
+
 }

@@ -5,15 +5,12 @@ namespace VSSM.Presentation.Web.Models.Base;
 
 public class GridViewModel
 {
-    public PagedResult<object> Data { get; set; }
-
-    public List<GridColumn> Columns { get; set; } = new();
-    public List<GridAction> Actions { get; set; } = new();
+    public string? SearchTerm { get; set; }
     public string CurrentSort { get; set; } = "Id";
     public string CurrentDirection { get; set; } = "desc";
-
-    public string SearchTerm { get; set; }
-
+    public PagedResult<object> Data { get; set; } = new();
+    public List<GridColumn> Columns { get; set; } = new();
+    public List<GridAction> Actions { get; set; } = new();
 }
 
 public class GroupedGridViewModel<TMeta, TDetail>

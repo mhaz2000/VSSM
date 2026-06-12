@@ -1,0 +1,294 @@
+﻿/* 
+   dynamic-grid-style.css
+   استایل کامل کامپوننت _DynamicGrid
+    */
+
+/*  فونت و ریشه  */
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600&display=swap');
+
+.dg-wrap {
+    direction: rtl;
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    font-size: 13px;
+}
+
+/*  کارت اصلی  */
+.dg-card {
+    background: #fff;
+    border: 0.5px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+/*  اسکرول افقی  */
+.dg-table-scroll {
+    overflow-x: auto;
+}
+
+/* 
+   جدول
+    */
+.dg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+    /*  سربرگ  */
+    .dg-table thead tr.dg-col-row th {
+        padding: 10px 14px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        background: #f8fafc;
+        border-bottom: 1px solid #e5e7eb;
+        border-left: 0.5px solid #e5e7eb;
+        white-space: nowrap;
+        user-select: none;
+    }
+
+        .dg-table thead tr.dg-col-row th:first-child {
+            width: 44px;
+        }
+
+        .dg-table thead tr.dg-col-row th:last-child {
+            border-left: none;
+        }
+
+/*  دکمه مرتب‌سازی  */
+.dg-sort-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    font-family: inherit;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+    .dg-sort-btn:hover {
+        color: #185FA5;
+    }
+
+        .dg-sort-btn:hover .dg-sort-icon {
+            color: #185FA5;
+        }
+
+.dg-sort-icon {
+    font-size: 10px;
+    color: #d1d5db;
+    transition: color 0.15s, transform 0.2s;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 1px;
+    vertical-align: middle;
+}
+
+/* وقتی این ستون active باشد */
+.dg-sort-btn.is-sorted .dg-sort-icon {
+    color: #185FA5;
+}
+
+.dg-sort-btn.is-sorted.dir-asc .dg-sort-icon-asc {
+    color: #185FA5;
+}
+
+.dg-sort-btn.is-sorted.dir-desc .dg-sort-icon-desc {
+    color: #185FA5;
+}
+
+/*  بدنه ردیف‌ها  */
+.dg-table tbody tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+.dg-table tbody tr:hover {
+    background: #eff6ff !important;
+    transition: background 0.1s;
+}
+
+.dg-table tbody td {
+    padding: 9px 14px;
+    text-align: center;
+    color: #111827;
+    border-bottom: 0.5px solid #e5e7eb;
+    border-left: 0.5px solid #e5e7eb;
+    vertical-align: middle;
+}
+
+    /* ستون ردیف */
+    .dg-table tbody td.dg-row-num {
+        color: #9ca3af;
+        font-size: 11px;
+        width: 44px;
+    }
+
+    .dg-table tbody td:last-child {
+        border-left: none;
+    }
+
+.dg-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/*  حالت خالی  */
+.dg-empty {
+    padding: 48px 20px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+    .dg-empty i {
+        display: block;
+        font-size: 30px;
+        margin-bottom: 12px;
+        color: #d1d5db;
+    }
+
+/* 
+   Badge  –  وضعیت رنگی
+    */
+.dg-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+    /* رنگ‌های آماده */
+    .dg-badge.badge-success {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .dg-badge.badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .dg-badge.badge-warning {
+        background: #fef9c3;
+        color: #854d0e;
+    }
+
+    .dg-badge.badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .dg-badge.badge-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .dg-badge.badge-purple {
+        background: #ede9fe;
+        color: #5b21b6;
+    }
+
+/* 
+   دکمه‌های عملیات
+    */
+.dg-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 0.5px solid #e5e7eb;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: none;
+    color: #6b7280;
+    padding: 0;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+    .action-btn:hover {
+        background: #f3f4f6;
+        text-decoration: none;
+        color: #374151;
+    }
+
+    /* ویرایش */
+    .action-btn.btn-edit {
+        border-color: #B5D4F4;
+        color: #185FA5;
+    }
+
+        .action-btn.btn-edit:hover {
+            background: #E6F1FB;
+        }
+
+    /* حذف */
+    .action-btn.btn-delete {
+        border-color: #F7C1C1;
+        color: #A32D2D;
+    }
+
+        .action-btn.btn-delete:hover {
+            background: #FCEBEB;
+        }
+
+    /* مشاهده */
+    .action-btn.btn-view {
+        border-color: #C0DD97;
+        color: #3B6D11;
+    }
+
+        .action-btn.btn-view:hover {
+            background: #EAF3DE;
+        }
+
+    /* تایید */
+    .action-btn.btn-confirm {
+        border-color: #9FE1CB;
+        color: #0F6E56;
+    }
+
+        .action-btn.btn-confirm:hover {
+            background: #E1F5EE;
+        }
+
+    /* چاپ */
+    .action-btn.btn-print {
+        border-color: #C4B5FD;
+        color: #5B21B6;
+    }
+
+        .action-btn.btn-print:hover {
+            background: #EDE9FE;
+        }
+
+/* 
+   فوتر (Pagination)
+    */
+.dg-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    background: #f8fafc;
+    border-top: 0.5px solid #e5e7eb;
+}

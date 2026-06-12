@@ -1,65 +1,62 @@
-﻿@model VSSM.Presentation.Web.Models.Base.SearchBarModel
+@* ─────────────────────────────────────────────────────
+   ViewComponent: SearchBar
+   ───────────────────────────────────────────────────── *@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model VSSM.Presentation.Web.Models.Base.SearchBarModel
 
-<style>
-    .fa-icon {
-        color: green;
-    }
+<link href="~/css/components/shared/search-bar.css" rel="stylesheet" />
 
-    .search-input-wrapper {
-        position: relative;
-        width: 260px;
-        display: inline;
-    }
+<div class="search-bar-root">
 
-    .search-input {
-        width: 100%;
-        padding: 8px 15px 8px 12px;
-        border-radius: 15px;
-        border: 1px solid #ccc;
-        outline: none;
-        background-color: #e4e5e6;
-        transition: 0.2s ease;
-    }
+    <form method="get" class="m-0 p-0">
 
-        .search-input:focus {
-            border-color: #0d6efd;
-        }
-
-    .search-icon-btn {
-        position: absolute;
-        top: 50%;
-        left: 8px; /* magnifier inside on left */
-        transform: translateY(-50%);
-        border: none;
-        background: none;
-        cursor: pointer;
-        color: #888;
-    }
-
-        .search-icon-btn:hover {
-            color: #0d6efd;
-        }
-
-</style>
-
-<form method="get" class="search-form">
-
-    <div class="search-input-wrapper">
-
-        <button type="submit" class="search-icon-btn">
-            <i class="fa fa-search fa-icon"></i>
-        </button>
-
-        <input type="text"
-               name="search"
-               value="@Model.SearchTerm"
-               placeholder="جستجو..."
-               class="search-input" />
-
-        <input type="hidden" name="pageSize" value="@Model.PageSize" />
         <input type="hidden" name="sort" value="@Model.Sort" />
         <input type="hidden" name="direction" value="@Model.Direction" />
+        <input type="hidden" name="pageSize" value="@Model.PageSize" />
 
-    </div>
+        <div class="search-wrap">
 
-</form>
+            @* ── دراپ‌داون فیلتر (اختیاری) ── *@
+            @if (Model.FilterOptions != null && Model.FilterOptions.Any())
+            {
+                <select name="@Model.FilterName"
+                        class="search-select"
+                        onchange="this.form.submit()">
+                    @foreach (var opt in Model.FilterOptions)
+                    {
+                        <option value="@opt.Value"
+                                selected="@(opt.Value == Model.FilterValue)">
+                            @opt.Text
+                        </option>
+                    }
+                </select>
+                <div class="search-divider"></div>
+            }
+
+            @* ── اینپوت متن جستجو ── *@
+            <input type="text"
+                   name="search"
+                   class="search-input"
+                   value="@Model.SearchTerm"
+                   placeholder="جستجو..." />
+
+            @* ── دکمه جستجو ── *@
+            <button type="submit" class="search-btn" title="جستجو">
+                <i class="fa fa-search"></i>
+            </button>
+
+        </div>
+    </form>
+
+    @* ── دکمه افزودن ── *@
+    @if (Model.ShowAddButton)
+    {
+        <a asp-controller="@Model.AddController"
+           asp-action="@Model.AddAction"
+           class="btn-add">
+            <span class="plus-circle">+</span>
+            افزودن
+        </a>
+    }
+
+</div>

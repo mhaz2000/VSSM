@@ -1,115 +1,84 @@
-﻿@using VSSM.Presentation.Web.Models.Base
+﻿@* 
+   _DynamicGrid.cshtml
+    *@
+@using VSSM.Presentation.Web.Models.Base
 @model GridViewModel
-
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600&display=swap" rel="stylesheet" />
-<style>
-    .dg-wrap { direction: rtl; font-size: 13px; }
-
-    .dg-card {
-        background: #fff;
-        border: 0.5px solid #e5e7eb;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 20px;
-    }
-
-    .dg-table-scroll { overflow-x: auto; }
-
-    .dg-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-
-    .dg-wrap { font-family: 'Vazirmatn', Tahoma, sans-serif; }
-
-    /* ردیف ستون‌ها */
-    .dg-table thead tr.dg-col-row th {
-        padding: 8px 14px; text-align: center;
-        font-size: 12px; font-weight: 600; color: #374151;
-        background: #f8fafc;
-        border-bottom: 1px solid #e5e7eb;
-        border-left: 0.5px solid #e5e7eb;
-        white-space: nowrap;
-    }
-    .dg-table thead tr.dg-col-row th:first-child { width: 44px; }
-    .dg-table thead tr.dg-col-row th:last-child  { border-left: none; }
-    .sort-link {
-        color: #d1d5db; text-decoration: none;
-        margin-right: 4px; font-size: 11px; vertical-align: middle;
-        transition: color .15s;
-    }
-    .sort-link:hover { color: #185FA5; }
-
-    /* بدنه */
-    .dg-table tbody tr:nth-child(even) { background: #f9fafb; }
-    .dg-table tbody tr:hover           { background: #EFF6FF !important; }
-    .dg-table tbody td {
-        padding: 9px 14px; text-align: center; color: #111827;
-        border-bottom: 0.5px solid #e5e7eb;
-        border-left:   0.5px solid #e5e7eb;
-        vertical-align: middle;
-    }
-    .dg-table tbody td:first-child { color: #9ca3af; font-size: 11px; }
-    .dg-table tbody td:last-child  { border-left: none; }
-    .dg-table tbody tr:last-child td { border-bottom: none; }
-
-    /* خالی */
-    .dg-empty { padding: 40px 20px; text-align: center; color: #9ca3af; font-size: 13px; }
-    .dg-empty i { display: block; font-size: 26px; margin-bottom: 10px; color: #d1d5db; }
-
-    /* عملیات */
-    .dg-actions { display: flex; align-items: center; justify-content: center; gap: 5px; }
-    .action-btn {
-        width: 28px; height: 28px; border-radius: 6px;
-        border: 0.5px solid #e5e7eb; background: #fff;
-        display: inline-flex; align-items: center; justify-content: center;
-        cursor: pointer; font-size: 13px; text-decoration: none; color: #6b7280;
-        padding: 0; transition: background .12s, border-color .12s, color .12s;
-    }
-    .action-btn:hover { background: #f3f4f6; text-decoration: none; color: #374151; }
-    .action-btn.btn-edit    { border-color: #B5D4F4; color: #185FA5; }
-    .action-btn.btn-edit:hover    { background: #E6F1FB; }
-    .action-btn.btn-delete  { border-color: #F7C1C1; color: #A32D2D; }
-    .action-btn.btn-delete:hover  { background: #FCEBEB; }
-    .action-btn.btn-view    { border-color: #C0DD97; color: #3B6D11; }
-    .action-btn.btn-view:hover    { background: #EAF3DE; }
-    .action-btn.btn-confirm { border-color: #9FE1CB; color: #0F6E56; }
-    .action-btn.btn-confirm:hover { background: #E1F5EE; }
-
-    /* فوتر */
-    .dg-footer {
-        display: flex; align-items: center; justify-content: center;
-        padding: 10px 16px; background: #f8fafc;
-        border-top: 0.5px solid #e5e7eb;
-    }
-</style>
 
 @{
     bool hasData = Model.Data?.Items != null && Model.Data.Items.Any();
-    int colCount = Model.Columns.Count() + 1;
+    int colCount = Model.Columns.Count + 1;
+
+    const string cssKey = "_DynamicGrid_CSS";
+    const string jsKey = "_DynamicGrid_JS";
+
+    bool needsCss = !ViewContext.HttpContext.Items.ContainsKey(cssKey);
+    bool needsJs = !ViewContext.HttpContext.Items.ContainsKey(jsKey);
+
+    if (needsCss) ViewContext.HttpContext.Items[cssKey] = true;
+    if (needsJs) ViewContext.HttpContext.Items[jsKey] = true;
 }
 
+@*  CSS  *@
+@if (needsCss)
+{
+    <link rel="stylesheet"
+          href="~/css/components/shared/dynamic-grid.css"
+          asp-append-version="true" />
+}
+
+@*  HTML  *@
 <div class="dg-wrap">
     <div class="dg-card">
+
         <div class="dg-table-scroll">
             <table class="dg-table">
                 <thead>
                     <tr class="dg-col-row">
-                        <th>#</th>
-                        @foreach (var column in Model.Columns)
+
+                        <th>ردیف</th>
+
+                        @foreach (var col in Model.Columns)
                         {
                             <th>
-                                @column.Header
-                                @if (column.Sortable)
+                                @if (col.Sortable && !string.IsNullOrEmpty(col.PropertyName))
                                 {
-                                    var newDir = Model.CurrentSort == column.PropertyName && Model.CurrentDirection == "asc" ? "desc" : "asc";
-                                    <a class="sort-link"
-                                       href="?pageNumber=@Model.Data.PageNumber&pageSize=@Model.Data.PageSize&sort=@column.PropertyName&direction=@newDir"
-                                       title="مرتب‌سازی بر اساس @column.Header">
-                                        <i class="fa fa-sort"></i>
-                                    </a>
+                                    var isSorted = Model.CurrentSort == col.PropertyName;
+                                    var btnClass = isSorted
+                                    ? $"dg-sort-btn is-sorted dir-{Model.CurrentDirection}"
+                                    : "dg-sort-btn";
+
+                                    <button type="button"
+                                            class="@btnClass"
+                                            data-dg-sort="@col.PropertyName"
+                                            data-dg-current-sort="@Model.CurrentSort"
+                                            data-dg-current-dir="@Model.CurrentDirection"
+                                            title="مرتب‌سازی بر اساس @col.Header">
+
+                                        @col.Header
+
+                                        @if (isSorted && Model.CurrentDirection == "asc")
+                                        {
+                                            <i class="fa fa-arrow-up dg-sort-icon" aria-hidden="true"></i>
+                                        }
+                                        else if (isSorted && Model.CurrentDirection == "desc")
+                                        {
+                                            <i class="fa fa-arrow-down dg-sort-icon" aria-hidden="true"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fa fa-sort dg-sort-icon" aria-hidden="true"></i>
+                                        }
+                                    </button>
+                                }
+                                else
+                                {
+                                    @col.Header
                                 }
                             </th>
                         }
                     </tr>
                 </thead>
+
                 <tbody>
                     @if (!hasData)
                     {
@@ -124,53 +93,53 @@
                     }
                     else
                     {
-                        int rowIndex = (Model.Data.PageNumber - 1) * Model.Data.PageSize + 1;
+                        int rowNum = (Model.Data.PageNumber - 1) * Model.Data.PageSize + 1;
+
                         foreach (var item in Model.Data.Items)
                         {
-                            var currentRow = rowIndex++;
                             <tr>
-                                <td>@currentRow</td>
+                                <td class="dg-row-num">@(rowNum++)</td>
 
-                                @foreach (var column in Model.Columns)
+                                @foreach (var col in Model.Columns)
                                 {
-                                    if (column.IsActionColumn)
+                                    @*  ستون عملیات  *@
+                                    if (col.IsActionColumn)
                                     {
                                         <td>
                                             <div class="dg-actions">
-                                                @foreach (var action in Model.Actions)
+                                                @foreach (var act in Model.Actions)
                                                 {
-                                                    var routeProp  = item.GetType().GetProperty(action.RouteIdProperty);
+                                                    var skip = act.DynamicSkip?.Invoke(item);
+                                                    if (!string.IsNullOrEmpty(skip) && bool.Parse(skip)) { continue; }
+
+                                                    var title = act.DynamicTitle?.Invoke(item) ?? act.Title;
+                                                    if (string.IsNullOrEmpty(title)) { continue; }
+
+                                                    var controller = act.DynamicController?.Invoke(item) ?? act.Controller;
+                                                    var actionName = act.DynamicAction?.Invoke(item) ?? act.Action;
+                                                    var iconClass = act.DynamicIconClass?.Invoke(item) ?? act.IconClass;
+                                                    var iconStyle = act.DynamicIconStyle?.Invoke(item) ?? act.IconStyle;
+                                                    var linkClass = act.DynamicLinkClass?.Invoke(item) ?? act.LinkClass;
+                                                    var routeProp = item.GetType().GetProperty(act.RouteIdProperty);
                                                     var routeValue = routeProp?.GetValue(item);
-                                                    var title      = action.DynamicTitle?.Invoke(item)      ?? action.Title;
-                                                    var controller = action.DynamicController?.Invoke(item) ?? action.Controller;
-                                                    var actionName = action.DynamicAction?.Invoke(item)     ?? action.Action;
-                                                    var iconClass  = action.DynamicIconClass?.Invoke(item)  ?? action.IconClass;
-                                                    var iconStyle  = action.DynamicIconStyle?.Invoke(item)  ?? action.IconStyle;
-                                                    var linkClass  = action.DynamicLinkClass?.Invoke(item)  ?? action.LinkClass;
-                                                    var skip       = action.DynamicSkip?.Invoke(item);
 
-                                                    if (!string.IsNullOrEmpty(skip) && bool.Parse(skip))
-                                                        continue;
-                                                    if (string.IsNullOrEmpty(title))
-                                                        continue;
-
-                                                    if (action.OpenModal)
+                                                    if (act.OpenModal)
                                                     {
                                                         <a href="#"
                                                            class="action-btn @linkClass open-modal"
                                                            data-url="@Url.Action(actionName, controller, new { id = routeValue })"
                                                            title="@title">
-                                                            <i class="@iconClass" style="@iconStyle"></i>
+                                                            <i class="@iconClass" style="@iconStyle" aria-hidden="true"></i>
                                                         </a>
                                                     }
-                                                    else if (action.Method == "GET")
+                                                    else if (act.Method == "GET")
                                                     {
                                                         <a asp-controller="@controller"
                                                            asp-action="@actionName"
                                                            asp-route-id="@routeValue"
                                                            class="action-btn @linkClass"
                                                            title="@title">
-                                                            <i class="@iconClass" style="@iconStyle"></i>
+                                                            <i class="@iconClass" style="@iconStyle" aria-hidden="true"></i>
                                                         </a>
                                                     }
                                                     else
@@ -178,12 +147,12 @@
                                                         <form asp-controller="@controller"
                                                               asp-action="@actionName"
                                                               asp-route-id="@routeValue"
-                                                              method="@action.Method"
+                                                              method="@act.Method"
                                                               style="display:inline;">
                                                             <button type="submit"
                                                                     class="action-btn @linkClass"
                                                                     title="@title">
-                                                                <i class="@iconClass" style="@iconStyle"></i>
+                                                                <i class="@iconClass" style="@iconStyle" aria-hidden="true"></i>
                                                             </button>
                                                         </form>
                                                     }
@@ -191,39 +160,64 @@
                                             </div>
                                         </td>
                                     }
+
+                                    @*  ستون Badge  *@
+                                    else if (col.IsBadgeColumn && col.BadgeMap != null)
+                                    {
+                                        var prop = item.GetType().GetProperty(col.PropertyName ?? "");
+                                        var raw = prop?.GetValue(item)?.ToString() ?? "";
+
+                                        <td>
+                                            @if (col.BadgeMap.TryGetValue(raw, out var badge))
+                                            {
+                                                <span class="dg-badge @badge.CssClass">@badge.Text</span>
+                                            }
+                                            else
+                                            {
+                                                @raw
+                                            }
+                                        </td>
+                                    }
+
+                                    @*  ستون معمولی  *@
                                     else
                                     {
-                                        <td>
-                                            @{
-                                                var prop  = item.GetType().GetProperty(column.PropertyName);
-                                                var value = prop?.GetValue(item);
-                                                string displayValue = "";
-                                                if (value != null)
-                                                {
-                                                    if (column.IsAmount && decimal.TryParse(value.ToString(), out var amount))
-                                                        displayValue = amount.ToString("N0");
-                                                    else
-                                                        displayValue = value.ToString();
-                                                }
-                                            }
-                                            @displayValue
-                                        </td>
+                                        var prop = item.GetType().GetProperty(col.PropertyName ?? "");
+                                        var value = prop?.GetValue(item);
+                                        string display = "";
+
+                                        if (value != null)
+                                        {
+                                            if (col.IsAmount && decimal.TryParse(value.ToString(), out var amount))
+                                                display = amount.ToString("N0");
+                                            else
+                                                display = value.ToString() ?? "";
+                                        }
+
+                                        <td>@display</td>
                                     }
                                 }
                             </tr>
                         }
                     }
                 </tbody>
+
             </table>
         </div>
 
         <div class="dg-footer">
-            @await Component.InvokeAsync("Pagination",
-                new {
-                    model     = Model.Data,
-                    sort      = Model.CurrentSort,
-                    direction = Model.CurrentDirection
-                })
+            @await Component.InvokeAsync("Pagination", new
+            {
+                model = Model.Data,
+                        sort = Model.CurrentSort,
+                        direction = Model.CurrentDirection
+                        })
         </div>
+
     </div>
 </div>
+
+@if (needsJs)
+{
+    <script src="~/js/shared/dynamic-grid.js" asp-append-version="true"></script>
+}

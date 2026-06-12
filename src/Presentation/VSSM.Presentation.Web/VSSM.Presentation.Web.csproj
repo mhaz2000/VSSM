@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="wwwroot\css\components\shared\dynamic-grid-style.css">
+    <Content Update="wwwroot\css\components\shared\dynamic-grid.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\css\components\shared\grid-wrapper.css">

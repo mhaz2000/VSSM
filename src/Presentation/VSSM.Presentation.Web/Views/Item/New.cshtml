@@ -1,188 +1,136 @@
-﻿@model ItemViewModel
-@{
-    string formName = "ثبت";
-    if (Model != null && Model.ItemId > 0)
-        formName = "ویرایش";
+﻿@using VSSM.Presentation.Web.Models.Item
+@model ItemViewModel
+
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
+    <link href="~/css/components/item/item-form.css" rel="stylesheet" />
 }
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
-        <div class="card form-card">
-            <div class="card-header card-form-header">
-                <h5 class="header-title">@formName کالا</h5>
-                <p>برای تعیین حجم واکسنها و حلالها به منوی "دوز اختصاص داده شده به کالا" مراجعه کنید</p>
+@{
+    string formName = (Model != null && Model.ItemId > 0) ? "ویرایش" : "ثبت";
+    ViewData["Title"] = formName + " کالا";
+}
+
+<div class="item-form-wrap">
+
+    <strong class="item-form-title">@formName کالا</strong>
+
+    <form asp-action="Create" method="post">
+        <input type="hidden" asp-for="ItemId" />
+
+        <!-- ═══ اطلاعات اصلی ═══ -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-box" style="color:#3b82f6;"></i>
+                <h6>اطلاعات اصلی کالا</h6>
             </div>
-            <div class="card-block">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <form asp-action="Create" method="post" class="form-horizontal">
-                        <input type="hidden" asp-for="ItemId"/>
-                        <div class="row mx-0 mb-4">
+            <div class="a-card-body">
+                <div class="fg-3">
 
-                            <div class="form-group col-md-6">
-                                <label class="form-label">نوع کالا <span class="form-label-caption">(اجباری)</span></label>
-                                <select class="form-control" asp-for="ItemClassId">
-                                    <option value="">-- انتخاب کنید --</option>
+                    <div class="f-group">
+                        <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
+                        <select class="f-control" asp-for="ItemClassId" id="ItemClassId">
+                            <option value="">-- انتخاب کنید --</option>
+                            @foreach (var itemType in ViewBag.ItemClass)
+                            {
+                                <option value="@itemType.Id">@itemType.Name</option>
+                            }
+                        </select>
+                    </div>
 
-                                    @foreach (var itemType in ViewBag.ItemClass)
-                                    {
-                                        <option value="@itemType.Id">@itemType.Name</option>
-                                    }
-                                </select>
-                            </div>
+                    <div class="f-group">
+                        <label class="f-label">کد <span class="opt">(اختیاری)</span></label>
+                        <input class="f-control" asp-for="Code" placeholder="کد کالا را وارد کنید" />
+                    </div>
 
-                            <div class="form-group col-md-6">
-                                <label class="form-label">کد</label>
-                                <input class="form-control" asp-for="Code"/>
-                                
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label class="form-label">نام کامل <span class="form-label-caption">(اجباری)</span></label>
-                                <input class="form-control" asp-for="FullName"/>
-                            </div>
+                    <div class="f-group">
+                        <label class="f-label">نام کامل <span class="req-tag">اجباری</span></label>
+                        <input class="f-control" asp-for="FullName" placeholder="نام کامل کالا" />
+                    </div>
 
+                    <div class="f-group">
+                        <label class="f-label">روزهای قبل از تاریخ انقضا <span class="req-tag">اجباری</span></label>
+                        <input type="number" class="f-control" asp-for="DayToWarmExpire" min="0" placeholder="مثلاً ۳۰" />
+                    </div>
 
-                            <div class="form-group col-md-6">
-                                <label class="form-label">روزهای قبل از تاریخ انقضا
-                                <span class="form-label-caption">(اجباری)</span></label>
-                                <input type="number" class="form-control" asp-for="DayToWarmExpire"/>
-                            </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- ═══ تنظیمات انبار و حلال ═══ -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-warehouse" style="color:#16a34a;"></i>
+                <h6>تنظیمات انبار و حلال</h6>
+            </div>
+            <div class="a-card-body">
 
-                            <div class="form-group col-lg-12" style="padding-top:2rem;">
-                                <div class="form-group col-md-2">
-                                    <label class="custom-checkbox">
-                                        <input type="checkbox" asp-for="UserBelowZeroStore" />
-                                        <span class="checkmark"></span>
-                                        <span class="label-text">انبار در زیر صفر درجه</span>
-                                    </label>
-                                </div>
-
-                                <div class="form-group col-md-2">
-                                    <label class="custom-checkbox">
-                                        <input type="checkbox" name="UserAboveZeroStore" asp-for="UserAboveZeroStore" />
-                                        <span class="checkmark"></span>
-                                        <span class="label-text">انبار در بالای صفر درجه</span>
-                                    </label>
-                                </div>
-
-                                <div class="form-group col-md-2">
-                                    <label class="custom-checkbox">
-                                        <input type="checkbox" asp-for="UseOrdinaryStore" />
-                                        <span class="checkmark"></span>
-                                        <span class="label-text">انبار معمولی</span>
-                                    </label>
-                                </div>
-
-                                <div class="form-group col-md-2">
-                                    <label class="custom-checkbox">
-                                        <input type="checkbox" asp-for="IsActive" />
-                                        <span class="checkmark"></span>
-                                        <span class="label-text">وضعیت فعال است</span>
-                                    </label>
-                                </div>
-                                <div class="form-group col-md-12 m-0">
-                                    <label class="custom-checkbox">
-                                        <input type="checkbox" id="requiresDiluentCheckbox"
-                                         asp-for="RequiresDiluent" />
-                                        <span class="checkmark"></span>
-                                        <span class="label-text">حلال</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="form-group col-md-6">
-                            <label class="form-label">حلال</label>
-                                <select class="form-control" id="itemClassDropdown" asp-for="DiluentId" disabled>
-                                    <option value="">-- انتخاب کنید --</option>
-                                    @foreach (var itemType in ViewBag.DiluentDropDown)
-                                    {
-                                    <option value="@itemType.Id">@itemType.Name</option>
-                                    }
-                                </select>
-                            </div>
-
-                        </div>
-                         <div class="text-left">
-                            <button type="submit" class="btn btn-success px-5">ثبت</button>
-                            <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
-                        </div>
-                    </form>
-
-
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" asp-for="UserBelowZeroStore" />
+                        انبار زیر صفر درجه
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" asp-for="UserAboveZeroStore" />
+                        انبار بالای صفر درجه
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" asp-for="UseOrdinaryStore" />
+                        انبار معمولی
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" asp-for="IsActive" />
+                        وضعیت فعال
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="requiresDiluentCheckbox" asp-for="RequiresDiluent" />
+                        نیاز به حلال دارد
+                    </label>
                 </div>
 
+                <div class="section-divider"></div>
+
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">حلال <span class="opt">(اختیاری)</span></label>
+                        <select class="f-control" id="diluentDropdown" asp-for="DiluentId" disabled>
+                            <option value="">-- انتخاب کنید --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p class="item-form-note">
+                    برای تعیین حجم واکسن‌ها و حلال‌ها به منوی «دوز اختصاص‌داده‌شده به کالا» مراجعه کنید.
+                </p>
+
+            </div>
         </div>
-        <!--/col-->
-    </div>
+
+        <!-- ── فوتر ── -->
+        <div class="form-footer">
+            <a asp-action="Index" class="btn-back">
+                <i class="fa fa-arrow-right"></i> بازگشت
+            </a>
+            <button type="submit" class="btn-confirm">
+                <i class="fa fa-save"></i> @formName
+            </button>
+        </div>
+
+    </form>
 </div>
 
+<div id="toastContainer"></div>
+
 @section Scripts {
-<script>
-        //var classId = 1;
-    // وقتی صفحه لود شد
-    document.addEventListener("DOMContentLoaded", function() {
-        const checkbox = document.getElementById("requiresDiluentCheckbox");
-        const dropdown = document.getElementById("itemClassDropdown");
-            const $item = $("#itemClassDropdown");
-
-
-                    $item.prop("disabled", !checkbox.checked);
-        
-
-        // تغییر وضعیت هنگام تغییر چک‌باکس
-        checkbox.addEventListener("change", function() {
-                $item.prop("disabled", !checkbox.checked);
-
-
-                if(this.checked){
-                    
-                    $item.prop("disabled", true);
-                    $item.empty();
-                        $.getJSON("/Arrival/GetItemsByClass", { classId: 1 })
-                        .done(function (data) {
-
-                            $item.append('<option value="">انتخاب کنید...</option>');
-
-                            data.forEach(x => {
-                                $item.append(
-                                    `<option value="${x.id}">${x.text}</option>`
-                                );
-                            });
-
-                            $item.prop("disabled", false);
-                        });
-                }
-                else{
-                       $item.prop("disabled", true);
-                       $item.empty();
-                       $item.append('<option value="">انتخاب کنید...</option>');
-                }
-
-
-        });
-    });
-
-
-
-    $(function () {
-                const checkbox = document.getElementById("requiresDiluentCheckbox");
-                    const $item = $("#itemClassDropdown");
-                const $itemClass = $("#ItemClassId");
-                $itemClass.on("change", function () {
-
-                    var classId = $(this).val();
-                    if(classId == 6){
-                         checkbox.disabled = false;
-                    }
-                    else{
-                         checkbox.disabled = true;
-                            checkbox.checked = false;
-                                $item.prop("disabled", true);
-                           $item.empty();
-                           $item.append('<option value="">انتخاب کنید...</option>');
-                    }
-                });
-        });
-</script>
+    <script src="~/js/components/shared/toast.js"></script>
+    <script src="~/js/components/item/item-form.js"></script>
+    @if (TempData["ToastMessage"] != null)
+    {
+        <script>
+            showToast('@TempData["ToastMessage"]', '@TempData["ToastType"]');
+        </script>
+    }
 }

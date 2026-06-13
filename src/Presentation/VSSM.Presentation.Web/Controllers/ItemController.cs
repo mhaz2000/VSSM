@@ -13,6 +13,9 @@ public class ItemController(
     IItemClassService itemClassService,
     IItemDetailsService itemDetailsService) : BaseController
 {
+    private const int VaccineClassId = 54;
+    private const int DiluentClassId = 55;
+
     public async Task<IActionResult> Index(
         CancellationToken cancellationToken,
         string? search = null,
@@ -124,20 +127,13 @@ public class ItemController(
     [HttpGet("GetItems/{classItemId:required:int}")]
     public async Task<IActionResult> GetItems(int classItemId)
     {
-        try
+        var items = await itemService.GetItemsByClassId(classItemId);
+        return Json(new ApiResult<List<ItemListDto>>
         {
-            var items = await itemService.GetItemsByClassId(classItemId);
-            return Json(new ApiResult<List<ItemListDto>>
-            {
-                Success = true,
-                Message = string.Empty,
-                Result = items
-            });
-        }
-        catch
-        {
-            throw;
-        }
+            Success = true,
+            Message = string.Empty,
+            Result = items
+        });
     }
 
     [HttpGet("GetItemDetails/{itemId:required:int}")]
@@ -157,8 +153,10 @@ public class ItemController(
     private async Task PrepareDropdown(CancellationToken cancellationToken)
     {
         var list = await itemClassService.GetActives(cancellationToken);
+
         ViewBag.ItemClass = list;
-        ViewBag.DiluentDropDown = list.Where(c => c.Id == 2);
+
+        ViewBag.DiluentDropDown = list.Where(c => c.Id == DiluentClassId);
     }
 
     private static ItemCreateDto MapToDto(ItemViewModel model) => new()

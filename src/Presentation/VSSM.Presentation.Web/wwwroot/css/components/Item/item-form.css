@@ -1,0 +1,37 @@
+﻿/* ═══════════════════════════════════════════
+   item-form.css  —  فرم ثبت/ویرایش کالا
+   ═══════════════════════════════════════════ */
+
+.item-form-wrap {
+    margin: 1.5rem;
+    direction: rtl;
+}
+
+.item-form-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1.25rem;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 20px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #374151;
+    cursor: pointer;
+}
+
+.item-form-note {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 12px;
+}

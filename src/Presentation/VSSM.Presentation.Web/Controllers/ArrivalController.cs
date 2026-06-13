@@ -16,12 +16,8 @@ public class ArrivalController(
     IStoreService storeService,
     IManufacturerService manufacturerService,
     IDosePerVialService dosePerVialService,
-    IVvmtypeService vvmtypeService,
-    IVvmstageService vvmstageService,
     ICommercialNameService commercialNameService,
-    IItemDetailsService itemDetailService,
     IBaseInfoService baseInfoService,      
-    IUseService useService,
     IItemClassService itemClassService,
     IOrderInfoService orderInfoService,
     IUidInfoService uidInfoService) : BaseController
@@ -107,6 +103,11 @@ public class ArrivalController(
         return View(model);
     }
 
+
+    public IActionResult Print(int id)
+    {
+        return View("~/Views/Shared/UnderConstruction.cshtml");
+    }
     public async Task<IActionResult> New(int? id, CancellationToken token)
     {
         await LoadDropDowns(token);

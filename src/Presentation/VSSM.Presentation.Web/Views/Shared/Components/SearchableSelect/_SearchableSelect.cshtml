@@ -2,13 +2,18 @@
 @model SearchableSelectModel
 
 <div class="ss-wrapper">
-    <label class="form-label">
-        @Model.Label
-        @if (Model.IsRequired)
-        {
-            <span class="input-req-tag">(اجباری)</span>
-        }
-    </label>
+    @* فقط اگر Label مقدار داشت نمایش بده *@
+    @if (!string.IsNullOrEmpty(Model.Label))
+    {
+        <label class="form-label">
+            @Model.Label
+            @if (Model.IsRequired)
+            {
+                <span class="input-req-tag">(اجباری)</span>
+            }
+        </label>
+    }
+
     <input type="hidden"
            id="@Model.Id"
            name="@Model.Name"
@@ -19,7 +24,6 @@
             <span class="ss-text">
                 @(Model.Options.FirstOrDefault(x => x.Value == Model.SelectedValue)?.Text ?? Model.DefaultText)
             </span>
-
             <i class="fa fa-chevron-down ss-caret"></i>
         </div>
 

@@ -10,9 +10,12 @@
     var receivingModes = ViewBag.ReceivingModes as List<EnumListDto>;
     var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
     bool isConfirmed = Model?.IsConfirmed ?? false;
+
+    @* مقدار فعلی گیرنده برای pre-select در SearchableSelect *@
+    var currentReceiverId = Model?.ReceiverId.ToString() ?? "";
+    var currentReceiverName = recipients?.FirstOrDefault(r => r.RecipientId == Model.ReceiverId)?.FullName ?? "";
 }
 
-@* ── استایل‌ها — عیناً همان Create ── *@
 @section Styles {
     <link href="~/css/persian-datepicker.css" rel="stylesheet" />
     <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
@@ -21,12 +24,13 @@
     <link href="~/css/components/shared/toast.css" rel="stylesheet" />
     <link href="~/css/components/shared/lines-table.css" rel="stylesheet" />
     <link href="~/css/components/shared/uid-modal.css" rel="stylesheet" />
+    <link href="~/css/components/shared/search-bar.css" rel="stylesheet" />
     <link href="~/css/dispatch-form.css" rel="stylesheet" />
 }
 
 <div id="toastContainer"></div>
 
-@* ── مودال UID — عیناً همان Create ── *@
+@* ── مودال UID ── *@
 <div class="uid-modal-overlay" id="uidModalOverlay">
     <div class="uid-modal">
         <div class="uid-modal-header">
@@ -61,7 +65,6 @@
     <form id="dispatchForm" asp-action="Edit" method="post" novalidate>
         @Html.AntiForgeryToken()
 
-        @* ── hidden: Id ارسال و فیلدهای read-only مدل ── *@
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="SenderId" />
         <input type="hidden" asp-for="FiscalPeriodId" />
@@ -70,9 +73,7 @@
         <input type="hidden" asp-for="IsConfirmed" />
         <input type="hidden" asp-for="IsDrafted" />
 
-        @* ══════════════════════════════════════════════
-           کارت ۱: اطلاعات اصلی
-           ══════════════════════════════════════════════ *@
+        @* ══════ کارت ۱: اطلاعات اصلی ══════ *@
         <div class="a-card">
             <div class="a-card-header">
                 <h6>
@@ -101,8 +102,7 @@
 
                     <div class="f-group">
                         <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
-                        <select id="itemClassSelect" class="f-control"
-                                disabled="@isConfirmed">
+                        <select id="itemClassSelect" class="f-control" disabled="@isConfirmed">
                             <option value="">انتخاب کنید...</option>
                             @foreach (var ic in itemClasses)
                             {
@@ -113,10 +113,24 @@
 
                     <div class="f-group">
                         <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
-                        <select id="itemSelect" class="f-control"
-                                disabled="@isConfirmed">
-                            <option value="">ابتدا نوع کالا را انتخاب کنید</option>
-                        </select>
+                        @* ✅ مورد ۶: کالا با SearchableSelect *@
+                        @if (!isConfirmed)
+                        {
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
+                            {
+                                Id = "itemSelect",
+                                                Name = "itemSelect",
+                                                Label = "",
+                                                IsRequired = false,
+                                                DefaultText = "ابتدا نوع کالا را انتخاب کنید",
+                                                Options = new List<SelectOption>()
+                                                })
+                                                }
+                        else
+                        {
+                            @* در حالت تایید شده فقط نمایش متن — غیرقابل ویرایش *@
+                            <input type="text" class="f-control" disabled value="(تایید شده - قابل ویرایش نیست)" />
+                        }
                     </div>
 
                 </div>
@@ -125,14 +139,21 @@
 
                     <div class="f-group">
                         <label class="f-label">گیرنده <span class="req-tag">اجباری</span></label>
-                        <select asp-for="ReceiverId" class="f-control"
-                                disabled="@isConfirmed">
-                            <option value="">انتخاب کنید...</option>
-                            @foreach (var r in recipients)
-                            {
-                                <option value="@r.RecipientId">@r.FullName</option>
-                            }
-                        </select>
+                        @* ✅ مورد ۶: گیرنده با SearchableSelect + مقدار فعلی pre-select شده *@
+                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
+                        {
+                            Id = "ReceiverId",
+                                                Name = "ReceiverId",
+                                                Label = "",
+                                                IsRequired = false,
+                                                DefaultText = "جستجوی گیرنده...",
+                                                SelectedValue = currentReceiverId,
+                                                Options = recipients.Select(r => new SelectOption
+                                                {
+                                                    Value = r.RecipientId.ToString(),
+                                                    Text = r.FullName
+                                                }).ToList()
+                                                })
                         <span asp-validation-for="ReceiverId" class="text-danger" style="font-size:11px;"></span>
                     </div>
 
@@ -163,8 +184,7 @@
 
                     <div class="f-group">
                         <label class="f-label">روش دریافت</label>
-                        <select asp-for="ReceivingMode" class="f-control"
-                                disabled="@isConfirmed">
+                        <select asp-for="ReceivingMode" class="f-control" disabled="@isConfirmed">
                             <option value="">انتخاب کنید...</option>
                             @foreach (var m in receivingModes)
                             {
@@ -175,8 +195,7 @@
 
                     <div class="f-group">
                         <label class="f-label">طریقه حمل</label>
-                        <select asp-for="TransportMode" class="f-control"
-                                disabled="@isConfirmed">
+                        <select asp-for="TransportMode" class="f-control" disabled="@isConfirmed">
                             <option value="">انتخاب کنید...</option>
                             @foreach (var m in transportModes)
                             {
@@ -191,8 +210,7 @@
 
                     <div class="f-group">
                         <label class="f-label">مرحله VVM</label>
-                        <select id="vvmStagesSelect" class="f-control"
-                                disabled="@isConfirmed">
+                        <select id="vvmStagesSelect" class="f-control" disabled="@isConfirmed">
                             <option value="">انتخاب کنید</option>
                             @foreach (var s in ViewBag.VVMStages)
                             {
@@ -213,9 +231,7 @@
             </div>
         </div>
 
-        @* ══════════════════════════════════════════════
-           کارت ۲: انتخاب سری ساخت — فقط اگر تایید نشده
-           ══════════════════════════════════════════════ *@
+        @* ══════ کارت ۲: انتخاب سری ساخت — فقط اگر تایید نشده ══════ *@
         @if (!isConfirmed)
         {
             <div class="a-card">
@@ -266,9 +282,7 @@
 
         <div id="hiddenInputsContainer"></div>
 
-        @* ══════════════════════════════════════════════
-           کارت ۳: کالاهای ارسال
-           ══════════════════════════════════════════════ *@
+        @* ══════ کارت ۳: کالاهای ارسال ══════ *@
         <div class="a-card">
             <div class="a-card-header">
                 <h6><i class="fa fa-check-square" style="color:#1d6fb8;"></i> کالاهای ارسال</h6>
@@ -309,7 +323,7 @@
             @if (!isConfirmed)
             {
                 <button type="button" class="btn-confirm js-footer-btn" data-submit="final">
-                    <i class="fa fa-check"></i> ثبت
+                    <i class="fa fa-check"></i> ارسال
                 </button>
                 <button type="button" class="btn-draft js-footer-btn" data-submit="draft">
                     <i class="fa fa-file-text"></i> پیش فاکتور
@@ -331,12 +345,10 @@
     <script src="~/js/persian-date.js"></script>
     <script src="~/js/persian-datepicker.js"></script>
 
-    @* ── shared modules ── *@
     <script src="~/js/shared/toast.js"></script>
     <script src="~/js/shared/uid-modal.js"></script>
     <script src="~/js/shared/batch-table.js"></script>
 
-    @* ── متغیرهای تزریقی از C# به JS ── *@
     <script>
         var dispatchServerMsg        = "@(TempData["ToastMessage"] as string ?? "")";
         var dispatchServerType       = "@(TempData["ToastType"] as string ?? "info")";
@@ -348,6 +360,5 @@
         var dispatchIsConfirmed      = @(isConfirmed ? "true" : "false");
     </script>
 
-    @* ── لاجیک اختصاصی فرم ویرایش ── *@
     <script src="~/js/dispatch-edit-form.js"></script>
 }

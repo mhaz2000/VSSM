@@ -203,6 +203,11 @@ public class DispatchesController(
 
     }
 
+
+    public IActionResult Print(int id)
+    {
+        return View("~/Views/Shared/UnderConstruction.cshtml");
+    }
     public async Task<IActionResult> ToBeArrivedIndex(CancellationToken cancellationToken, string? search,
                                     int pageNumber = 1,
                                     int pageSize = 10,

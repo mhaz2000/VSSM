@@ -1,41 +1,23 @@
 ﻿/**
  * dispatch-form.js  —  لاجیک اختصاصی فرم ارسال
- * ═══════════════════════════════════════════
- * وابستگی‌ها (باید قبل از این فایل لود شده باشند):
- *   - jQuery
- *   - toast.js          (showToast)
- *   - uid-modal.js      (openUidModal, closeUidModal, submitUid, removeUid)
- *   - batch-table.js    (initBatchTable, loadBatchRows, showMoreRows)
- *
- * متغیرهای تزریقی از View (باید قبل از این فایل تعریف شوند):
- *   dispatchServerMsg        - پیغام TempData
- *   dispatchServerType       - نوع پیغام TempData
- *   dispatchGetItemsByClass  - URL اکشن GetItemsByClass
- *   dispatchGetBatchesByItem - URL اکشن GetBatchesByItem
- *   setUidUrl                - URL اکشن SetUid
- * ═══════════════════════════════════════════
  */
 
-/* آرایه آیتم‌های افزوده‌شده — در scope بیرونی تا uid-modal.js هم بهش دسترسی داشته باشد */
 var addedItems = [];
 
 $(function () {
 
     // ════════════════════════════════════════
-    //  ۱. مقداردهی اولیه ماژول‌های shared
+    //  ۱. مقداردهی اولیه
     // ════════════════════════════════════════
 
-    // toast سرور
     if (typeof dispatchServerMsg !== 'undefined' && dispatchServerMsg) {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
-    // تاریخ‌پیکر شمسی
     if ($.fn.pDatepicker) {
         $('#Date').pDatepicker({ format: 'YYYY/MM/DD', autoClose: true });
     }
 
-    // جدول سری ساخت
     initBatchTable({
         tbodyId: 'itemDetailsTbody',
         showMoreWrap: 'showMoreWrap',
@@ -45,16 +27,72 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  ۲. cascade: نوع کالا ← کالا ← سری ساخت
+    //  ۲. helpers برای SearchableSelect
+    //     این توابع آیتم‌های ss-options رو
+    //     آپدیت می‌کنند بدون re-render کامل
+    // ════════════════════════════════════════
+
+    /**
+     * پر کردن یک SearchableSelect با آیتم‌های جدید
+     * @param {string} wrapperId  - id فیلد hidden (مثلاً 'itemSelect')
+     * @param {Array}  items      - آرایه‌ای از { itemId, fullName }
+     * @param {string} emptyText  - متن حالت خالی
+     */
+    function populateSS(wrapperId, items, emptyText) {
+        var $hidden = $('#' + wrapperId);
+        var $wrapper = $hidden.closest('.ss-wrapper');
+        var $options = $wrapper.find('.ss-options');
+        var $display = $wrapper.find('.ss-text');
+
+        // ریست مقدار hidden
+        $hidden.val('');
+        $display.text(emptyText || 'انتخاب کنید...');
+
+        // ساخت آیتم‌های جدید
+        var html = '';
+        $.each(items, function (_, item) {
+            html += '<div class="ss-option" data-value="' + item.itemId + '">' +
+                item.fullName +
+                '</div><hr style="margin:5px"/>';
+        });
+
+        if (!html) {
+            html = '<div class="ss-option-empty" style="padding:8px;color:#9ca3af;text-align:center;">' +
+                (emptyText || 'موردی یافت نشد') + '</div>';
+        }
+
+        $options.html(html);
+
+        // re-bind کلیک روی آیتم‌های جدید
+        bindSSOptionClick($wrapper);
+    }
+
+    /**
+     * bind کردن کلیک روی آیتم‌های ss-option
+     */
+    function bindSSOptionClick($wrapper) {
+        $wrapper.find('.ss-option').off('click').on('click', function () {
+            var val = $(this).data('value');
+            var text = $(this).text().trim();
+            $wrapper.find('input[type="hidden"]').val(val);
+            $wrapper.find('.ss-text').text(text);
+            $wrapper.find('.ss-dropdown').hide();
+            // trigger تغییر برای cascade
+            $wrapper.find('input[type="hidden"]').trigger('change');
+        });
+    }
+
+    // ════════════════════════════════════════
+    //  ۳. cascade: نوع کالا ← کالا ← سری ساخت
     // ════════════════════════════════════════
 
     $('#itemClassSelect').on('change', function () {
         var classId = $(this).val();
-        $('#itemSelect').html('<option value="">در حال بارگذاری...</option>');
         loadBatchRows([]);
+        populateSS('itemSelect', [], 'در حال بارگذاری...');
 
         if (!classId) {
-            $('#itemSelect').html('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
+            populateSS('itemSelect', [], 'ابتدا نوع کالا را انتخاب کنید');
             return;
         }
 
@@ -62,15 +100,12 @@ $(function () {
             url: dispatchGetItemsByClass,
             data: { classId: classId },
             success: function (items) {
-                var opts = '<option value="">انتخاب کنید...</option>';
-                $.each(items, function (_, item) {
-                    opts += '<option value="' + item.itemId + '">' + item.fullName + '</option>';
-                });
-                $('#itemSelect').html(opts);
+                populateSS('itemSelect', items, 'انتخاب کنید...');
             }
         });
     });
 
+    // وقتی کالا از SearchableSelect انتخاب شد
     $('#itemSelect').on('change', function () {
         var itemId = $(this).val();
         loadBatchRows([]);
@@ -86,7 +121,7 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  ۳. افزودن آیتم به لیست
+    //  ۴. افزودن آیتم به لیست
     // ════════════════════════════════════════
 
     window.addSelectedItem = function () {
@@ -133,7 +168,6 @@ $(function () {
         addedItems.push(item);
         renderAddedItems();
 
-        // افزودن خودکار حلال اگر requiresDiluent=1
         if (row.requiresDiluent && row.diluentItemDetailStoreId) {
             addedItems.push({
                 idx: addedItems.length,
@@ -163,25 +197,22 @@ $(function () {
     };
 
     // ════════════════════════════════════════
-    //  ۴. حذف آیتم
+    //  ۵. حذف آیتم
     // ════════════════════════════════════════
 
     window.removeItem = function (idx) {
         var item = addedItems[idx];
-
-        // برگشت موجودی به سلول جدول
         var $stockCell = $('.stock-cell-' + item.itemDetailStoreId);
         if ($stockCell.length) {
             $stockCell.text((parseInt($stockCell.text()) || 0) + item.doseCount);
         }
-
         addedItems.splice(idx, 1);
         $.each(addedItems, function (i, it) { it.idx = i; });
         renderAddedItems();
     };
 
     // ════════════════════════════════════════
-    //  ۵. رندر جدول کالاهای افزوده‌شده
+    //  ۶. رندر جدول کالاهای افزوده‌شده
     // ════════════════════════════════════════
 
     function renderAddedItems() {
@@ -227,7 +258,7 @@ $(function () {
     }
 
     // ════════════════════════════════════════
-    //  ۶. ساخت hidden inputs برای submit
+    //  ۷. ساخت hidden inputs برای submit
     // ════════════════════════════════════════
 
     function rebuildHiddenInputs() {
@@ -257,7 +288,7 @@ $(function () {
     }
 
     // ════════════════════════════════════════
-    //  ۷. دکمه‌های footer
+    //  ۸. دکمه‌های footer
     // ════════════════════════════════════════
 
     $('.js-footer-btn').on('click', function () {
@@ -277,7 +308,6 @@ $(function () {
         }
 
         $('#toastContainer').empty();
-
         $('#dispatchForm').find('input[name="submitType"]').remove();
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
             .appendTo('#dispatchForm');
@@ -292,5 +322,40 @@ $(function () {
             $('#dispatchForm').submit();
         }
     };
+
+    // ════════════════════════════════════════
+    //  ۹. bind اولیه SearchableSelect های موجود
+    // ════════════════════════════════════════
+
+    $('.ss-wrapper').each(function () {
+        bindSSOptionClick($(this));
+
+        // باز/بسته کردن dropdown
+        $(this).find('.ss-display').on('click', function () {
+            var $dd = $(this).siblings('.ss-dropdown');
+            $('.ss-dropdown').not($dd).hide();
+            $dd.toggle();
+            if ($dd.is(':visible')) {
+                $dd.find('.ss-search').focus();
+            }
+        });
+
+        // فیلتر جستجو
+        $(this).find('.ss-search').on('input', function () {
+            var q = $(this).val().toLowerCase();
+            $(this).closest('.ss-dropdown').find('.ss-option').each(function () {
+                var match = $(this).text().toLowerCase().indexOf(q) > -1;
+                $(this).toggle(match);
+                $(this).next('hr').toggle(match);
+            });
+        });
+    });
+
+    // بستن dropdown با کلیک بیرون
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('.ss-wrapper').length) {
+            $('.ss-dropdown').hide();
+        }
+    });
 
 });

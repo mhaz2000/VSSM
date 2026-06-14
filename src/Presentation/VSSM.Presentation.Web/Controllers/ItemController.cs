@@ -2,6 +2,7 @@
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services.BaseEntities;
 using VSSM.Application.Shared;
 using VSSM.Presentation.Web.Models.Base;
 using VSSM.Presentation.Web.Models.Item;
@@ -10,11 +11,13 @@ namespace VSSM.Presentation.Web.Controllers;
 
 public class ItemController(
     IItemService itemService,
-    IItemClassService itemClassService,
-    IItemDetailsService itemDetailsService) : BaseController
+    IItemDetailsService itemDetailsService,
+    IBaseInfoService baseInfoService) : BaseController
 {
     private const int VaccineClassId = 54;
     private const int DiluentClassId = 55;
+    private const int ItemClassId = 53;
+
 
     public async Task<IActionResult> Index(
         CancellationToken cancellationToken,
@@ -152,11 +155,10 @@ public class ItemController(
 
     private async Task PrepareDropdown(CancellationToken cancellationToken)
     {
-        var list = await itemClassService.GetActives(cancellationToken);
 
-        ViewBag.ItemClass = list;
+        ViewBag.ItemClass = await baseInfoService.GetByParentIdAsync(ItemClassId);
 
-        ViewBag.DiluentDropDown = list.Where(c => c.Id == DiluentClassId);
+        ViewBag.DiluentDropDown = itemService.GetItemsByClassId(DiluentClassId);
     }
 
     private static ItemCreateDto MapToDto(ItemViewModel model) => new()

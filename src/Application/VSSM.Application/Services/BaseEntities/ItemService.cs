@@ -59,6 +59,23 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
         }).ToList();
     }
 
+    public async Task<List<ItemListDto>> GetItemsByClassId(int fkClassId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.TblItems
+            .AsNoTracking()
+            .Where(x => x.IsActive == true && x.FkClassId == fkClassId)
+            .Select(x => new ItemListDto
+            {
+                Id = x.ItemId,
+                FullName = x.FullName,
+                ItemClassId = x.ItemClassId
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+
+
+
     public async Task<List<ItemListDto>> GetActives(CancellationToken cancellationToken)
     {
         var items = await dbContext.TblItems
@@ -196,7 +213,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
     {
         return await dbContext.TblItems
             .AsNoTracking()
-            .Where(item => item.ItemClassId == classItemId)
+            .Where(item => item.FkClassId == classItemId)
             .Select(item => new ItemListDto
             {
                 Id = item.ItemId,

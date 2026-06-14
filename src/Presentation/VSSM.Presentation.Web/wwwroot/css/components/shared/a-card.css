@@ -30,3 +30,8 @@
 .a-card-body {
     padding: 20px;
 }
+
+.a-card-header {
+    border-radius: 14px 14px 0 0;
+    ...
+}

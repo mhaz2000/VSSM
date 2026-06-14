@@ -4,31 +4,32 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Store;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Presentation.Web.Models.Base;
 using VSSM.Presentation.Web.Models.Store;
 
 namespace VSSM.Presentation.Web.Controllers
 {
-    
+
     public class StoreController : BaseController
     {
         private readonly IStoreService _storeService;
-        private readonly IStoreTypeService _storeTypeService;
+        private readonly IBaseInfoService _baseInfoService;
         private readonly IRecipientService _recipientService;
         private readonly IPowerSourceService _powerSourceService;
         private readonly ISourceService _sourceService;
 
         public StoreController(
             IStoreService storeService,
-            IStoreTypeService storeTypeService,
             IRecipientService recipientService,
             IPowerSourceService powerSourceService,
+            IBaseInfoService baseInfoService,
             ISourceService sourceService)
         {
             _storeService = storeService;
-            _storeTypeService = storeTypeService;
             _recipientService = recipientService;
             _powerSourceService = powerSourceService;
             _sourceService = sourceService;
+            _baseInfoService = baseInfoService;
         }
 
         public async Task<IActionResult> Index(
@@ -38,17 +39,53 @@ namespace VSSM.Presentation.Web.Controllers
          int pageSize = 10,
          CancellationToken token = default)
         {
-            ViewBag.TypeList = (await _storeTypeService.GetAll(token))
+            var storeTypes = await _baseInfoService.GetByParentIdAsync(56, token);
+
+            ViewBag.StoreTypeList = storeTypes is null ? [] : storeTypes
                 .Select(x => new SelectListItem
                 {
-                    Value = x.StoreTypeId.ToString(),
-                    Text = x.FullName
+                    Text = x.Title,
+                    Value = x.Id.ToString()
                 })
                 .ToList();
 
             var list = await _storeService.GetPagedList(search, typeId, page, pageSize, token);
 
-            return View(list);
+            var model = new GridViewModel
+            {
+                SearchTerm = search,
+                Data = new PagedResult<object>
+                {
+                    Items = list.Items.Cast<object>().ToList(),
+                    PageNumber = page,
+                    PageSize = pageSize,
+                    TotalCount = list.Paging.TotalPages
+                },
+                Columns = new List<GridColumn>
+            {
+                new() { Header = "نام کاربری", PropertyName = nameof(StoreListDto.FullName),  Sortable = false },
+                new() { Header = "نام", PropertyName = nameof(StoreListDto.TypeName), Sortable = false },
+                new() { Header = "نام خانوادگی", PropertyName = nameof(StoreListDto.Volume), Sortable = false },
+                new() { Header = "تلفن", PropertyName = nameof(StoreListDto.FreeVolume),  Sortable = false },
+                new() { Header = "گیرنده", PropertyName = nameof(StoreListDto.Code),  Sortable = false },
+                new() { Header = "عملیات", IsActionColumn = true}
+            },
+                Actions = new List<GridAction>
+            {
+                new()
+                {
+                    Title = "ویرایش",
+                    Controller = "Store",
+                    Action = "New",
+                    RouteIdProperty = nameof(StoreListDto.StoreId),
+                    LinkClass = "",
+                    IconClass = "fa fa-edit",
+                }
+            }
+            };
+
+
+            return View(model);
         }
 
         public async Task<IActionResult> New(int? id, CancellationToken cancellationToken)
@@ -176,16 +213,16 @@ namespace VSSM.Presentation.Web.Controllers
 
         private async Task LoadDropDowns(CancellationToken cancellationToken)
         {
-            var storeTypes = await _storeTypeService.GetAll(cancellationToken);
-            var recipients = await _recipientService.GetAll(cancellationToken);
+            var storeTypes = await _baseInfoService.GetByParentIdAsync(56, cancellationToken);
+            var recipients = await _recipientService.GetActiveRecipients(cancellationToken);
             var powerSources = await _powerSourceService.GetAll(cancellationToken);
             var sources = await _sourceService.GetAll(cancellationToken);
 
-            ViewBag.StoreTypeList = storeTypes
+            ViewBag.StoreTypeList = storeTypes is null ? [] : storeTypes
                 .Select(x => new SelectListItem
                 {
-                    Text = x.FullName,
-                    Value = x.StoreTypeId.ToString()
+                    Text = x.Title,
+                    Value = x.Id.ToString()
                 })
                 .ToList();
 

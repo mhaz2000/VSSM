@@ -1,38 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using NuGet.Common;
-using System.Threading;
-using VSSM.Application.DTOs.BaseEntities.Item;
-using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.DTOs.BaseEntities.Reports;
-using VSSM.Application.DTOs.Reports;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
-using VSSM.Application.Shared;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
     public class StoreReportController(IStoreService _storeService,
-        IStoreTypeService _storeTypeService,
         IRecipientService _recipientService,
+        IBaseInfoService _baseInfoService,
         IFiscalPeriodService _fiscalPeriodService)
         : BaseController
     {
-
-
-
         public async Task<IActionResult> StoreEquipment(CancellationToken cancellationToken = default)
         {
 
             var recipients = await _recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.Value, cancellationToken);
             ViewBag.Recipients = recipients;
 
-            ViewBag.TypeList = (await _storeTypeService.GetAll(cancellationToken))
+            ViewBag.TypeList = (await _baseInfoService.GetByParentIdAsync(56, cancellationToken))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.StoreTypeId.ToString(),
-                    Text = x.FullName
+                    Value = x.Id.ToString(),
+                    Text = x.Title
                 })
                 .ToList();
 

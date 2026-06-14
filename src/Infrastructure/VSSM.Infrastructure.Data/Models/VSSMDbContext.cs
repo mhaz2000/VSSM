@@ -157,7 +157,6 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblStore> TblStores { get; set; }
 
-    public virtual DbSet<TblStoreType> TblStoreTypes { get; set; }
     public virtual DbSet<TblDestroyUid> TblDestroyUids { get; set; }
 
     public virtual DbSet<TblStoreUsageWarning> TblStoreUsageWarnings { get; set; }
@@ -1761,28 +1760,17 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.RecipientId).HasColumnName("RecipientID");
             entity.Property(e => e.RefrigerantGas).HasMaxLength(200);
             entity.Property(e => e.RoomBox).HasMaxLength(100);
-            entity.Property(e => e.TypeId).HasColumnName("TypeID");
+            entity.Property(e => e.TypeId).HasColumnName("StoreTypeId");
 
             entity.HasOne(d => d.Recipient).WithMany(p => p.TblStores)
                 .HasForeignKey(d => d.RecipientId)
                 .HasConstraintName("FK_tblStores_tblRecipients");
 
-            entity.HasOne(d => d.Type).WithMany(p => p.TblStores)
+            entity.HasOne(d => d.Type).WithMany()
                 .HasForeignKey(d => d.TypeId)
-                .HasConstraintName("FK_tblStores_tblStoreTypes");
+                .HasConstraintName("FK_tblStores_tblBaseInfo_store");
         });
 
-        modelBuilder.Entity<TblStoreType>(entity =>
-        {
-            entity.HasKey(e => e.StoreTypeId);
-
-            entity.ToTable("tblStoreTypes");
-
-            entity.Property(e => e.StoreTypeId).HasColumnName("StoreTypeID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
-        });
 
         modelBuilder.Entity<TblStoreUsageWarning>(entity =>
         {

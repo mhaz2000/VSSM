@@ -1,179 +1,59 @@
-﻿@using VSSM.Application.DTOs.BaseEntities.Store
-@model PagingSearchOrderDto<StoreListDto>
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
 
+@section Styles {
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
+    <link href="~/css/components/shared/grid-header.css" rel="stylesheet" />
+
+}
 @{
-    ViewData["Title"] = "مدیریت انبارها";
+    ViewData["Title"] = "مدیریت انبار‌ها";
+    var currentType = Context.Request.Query["typeId"].ToString();
+    var storeTypeList = ViewBag.StoreTypeList as List<SelectListItem>;
+
 }
 
-@{
-    int rowIndex = (Model.Paging.Page - 1) * Model.Paging.PageSize;
-}
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
+<div class="grid-wrapper">
+    <div class="grid-header" style="direction:rtl;">
 
-        <!-- Search Card -->
-        <div class="card">
-            <div class="row m-0  card-header">
-                <div class="col-lg-6">
-                    <h5 class="header-title">@ViewData["Title"]</h5>
-                </div>
-                <div class="col-lg-6 d-flex align-items-center justify-content-end">
-                    <div class="col-lg-12 d-flex align-items-center justify-content-end">
+        <strong style="font-size:1.4rem; font-weight:600; color:#111827;">
+            @ViewData["Title"]
+        </strong>
 
-                            <div class="col-lg-3">
-                                <select name="typeId" class="form-control form-select m-0" 
-                                style="height:42px!important"
-                                asp-items="ViewBag.TypeList">
-                                    <option value="">نوع انبار</option>
-                                </select>
-                            </div>
-                            <div class="col-lg-5 mx-2">
-                                @await Component.InvokeAsync("SearchBar", new
-                                {
-                                    searchTerm = Model.SearchText,
-                                    pageSize = Model.Paging.PageSize,
-                                    sort = Model.SortField,
-                                    direction = Model.SortOrder
-                                })
-                            </div>
-                            <div class="col-lg-2 d-flex align-items-center justify-content-end">
-                                <a class="btn btn-success m-0" asp-action="New"><i class="fa fa-plus ml-2"></i>افزودن</a>
-                            </div>
+        <div class="d-flex align-items-center gap-2">
 
-                    </div>
-                </div>
-                
-            </div>
-            
-            <div class="card-block">
-                <div class="table-wrapper">
-                    <table class="table table-bordered table-striped text-center m-0">
-                    <thead>
-                        <tr>
-                            <th>کد</th>
-                            <th>نام</th>
-                            <th>نوع انبار</th>
-                            <th>حجم کلی فضا (لیتر)</th>
-                            <th>حجم مفید (لیتر)</th>
-                            <th>وضعیت</th>
-                            <th>عملیات</th>
-                        </tr>
-                    </thead>
+            <form method="get" class="m-0">
+                <input type="hidden" name="sort" value="@Model.CurrentSort" />
+                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
+                <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
 
-                    <tbody>
-                        @if (Model != null && Model.Items.Any())
+                <div class="search-wrap">
+                    <select name="typeId" class="search-select" onchange="this.form.submit()">
+                        <option value="" selected="@(currentType == "")">همه</option>
+                        @foreach (var storeType in storeTypeList)
                         {
-                            foreach (var item in Model.Items)
-                            {
-                                rowIndex++;
-                                <tr>
-                                    <td>@rowIndex</td>
-                                    <td>@item.Code</td>
-                                    <td>@item.FullName</td>
-                                    <td>@item.TypeName</td>
-                                    <td>@item.Volume</td>
-                                    <td>@item.FreeVolume</td>
-                                    <td>
-                                        @if (item.IsActive)
-                                            {
-                                                <span class="badge badge-success">فعال</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge badge-danger">غیرفعال</span>
-                                            }
-                                    </td>
-                                    <td>
-                                        <a class="btn btn-link text-danger btn-sm"
-                                           asp-action="New"
-                                           asp-route-id="@item.StoreId">
-                                            <i class="fa fa-trash" style="font-size:18px;"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
+                            <option value="@(storeType.Value)" selected="@(currentType == storeType.Value)">@storeType.Text</option>
                         }
-                        else
-                        {
-                            <tr>
-                                <td colspan="8" class="text-danger">داده‌ای یافت نشد</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-                
-                
+                    </select>
+                    <div class="search-divider"></div>
+                    <input type="text" name="search" class="search-input"
+                           value="@Model.SearchTerm" placeholder="جستجو..." />
+                    <button type="submit" class="search-btn" title="جستجو">
+                        <i class="fa fa-search"></i>
+                    </button>
                 </div>
-                <!-- Pagination -->
-               @{
-                    int page = Model.Paging.Page;
-                    int totalPages = Model.Paging.TotalPages;
+            </form>
 
-                    // چند صفحه اطراف صفحه فعلی
-                    int window = 2;
+            <a asp-action="New" class="btn-add">
+                <span class="plus-circle">+</span>
+                افزودن کالا
+            </a>
 
-                    // پارامترهای فیلتر/مرتب‌سازی که باید حفظ شوند
-                    var search = Model.SearchText ?? "";
-                    var sortField = Model.SortField ?? "";
-                    var sortOrder = Model.SortOrder ?? "";
-
-                    // typeId از QueryString میاد (چون تو Model نیست)
-                    var typeId = Context.Request.Query["typeId"].ToString() ?? "";
-
-                    // انتخاب صفحات: 1, ... , (page-window..page+window), ... , total
-                    var selected = new SortedSet<int>();
-                    if (totalPages >= 1) selected.Add(1);
-
-                    for (int p = page - window; p <= page + window; p++)
-                        if (p >= 1 && p <= totalPages) selected.Add(p);
-
-                    if (totalPages >= 2) selected.Add(totalPages);
-
-                    string PageUrl(int p)
-                    => $"?search={search}&typeId={typeId}&sortField={sortField}&sortOrder={sortOrder}&page={p}";
-                }
-
-                <nav class="pager-wrap mt-2 m-auto" aria-label="Page navigation">
-                    <ul class="cpageination pager-modern m-auto">
-
-                        <!-- قبلی -->
-                        <li class="page-item @(page == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))" tabindex="@(page == 1 ? "-1" : "0")">
-                                <
-                            </a>
-                        </li>
-
-                        @{
-                            int prev = 0;
-                            foreach (var p in selected)
-                            {
-                                if (prev != 0 && p - prev > 1)
-                                {
-                                    <li class="page-item disabled ellipsis">
-                                        <span class="page-link">…</span>
-                                    </li>
-                                }
-
-                                <li class="page-item @(p == page ? "active" : "")">
-                                    <a class="page-link" href="@PageUrl(p)">@p</a>
-                                </li>
-
-                                prev = p;
-                            }
-                        }
-                        <li class="page-item @(page == totalPages ? "disabled" : "")">
-                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page + 1))" tabindex="@(page == 1 ? "-1" : "0")">
-                                >
-                            </a>
-                        </li>
-                </nav>
-
-            </div>
         </div>
     </div>
-</div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+    <div>
+        @await Html.PartialAsync("_DynamicGrid", Model)
+    </div>
+</div>

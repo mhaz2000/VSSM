@@ -69,7 +69,6 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IOrderInfoService, OrderInfoService>();
             services.AddScoped<IFiscalPeriodService, FiscalPeriodService>();
             services.AddScoped<IRecipientMaxItemService, RecipientMaxItemService>();
-            services.AddScoped<IStoreTypeService, StoreTypeService>();
             services.AddScoped<IValidator<RecipientMaxItemDto>, RecipientMaxItemValidator>();
             services.AddScoped<IValidator<VvmtypeDto>, VvmtypeValidator>();
             services.AddScoped<IValidator<StoreUsageWarningDto>, StoreUsageWarningValidator>();

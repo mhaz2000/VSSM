@@ -161,9 +161,9 @@ namespace VSSM.Application.Services.BaseEntities
                     FullName = x.Name,
                     TypeId = x.TypeId ?? 0,
 
-                    TypeName = _db.TblStoreTypes
-                        .Where(t => t.StoreTypeId == x.TypeId)
-                        .Select(t => t.FullName)
+                    TypeName = _db.TblBaseInfo
+                        .Where(t => t.BaseInfoId == x.TypeId)
+                        .Select(t => t.Title)
                         .FirstOrDefault(),
 
                     Volume = x.Volume,
@@ -284,11 +284,11 @@ namespace VSSM.Application.Services.BaseEntities
 
             var query = from r in reciepients
                         join s in stores on r.RecipientId equals s.RecipientId
-                        join t in _db.TblStoreTypes on s.TypeId equals t.StoreTypeId
+                        join t in _db.TblBaseInfo on s.TypeId equals t.BaseInfoId
                         select new StoreEquipmentReportDto()
                         {
                             StoreName = s.Name,
-                            StoreType = t.FullName,
+                            StoreType = t.Title,
                             Capacity = s.Volume,
                             TotalCapacity = s.FreeVolume,
                             IsActive = s.IsActive.Value ? "فعال" : "غیر فعال",

@@ -63,5 +63,5 @@ public partial class TblStore
 
     public virtual ICollection<TblItemDetailStore> TblItemDetailStores { get; set; } = new List<TblItemDetailStore>();
 
-    public virtual TblStoreType Type { get; set; }
+    public virtual TblBaseInfo Type { get; set; }
 }

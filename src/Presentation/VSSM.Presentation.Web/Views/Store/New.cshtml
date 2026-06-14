@@ -1,131 +1,112 @@
-﻿@model VSSM.Presentation.Web.Models.Store.StoreViewModel
+﻿@using VSSM.Application.DTOs.BaseEntities.Recipient
+@using VSSM.Presentation.Web.Models.Base
+@model VSSM.Presentation.Web.Models.Store.StoreViewModel
 
 @{
     string formName = Model?.StoreId > 0 ? "ویرایش انبار" : "ثبت انبار جدید";
+    var recipients = ViewBag.RecipientList as List<SelectListItem>;
+
 }
 
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/store/store-form.css" rel="stylesheet" />
+}
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
-        <div class="card from-card">
-                <div class="card-header card-form-header">
-                    <h5 class="header-title">@formName</h5>
-                </div>
-                <div class="card-block">
-                    
-                    <form asp-action="Create" asp-controller="Store" method="post" 
-                    class="form-horizontal">
-                        @Html.AntiForgeryToken()
+<div class="store-form-wrap">
+    <strong class="store-form-title">@formName</strong>
 
-                        <input type="hidden" asp-for="StoreId" />
+    <form asp-action="Create" asp-controller="Store" method="post">
+        @Html.AntiForgeryToken()
 
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="StoreId" />
 
-                        <div class="row mb-4 mx-0">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                        
-                            <div class="col-lg-4">
-
-                                <!-- Code -->
-                                <div class="form-group">
-                                    <span class="form-label">کد
-                                    <span class="form-label-caption"> (اجباری)</span>
-                                    </span>
-                                    <input asp-for="Code" placeholder="کد را وارد کنید" 
-                                    class="form-control bg-warning-subtle" />
-                                </div>
-                                <span class="text-danger" asp-validation-for="Code"></span>
-
-                                <!-- Volume -->
-                                <div class="form-group">
-                                    <label class="form-label">حجم کلی فضا (لیتر)</label>
-                                    <input asp-for="Volume" placeholder="لیتر را وارد کنید" class="form-control" />
-                                </div>
-
-
-                            </div>
-
-
-                            <div class="col-lg-4">
-
-                                <!-- Name -->
-                                <div class="form-group">
-                                    <span class="form-label">
-                                            نام انبار <span class="form-label-caption"> (اجباری)</span>
-                                    </span>
-                                    <input asp-for="Name"  placeholder="نام انبار  را وارد کنید"  class="form-control bg-warning-subtle" />
-                                </div>
-                                <span class="text-danger" asp-validation-for="Name"></span>
-
-
-                                <!-- FreeVolume -->
-                                <div class="form-group">
-                                    <label class="form-label">حجم مفید</label>
-                                    <input asp-for="FreeVolume"  placeholder="حجم مفید را وارد کنید"  class="form-control" />
-                                </div>
-                                <span class="text-danger" asp-validation-for="FreeVolume"></span>
-
-                            </div>
-                            
-
-
-                            <div class="col-lg-4">
-
-                                <!-- Type -->
-                                <div class="form-group">
-                                    <span class="form-label">
-                                        نوع درجه حرارت<span class="form-label-caption"> (اجباری)</span>
-                                    </span>
-                                    <select asp-for="TypeId"
-                                            asp-items="ViewBag.StoreTypeList"
-                                            class="form-control form-select ">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-                                <span class="text-danger" asp-validation-for="TypeId"></span>
-
-                                <!-- Recipient -->
-                                <div class="form-group">
-                                    <label class="form-label">گیرنده</label>
-                                    <select asp-for="RecipientId"
-                                            asp-items="ViewBag.RecipientList"
-                                            class="form-control form-select">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-
-                            </div>
-
-                            <div class="row m-0">
-                                <div class="col-lg-6">
-
-                                    <!-- Year -->
-                                    <div class="form-group">
-                                        <label class="form-label">سال نصب</label>
-                                        <input asp-for="Year"   placeholder="سال نصب را وارد کنید" class="form-control" />
-                                    </div>
-
-                                </div>
-                                <div class="col-lg-6">
-
-                                    <!-- Note -->
-                                    <div class="form-group">
-                                        <label class="form-label">ملاحظات</label>
-                                        <textarea asp-for="Note"   placeholder="ملاحظات را وارد کنید" class="form-control"></textarea>
-                                    </div>   
-
-                            </div>
-                            </div>
-                        </div>
-
-                        <div class="text-left">
-                            <button type="submit" class="btn btn-success px-5">ثبت</button>
-                            <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
-                        </div>
-                    </form>
-                </div>
+        <!-- اطلاعات اصلی -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-warehouse" style="color:#1d6fb8;"></i>
+                <h6>اطلاعات اصلی</h6>
             </div>
-    </div>
+            <div class="a-card-body">
+
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">کد <span class="req-tag">اجباری</span></label>
+                        <input asp-for="Code" placeholder="کد را وارد کنید" class="f-control" />
+                        <span class="text-danger" asp-validation-for="Code"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">نام انبار <span class="req-tag">اجباری</span></label>
+                        <input asp-for="Name" placeholder="نام انبار را وارد کنید" class="f-control" />
+                        <span class="text-danger" asp-validation-for="Name"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">نوع درجه حرارت <span class="req-tag">اجباری</span></label>
+                        <select asp-for="TypeId" asp-items="ViewBag.StoreTypeList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                        <span class="text-danger" asp-validation-for="TypeId"></span>
+                    </div>
+                </div>
+
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">گیرنده</label>
+
+                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
+                        {
+                            Id = "RecipientId",
+                            Name = "RecipientId",
+                            DefaultText = "جستجوی گیرنده...",
+                            Label = "",
+                            IsRequired = false,
+                            Options = recipients.Select(r => new SelectOption
+                            {
+                                Value = r.Value.ToString(),
+                                Text = r.Text
+                            }).ToList()
+                        })
+
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">حجم کلی فضا (لیتر)</label>
+                        <input asp-for="Volume" placeholder="لیتر را وارد کنید" class="f-control" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">حجم مفید</label>
+                        <input asp-for="FreeVolume" placeholder="حجم مفید را وارد کنید" class="f-control" />
+                        <span class="text-danger" asp-validation-for="FreeVolume"></span>
+                    </div>
+                </div>
+
+                <div class="fg-2">
+                    <div class="f-group">
+                        <label class="f-label">سال نصب</label>
+                        <input asp-for="Year" placeholder="سال نصب را وارد کنید" class="f-control" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">ملاحظات</label>
+                        <textarea asp-for="Note" placeholder="ملاحظات را وارد کنید" class="f-control"></textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- فوتر -->
+        <div class="form-footer">
+            <a asp-action="Index" class="btn-back">
+                <i class="fa fa-arrow-right"></i> بازگشت
+            </a>
+            <button type="submit" class="btn-confirm">
+                <i class="fa fa-save"></i> ثبت
+            </button>
+        </div>
+    </form>
 </div>
 
 @section Scripts {

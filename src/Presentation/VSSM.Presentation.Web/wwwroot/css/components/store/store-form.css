@@ -1,0 +1,11 @@
+.store-form-wrap {
+    margin: 1.5rem;
+    direction: rtl;
+}
+
+.store-form-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1.25rem;
+}

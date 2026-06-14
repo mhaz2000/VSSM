@@ -23,15 +23,6 @@ public partial class TblUser
 
     public bool? IsDeleted { get; set; }
 
-    /// <summary>
-    /// Permission Levels are:
-    /// 0= Nothing permited
-    /// 1= Reports
-    /// 2= 1 + Arrivals
-    /// 3 = 2 + Dispatches
-    /// 4= 3 + Basic Data
-    /// 5= 4 + Adjustment (Admin)
-    /// </summary>
     public int? PermissionLevel { get; set; }
 
     public DateTime? EntryDate { get; set; }
@@ -46,9 +37,9 @@ public partial class TblUser
 
     public string Idnumber { get; set; }
 
-    public int? CodeEdu { get; set; }
+    public int? EduId { get; set; }
 
-    public int? CodeJob { get; set; }
+    public int? JobId { get; set; }
 
     public string FreeNote { get; set; }
 
@@ -62,7 +53,8 @@ public partial class TblUser
 
     public int? RoleId { get; set; }
 
-    public virtual TblJobType CodeJobNavigation { get; set; }
+    public virtual TblBaseInfo CodeJobNavigation { get; set; }
+    public virtual TblBaseInfo CodeEduNavigation { get; set; }
 
     public virtual TblUser EnteredBy { get; set; }
 

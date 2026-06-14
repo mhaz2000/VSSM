@@ -1,177 +1,50 @@
-﻿@using VSSM.Application.DTOs.BaseEntities.User
-@model PagingSearchOrderDto<UserGetDto>
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@section Styles {
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
+    <link href="~/css/components/shared/grid-header.css" rel="stylesheet" />
+
+}
 
 @{
     ViewData["Title"] = "مدیریت کاربران";
-    int current = Model.Paging.Page;
-    int total = Model.Paging.TotalPages;
-
-    int start = Math.Max(1, current - 5);
-    int end = Math.Min(total, current + 5);
 }
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
 
-        <div class="card">
-            <div class="card-block">
+<div class="grid-wrapper">
+    <div class="grid-header" style="direction:rtl;">
 
-                <div class="col-lg-3">
-                    <h5> مدیریت کاربران </h5>
+        <strong style="font-size:1.4rem; font-weight:600; color:#111827;">
+            @ViewData["Title"]
+        </strong>
+
+        <div class="d-flex align-items-center gap-2">
+
+            <form method="get" class="m-0">
+                <input type="hidden" name="sort" value="@Model.CurrentSort" />
+                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
+                <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
+
+                <div class="search-wrap">
+                    <div class="search-divider"></div>
+                    <input type="text" name="search" class="search-input"
+                           value="@Model.SearchTerm" placeholder="جستجو..." />
+                    <button type="submit" class="search-btn" title="جستجو">
+                        <i class="fa fa-search"></i>
+                    </button>
                 </div>
+            </form>
 
-                <div class="col-lg-4"></div>
+            <a asp-action="New" class="btn-add">
+                <span class="plus-circle">+</span>
+                افزودن کالا
+            </a>
 
-                <form method="get">
-                    <div class="col-lg-4">
-                        <div class="input-group">
-                            <input type="text"
-                                   name="search"
-                                   value="@Model.SearchText"
-                                   class="form-control"
-                                   placeholder="جستجو (نام، نام خانوادگی، گیرنده...)" />
-
-                            <div class="input-group-btn">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-search"></i> جستجو
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
-                <div class="col-lg-1">
-                    <a asp-controller="User"
-                       asp-action="New"
-                       class="btn btn-success">
-                        <i class="fa fa-plus-circle"></i> جدید
-                    </a>
-                </div>
-
-            </div>
         </div>
+    </div>
 
-
-        <div class="row mt-2">
-            <div class="col-lg-12">
-
-                <div class="card">
-                    <div class="card-block">
-
-                        <table class="table table-bordered table-striped text-center">
-                            <thead>
-                                <tr>
-                                    <th><a href="?sortField=UserName&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">نام کاربری</a></th>
-                                    <th>نام</th>
-                                    <th>نام خانوادگی</th>
-                                    <th>تلفن</th>
-                                    <th>فکس</th>
-                                    <th>گیرنده</th>
-                                    <th>شغل</th>
-                                    <th>عملیات</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @if (Model.Items.Any())
-                                {
-                                    foreach (var u in Model.Items)
-                                    {
-                                        <tr>
-                                            <td>@u.UserName</td>
-                                            <td>@u.FirstName</td>
-                                            <td>@u.LastName</td>
-                                            <td>@u.Phone1</td>
-                                            <td>@u.Phone2</td>
-                                            <td>@u.RecipientName</td>
-                                            <td>@u.JobName</td>
-
-                                            <td>
-                                                <a class="btn btn-outline-primary btn-sm"
-                                                   asp-action="New"
-                                                   asp-route-id="@u.UserId">
-                                                    ویرایش
-                                                </a>
-
-
-                                                <a asp-controller="User"
-                                                   asp-action="Delete"
-                                                   asp-route-id="@u.UserId"
-                                                   class="btn btn-outline-danger btn-sm"
-                                                   onclick="return confirm('آیا مطمئن هستید؟');">
-                                                    حذف
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    }
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="8" class="text-danger">داده‌ای یافت نشد</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-
-                        <nav>
-                            <ul class="pagination">
-
-                                <!-- Previous -->
-                                <li class="page-item @(current == 1 ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(current - 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                        قبلی
-                                    </a>
-                                </li>
-
-                                <!-- First Page -->
-                                @if (start > 1)
-                                {
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="?search=@Model.SearchText&page=1&sortField=@Model.SortField&sortOrder=@Model.SortOrder">1</a>
-                                    </li>
-
-                                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                                }
-
-                                <!-- Middle Pages -->
-                                @for (int i = start; i <= end; i++)
-                                {
-                                    <li class="page-item @(current == i ? "active" : "")">
-                                        <a class="page-link"
-                                           href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
-                                    </li>
-                                }
-
-                                <!-- Last Page -->
-                                @if (end < total)
-                                {
-                                    <li class="page-item disabled"><span class="page-link">...</span></li>
-
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="?search=@Model.SearchText&page=@total&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@total</a>
-                                    </li>
-                                }
-
-                                <!-- Next -->
-                                <li class="page-item @(current == total ? "disabled" : "")">
-                                    <a class="page-link"
-                                       href="?search=@Model.SearchText&page=@(current + 1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">
-                                        بعدی
-                                    </a>
-                                </li>
-
-                            </ul>
-                        </nav>
-
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
+    <div>
+        @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
 </div>

@@ -79,8 +79,6 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblDosePerVial> TblDosePerVials { get; set; }
 
-    public virtual DbSet<TblEduType> TblEduTypes { get; set; }
-
     public virtual DbSet<TblFiscalPeriod> TblFiscalPeriods { get; set; }
 
     public virtual DbSet<TblGlobalConfiguration> TblGlobalConfigurations { get; set; }
@@ -98,8 +96,6 @@ public partial class VSSMDbContext : DbContext
     public virtual DbSet<TblItemsClass> TblItemsClasses { get; set; }
 
     public virtual DbSet<TblItemsCode> TblItemsCodes { get; set; }
-
-    public virtual DbSet<TblJobType> TblJobTypes { get; set; }
 
     public virtual DbSet<TblLevel> TblLevels { get; set; }
 
@@ -929,18 +925,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<TblEduType>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblEduType");
-
-            entity.Property(e => e.EduTypeId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("EduTypeID");
-            entity.Property(e => e.FullName).HasMaxLength(200);
-        });
-
         modelBuilder.Entity<TblFiscalPeriod>(entity =>
         {
             entity.HasKey(e => e.FiscalPeriodId);
@@ -1246,18 +1230,6 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
 
             entity.Property(e => e.Code).HasColumnName("code");
             entity.Property(e => e.UnicCode).HasMaxLength(255);
-        });
-
-        modelBuilder.Entity<TblJobType>(entity =>
-        {
-            entity.HasKey(e => e.JobTypeId);
-
-            entity.ToTable("tblJobType");
-
-            entity.Property(e => e.JobTypeId)
-                .ValueGeneratedNever()
-                .HasColumnName("JobTypeID");
-            entity.Property(e => e.FullName).HasMaxLength(200);
         });
 
         modelBuilder.Entity<TblLevel>(entity =>
@@ -1853,6 +1825,8 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
 
             entity.ToTable("tblUsers");
 
+            entity.Property(e => e.JobId).HasColumnName("JOBID");
+            entity.Property(e => e.EduId).HasColumnName("EDUID");
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.Course).HasMaxLength(200);
             entity.Property(e => e.CourseDate).HasColumnType("datetime");
@@ -1880,9 +1854,13 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.Storewarrning).HasColumnName("storewarrning");
             entity.Property(e => e.UserName).HasMaxLength(50);
 
-            entity.HasOne(d => d.CodeJobNavigation).WithMany(p => p.TblUsers)
-                .HasForeignKey(d => d.CodeJob)
-                .HasConstraintName("FK_tblUsers_tblJobType");
+            entity.HasOne(d => d.CodeJobNavigation).WithMany()
+                .HasForeignKey(d => d.JobId)
+                .HasConstraintName("FK_tblUsers_tblBaseInfo_job");
+
+            entity.HasOne(d => d.CodeEduNavigation).WithMany()
+                .HasForeignKey(d => d.EduId)
+                .HasConstraintName("FK_tblUsers_tblBaseInfo_edu");
 
             entity.HasOne(d => d.EnteredBy).WithMany(p => p.InverseEnteredBy)
                 .HasForeignKey(d => d.EnteredById)

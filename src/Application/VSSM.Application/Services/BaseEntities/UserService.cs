@@ -32,8 +32,8 @@ public class UserService : IUserService
             Phone2 = x.Phone2,
             RecipientId = x.RecipientId,
             PermissionLevel = x.PermissionLevel,
-            CodeEdu = x.CodeEdu,
-            CodeJob = x.CodeJob,
+            CodeEdu = x.EduId,
+            CodeJob = x.JobId,
             IsAdmin = x.IsAdmin ?? false,
             Course = x.Course,
             CourseDate = x.CourseDate,
@@ -56,8 +56,8 @@ public class UserService : IUserService
             Idnumber = dto.Idnumber,
             RecipientId = dto.RecipientId,
             PermissionLevel = dto.PermissionLevel,
-            CodeEdu = dto.CodeEdu,
-            CodeJob = dto.CodeJob,
+            EduId = dto.CodeEdu,
+            JobId = dto.CodeJob,
             IsAdmin = dto.IsAdmin,
             Course = dto.Course,
             CourseDate = dto.CourseDate,
@@ -87,8 +87,8 @@ public class UserService : IUserService
         x.RecipientId = dto.RecipientId;
         x.PermissionLevel = dto.PermissionLevel;
         x.RoleId = dto.RoleId;
-        x.CodeEdu = dto.CodeEdu;
-        x.CodeJob = dto.CodeJob;
+        x.EduId = dto.CodeEdu;
+        x.JobId = dto.CodeJob;
         x.IsAdmin = dto.IsAdmin;
         x.Course = dto.Course;
         x.CourseDate = dto.CourseDate;
@@ -173,7 +173,7 @@ public class UserService : IUserService
                 LastName = x.User.LastName,
                 Phone1 = x.User.Phone1,
                 Phone2 = x.User.Phone2,
-                JobName = x.User.CodeJobNavigation.FullName,
+                JobName = x.User.CodeJobNavigation.Title,
                 RecipientName = x.Recipient != null ? x.Recipient.FullName : ""
             })
             .ToListAsync(token);
@@ -207,8 +207,8 @@ public class UserService : IUserService
             RecipientId = x.RecipientId,
             PermissionLevel = x.PermissionLevel,
             RoleId = x.RoleId,
-            CodeEdu = x.CodeEdu,
-            CodeJob = x.CodeJob,
+            CodeEdu = x.EduId,
+            CodeJob = x.JobId,
             IsAdmin = x.IsAdmin ?? false,
             Course = x.Course,
             CourseDate = x.CourseDate

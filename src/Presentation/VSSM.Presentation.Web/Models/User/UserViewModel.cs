@@ -40,8 +40,8 @@ public class UserViewModel
 
     public bool IsAdmin { get; set; }
 
-    public string Course { get; set; }
-    // 👇 این را اضافه کن
+    public string? Course { get; set; }
+
     [Display(Name = "تاریخ ثبت")]
     [RegularExpression(@"^\d{2}/\d{2}/\d{2}$",
         ErrorMessage = "فرمت تاریخ باید به صورت yy/MM/dd باشد (مثال: 03/01/24).")]

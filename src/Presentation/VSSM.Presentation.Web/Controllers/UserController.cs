@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Presentation.Web.Models.Utility;
+using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
@@ -11,22 +11,19 @@ namespace VSSM.Presentation.Web.Controllers
     {
         private readonly IUserService _userService;
         private readonly IRecipientService _recipientService;
-        private readonly IEduTypeService _eduService;
-        private readonly IJobTypeService _jobService;
         private readonly IRoleService _roleService;
+        private readonly IBaseInfoService _baseInfoService;
 
         public UserController(
             IUserService userService,
             IRecipientService recipientService,
-            IEduTypeService eduService,
-            IJobTypeService jobService,
+            IBaseInfoService baseInfoService,
             IRoleService roleService)
         {
             _userService = userService;
             _recipientService = recipientService;
-            _eduService = eduService;
-            _jobService = jobService;
             _roleService = roleService;
+            _baseInfoService = baseInfoService;
         }
 
         // ====================== INDEX ============================
@@ -41,7 +38,54 @@ namespace VSSM.Presentation.Web.Controllers
             var list = await _userService.GetPagedList(
                 search, page, pageSize, sortField, sortOrder, token);
 
-            return View(list);
+
+            var model = new GridViewModel
+            {
+                SearchTerm = search,
+                CurrentSort = sortField,
+                CurrentDirection = sortField,
+                Data = new PagedResult<object>
+                {
+                    Items = list.Items.Cast<object>().ToList(),
+                    PageNumber = page,
+                    PageSize = pageSize,
+                    TotalCount = list.Paging.TotalPages
+                },
+                Columns = new List<GridColumn>
+            {
+                new() { Header = "نام کاربری", PropertyName = nameof(UserGetDto.UserName),  Sortable = false },
+                new() { Header = "نام", PropertyName = nameof(UserGetDto.FirstName), Sortable = false },
+                new() { Header = "نام خانوادگی", PropertyName = nameof(UserGetDto.LastName), Sortable = false },
+                new() { Header = "تلفن", PropertyName = nameof(UserGetDto.Phone1),  Sortable = false },
+                new() { Header = "گیرنده", PropertyName = nameof(UserGetDto.RecipientName),  Sortable = false },
+                new() { Header = "شغل", PropertyName = nameof(UserGetDto.JobName),  Sortable = false },
+                new() { Header = "عملیات", IsActionColumn = true}
+            },
+                Actions = new List<GridAction>
+            {
+                new()
+                {
+                    Title = "ویرایش",
+                    Controller = "User",
+                    Action = "New",
+                    RouteIdProperty = nameof(UserGetDto.UserId),
+                    LinkClass = "",
+                    IconClass = "fa fa-edit",
+                },
+                new()
+                {
+                    Title = "چاپ پیش فاکتور",
+                    Controller = "User",
+                    Action = "Delete",
+                    RouteIdProperty = nameof(UserGetDto.UserId),
+                    LinkClass = "",
+                    IconClass = "fa fa-trash",
+                }
+            }
+            };
+
+
+            return View(model);
         }
 
         // ====================== NEW / EDIT ============================
@@ -172,19 +216,23 @@ namespace VSSM.Presentation.Web.Controllers
                 })
                 .ToList();
 
-            ViewBag.EduList = (await _eduService.GetAll(cancellationToken))
+
+            var eduList = await _baseInfoService.GetByParentIdAsync(61, cancellationToken);
+            ViewBag.EduList = eduList is null ? [] : (await _baseInfoService.GetByParentIdAsync(61, cancellationToken))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.EduTypeId.ToString(),
-                    Text = x.FullName
+                    Value = x.Id.ToString(),
+                    Text = x.Title
                 })
                 .ToList();
 
-            ViewBag.JobList = (await _jobService.GetAll(cancellationToken))
+            var jobList = await _baseInfoService.GetByParentIdAsync(60, cancellationToken);
+
+            ViewBag.JobList = jobList is null ? [] : (await _baseInfoService.GetByParentIdAsync(60 ,cancellationToken))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.JobTypeId.ToString(),
-                    Text = x.FullName
+                    Value = x.Id.ToString(),
+                    Text = x.Title
                 })
                 .ToList();
 

@@ -4,205 +4,167 @@
     string formName = Model.UserId > 0 ? "ویرایش کاربر" : "ثبت کاربر جدید";
 }
 
-<style>
-    .form-label {
-        width: 130px;
-        margin-left: 15px;
-        text-align: left;
-    }
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/user/user-form.css" rel="stylesheet" />
+}
 
-    .required-marker {
-        color: red;
-    }
-    .form-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 12px;
-        direction: rtl;
-    }
+<div class="user-form-wrap">
+    <strong class="user-form-title">@formName</strong>
 
-    .form-check {
-        margin-right: 30px !important;
-    }
+    <form asp-action="Create" method="post" style="margin-top: 1rem;">
+        <input type="hidden" asp-for="UserId" />
 
-    .card {
-        direction: rtl;
-    }
-</style>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
-
-        <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <h5>@formName</h5>
+        <!-- اطلاعات کاربری -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-user" style="color:#1d6fb8;"></i>
+                <h6>اطلاعات کاربری</h6>
+            </div>
+            <div class="a-card-body">
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">نام کاربری <span class="req-tag">اجباری</span></label>
+                        <input asp-for="UserName" class="f-control" />
+                        <span class="text-danger" asp-validation-for="UserName"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">کلمه عبور <span class="req-tag">اجباری</span></label>
+                        <input asp-for="Password" type="password" class="f-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">نام <span class="req-tag">اجباری</span></label>
+                        <input asp-for="FirstName" class="f-control" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">نام خانوادگی <span class="req-tag">اجباری</span></label>
+                        <input asp-for="LastName" class="f-control" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">ایمیل</label>
+                        <input asp-for="Email" class="f-control" />
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-block p-4">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <form asp-action="Create" method="post" class="form-horizontal">
-
-                    <input type="hidden" asp-for="UserId" />
-
-                    <div class="col-lg-6">
-
-                   
-
-                 
-
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-marker">*</span> نام کاربری:
-                            </span>
-                            <input asp-for="UserName" class="form-control bg-warning-subtle" />
-                            <span class="text-danger" asp-validation-for="UserName"></span>
-                        </div>
-
-                        <!-- Password -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-marker">*</span> کلمه عبور:
-                            </span>
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                            <input asp-for="Password" type="password" class="form-control bg-warning-subtle" />
-                        </div>
-
-                        <!-- First Name -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-marker">*</span> نام:
-                            </span>
-                            <span asp-validation-for="FirstName" class="text-danger"></span>
-                            <input asp-for="FirstName" class="form-control bg-warning-subtle" />
-                        </div>
-
-                        <!-- Last Name -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-marker">*</span> نام خانوادگی:
-                            </span>
-                            <span asp-validation-for="LastName" class="text-danger"></span>
-                            <input asp-for="LastName" class="form-control bg-warning-subtle" />
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">ایمیل</label>
-                            <input type="text" asp-for="Email" class="form-control bg-warning-subtle" />
-           
-                        </div>
-
-                        <!-- Phone 1 -->
-                        <div class="form-group">
-                            <label class="form-label">تلفن:</label>
-                            <input asp-for="Phone1" class="form-control" />
-                        </div>
-
-                        <!-- Phone 2 -->
-                        <div class="form-group">
-                            <label class="form-label">فکس:</label>
-                            <input asp-for="Phone2" class="form-control" />
-                        </div>
-
-                        <!-- Identity Number -->
-                        <div class="form-group">
-                            <label class="form-label">شماره شناسنامه:</label>
-                            <input asp-for="Idnumber" class="form-control" />
-                        </div>
-
-                        <!-- Recipient -->
-                        <div class="form-group">
-                            <label class="form-label">گیرنده:</label>
-                            <select asp-for="RecipientId" class="form-select" asp-items="ViewBag.RecipientList">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-
-                        </div>
-
-                        <!-- EduType -->
-                        <div class="form-group">
-                            <label class="form-label">تحصیلات:</label>
-                            <select asp-for="CodeEdu" class="form-select" asp-items="ViewBag.EduList">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-
-                        </div>
-
-                        <!-- JobType -->
-                        <div class="form-group">
-                            <label class="form-label">شغل:</label>
-                            <select asp-for="CodeJob" class="form-select" asp-items="ViewBag.JobList">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-
-                        </div>
-
-                        <!-- Permission Level -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-marker">*</span> سطح دسترسی:
-                            </span>
-                            <span asp-validation-for="PermissionLevel" class="text-danger"></span>
-                            <select asp-for="PermissionLevel" class="form-select" asp-items="ViewBag.PermissionList">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-
-                        </div>
-
-                        <!-- roles -->
-                        <div class="form-group">
-                            <span class="form-label">
-                                <span class="required-marker">*</span> نقش :
-                            </span>
-                            <span asp-validation-for="RoleId" class="text-danger"></span>
-                            <select asp-for="RoleId" class="form-select" asp-items="ViewBag.Roles">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-
-                        </div>
-
-                        <!-- Is Admin -->
-                        <div class="form-group">
-                            <label class="form-label">مدیر سیستم:</label>
-                            <div class="form-check">
-                                <input type="checkbox" asp-for="IsAdmin" class="form-check-input" />
-                                <label class="form-check-label">فعال</label>
-                            </div>
-                        </div>
-
-                        <!-- Course -->
-                        <div class="form-group">
-                            <label class="form-label">دوره آموزشی:</label>
-                            <input asp-for="Course" class="form-control" />
-                        </div>
-
-                        <!-- Persian Date -->
-                        <!-- DATE -->
-                        <div class="form-group">
-                            <span class="form-label">تاریخ ثبت (روز/ماه/سال):</span>
-                            <input asp-for="CourseDate" class="form-control" placeholder="مثال: 03/01/24" />
-                            <span asp-validation-for="CourseDate" class="text-danger"></span>
-                        </div>
-
-                        <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-success px-5">ثبت</button>
-                            <a asp-action="Index" class="btn btn-primary px-5">لیست</a>
-                        </div>
-
+        <!-- اطلاعات تماس -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-phone" style="color:#16a34a;"></i>
+                <h6>اطلاعات تماس</h6>
+            </div>
+            <div class="a-card-body">
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">تلفن</label>
+                        <input asp-for="Phone1" class="f-control" />
                     </div>
-
-                </form>
-
+                    <div class="f-group">
+                        <label class="f-label">فکس</label>
+                        <input asp-for="Phone2" class="f-control" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">شماره شناسنامه</label>
+                        <input asp-for="Idnumber" class="f-control" />
+                    </div>
+                </div>
             </div>
         </div>
 
-    </div>
+        <!-- اطلاعات شغلی و دسترسی -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-briefcase" style="color:#8b5cf6;"></i>
+                <h6>اطلاعات شغلی و دسترسی</h6>
+            </div>
+            <div class="a-card-body">
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">گیرنده</label>
+                        <select asp-for="RecipientId" class="f-control" asp-items="ViewBag.RecipientList">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">تحصیلات</label>
+                        <select asp-for="CodeEdu" class="f-control" asp-items="ViewBag.EduList">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">شغل</label>
+                        <select asp-for="CodeJob" class="f-control" asp-items="ViewBag.JobList">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">سطح دسترسی <span class="req-tag">اجباری</span></label>
+                        <select asp-for="PermissionLevel" class="f-control" asp-items="ViewBag.PermissionList">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                        <span asp-validation-for="PermissionLevel" class="text-danger"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">نقش <span class="req-tag">اجباری</span></label>
+                        <select asp-for="RoleId" class="f-control" asp-items="ViewBag.Roles">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                        <span asp-validation-for="RoleId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- سایر تنظیمات -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-cog" style="color:#f59e0b;"></i>
+                <h6>سایر تنظیمات</h6>
+            </div>
+            <div class="a-card-body">
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">مدیر سیستم</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" asp-for="IsAdmin" />
+                                فعال
+                            </label>
+                        </div>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">دوره آموزشی</label>
+                        <input asp-for="Course" class="f-control" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">تاریخ ثبت (روز/ماه/سال)</label>
+                        <input asp-for="CourseDate" class="f-control" placeholder="مثال: 03/01/24" />
+                        <span asp-validation-for="CourseDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- فوتر -->
+        <div class="form-footer">
+            <a asp-action="Index" class="btn-back">
+                <i class="fa fa-arrow-right"></i> بازگشت
+            </a>
+            <button type="submit" class="btn-confirm">
+                <i class="fa fa-save"></i> ثبت
+            </button>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-

@@ -92,8 +92,6 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IValidator<DosePerVialCreateDto>, DosePerVialCreateValidator>();
             services.AddScoped<IValidator<ItemDoseAssignmentCreateDto>, ItemDoseAssignmentCreateValidator>();
             services.AddScoped<IPowerSourceService, PowerSourceService>();
-            services.AddScoped<IEduTypeService, EduTypeService>();
-            services.AddScoped<IJobTypeService, JobTypeService>();
             services.AddScoped<ITransportModeService, TransportModeService>();
             services.AddScoped<IReceivingModeService, ReceivingModeService>();
             services.AddScoped<IClimateService, ClimateService>();

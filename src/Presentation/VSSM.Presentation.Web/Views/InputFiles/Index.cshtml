@@ -1,5 +1,4 @@
-﻿@using VSSM.Application.DTOs.BaseEntities.BaseInfo
-@using VSSM.Presentation.Web.Models.Base
+﻿@using VSSM.Presentation.Web.Models.Base
 @model GridViewModel
 
 @{
@@ -7,7 +6,7 @@
 }
 
 @{
-    var items = ViewBag.Items as List<BaseInfoDto>;
+    var items = ViewBag.Items as List<ItemListDto>;
 }
 
 <div class="container-fluid">
@@ -63,7 +62,7 @@
                             .Select(x => new SelectOption
                             {
                                 Value = x.Id.ToString(),
-                                Text = x.Title
+                                Text = x.FullName
                             }).ToList()
                             })
                         </div>

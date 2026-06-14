@@ -9,7 +9,6 @@ namespace VSSM.Application.Services.BaseEntities;
 
 public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> validator) : IItemService
 {
-    // ── ثابت‌های کلاس کالا (هارد‌کد طبق مشخصات) ──
     private const int VaccineClassId = 54;
     private const int DiluentClassId = 55;
 
@@ -49,7 +48,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
     {
         var items = await dbContext.TblItems
             .AsNoTracking()
-            .Where(c => c.IsActive == true && c.ItemClassId == VaccineClassId)
+            .Where(c => c.IsActive == true && c.FkClassId == VaccineClassId)
             .ToListAsync(cancellationToken);
 
         return items.Select(x => new ItemListDto

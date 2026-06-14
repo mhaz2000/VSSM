@@ -13,18 +13,13 @@ using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class InputFilesController(
-    IOrderInfoService _orderInfoService,
-    IItemService _itemService,
-    IBaseInfoService baseInfoService,
-    IDosePerVialService _dosePerVialService) : BaseController
+public class InputFilesController(IOrderInfoService _orderInfoService, IItemService _itemService, IDosePerVialService _dosePerVialService) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> Index(CancellationToken cancellationToken, string? search, int pageNumber = 1,
         int pageSize = 10, string sort = "Id", string direction = "desc")
     {
-
-        ViewBag.Items =  await baseInfoService.GetByParentIdAsync(53, cancellationToken);
+        ViewBag.Items = await _itemService.GetActiveVaccines(cancellationToken);
         ViewBag.DosePerVials = await _dosePerVialService.GetActives(cancellationToken);
 
         var (data, count) = await _orderInfoService.GetPagedAsync(search, pageNumber, pageSize, sort, direction, cancellationToken);

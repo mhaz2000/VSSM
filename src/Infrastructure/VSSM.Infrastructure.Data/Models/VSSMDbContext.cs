@@ -1035,6 +1035,16 @@ public partial class VSSMDbContext : DbContext
                 .HasForeignKey(d => d.ItemClassId)
                 .HasConstraintName("FK_tblItems_tblItemsClass");
 
+            entity.Property(e => e.FkClassId).HasColumnName("FK_CLASS_ID");
+
+
+            entity.HasOne(d => d.FkClass)
+                .WithMany()
+                .HasForeignKey(d => d.FkClassId)
+                .HasConstraintName("FK_CLASS_ID")
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
         });
 
         modelBuilder.Entity<TblItemDetail>(entity =>

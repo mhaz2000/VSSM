@@ -45,6 +45,9 @@ public partial class TblItem
 
     public virtual TblItemsClass ItemClass { get; set; }
 
+    public int? FkClassId { get; set; }
+    public virtual TblBaseInfo FkClass { get; set; }
+
     public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
 
     public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();

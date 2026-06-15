@@ -1,0 +1,13 @@
+﻿/* ═══════════════════════════════════════════
+   arrive-dispatch.css  —  صفحه دریافت محموله
+   ═══════════════════════════════════════════ */
+
+.store-warning {
+    font-size: 11px;
+    color: #dc2626;
+    margin-top: 4px;
+}
+
+.lines-table tbody tr.row-danger td {
+    background: #fef2f2;
+}

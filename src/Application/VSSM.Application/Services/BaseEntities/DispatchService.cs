@@ -352,81 +352,92 @@ public class DispatchService : IDispatchService
 
     }
 
-    public async Task DispatchArrivedAsync(DispatchArrivedDto arrivedDto, int userId, int recipientId, CancellationToken cancellationToken)
+    public async Task DispatchArrivedAsync(
+        DispatchArrivedDto arrivedDto,
+        int userId,
+        int recipientId,
+        CancellationToken cancellationToken)
     {
-        var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
         var lineIds = arrivedDto.Lines.Select(t => t.DispatchLineId).ToList();
+        var storeMap = arrivedDto.Lines.ToDictionary(l => l.DispatchLineId, l => l.StoreId);
+        var batchNumbers = new HashSet<string>();
 
-        var query =
-            from line in _context.TblDispatchLines
-                .Where(l => lineIds.Contains(l.DispatchLineId))
+        // ── ۱. واکشی همه داده با یک کوئری ──
+        var fiscalPeriodId = await _context.TblFiscalPeriods
+            .Where(f => f.IsActive.Value)
+            .Select(f => f.FiscalPeriodId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var data = await (
+            from line in _context.TblDispatchLines.Where(l => lineIds.Contains(l.DispatchLineId))
             join dispatch in _context.TblDispatches
-                .Where(d => d.ReceiverStatus == 0 &&
-                            d.ReceiverId == recipientId &&
-                            d.IsConfirmed == true)
+                .Where(d => d.ReceiverStatus == 0 && d.ReceiverId == recipientId && d.IsConfirmed == true)
                 on line.DispatchId equals dispatch.DispatchId
-            join itemDetailStore in _context.TblItemDetailStores
-                on line.ItemDetailStoreId equals itemDetailStore.ItemDetailStoreId
-            join itemDetail in _context.TblItemDetails
-                on itemDetailStore.ItemDetailId equals itemDetail.ItemDetailId
+            join ids in _context.TblItemDetailStores
+                on line.ItemDetailStoreId equals ids.ItemDetailStoreId
+            join id in _context.TblItemDetails
+                on ids.ItemDetailId equals id.ItemDetailId
             select new
             {
                 line.DispatchLineId,
                 dispatch.DispatchId,
                 dispatch.SenderId,
                 line.BatchNumber,
-                itemDetail.CommercialNameId,
+                id.CommercialNameId,
                 line.DosePerVialId,
                 line.ExpiryDate,
-                itemDetail.ItemDetailId,
+                id.ItemDetailId,
                 line.ItemId,
                 line.ManufacturerId,
-                line.NumVial,
-                itemDetail.ProductionDate,
+                id.ProductionDate,
                 line.Quantity,
                 line.UseId,
                 line.VvmstageId,
                 line.VvmtypeId,
-            };
+            }).ToListAsync(cancellationToken);
 
-        var data = await query.ToListAsync();
-        var currentDispatch = await _context.TblDispatches.FindAsync(data.First().DispatchId);
+        if (data.Count == 0) return;
 
-        // ── ۱. ساخت رکورد tblReceiveDispatches ──
+        var first = data[0];
+        var now = DateTime.Now;
+
+        // ── ۲. ساخت ReceiveDispatch ──
         var receiveDispatch = new TblReceiveDispatches
         {
             ReceiveDate = DateTime.Today,
-            CreationTime = DateTime.Now,
+            CreationTime = now,
             CreatedBy = userId
         };
-        await _context.TblReceiveDispatches.AddAsync(receiveDispatch, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken); // تا PK بگیریم
+        _context.TblReceiveDispatches.Add(receiveDispatch);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        var arrival = new TblArrival()
+        // ── ۳. ساخت Arrival و خطوطش ──
+        var arrival = new TblArrival
         {
-            Date = DateTime.Now,
-            FiscalPeriodId = fiscalPeriod.FiscalPeriodId,
-            EntryDate = DateTime.Now,
+            Date = now,
+            FiscalPeriodId = fiscalPeriodId,
+            EntryDate = now,
             EnteredById = userId.ToString(),
             IsConfirmed = true,
             IsDrafted = false,
-            ConfirmationTime = DateTime.Now,
-            SenderId = data.First().SenderId,
+            ConfirmationTime = now,
+            SenderId = first.SenderId,
             ReceiverId = recipientId,
-            DispatchId = data.First().DispatchId,
+            DispatchId = first.DispatchId,
         };
+
+        var itemDetailStores = new List<TblItemDetailStore>(data.Count);
 
         foreach (var item in data)
         {
-            var storeId = arrivedDto.Lines
-                .First(line => line.DispatchLineId == item.DispatchLineId).StoreId;
+            var storeId = storeMap[item.DispatchLineId];
 
-            var arrivalLine = new TblArrivalLine()
+            arrival.TblArrivalLines.Add(new TblArrivalLine
             {
                 BatchNum = item.BatchNumber,
                 CommertialNameId = item.CommercialNameId,
                 DosePerVialId = item.DosePerVialId,
-                EntryDate = DateTime.Now,
+                EntryDate = now,
                 ExpiryDate = item.ExpiryDate,
                 ItemDetailId = item.ItemDetailId,
                 ItemId = item.ItemId,
@@ -437,36 +448,37 @@ public class DispatchService : IDispatchService
                 UseId = item.UseId,
                 VvmstageId = item.VvmstageId,
                 VvmtypeId = item.VvmtypeId,
-            };
+            });
 
-            var itemDetailStore = new TblItemDetailStore()
+            itemDetailStores.Add(new TblItemDetailStore
             {
                 ItemDetailId = item.ItemDetailId,
                 StoreId = storeId,
                 CurrentStock = item.Quantity,
-                EntryDate = DateTime.Now
-            };
+                EntryDate = now
+            });
 
-            await _context.TblItemDetailStores.AddAsync(itemDetailStore);
-            arrival.TblArrivalLines.Add(arrivalLine);
-
-            // ── ۲. آپدیت tblUidInfo به ازای هر UID این حواله ──
-            var uids = await _context.TblUidInfo
-               .Where(u => u.OrderInfo.BatchNumber == item.BatchNumber
-                        && u.FkReceiveDispatchId == null)
-               .ToListAsync(cancellationToken);
-
-            foreach (var uid in uids)
-                uid.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
+            batchNumbers.Add(item.BatchNumber);
         }
 
-        await _context.TblArrivals.AddAsync(arrival, cancellationToken);
+        _context.TblItemDetailStores.AddRange(itemDetailStores);
+        _context.TblArrivals.Add(arrival);
         await _context.SaveChangesAsync(cancellationToken);
 
-        // ── ۳. آپدیت tblDispatches ──
+        // ── ۴. آپدیت UIDها با یک کوئری ──
+        var uids = await _context.TblUidInfo
+            .Where(u => batchNumbers.Contains(u.OrderInfo.BatchNumber) && u.FkReceiveDispatchId == null)
+            .ToListAsync(cancellationToken);
+
+        foreach (var uid in uids)
+        {
+            uid.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
+        }
+
+        var currentDispatch = await _context.TblDispatches.FindAsync(first.DispatchId);
         currentDispatch.ArrivalId = arrival.ArrivalId;
         currentDispatch.ReceiverStatus = 2;
-        currentDispatch.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId; // ← بند ۲ سند
+        currentDispatch.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
 
         await _context.SaveChangesAsync(cancellationToken);
     }

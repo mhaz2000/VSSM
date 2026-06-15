@@ -514,7 +514,7 @@ public class ArrivalController(
     [HttpGet]
     public async Task<IActionResult> GetItemsByClass(int classId, CancellationToken token)
     {
-        var list = (await itemService.GetActives(token)).Where(z => z.ItemClassId == classId);
+        var list = (await itemService.GetActives(token)).Where(z => z.FkClassId == classId);
         return Json(list.Select(x => new { id = x.ItemId, text = x.FullName }));
     }
 

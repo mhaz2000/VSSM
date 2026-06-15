@@ -273,7 +273,7 @@ namespace VSSM.Presentation.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetItemsByClass(int classId, CancellationToken token)
         {
-            var list = (await _itemService.GetActives(token)).Where(z => z.ItemClassId == classId);
+            var list = (await _itemService.GetActives(token)).Where(z => z.FkClassId == classId);
 
             return Json(list.Select(x => new
             {

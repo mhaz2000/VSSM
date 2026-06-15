@@ -110,7 +110,7 @@ public class AdjustmentService : IAdjustmentService
         var items = await _dbContext.TblItems.ToListAsync(cancellationToken);
         items = items.Where(c => itemIds.Contains(c.ItemId)).ToList();
 
-        var itemClassIds = items.Select(i => i.ItemClassId).Distinct().ToList();
+        var itemClassIds = items.Select(i => i.FkClassId).Distinct().ToList();
         var itemClasses = await _dbContext.TblItemsClasses.ToListAsync(cancellationToken);
         itemClasses = itemClasses.Where(c => itemClassIds.Contains(c.ItemClassId)).ToList();
 
@@ -140,7 +140,7 @@ public class AdjustmentService : IAdjustmentService
                     itemDict.TryGetValue(id.ItemId.Value, out i);
 
                 if (i != null)
-                    itemClassDict.TryGetValue(i.ItemClassId.Value, out ic);
+                    itemClassDict.TryGetValue(i.FkClassId.Value, out ic);
 
                 var adjustreason = adjustreasons.FirstOrDefault(c => c.AdjustreasonId == a.AdjustmentreasonId);
                 

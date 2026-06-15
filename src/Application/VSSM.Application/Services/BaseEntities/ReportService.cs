@@ -474,15 +474,15 @@ namespace VSSM.Application.Services.BaseEntities
 
             // base query using joins
 
-            var items = itemId is not null ? _context.TblItems.Where(item => item.ItemClassId == itemClassId && item.ItemId == itemId)
-                : _context.TblItems.Where(item => item.ItemClassId == itemClassId);
+            var items = itemId is not null ? _context.TblItems.Where(item => item.FkClassId == itemClassId && item.ItemId == itemId)
+                : _context.TblItems.Where(item => item.FkClassId == itemClassId);
 
             var stores = storeId is not null ? _context.TblStores.Where(t => t.RecipientId == recipientId && t.StoreId == storeId)
                 : _context.TblStores.Where(t => t.RecipientId == recipientId);
 
             var query =
                 from i in items
-                join ic in _context.TblItemsClasses on i.ItemClassId equals ic.ItemClassId
+                join ic in _context.TblItemsClasses on i.FkClassId equals ic.ItemClassId
                 join id in _context.TblItemDetails on i.ItemId equals id.ItemId
                 join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
                 join s in stores on ids.StoreId equals s.StoreId
@@ -714,13 +714,13 @@ namespace VSSM.Application.Services.BaseEntities
         public async Task<(List<OutOfStockItemsDto> data, int count)> GetOutOfStockItems(int currentRecipientId, int? itemClassId, int pageNumber,
             int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
         {
-            var nonZeroStockItems = from i in _context.TblItems.Where(t => t.IsActive != null && t.IsActive.Value && t.ItemClassId == itemClassId)
+            var nonZeroStockItems = from i in _context.TblItems.Where(t => t.IsActive != null && t.IsActive.Value && t.FkClassId == itemClassId)
                                     join id in _context.TblItemDetails on i.ItemId equals id.ItemId
                                     join ids in _context.TblItemDetailStores.Where(t => t.CurrentStock != 0) on id.ItemDetailId equals ids.ItemDetailId
                                     join s in _context.TblStores.Where(t => t.RecipientId == currentRecipientId) on ids.StoreId equals s.StoreId
                                     select new { i.ItemId, i.FullName };
 
-            var allItems = _context.TblItems.Where(t => t.IsActive.HasValue && t.IsActive.Value && t.ItemClassId == itemClassId)
+            var allItems = _context.TblItems.Where(t => t.IsActive.HasValue && t.IsActive.Value && t.FkClassId == itemClassId)
                 .Select(s => new { s.ItemId, s.FullName });
 
             var query = allItems.Except(nonZeroStockItems)

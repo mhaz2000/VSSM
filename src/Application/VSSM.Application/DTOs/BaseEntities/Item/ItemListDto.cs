@@ -3,7 +3,7 @@
 public class ItemListDto
 {
     public int ItemId { get; set; }
-    public int? ItemClassId { get; set; }
+    public int? FkClassId { get; set; }
     public string Code { get; set; }
     public string FullName { get; set; }
     public int? DiluentId { get; set; }

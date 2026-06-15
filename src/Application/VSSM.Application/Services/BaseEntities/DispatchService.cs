@@ -19,13 +19,10 @@ public class DispatchService : IDispatchService
         _context = context;
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // بند ۱: لود کالاها بر اساس نوع کالا (برای drop-down ایتم)
-    // ──────────────────────────────────────────────────────────────────────────
     public async Task<List<ItemLookupDto>> GetItemsByClassAsync(int classId, CancellationToken ct = default)
     {
         return await _context.TblItems
-            .Where(i => i.ItemClassId == classId && (i.IsActive == null || i.IsActive == true))
+            .Where(i => i.FkClassId == classId && (i.IsActive == null || i.IsActive == true))
             .Select(i => new ItemLookupDto
             {
                 ItemId = i.ItemId,
@@ -35,12 +32,6 @@ public class DispatchService : IDispatchService
             .ToListAsync(ct);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // بند ۱۱: لود سری ساخت‌های موجود برای یک کالا
-    // بند ۶: اطلاعات حلال (RequiresDiluent) نیز برگردانده می‌شود
-    // بند ۷a: تاریخ انقضا به شمسی تبدیل می‌شود
-    // بند ۱۰: موجودی جاری (CurrentStock) از tblItemDetailStores
-    // ──────────────────────────────────────────────────────────────────────────
     public async Task<List<BatchRowDto>> GetBatchesByItemAsync(int itemId, CancellationToken ct = default)
     {
         var item = await _context.TblItems.FindAsync(itemId);
@@ -510,7 +501,7 @@ public class DispatchService : IDispatchService
             {
                 DispatchLineId = i.line.DispatchLineId,
                 ItemDetailStoreId = i.line.ItemDetailStoreId,
-                ItemClassId = i.item.ItemClassId ?? 0,
+                FkClassId = i.item.FkClassId ?? 0,
                 ItemName = i.item.FullName,
                 ItemId = i.line.ItemId ?? 0,
                 VvmstageName = i.vvmstage.FullName,

@@ -21,7 +21,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
         var model = new TblItem
         {
             ItemId = dto.ItemId,
-            ItemClassId = dto.ItemClassId,
+            FkClassId = dto.FkClassId,
             Code = dto.Code,
             EntryDate = DateTime.Now,
             FullName = dto.FullName,
@@ -55,7 +55,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
         {
             ItemId = x.ItemId,
             FullName = x.FullName,
-            ItemClassId = x.ItemClassId
+            FkClassId = x.FkClassId
         }).ToList();
     }
 
@@ -68,7 +68,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
             {
                 ItemId = x.ItemId,
                 FullName = x.FullName,
-                ItemClassId = x.ItemClassId
+                FkClassId = x.FkClassId
             })
             .ToListAsync(cancellationToken);
     }
@@ -87,7 +87,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
         {
             ItemId = x.ItemId,
             FullName = x.FullName,
-            ItemClassId = x.ItemClassId
+            FkClassId = x.FkClassId
         }).ToList();
     }
 
@@ -104,11 +104,11 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
         return new ItemSelectDto
         {
             ItemId = id,
-            ItemClassId = entity.ItemClassId,
+            ItemClassId = entity.FkClassId,
             Code = entity.Code,
             FullName = entity.FullName,
             IsActive = entity.IsActive,
-            OrderId = entity.OrderId,
+            OrderId = entity.OrderId,   
             DayToWarmExpire = entity.DayToWarmExpire,
             DiluentId = entity.DiluentId,
             RequiresDiluent = entity.RequiresDiluent,
@@ -155,7 +155,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
             result.Add(new ItemListDto
             {
                 ItemId = item.ItemId,
-                ItemClassId = item.ItemClassId,
+                FkClassId = item.FkClassId,
                 FullName = item.FullName,
                 Code = item.Code,
                 UniCode = item.UniCode,
@@ -188,7 +188,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
 
         if (entity != null)
         {
-            entity.ItemClassId = dto.ItemClassId;
+            entity.FkClassId = dto.FkClassId;
             entity.Code = dto.Code;
             entity.EntryDate = DateTime.Now;
             entity.FullName = dto.FullName;
@@ -217,7 +217,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
             .Select(item => new ItemListDto
             {
                 ItemId = item.ItemId,
-                ItemClassId = item.ItemClassId,
+                FkClassId = item.FkClassId,
                 FullName = item.FullName,
                 Code = item.Code,
                 UniCode = item.UniCode,

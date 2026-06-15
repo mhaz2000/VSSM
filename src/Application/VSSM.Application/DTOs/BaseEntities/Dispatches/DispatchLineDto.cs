@@ -3,7 +3,7 @@ public class DispatchLineDto
 {
     public int DispatchLineId { get; set; }
     public int ItemId { get; set; }
-    public int ItemClassId { get; set; }
+    public int FkClassId { get; set; }
     public int ItemDetailId { get; set; }
     public int DoseCount { get; set; }
     public float UnitPrice { get; set; }

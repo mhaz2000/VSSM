@@ -1023,7 +1023,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.DiluentId).HasColumnName("DiluentID");
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.FullName).HasMaxLength(200);
-            entity.Property(e => e.ItemClassId).HasColumnName("ItemClassID");
             entity.Property(e => e.OrderId).HasColumnName("OrderID");
             entity.Property(e => e.Osvol).HasColumnName("OSVOL");
             entity.Property(e => e.PresentationId).HasColumnName("PresentationID");
@@ -1031,10 +1030,7 @@ public partial class VSSMDbContext : DbContext
                 .HasMaxLength(150)
                 .HasColumnName("uniCode");
 
-            entity.HasOne(d => d.ItemClass).WithMany(p => p.TblItems)
-                .HasForeignKey(d => d.ItemClassId)
-                .HasConstraintName("FK_tblItems_tblItemsClass");
-
+  
             entity.Property(e => e.FkClassId).HasColumnName("FK_CLASS_ID");
 
 

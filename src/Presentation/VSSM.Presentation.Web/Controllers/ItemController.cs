@@ -163,7 +163,7 @@ public class ItemController(
     private static ItemCreateDto MapToDto(ItemViewModel model) => new()
     {
         ItemId = model.ItemId.GetValueOrDefault(),
-        ItemClassId = model.ItemClassId,
+        FkClassId = model.ItemClassId,
         Code = model.Code,
         FullName = model.FullName,
         IsActive = model.IsActive,

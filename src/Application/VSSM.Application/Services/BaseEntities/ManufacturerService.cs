@@ -131,7 +131,7 @@ public class ManufacturerService : IManufacturerService
         List<ManufacturerDropDownDto> result = new();
         foreach (var itemClass in allItemClasses)
         {
-            var isExist = thisIdClasses.FirstOrDefault(c => c.ItemClassId == itemClass.ItemClassId);
+            var isExist = thisIdClasses.FirstOrDefault(c => c.ItemClassId == itemClass.FkClassId);
             result.Add(new ManufacturerDropDownDto
             {
                 ItemsClassId =itemClass.ItemId,

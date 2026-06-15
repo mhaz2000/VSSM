@@ -9,8 +9,6 @@ public partial class TblItem
 {
     public int ItemId { get; set; }
 
-    public int? ItemClassId { get; set; }
-
     public string Code { get; set; }
 
     public string FullName { get; set; }

@@ -30,19 +30,6 @@
     <link href="~/css/persian-datepicker.css" rel="stylesheet" />
 }
 
-<style>
-    .form-control {
-        padding: 16px !important;
-    }
-
-    .big-checkbox {
-        transform: scale(3);
-        transform-origin: center center;
-        cursor: pointer;
-        margin: 0;
-    }
-
-</style>
 
 <div class="container-fluid">
 
@@ -87,7 +74,7 @@
                                 Options = items
                                     .Select(x => new SelectOption
                                     {
-                                        Value = x.Id.ToString(),
+                                        Value = x.ItemId.ToString(),
                                         Text = x.FullName
                                     }).ToList()
                             })

@@ -515,7 +515,7 @@ public class ArrivalController(
     public async Task<IActionResult> GetItemsByClass(int classId, CancellationToken token)
     {
         var list = (await itemService.GetActives(token)).Where(z => z.ItemClassId == classId);
-        return Json(list.Select(x => new { id = x.Id, text = x.FullName }));
+        return Json(list.Select(x => new { id = x.ItemId, text = x.FullName }));
     }
 
     [HttpGet]
@@ -576,7 +576,7 @@ public class ArrivalController(
         CommertialName = commercialNameService.GetActives(token).Result
                                .FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
         ItemName = itemService.GetActives(token).Result
-                               .FirstOrDefault(z => z.Id == l.ItemId)?.FullName,
+                               .FirstOrDefault(z => z.ItemId == l.ItemId)?.FullName,
         DoseName = dosePerVialService.GetActivesByItemId(token, l.ItemId ?? 0).Result
                    .FirstOrDefault(z => z.DosePerVialId == l.DosePerVialId)?.NumDosePerVial.ToString(),
         DosePerVialId = l.DosePerVialId,
@@ -601,7 +601,7 @@ public class ArrivalController(
     private async Task LoadDropDowns(CancellationToken token)
     {
         ViewBag.ItemList = (await itemService.GetActives(token))
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.FullName })
+            .Select(x => new SelectListItem { Value = x.ItemId.ToString(), Text = x.FullName })
             .ToList();
 
         ViewBag.StoreList = (await storeService.GetAll(token))

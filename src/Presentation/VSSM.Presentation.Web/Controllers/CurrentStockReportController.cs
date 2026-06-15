@@ -398,7 +398,7 @@ namespace VSSM.Presentation.Web.Controllers
                 .Select(int.Parse)
                 .ToList();
 
-            if (!items.Select(s => s.Id).Except(itemIds).Any())
+            if (!items.Select(s => s.ItemId).Except(itemIds).Any())
                 itemList = "کلیه کالاها";
             else
                 itemList = await _itemService.GetItemNamesAsync(itemIds);

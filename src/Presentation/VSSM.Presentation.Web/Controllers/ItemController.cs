@@ -2,7 +2,6 @@
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
 using VSSM.Application.Shared;
 using VSSM.Presentation.Web.Models.Base;
 using VSSM.Presentation.Web.Models.Item;
@@ -24,7 +23,7 @@ public class ItemController(
         string? search = null,
         int page = 1,
         int pageSize = 10,
-        string sort = "Orders",
+        string sort = "Id",
         string direction = "desc")
     {
         var paged = await itemService.GetPagedList(
@@ -63,7 +62,7 @@ public class ItemController(
                     Title           = "ویرایش",
                     Controller      = "Item",
                     Action          = "Edit",
-                    RouteIdProperty = nameof(ItemListDto.Id),
+                    RouteIdProperty = nameof(ItemListDto.ItemId),
                     IconClass       = "fa fa-edit",
                 }
             }
@@ -158,7 +157,7 @@ public class ItemController(
 
         ViewBag.ItemClass = await baseInfoService.GetByParentIdAsync(ItemClassId);
 
-        ViewBag.DiluentDropDown = itemService.GetItemsByClassId(DiluentClassId);
+        ViewBag.DiluentDropDown = await itemService.GetItemsByClassId(DiluentClassId);
     }
 
     private static ItemCreateDto MapToDto(ItemViewModel model) => new()

@@ -162,7 +162,7 @@ namespace VSSM.Presentation.Web.Controllers
             ViewBag.ItemList = (await _itemService.GetActives(token))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.Id.ToString(),
+                    Value = x.ItemId.ToString(),
                     Text = x.FullName
                 })
                 .ToList();

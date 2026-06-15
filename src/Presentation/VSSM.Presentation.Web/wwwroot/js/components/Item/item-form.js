@@ -10,7 +10,18 @@
     var $requiresDiluent = $("#requiresDiluentCheckbox");
     var $diluentDropdown = $("#diluentDropdown");
 
-    function loadDiluentItems() {
+    // اگه آپشن‌های حلال از قبل توی View لود شدن (حالت ویرایش)، دیگه از API لود نکن
+    var isEditMode = $diluentDropdown.find("option").length > 1;
+
+    function loadDiluentItems(preselectId) {
+        if (isEditMode) {
+            $diluentDropdown.prop("disabled", false);
+            if (preselectId && preselectId !== "0") {
+                $diluentDropdown.val(preselectId);
+            }
+            return;
+        }
+
         $diluentDropdown.prop("disabled", true).empty()
             .append('<option value="">در حال بارگذاری...</option>');
 
@@ -25,7 +36,11 @@
                         );
                     });
                 }
+                if (preselectId && preselectId !== "0") {
+                    $diluentDropdown.val(preselectId);
+                }
                 $diluentDropdown.prop("disabled", false);
+                isEditMode = false;
             })
             .fail(function () {
                 $diluentDropdown.empty()
@@ -37,6 +52,7 @@
         $diluentDropdown.prop("disabled", true).empty()
             .append('<option value="">-- انتخاب کنید --</option>');
         $requiresDiluent.prop({ checked: false, disabled: true });
+        isEditMode = false;
     }
 
     $itemClassSelect.on("change", function () {
@@ -49,20 +65,22 @@
 
     $requiresDiluent.on("change", function () {
         if (this.checked) {
-            loadDiluentItems();
+            var selectedDiluentId = $diluentDropdown.data("selected");
+            loadDiluentItems(selectedDiluentId);
         } else {
             $diluentDropdown.prop("disabled", true).empty()
                 .append('<option value="">-- انتخاب کنید --</option>');
+            isEditMode = false;
         }
     });
 
-    // مقداردهی اولیه (حالت ویرایش)
+    // مقداردهی اولیه
     (function init() {
         var currentClass = parseInt($itemClassSelect.val());
         if (currentClass === VACCINE_CLASS_ID) {
             $requiresDiluent.prop("disabled", false);
             if ($requiresDiluent.prop("checked")) {
-                loadDiluentItems();
+                $diluentDropdown.prop("disabled", false);
             }
         } else {
             $requiresDiluent.prop("disabled", true);

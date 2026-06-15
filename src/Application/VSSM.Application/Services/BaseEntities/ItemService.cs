@@ -53,7 +53,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
 
         return items.Select(x => new ItemListDto
         {
-            Id = x.ItemId,
+            ItemId = x.ItemId,
             FullName = x.FullName,
             ItemClassId = x.ItemClassId
         }).ToList();
@@ -66,7 +66,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
             .Where(x => x.IsActive == true && x.FkClassId == fkClassId)
             .Select(x => new ItemListDto
             {
-                Id = x.ItemId,
+                ItemId = x.ItemId,
                 FullName = x.FullName,
                 ItemClassId = x.ItemClassId
             })
@@ -85,7 +85,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
 
         return items.Select(x => new ItemListDto
         {
-            Id = x.ItemId,
+            ItemId = x.ItemId,
             FullName = x.FullName,
             ItemClassId = x.ItemClassId
         }).ToList();
@@ -154,7 +154,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
 
             result.Add(new ItemListDto
             {
-                Id = item.ItemId,
+                ItemId = item.ItemId,
                 ItemClassId = item.ItemClassId,
                 FullName = item.FullName,
                 Code = item.Code,
@@ -216,7 +216,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
             .Where(item => item.FkClassId == classItemId)
             .Select(item => new ItemListDto
             {
-                Id = item.ItemId,
+                ItemId = item.ItemId,
                 ItemClassId = item.ItemClassId,
                 FullName = item.FullName,
                 Code = item.Code,

@@ -16,7 +16,10 @@
 
 <div class="item-form-wrap">
 
-    <strong class="item-form-title">@formName کالا</strong>
+    <div class="item-page-title">
+        <i class="fa @(Model != null && Model.ItemId > 0 ? "fa-pencil" : "fa-plus-circle")" style="color:#3b82f6;"></i>
+        @formName کالا
+    </div>
 
     <form asp-action="Create" method="post">
         <input type="hidden" asp-for="ItemId" />
@@ -28,15 +31,17 @@
                 <h6>اطلاعات اصلی کالا</h6>
             </div>
             <div class="a-card-body">
-                <div class="fg-3">
 
+                <div class="fg-2">
                     <div class="f-group">
                         <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
-                        <select class="f-control" asp-for="ItemClassId" id="ItemClassId">
+                        <select class="f-control" name="ItemClassId" id="ItemClassId">
                             <option value="">-- انتخاب کنید --</option>
                             @foreach (var itemType in ViewBag.ItemClass)
                             {
-                                <option value="@itemType.Id">@itemType.Title</option>
+                                <option value="@itemType.Id" selected="@(Model?.ItemClassId == itemType.Id)">
+                                    @itemType.Title
+                                </option>
                             }
                         </select>
                     </div>
@@ -55,8 +60,8 @@
                         <label class="f-label">روزهای قبل از تاریخ انقضا <span class="req-tag">اجباری</span></label>
                         <input type="number" class="f-control" asp-for="DayToWarmExpire" min="0" placeholder="مثلاً ۳۰" />
                     </div>
-
                 </div>
+
             </div>
         </div>
 
@@ -93,16 +98,29 @@
 
                 <div class="section-divider"></div>
 
-                <div class="fg-3">
+                <div class="diluent-wrap">
                     <div class="f-group">
                         <label class="f-label">حلال <span class="opt">(اختیاری)</span></label>
-                        <select class="f-control" id="diluentDropdown" asp-for="DiluentId" disabled>
+                        @{
+                            bool diluentEnabled = Model?.RequiresDiluent == true;
+                        }
+                        <select class="f-control" id="diluentDropdown" asp-for="DiluentId"
+                                data-selected="@Model?.DiluentId"
+                                disabled="@(!diluentEnabled)">
                             <option value="">-- انتخاب کنید --</option>
+                            @if (ViewBag.DiluentDropDown != null)
+                            {
+                                foreach (var d in ViewBag.DiluentDropDown)
+                                {
+                                    bool isSelected = Model?.DiluentId == d.ItemId;
+                                    <option value="@d.ItemId" selected="@isSelected">@d.FullName</option>
+                                }
+                            }
                         </select>
                     </div>
                 </div>
 
-                <p class="item-form-note">
+                <p class="item-form-note" style="margin-top: 1rem;">
                     برای تعیین حجم واکسن‌ها و حلال‌ها به منوی «دوز اختصاص‌داده‌شده به کالا» مراجعه کنید.
                 </p>
 

@@ -11,6 +11,7 @@ public class SearchableSelectModel
     public bool HasDefaultOption { get; set; } = true;
     public string DefaultText { get; set; } = "انتخاب کنید";
     public bool IsRequired { get; set; }
+    public string ValidationMessage { get; set; }
 
     public List<SelectOption> Options { get; set; } = new();
 }

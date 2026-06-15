@@ -1,4 +1,12 @@
-﻿document.querySelectorAll('.ss-wrapper').forEach(wrapper => {
+﻿function validateHiddenInput(hidden) {
+    var $form = $(hidden).closest('form');
+    if ($form.length && $form.data('validator')) {
+        $form.data('validator').settings.ignore = '';
+        $form.validate().element(hidden);
+    }
+}
+
+document.querySelectorAll('.ss-wrapper').forEach(wrapper => {
 
     const display = wrapper.querySelector('.ss-display');
     const dropdown = wrapper.querySelector('.ss-dropdown');
@@ -51,6 +59,7 @@
             text.textContent = opt.textContent.trim();
             hidden.value = opt.dataset.value;
             $(hidden).trigger('change');
+            validateHiddenInput(hidden);
             wrapper.classList.remove('open');
             dropdown.style.display = 'none';
         });
@@ -109,6 +118,7 @@ function setSearchableSelectOptions(selectId, items, placeholder = 'انتخاب
             text.textContent = i.text;
             hidden.value = i.value;
             $(hidden).trigger('change');
+            validateHiddenInput(hidden);
             wrapper.classList.remove('open');
             wrapper.querySelector('.ss-dropdown').style.display = 'none';
         });

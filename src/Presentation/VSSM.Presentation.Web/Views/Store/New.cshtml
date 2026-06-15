@@ -54,8 +54,9 @@
                 </div>
 
                 <div class="fg-3" style="margin-bottom:14px;">
+
                     <div class="f-group">
-                        <label class="f-label">گیرنده</label>
+                        <label class="f-label">گیرنده <span class="req-tag">اجباری</span></label>
 
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
                         {
@@ -63,7 +64,9 @@
                             Name = "RecipientId",
                             DefaultText = "جستجوی گیرنده...",
                             Label = "",
-                            IsRequired = false,
+                            IsRequired = true,
+                            SelectedValue = Model?.RecipientId?.ToString(),
+                            ValidationMessage = "گیرنده نمی‌تواند خالی باشد.",
                             Options = recipients.Select(r => new SelectOption
                             {
                                 Value = r.Value.ToString(),
@@ -71,7 +74,10 @@
                             }).ToList()
                         })
 
+                        <span class="text-danger" asp-validation-for="RecipientId"></span>
+
                     </div>
+
                     <div class="f-group">
                         <label class="f-label">حجم کلی فضا (لیتر)</label>
                         <input asp-for="Volume" placeholder="لیتر را وارد کنید" class="f-control" />
@@ -81,6 +87,7 @@
                         <input asp-for="FreeVolume" placeholder="حجم مفید را وارد کنید" class="f-control" />
                         <span class="text-danger" asp-validation-for="FreeVolume"></span>
                     </div>
+
                 </div>
 
                 <div class="fg-2">
@@ -99,16 +106,27 @@
 
         <!-- فوتر -->
         <div class="form-footer">
-            <a asp-action="Index" class="btn-back">
-                <i class="fa fa-arrow-right"></i> بازگشت
-            </a>
             <button type="submit" class="btn-confirm">
                 <i class="fa fa-save"></i> ثبت
             </button>
+            <a asp-action="Index" class="btn-back">
+                <i class="fa fa-arrow-right"></i> بازگشت
+            </a>
         </div>
     </form>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // ensure jQuery validation validates SearchableSelect hidden inputs
+        $(function() {
+            $('.ss-wrapper').each(function() {
+                var $form = $(this).closest('form');
+                if ($form.length && $form.data('validator')) {
+                    $form.data('validator').settings.ignore = '';
+                }
+            });
+        });
+    </script>
 }

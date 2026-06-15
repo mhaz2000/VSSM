@@ -63,11 +63,11 @@ namespace VSSM.Presentation.Web.Controllers
                 },
                 Columns = new List<GridColumn>
             {
-                new() { Header = "نام کاربری", PropertyName = nameof(StoreListDto.FullName),  Sortable = false },
-                new() { Header = "نام", PropertyName = nameof(StoreListDto.TypeName), Sortable = false },
-                new() { Header = "نام خانوادگی", PropertyName = nameof(StoreListDto.Volume), Sortable = false },
-                new() { Header = "تلفن", PropertyName = nameof(StoreListDto.FreeVolume),  Sortable = false },
-                new() { Header = "گیرنده", PropertyName = nameof(StoreListDto.Code),  Sortable = false },
+                new() { Header = "نام", PropertyName = nameof(StoreListDto.FullName),  Sortable = false },
+                new() { Header = "نوع انبار", PropertyName = nameof(StoreListDto.TypeName), Sortable = false },
+                new() { Header = "حجم کلی فضا (لیتر)", PropertyName = nameof(StoreListDto.Volume), Sortable = false },
+                new() { Header = "حجم مفید (لیتر)", PropertyName = nameof(StoreListDto.FreeVolume),  Sortable = false },
+                new() { Header = "وضعیت", PropertyName = nameof(StoreListDto.Code),  Sortable = false },
                 new() { Header = "عملیات", IsActionColumn = true}
             },
                 Actions = new List<GridAction>

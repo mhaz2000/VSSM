@@ -61,8 +61,6 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblBundleDetail> TblBundleDetails { get; set; }
 
-    public virtual DbSet<TblClimate> TblClimates { get; set; }
-
     public virtual DbSet<TblCommercialName> TblCommercialNames { get; set; }
 
     public virtual DbSet<TblCountryCode> TblCountryCodes { get; set; }
@@ -115,21 +113,15 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblOrderReceive> TblOrderReceives { get; set; }
 
-    public virtual DbSet<TblOwnership> TblOwnerships { get; set; }
-
     public virtual DbSet<TblPack> TblPacks { get; set; }
 
     public virtual DbSet<TblPackItemClass> TblPackItemClasses { get; set; }
 
     public virtual DbSet<TblPackingType> TblPackingTypes { get; set; }
 
-    public virtual DbSet<TblPowerSource> TblPowerSources { get; set; }
-
     public virtual DbSet<TblPresentationType> TblPresentationTypes { get; set; }
 
     public virtual DbSet<TblReasonForNotutiliz> TblReasonForNotutilizs { get; set; }
-
-    public virtual DbSet<TblReceivingMode> TblReceivingModes { get; set; }
 
     public virtual DbSet<TblRecipient> TblRecipients { get; set; }
 
@@ -147,8 +139,6 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblRequestsNew> TblRequestsNews { get; set; }
 
-    public virtual DbSet<TblRoadType> TblRoadTypes { get; set; }
-
     public virtual DbSet<TblSource> TblSources { get; set; }
 
     public virtual DbSet<TblStockHistory> TblStockHistories { get; set; }
@@ -160,8 +150,6 @@ public partial class VSSMDbContext : DbContext
     public virtual DbSet<TblDestroyUid> TblDestroyUids { get; set; }
 
     public virtual DbSet<TblStoreUsageWarning> TblStoreUsageWarnings { get; set; }
-
-    public virtual DbSet<TblTransportMode> TblTransportModes { get; set; }
 
     public virtual DbSet<TblUse> TblUses { get; set; }
 
@@ -715,17 +703,6 @@ public partial class VSSMDbContext : DbContext
                 .HasForeignKey(d => d.BundleId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_tblBundleDetails_tblBundles");
-        });
-
-        modelBuilder.Entity<TblClimate>(entity =>
-        {
-            entity.HasKey(e => e.ClimateId);
-
-            entity.ToTable("tblClimate");
-
-            entity.Property(e => e.ClimateId).HasColumnName("ClimateID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.FullName).HasMaxLength(150);
         });
 
         modelBuilder.Entity<TblCommercialName>(entity =>
@@ -1393,17 +1370,6 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.SubmitDate).HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<TblOwnership>(entity =>
-        {
-            entity.HasKey(e => e.OwnershipId);
-
-            entity.ToTable("tblOwnership");
-
-            entity.Property(e => e.OwnershipId).HasColumnName("OwnershipID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.FullName).HasMaxLength(150);
-        });
-
         modelBuilder.Entity<TblPack>(entity =>
         {
             entity.HasKey(e => e.PackId).HasName("PK_Packs");
@@ -1439,17 +1405,6 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.FullName).HasMaxLength(200);
         });
 
-        modelBuilder.Entity<TblPowerSource>(entity =>
-        {
-            entity.HasKey(e => e.PowerSourceId);
-
-            entity.ToTable("tblPowerSource");
-
-            entity.Property(e => e.PowerSourceId).HasColumnName("PowerSourceID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.FullName).HasMaxLength(150);
-        });
-
         modelBuilder.Entity<TblPresentationType>(entity =>
         {
             entity
@@ -1473,18 +1428,6 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.ReasonForNotutilizId)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("ReasonForNotutilizID");
-        });
-
-        modelBuilder.Entity<TblReceivingMode>(entity =>
-        {
-            entity.HasKey(e => e.ReceivingModeId).HasName("PK_ReceivingModes");
-
-            entity.ToTable("tblReceivingModes");
-
-            entity.Property(e => e.ReceivingModeId).HasColumnName("ReceivingModeID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
         });
 
         modelBuilder.Entity<TblRecipient>(entity =>
@@ -1521,29 +1464,29 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.TransportModeId).HasColumnName("TransportModeID");
             entity.Property(e => e.TypeOfRoadId).HasColumnName("TypeOfRoadID");
 
-            entity.HasOne(d => d.Climate).WithMany(p => p.TblRecipients)
+            entity.HasOne(d => d.Climate).WithMany()
                 .HasForeignKey(d => d.ClimateId)
-                .HasConstraintName("FK_tblRecipients_tblClimate");
+                .HasConstraintName("FK_tblRecipients_tblBaseInfo_climate");
 
-            entity.HasOne(d => d.Ownership).WithMany(p => p.TblRecipients)
+            entity.HasOne(d => d.Ownership).WithMany()
                 .HasForeignKey(d => d.OwnershipId)
-                .HasConstraintName("FK_tblRecipients_tblOwnership");
+                .HasConstraintName("FK_tblRecipients_tblBaseInfo_Ownership");
 
-            entity.HasOne(d => d.PowerSource).WithMany(p => p.TblRecipients)
+            entity.HasOne(d => d.PowerSource).WithMany()
                 .HasForeignKey(d => d.PowerSourceId)
-                .HasConstraintName("FK_tblRecipients_tblPowerSource");
+                .HasConstraintName("FK_tblRecipients_tblBaseInfo_PowerSource");
 
-            entity.HasOne(d => d.ReceivingMode).WithMany(p => p.TblRecipients)
+            entity.HasOne(d => d.ReceivingMode).WithMany()
                 .HasForeignKey(d => d.ReceivingModeId)
-                .HasConstraintName("FK_tblRecipients_tblReceivingModes");
+                .HasConstraintName("FK_tblRecipients_tblBaseInfo_ReceivingMode");
 
-            entity.HasOne(d => d.TransportMode).WithMany(p => p.TblRecipients)
+            entity.HasOne(d => d.TransportMode).WithMany()
                 .HasForeignKey(d => d.TransportModeId)
-                .HasConstraintName("FK_tblRecipients_tblTransportModes");
+                .HasConstraintName("FK_tblRecipients_tblBaseInfo_TransportMode");
 
-            entity.HasOne(d => d.TypeOfRoad).WithMany(p => p.TblRecipients)
+            entity.HasOne(d => d.TypeOfRoad).WithMany()
                 .HasForeignKey(d => d.TypeOfRoadId)
-                .HasConstraintName("FK_tblRecipients_tblRoadType");
+                .HasConstraintName("FK_tblRecipients_tblBaseInfo_TypeOfRoad");
         });
 
         modelBuilder.Entity<TblRecipientConfiguration>(entity =>
@@ -1695,17 +1638,6 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
                 .HasColumnName("RequestID");
         });
 
-        modelBuilder.Entity<TblRoadType>(entity =>
-        {
-            entity.HasKey(e => e.RoadTypeId);
-
-            entity.ToTable("tblRoadType");
-
-            entity.Property(e => e.RoadTypeId).HasColumnName("RoadTypeID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.FullName).HasMaxLength(150);
-        });
-
         modelBuilder.Entity<TblSource>(entity =>
         {
             entity.HasKey(e => e.SourceId);
@@ -1790,18 +1722,6 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.Az).HasColumnName("az");
             entity.Property(e => e.Bz).HasColumnName("bz");
             entity.Property(e => e.Dry).HasColumnName("dry");
-        });
-
-        modelBuilder.Entity<TblTransportMode>(entity =>
-        {
-            entity.HasKey(e => e.TransportModeId).HasName("PK_TransportModes");
-
-            entity.ToTable("tblTransportModes");
-
-            entity.Property(e => e.TransportModeId).HasColumnName("TransportModeID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
         });
 
         modelBuilder.Entity<TblUse>(entity =>

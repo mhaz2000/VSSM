@@ -15,19 +15,16 @@ namespace VSSM.Presentation.Web.Controllers
         private readonly IStoreService _storeService;
         private readonly IBaseInfoService _baseInfoService;
         private readonly IRecipientService _recipientService;
-        private readonly IPowerSourceService _powerSourceService;
         private readonly ISourceService _sourceService;
 
         public StoreController(
             IStoreService storeService,
             IRecipientService recipientService,
-            IPowerSourceService powerSourceService,
             IBaseInfoService baseInfoService,
             ISourceService sourceService)
         {
             _storeService = storeService;
             _recipientService = recipientService;
-            _powerSourceService = powerSourceService;
             _sourceService = sourceService;
             _baseInfoService = baseInfoService;
         }
@@ -63,11 +60,11 @@ namespace VSSM.Presentation.Web.Controllers
                 },
                 Columns = new List<GridColumn>
             {
-                new() { Header = "نام کاربری", PropertyName = nameof(StoreListDto.FullName),  Sortable = false },
-                new() { Header = "نام", PropertyName = nameof(StoreListDto.TypeName), Sortable = false },
-                new() { Header = "نام خانوادگی", PropertyName = nameof(StoreListDto.Volume), Sortable = false },
-                new() { Header = "تلفن", PropertyName = nameof(StoreListDto.FreeVolume),  Sortable = false },
-                new() { Header = "گیرنده", PropertyName = nameof(StoreListDto.Code),  Sortable = false },
+                new() { Header = "نام", PropertyName = nameof(StoreListDto.FullName),  Sortable = false },
+                new() { Header = "نوع انبار", PropertyName = nameof(StoreListDto.TypeName), Sortable = false },
+                new() { Header = "حجم کلی فضا (لیتر)", PropertyName = nameof(StoreListDto.Volume), Sortable = false },
+                new() { Header = "حجم مفید (لیتر)", PropertyName = nameof(StoreListDto.FreeVolume),  Sortable = false },
+                new() { Header = "وضعیت", PropertyName = nameof(StoreListDto.Code),  Sortable = false },
                 new() { Header = "عملیات", IsActionColumn = true}
             },
                 Actions = new List<GridAction>
@@ -215,7 +212,7 @@ namespace VSSM.Presentation.Web.Controllers
         {
             var storeTypes = await _baseInfoService.GetByParentIdAsync(56, cancellationToken);
             var recipients = await _recipientService.GetActiveRecipients(cancellationToken);
-            var powerSources = await _powerSourceService.GetAll(cancellationToken);
+            var powerSources = await _baseInfoService.GetByParentIdAsync(75 ,cancellationToken);
             var sources = await _sourceService.GetAll(cancellationToken);
 
             ViewBag.StoreTypeList = storeTypes is null ? [] : storeTypes
@@ -237,8 +234,8 @@ namespace VSSM.Presentation.Web.Controllers
             ViewBag.PowerSourceList = powerSources
                 .Select(x => new SelectListItem
                 {
-                    Text = x.FullName,
-                    Value = x.PowerSourceId.ToString()
+                    Text = x.Title,
+                    Value = x.Id.ToString()
                 })
                 .ToList();
 

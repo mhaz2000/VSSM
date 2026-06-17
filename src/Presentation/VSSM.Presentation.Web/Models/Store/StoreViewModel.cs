@@ -22,6 +22,7 @@ public class StoreViewModel
     public string? Note { get; set; }
     public bool IsActive { get; set; }
 
+    [Required(ErrorMessage = "گیرنده نمی‌تواند خالی باشد.")]
     public int? RecipientId { get; set; }
     public int? Year { get; set; }
     public string? Model { get; set; }

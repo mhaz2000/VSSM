@@ -82,18 +82,12 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IValidator<CommercialNameDto>, CommercialNameValidator>();
             services.AddScoped<IValidator<AdjustreasonDto>, AdjustReasonValidator>();
             services.AddScoped<IValidator<LevelDto>, LevelValidator>();
-            services.AddScoped<IRoadTypeService, RoadTypeService>();
             services.AddScoped<IValidator<RoadTypeEditDto>, RoadTypeEditValidator>();
             services.AddScoped<IValidator<RoadTypeCreateDto>, RoadTypeCreateValidator>();
-            services.AddScoped<IOwnershipService, OwnershipService>();
             services.AddScoped<IValidator<OwnershipEditDto>, OwnershipEditValidator>();
             services.AddScoped<IValidator<OwnershipCreateDto>, OwnershipCreateValidator>();
             services.AddScoped<IValidator<DosePerVialCreateDto>, DosePerVialCreateValidator>();
             services.AddScoped<IValidator<ItemDoseAssignmentCreateDto>, ItemDoseAssignmentCreateValidator>();
-            services.AddScoped<IPowerSourceService, PowerSourceService>();
-            services.AddScoped<ITransportModeService, TransportModeService>();
-            services.AddScoped<IReceivingModeService, ReceivingModeService>();
-            services.AddScoped<IClimateService, ClimateService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ISourceService, SourceService>();
             services.AddScoped<IStoreService, StoreService>();

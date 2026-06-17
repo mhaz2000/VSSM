@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
-using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.Recipient;
-using VSSM.Application.DTOs.BaseEntities.TransportMode;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
@@ -27,7 +25,7 @@ namespace VSSM.Application.Services.BaseEntities
         {
             var paging = new PagingModel { Page = page, PageSize = pageSize };
 
-            IQueryable<TblRecipient> query = _db.TblRecipients;
+            IQueryable<TblRecipient> query = _db.TblRecipients.Include(t=> t.TransportMode).Include(t=> t.ReceivingMode);
 
             // SEARCH by Code or FullName
             if (!string.IsNullOrWhiteSpace(search))
@@ -63,17 +61,8 @@ namespace VSSM.Application.Services.BaseEntities
                     ChainLevel = x.ChainLevel,
                     StartUp = x.StartUp.HasValue ? Helpers.DateTimeHelper.ToShamsi(x.StartUp.Value) : string.Empty,
                     ParentId = x.ParentId,
-
-
-                    TransportModeName = _db.TblTransportModes
-                        .Where(t => t.TransportModeId == x.TransportModeId)
-                        .Select(t => t.FullName)
-                        .FirstOrDefault(),
-
-                    ReceivingModeName = _db.TblReceivingModes
-                        .Where(r => r.ReceivingModeId == x.ReceivingModeId)
-                        .Select(r => r.FullName)
-                        .FirstOrDefault()
+                    TransportModeName = x.TransportMode.Title,
+                    ReceivingModeName = x.ReceivingMode.Title
                 })
                 .ToListAsync(token);
 

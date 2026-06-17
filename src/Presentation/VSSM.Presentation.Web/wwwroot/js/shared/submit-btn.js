@@ -3,12 +3,15 @@ const SubmitBtn = (() => {
 
     function startLoading(btn) {
         btn.dataset.loading = 'true';
-        btn.querySelector('.js-btn-content').hidden = true;
-        btn.querySelector('.js-btn-spinner').hidden = false;
+
+        var content = btn.querySelector('.js-btn-content');
+        var spinner = btn.querySelector('.js-btn-spinner');
+
+        if (content) content.hidden = true;
+        if (spinner) spinner.hidden = false;
 
         document.getElementById('pageOverlay').hidden = false;
-
-        document.querySelectorAll('.js-submit-btn').forEach(b => b.disabled = true);
+        document.querySelectorAll('.js-submit-btn').forEach(function (b) { b.disabled = true; });
     }
 
     function stopLoading() {

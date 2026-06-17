@@ -350,9 +350,6 @@ public class ArrivalController(
             await arrivalService.AddLine(model.ArrivalId.Value, diluentLineDto, token);
         }
 
-        TempData["ToastMessage"] = "کالا اضافه شد";
-        TempData["ToastType"] = "success";
-
         return RedirectToAction("New", new { id = model.ArrivalId.Value });
     }
 

@@ -169,10 +169,17 @@
         </div>
 
         <div style="display:flex; justify-content:flex-end;">
-            <button type="submit" name="command" value="addLine" class="btn-add-line">
-                <i class="fa fa-plus"></i>
-                افزودن کالا
+            <button type="submit" name="command" value="addLine" class="btn-add-line js-submit-btn">
+                <span class="js-btn-content">
+                    <i class="fa fa-plus"></i>
+                    افزودن کالا
+                </span>
+                <span class="js-btn-spinner" hidden>
+                    <span class="submit-spinner"></span>
+                    در حال ارسال…
+                </span>
             </button>
+
         </div>
 
     </div>

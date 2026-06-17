@@ -33,6 +33,11 @@ $(function () {
                 $("#ExpYear").val() + "/" + $("#ExpMonth").val() + "/" + $("#ExpDay").val()
             );
         }
+
+        var $active = $(document.activeElement);
+        if ($active.hasClass('js-submit-btn')) {
+            SubmitBtn.startLoading($active[0]);
+        }
     });
 
     if (typeof arrivalServerMsg !== "undefined" && arrivalServerMsg) {

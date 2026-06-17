@@ -1,215 +1,241 @@
-﻿@model VSSM.Presentation.Web.Models.Recipient.RecipientViewModel
+﻿@using VSSM.Presentation.Web.Models.Base
+@model VSSM.Presentation.Web.Models.Recipient.RecipientViewModel
 
 @{
     bool isEdit = Model.RecipientId > 0;
-    ViewData["Title"] = isEdit ? "ویرایش گیرنده" : "ثبت گیرنده جدید";
+    string formName = isEdit ? "ویرایش گیرنده" : "ثبت گیرنده جدید";
 }
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/recipient/recipient-form.css" rel="stylesheet" />
+}
 
-        <div class="card form-card">
-            <div class="card-header card-form-header">
-                <h5 class="header-title">@ViewData["Title"]</h5>
+<div class="recipient-form-wrap">
+    <strong class="recipient-form-title">@formName</strong>
+
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="RecipientId" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <!-- اطلاعات اصلی -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-user" style="color:#1d6fb8;"></i>
+                <h6>اطلاعات اصلی</h6>
             </div>
-
-            <div class="card-block">
-
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                <form asp-action="Create" method="post" class="form-horizontal">
-
-                    <input type="hidden" asp-for="RecipientId" />
-
-                    <div class="row mb-4 mx-0" style="flex-wrap: wrap;display: flex;">
-
-                        <!-- COLUMN 1 -->
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">کد 
-                                <span class="form-label-caption">(اجباری)</span>
-                            </label>
-                            <input asp-for="Code" class="form-control bg-warning-subtle" />
-                            <span class="text-danger" asp-validation-for="Code"></span>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">نام کامل 
-                                <span class="form-label-caption">(اجباری)</span>
-                            </label>
-                            <input asp-for="FullName" class="form-control bg-warning-subtle" />
-                            <span class="text-danger" asp-validation-for="FullName"></span>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">جمعیت</label>
-                            <input asp-for="Population" class="form-control" />
-                        </div>
-
-                        <!-- COLUMN 2 -->
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">سال</label>
-                            <input asp-for="Year" class="form-control" />
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">آدرس ۱</label>
-                            <input asp-for="Address1" class="form-control" />
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">آدرس ۲</label>
-                            <input asp-for="Address2" class="form-control" />
-                        </div>
-
-                        <!-- COLUMN 3 -->
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">کد پستی</label>
-                            <input asp-for="PostalCode" class="form-control" />
-                            <span class="text-danger" asp-validation-for="PostalCode"></span>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">شهر</label>
-                            <input asp-for="City" class="form-control" />
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">استان</label>
-                            <input asp-for="Province" class="form-control" />
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">تلفن</label>
-                            <input asp-for="Phone" class="form-control" />
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">پست الکترونیکی</label>
-                            <input asp-for="Email" class="form-control" />
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">زمان بین درخواست و ورود محموله</label>
-                            <input asp-for="LeadTime" class="form-control" />
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">فاصله زمانی (دقیقه)</label>
-                            <input asp-for="DistanceTime" class="form-control" />
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">طریقه حمل و نقل</label>
-                            <select asp-for="TransportModeId" asp-items="ViewBag.TransportList" class="form-control">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">سطح در زنجیره</label>
-                            <select asp-for="ChainLevel" asp-items="ViewBag.LevelList" class="form-control">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                            <span class="text-danger" asp-validation-for="ChainLevel"></span>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">روش دریافت</label>
-                            <select asp-for="ReceivingModeId" asp-items="ViewBag.ReceivingList" class="form-control">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">نوع</label>
-                            <select asp-for="ParentType" asp-items="ViewBag.ParentTypeList" class="form-control">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">شرایط اقلیمی</label>
-                            <select asp-for="ClimateId" asp-items="ViewBag.ClimateList" class="form-control">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">نوع مالکیت</label>
-                            <select asp-for="OwnershipId" asp-items="ViewBag.OwnershipList" class="form-control">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">منبع انرژی</label>
-                            <select asp-for="PowerSourceId" asp-items="ViewBag.PowerSourceList" class="form-control">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-lg-4">
-                            <label class="form-label">نوع راه</label>
-                            <select asp-for="TypeOfRoadId" asp-items="ViewBag.RoadTypeList" class="form-control">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
-                        </div>
-
-                        <!-- Checkboxes -->
-                        <div class="form-group col-lg-4 d-flex align-items-center" style="padding-top:2rem;">
-                            <label class="custom-checkbox">
-                                <input type="checkbox" asp-for="HasLandLine" />
-                                <span class="checkmark"></span>
-                                <span class="label-text">تلفن ثابت</span>
-                            </label>
-                        </div>
-
-                        <div class="form-group col-lg-4 d-flex align-items-center" style="padding-top:2rem;">
-                            <label class="custom-checkbox">
-                                <input type="checkbox" asp-for="HasInternet" />
-                                <span class="checkmark"></span>
-                                <span class="label-text">اینترنت</span>
-                            </label>
-                        </div>
-
-                        <div class="form-group col-lg-4 d-flex align-items-center" style="padding-top:2rem;">
-                            <label class="custom-checkbox">
-                                <input type="checkbox" asp-for="IsActive" />
-                                <span class="checkmark"></span>
-                                <span class="label-text">فعال</span>
-                            </label>
-                        </div>
-
-                        <div class="form-group col-lg-12">
-                            <label class="form-label">ملاحظات</label>
-                            <textarea asp-for="Note" class="form-control"></textarea>
-                        </div>
-
-                        <div class="alert alert-info help-text mt-4">
-                        وقتی شما دکمه ثبت را فشار دهید، گیرنده تعریف می‌گردد و شما می‌توانید هر کالایی را به آن گیرنده ارسال دارید. وقتی این گیرنده هنوز فرد سیستم نشده و نمی‌تواند با سیستم کار کند تا شما دکمه "شروع فعالیت" را فعال نکرده باشید. برای فعال کردن شروع فعالیت به اطلاعات پایه ➜ گیرندگان رفته و گزینه  مدیریت را انتخاب کرده و در جعبه مقابل "شروع فعالیت" علامت بگذارید.
-                        پس از این گیرنده به سیستم‌آمده می‌گردد. این عمل وقتی باید انجام شود که گزارش این گیرنده آموزش لازم را دیده و آمادگی شروع فعالیت را داشته باشند. برای اطلاعات بیشتر به قسمت کمک مربوط به گیرندگان مراجعه نمایید. تعریف اقلا  یک کاربر را برای این گیرنده فراموش نکنید!
+            <div class="a-card-body">
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">کد <span class="req-tag">اجباری</span></label>
+                        <input asp-for="Code" class="f-control" />
+                        <span class="text-danger" asp-validation-for="Code"></span>
                     </div>
-
-                        <!-- Buttons -->
-                        <div class="col-lg-12 text-left  mt-4">
-                            <button type="submit" class="btn btn-success px-5">
-                                @(isEdit ? "ذخیره" : "ثبت")
-                            </button>
-
-                            <a asp-action="Index"
-                               class="btn btn-success-outlet px-5">
-                                بازگشت
-                            </a>
-                        </div>
-
+                    <div class="f-group">
+                        <label class="f-label">نام کامل <span class="req-tag">اجباری</span></label>
+                        <input asp-for="FullName" class="f-control" />
+                        <span class="text-danger" asp-validation-for="FullName"></span>
                     </div>
-
-                </form>
-
+                    <div class="f-group">
+                        <label class="f-label">جمعیت</label>
+                        <input asp-for="Population" class="f-control" />
+                    </div>
+                </div>
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">سال</label>
+                        <input asp-for="Year" class="f-control" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">فاصله</label>
+                        <input asp-for="Distance" class="f-control" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">آدرس ۱</label>
+                        <input asp-for="Address1" class="f-control" />
+                    </div>
+                </div>
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">آدرس ۲</label>
+                        <input asp-for="Address2" class="f-control" />
+                    </div>
+                </div>
             </div>
         </div>
 
-    </div>
+        <!-- اطلاعات تماس و موقعیت -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-phone" style="color:#16a34a;"></i>
+                <h6>اطلاعات تماس و موقعیت</h6>
+            </div>
+            <div class="a-card-body">
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">کد پستی</label>
+                        <input asp-for="PostalCode" class="f-control" />
+                        <span class="text-danger" asp-validation-for="PostalCode"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">استان</label>
+                        <input asp-for="Province" class="f-control" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">شهر</label>
+                        <input asp-for="City" class="f-control" />
+                    </div>
+                </div>
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">تلفن</label>
+                        <input asp-for="Phone" class="f-control" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">پست الکترونیکی</label>
+                        <input asp-for="Email" class="f-control" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">زمان بین درخواست و ورود محموله</label>
+                        <input asp-for="LeadTime" class="f-control" />
+                    </div>
+                </div>
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">فاصله زمانی (دقیقه)</label>
+                        <input asp-for="DistanceTime" class="f-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تنظیمات عملیاتی -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-cog" style="color:#8b5cf6;"></i>
+                <h6>تنظیمات عملیاتی</h6>
+            </div>
+            <div class="a-card-body">
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">طریقه حمل و نقل</label>
+                        <select asp-for="TransportModeId" asp-items="ViewBag.TransportList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">سطح در زنجیره <span class="req-tag">اجباری</span></label>
+                        <select asp-for="ChainLevel" asp-items="ViewBag.LevelList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                        <span class="text-danger" asp-validation-for="ChainLevel"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">روش دریافت</label>
+                        <select asp-for="ReceivingModeId" asp-items="ViewBag.ReceivingList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">والد</label>
+                        <select asp-for="ParentType" asp-items="ViewBag.ParentTypeList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">شرایط اقلیمی</label>
+                        <select asp-for="ClimateId" asp-items="ViewBag.ClimateList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">نوع مالکیت</label>
+                        <select asp-for="OwnershipId" asp-items="ViewBag.OwnershipList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">منبع انرژی</label>
+                        <select asp-for="PowerSourceId" asp-items="ViewBag.PowerSourceList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">نوع راه</label>
+                        <select asp-for="TypeOfRoadId" asp-items="ViewBag.RoadTypeList" class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- سایر تنظیمات -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-check-square" style="color:#f59e0b;"></i>
+                <h6>سایر تنظیمات</h6>
+            </div>
+            <div class="a-card-body">
+                <div class="fg-3" style="margin-bottom:14px;">
+                    <div class="f-group">
+                        <label class="f-label">تلفن ثابت</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" asp-for="HasLandLine" />
+                                فعال
+                            </label>
+                        </div>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">اینترنت</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" asp-for="HasInternet" />
+                                فعال
+                            </label>
+                        </div>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">وضعیت</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" asp-for="IsActive" />
+                                فعال
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="f-group" style="margin-bottom:14px;">
+                    <label class="f-label">ملاحظات</label>
+                    <textarea asp-for="Note" class="f-control" placeholder="ملاحظات را وارد کنید"></textarea>
+                </div>
+                <div class="alert alert-info recipient-help-text">
+                    وقتی شما دکمه ثبت را فشار دهید، گیرنده تعریف می‌گردد و شما می‌توانید هر کالایی را به آن گیرنده ارسال دارید. وقتی این گیرنده هنوز فرد سیستم نشده و نمی‌تواند با سیستم کار کند تا شما دکمه "شروع فعالیت" را فعال نکرده باشید. برای فعال کردن شروع فعالیت به اطلاعات پایه ➜ گیرندگان رفته و گزینه  مدیریت را انتخاب کرده و در جعبه مقابل "شروع فعالیت" علامت بگذارید.
+                    پس از این گیرنده به سیستم‌آمده می‌گردد. این عمل وقتی باید انجام شود که گزارش این گیرنده آموزش لازم را دیده و آمادگی شروع فعالیت را داشته باشند. برای اطلاعات بیشتر به قسمت کمک مربوط به گیرندگان مراجعه نمایید. تعریف اقلا  یک کاربر را برای این گیرنده فراموش نکنید!
+                </div>
+            </div>
+        </div>
+
+        <!-- فوتر -->
+        <div class="form-footer">
+            <a asp-action="Index" class="btn-back">
+                <i class="fa fa-arrow-right"></i> بازگشت
+            </a>
+            <button type="submit" class="btn-confirm">
+                <i class="fa fa-save"></i> @(isEdit ? "ذخیره" : "ثبت")
+            </button>
+        </div>
+    </form>
 </div>
 
 @section Scripts {

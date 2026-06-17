@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Recipient;
-using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Domain.Enums;
+using VSSM.Presentation.Web.Models.Base;
 using VSSM.Presentation.Web.Models.Recipient;
 
 namespace VSSM.Presentation.Web.Controllers
@@ -13,56 +11,71 @@ namespace VSSM.Presentation.Web.Controllers
     public class RecipientController : BaseController
     {
         private readonly IRecipientService _recipientService;
-        private readonly ITransportModeService _transportService;
-        private readonly IReceivingModeService _receivingService;
-        private readonly IClimateService _climateService;
-        private readonly IOwnershipService _ownershipService;
-        private readonly IPowerSourceService _powerSourceService;
-        private readonly IRoadTypeService _roadTypeService;
-        private readonly IItemService _itemService;
         private readonly ILevelService _levelService;
+        private readonly IBaseInfoService _baseInfoService;
 
         public RecipientController(
             IRecipientService recipientService,
-            ITransportModeService transportService,
-            IReceivingModeService receivingService,
-            IClimateService climateService,
-            IOwnershipService ownershipService,
-            IPowerSourceService powerSourceService,
-            IRoadTypeService roadTypeService,
-            IItemService itemService,
+            IBaseInfoService baseInfoService,
             ILevelService levelService)
         {
             _recipientService = recipientService;
-            _transportService = transportService;
-            _receivingService = receivingService;
-            _climateService = climateService;
-            _ownershipService = ownershipService;
-            _powerSourceService = powerSourceService;
-            _roadTypeService = roadTypeService;
-            _itemService = itemService;
             _levelService = levelService;
+            _baseInfoService = baseInfoService;
         }
 
         // LIST
-        public async Task<IActionResult> Index(
+        public async Task<IActionResult> Index(CancellationToken cancellationToken,
             string? search,
-            int page = 1,
+            int pageNumber = 1,
             int pageSize = 10,
-            string sortField = "Code",
-            string sortOrder = "asc",
-            CancellationToken token = default)
+            string sort = "FullName",
+            string direction = "asc")
         {
             var list = await _recipientService.GetPagedList(
-                search, page, pageSize, sortField, sortOrder, token);
+                search, pageNumber, pageSize, sort, direction, cancellationToken);
 
-            return View(list);
+            var model = new GridViewModel
+            {
+                SearchTerm = search,
+                CurrentSort = sort,
+                CurrentDirection = direction,
+                Data = new PagedResult<object>
+                {
+                    Items = list.Items.Cast<object>().ToList(),
+                    PageNumber = list.Paging.Page,
+                    PageSize = list.Paging.PageSize,
+                    TotalCount = list.Paging.TotalItems
+                },
+                Columns = new List<GridColumn>
+                {
+                    new() { Header = "نام کامل", PropertyName = nameof(RecipientGetDto.FullName), Sortable = true },
+                    new() { Header = "کد", PropertyName = nameof(RecipientGetDto.Code), Sortable = true },
+                    new() { Header = "فعال", PropertyName = nameof(RecipientGetDto.IsActiveText), Sortable = false },
+                    new() { Header = "طریقه حمل و نقل", PropertyName = nameof(RecipientGetDto.TransportModeName), Sortable = false },
+                    new() { Header = "روش دریافت", PropertyName = nameof(RecipientGetDto.ReceivingModeName), Sortable = false },
+                    new() { Header = "عملیات", IsActionColumn = true }
+                },
+                Actions = new List<GridAction>
+                {
+                    new()
+                    {
+                        Title = "ویرایش",
+                        Controller = "Recipient",
+                        Action = "New",
+                        RouteIdProperty = nameof(RecipientGetDto.RecipientId),
+                        IconClass = "fa fa-edit"
+                    }
+                }
+            };
+
+            return View(model);
         }
 
         // NEW / EDIT
         public async Task<IActionResult> New(int? id, CancellationToken token)
         {
-            await LoadDropDowns(token);
+            await LoadDropDowns(token, id);
 
             if (id == null)
                 return View(new RecipientViewModel());
@@ -192,64 +205,65 @@ namespace VSSM.Presentation.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        private async Task LoadDropDowns(CancellationToken token)
+        private async Task LoadDropDowns(CancellationToken token, int? id = null)
         {
-            ViewBag.TransportList = (await _transportService.GetAll(token))
+            ViewBag.TransportList = (await _baseInfoService.GetByParentIdAsync(68,token))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.TransportModeId.ToString(),
-                    Text = x.FullName
+                    Value = x.Id.ToString(),
+                    Text = x.Title
                 }).ToList();
 
-            ViewBag.ItemList = (await _itemService.GetActives(token))
-             .Select(x => new SelectListItem
-             {
-                 Value = x.ItemId.ToString(),
-                 Text = x.FullName
-             }).ToList();
 
-            ViewBag.ReceivingList = (await _receivingService.GetAllAsync(token))
+            ViewBag.ReceivingList = (await _baseInfoService.GetByParentIdAsync(64, token))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.ReceivingModeId.ToString(),
-                    Text = x.FullName
+                    Value = x.Id.ToString(),
+                    Text = x.Title
                 }).ToList();
 
-            ViewBag.ClimateList = (await _climateService.GetAllAsync(token))
+            ViewBag.ClimateList = (await _baseInfoService.GetByParentIdAsync(78,token))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.ClimateId.ToString(),
-                    Text = x.FullName
+                    Value = x.Id.ToString(),
+                    Text = x.Title
                 }).ToList();
 
-            ViewBag.OwnershipList = (await _ownershipService.GetAll(token))
+            ViewBag.OwnershipList = (await _baseInfoService.GetByParentIdAsync(81,token))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.OwnershipId.ToString(),
-                    Text = x.FullName
+                    Value = x.Id.ToString(),
+                    Text = x.Title
                 }).ToList();
 
-            ViewBag.PowerSourceList = (await _powerSourceService.GetAll(token))
+            ViewBag.PowerSourceList = (await _baseInfoService.GetByParentIdAsync(75,token))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.PowerSourceId.ToString(),
-                    Text = x.FullName
+                    Value = x.Id.ToString(),
+                    Text = x.Title
                 }).ToList();
 
-            ViewBag.RoadTypeList = (await _roadTypeService.GetAll(token))
+            ViewBag.RoadTypeList = (await _baseInfoService.GetByParentIdAsync(71, token))
                 .Select(x => new SelectListItem
                 {
-                    Value = x.RoadTypeId.ToString(),
-                    Text = x.FullName
+                    Value = x.Id.ToString(),
+                    Text = x.Title
                 }).ToList();
 
-            ViewBag.ParentTypeList = (await _recipientService.GetAll(token))
+            var parents = (await _recipientService.GetActiveRecipients(token))
                 .Select(e => new SelectListItem
                 {
                     Value = e.RecipientId.ToString(),
                     Text = e.FullName
                 })
                 .ToList();
+
+            if (id is not null)
+                parents = parents.Where(t => t.Value != id.ToString()).ToList();
+
+            ViewBag.ParentTypeList = parents;
+
+
 
             ViewBag.LevelList = (await _levelService.GetAll(token))
              .Select(e => new SelectListItem

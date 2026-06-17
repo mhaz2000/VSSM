@@ -15,19 +15,16 @@ namespace VSSM.Presentation.Web.Controllers
         private readonly IStoreService _storeService;
         private readonly IBaseInfoService _baseInfoService;
         private readonly IRecipientService _recipientService;
-        private readonly IPowerSourceService _powerSourceService;
         private readonly ISourceService _sourceService;
 
         public StoreController(
             IStoreService storeService,
             IRecipientService recipientService,
-            IPowerSourceService powerSourceService,
             IBaseInfoService baseInfoService,
             ISourceService sourceService)
         {
             _storeService = storeService;
             _recipientService = recipientService;
-            _powerSourceService = powerSourceService;
             _sourceService = sourceService;
             _baseInfoService = baseInfoService;
         }
@@ -215,7 +212,7 @@ namespace VSSM.Presentation.Web.Controllers
         {
             var storeTypes = await _baseInfoService.GetByParentIdAsync(56, cancellationToken);
             var recipients = await _recipientService.GetActiveRecipients(cancellationToken);
-            var powerSources = await _powerSourceService.GetAll(cancellationToken);
+            var powerSources = await _baseInfoService.GetByParentIdAsync(75 ,cancellationToken);
             var sources = await _sourceService.GetAll(cancellationToken);
 
             ViewBag.StoreTypeList = storeTypes is null ? [] : storeTypes
@@ -237,8 +234,8 @@ namespace VSSM.Presentation.Web.Controllers
             ViewBag.PowerSourceList = powerSources
                 .Select(x => new SelectListItem
                 {
-                    Text = x.FullName,
-                    Value = x.PowerSourceId.ToString()
+                    Text = x.Title,
+                    Value = x.Id.ToString()
                 })
                 .ToList();
 

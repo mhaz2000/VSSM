@@ -67,13 +67,13 @@ public partial class TblRecipient
 
     public long? DistanceTime { get; set; }
 
-    public virtual TblClimate Climate { get; set; }
+    public virtual TblBaseInfo Climate { get; set; }
 
-    public virtual TblOwnership Ownership { get; set; }
+    public virtual TblBaseInfo Ownership { get; set; }
 
-    public virtual TblPowerSource PowerSource { get; set; }
+    public virtual TblBaseInfo PowerSource { get; set; }
 
-    public virtual TblReceivingMode ReceivingMode { get; set; }
+    public virtual TblBaseInfo ReceivingMode { get; set; }
 
     public virtual ICollection<TblArrival> TblArrivalReceivers { get; set; } = new List<TblArrival>();
 
@@ -97,9 +97,9 @@ public partial class TblRecipient
 
     public virtual ICollection<TblStore> TblStores { get; set; } = new List<TblStore>();
 
-    public virtual TblTransportMode TransportMode { get; set; }
+    public virtual TblBaseInfo TransportMode { get; set; }
 
-    public virtual TblRoadType TypeOfRoad { get; set; }
+    public virtual TblBaseInfo TypeOfRoad { get; set; }
 
     public virtual ICollection<TblDestroyUid> DestroyUids { get; set; } = new List<TblDestroyUid>();
 }

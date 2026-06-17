@@ -1,193 +1,55 @@
-﻿
-@using VSSM.Application.DTOs.BaseEntities.Recipient
-@model PagingSearchOrderDto<RecipientGetDto>
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
 
-@{
-    ViewData["Title"] = "مدیریت گیرندگان";
+@section Styles {
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
+    <link href="~/css/components/shared/grid-header.css" rel="stylesheet" />
 
-    int current = Model.Paging.Page;
-    int total = Model.Paging.TotalPages;
-
-    int start = Math.Max(1, current - 5);
-    int end = Math.Min(total, current + 5);
 }
 
+<div class="grid-wrapper">
+    <div class="grid-header" style="direction:rtl;">
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
+        <strong style="font-size:1.4rem; font-weight:600; color:#111827;">
+            @ViewData["Title"]
+        </strong>
 
-        <div class="card">
+        <div class="d-flex align-items-center gap-2">
 
-            <!-- Header -->
-            <div class="row m-0 card-header">
+            <form method="get" class="m-0">
+                <input type="hidden" name="sort" value="@Model.CurrentSort" />
+                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
+                <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
 
-                <div class="col-lg-4">
-                    <h5 class="header-title">@ViewData["Title"]</h5>
+                <div class="search-wrap">
+                    <input type="text" name="search" class="search-input"
+                           value="@Model.SearchTerm" placeholder="جستجو..." />
+                    <button type="submit" class="search-btn" title="جستجو">
+                        <i class="fa fa-search"></i>
+                    </button>
                 </div>
-                <div class="col-lg-4">
-                    <div class="toggler-box  d-flex align-items-center justify-content-center">
-                        <button type="button" class="btn btn-primary mr-2"
-                                data-toggle="modal" data-target="#simpleModal">
-                            گزارش های مربوط به پایانه
-                        </button>
+            </form>
 
-                        <button type="button" class="btn btn-primary"
-                                data-toggle="modal" data-target="#simpleModal">
-                            اطلاعات تماسی گیرندگان
-                        </button>
-                        
-                    </div>
-                </div>
-                    
-                <div class=" col-lg-4 d-flex align-items-center justify-content-end">
-                    
-                   <div class="d-flex align-items-center justify-content-end">
-                        @await Component.InvokeAsync("SearchBar", new
-                        {
-                            searchTerm = Model.SearchText,
-                            pageSize = Model.Paging.PageSize,
-                            sort = Model.SortField,
-                            direction = Model.SortOrder
-                        })
-                        <a class="btn btn-success m-0" 
-                            asp-controller="Recipient" asp-action="New">
-                                <i class="fa fa-plus-circle ml-2"></i>افزودن
-                            </a>
-                    </div>
-                    
-                </div>
-
-            </div>
-
-            <!-- Table -->
-            <div class="card-block">
-                <div class="table-wrapper">
-                    <table class="table table-bordered table-striped table-condensed text-center">
-                        <thead>
-                            <tr>
-                                <th>
-                                    <a href="?sortField=FullName&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
-                                        نام کامل
-                                    </a>
-                                </th>
-                                <th>
-                                    <a href="?sortField=Code&sortOrder=@(Model.SortOrder == "asc" ? "desc" : "asc")">
-                                        کد
-                                    </a>
-                                </th>
-                                <th>فعال</th>
-                                <th>طریقه حمل و نقل</th>
-                                <th>روش دریافت</th>
-                                <th>عملیات</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @if (Model.Items.Any())
-                            {
-                                foreach (var item in Model.Items)
-                                {
-                                    <tr>
-                                        <td>@item.FullName</td>
-                                        <td>@item.Code</td>
-                                        <td>@(item.IsActive ? "✓" : "")</td>
-                                        <td>@item.TransportModeName</td>
-                                        <td>@item.ReceivingModeName</td>
-
-                                        <td>
-                                            <a class="btn btn-link text-info btn-sm"
-                                               asp-controller="Recipient"
-                                               asp-action="New"
-                                               asp-route-id="@item.RecipientId">
-                                                <i class="fa fa-edit" style="font-size:18px;"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="6" class="text-danger text-center">
-                                        داده‌ای یافت نشد
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                               <!-- Pagination -->
-                @{
-                    int page = Model.Paging.Page;
-                    int totalPages = Model.Paging.TotalPages;
-
-                    // چند صفحه اطراف صفحه فعلی
-                    int window = 2;
-
-                    // پارامترهای فیلتر/مرتب‌سازی که باید حفظ شوند
-                    var search = Model.SearchText ?? "";
-                    var sortField = Model.SortField ?? "";
-                    var sortOrder = Model.SortOrder ?? "";
-
-                    // typeId از QueryString میاد (چون تو Model نیست)
-                    var typeId = Context.Request.Query["typeId"].ToString() ?? "";
-
-                    // انتخاب صفحات: 1, ... , (page-window..page+window), ... , total
-                    var selected = new SortedSet<int>();
-                    if (totalPages >= 1) selected.Add(1);
-
-                    for (int p = page - window; p <= page + window; p++)
-                        if (p >= 1 && p <= totalPages)
-                            selected.Add(p);
-
-                    if (totalPages >= 2) selected.Add(totalPages);
-
-                    string PageUrl(int p)
-                        => $"?search={search}&typeId={typeId}&sortField={sortField}&sortOrder={sortOrder}&page={p}";
-                }
-
-                <nav class="pager-wrap mt-2 m-auto" aria-label="Page navigation">
-                    <ul class="cpageination pager-modern m-auto">
-
-                        <!-- قبلی -->
-                        <li class="page-item @(page == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page - 1))"
-                               tabindex="@(page == 1 ? "-1" : "0")">
-                                <
-                            </a>
-                        </li>
-
-                        @{
-                            int prev = 0;
-                            foreach (var p in selected)
-                            {
-                                if (prev != 0 && p - prev > 1)
-                                {
-                                    <li class="page-item disabled ellipsis">
-                                        <span class="page-link">…</span>
-                                    </li>
-                                }
-
-                                <li class="page-item @(p == page ? "active" : "")">
-                                    <a class="page-link" href="@PageUrl(p)">@p</a>
-                                </li>
-
-                                prev = p;
-                            }
-                        }
-                        <li class="page-item @(page == totalPages ? "disabled" : "")">
-                            <a class="page-link" href="@(page == 1 ? "#" : PageUrl(page + 1))"
-                               tabindex="@(page == 1 ? "-1" : "0")">
-                                >
-                            </a>
-                        </li>
-                </nav>
-
-            </div>
+            <a asp-action="New" class="btn-add">
+                <span class="plus-circle">+</span>
+                افزودن گیرنده
+            </a>
 
         </div>
+    </div>
 
+    <div>
+        @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
 </div>
 
+@if (TempData["ToastMessage"] != null)
+{
+    <script>
+        $(document).ready(function () {
+            var message = '@Html.Raw(TempData["ToastMessage"])';
+            var type    = '@TempData["ToastType"]';
+            showToast(message, type);
+        });
+    </script>
+}

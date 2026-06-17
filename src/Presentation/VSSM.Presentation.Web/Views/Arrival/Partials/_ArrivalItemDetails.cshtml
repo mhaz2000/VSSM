@@ -1,0 +1,180 @@
+@using VSSM.Presentation.Web.Models.Arrival
+@model ArrivalViewModel
+
+<div class="a-card">
+
+    <div class="a-card-header">
+        <h6>
+            <i class="fa fa-info-circle" style="color:#1d6fb8;"></i>
+            جزئیات کالا
+        </h6>
+    </div>
+
+    <div class="a-card-body">
+
+        <div class="fg-3" style="margin-bottom:14px;">
+
+            <div class="f-group">
+                <label class="f-label">نوع کالا <span class="opt">(خودکار)</span></label>
+                <input type="text" id="ItemClassDisplay" class="f-control"
+                       value="واکسن" disabled placeholder="بر اساس سری ساخت" />
+            </div>
+
+            <div class="f-group">
+                <label class="f-label">کالا <span class="opt">(خودکار)</span></label>
+                <input type="text" id="ItemDisplay" class="f-control" disabled placeholder="بر اساس سری ساخت" />
+            </div>
+
+            <div class="f-group">
+                <label class="f-label">دوز بر ویال <span class="opt">(خودکار)</span></label>
+                <input type="text" id="DoseDisplay" class="f-control" disabled placeholder="بر اساس سری ساخت" />
+            </div>
+
+        </div>
+
+        <div class="fg-3" style="margin-bottom:14px;">
+
+            <div class="f-group">
+                <label class="f-label">انبار <span class="req-tag">اجباری</span></label>
+
+                <select asp-for="NewLine.StoreId"
+                        asp-items="ViewBag.StoreList"
+                        class="f-control">
+
+                    <option value="">انتخاب کنید...</option>
+
+                </select>
+
+                <span asp-validation-for="NewLine.StoreId" class="text-danger" style="font-size:11px;"></span>
+
+            </div>
+
+            <div class="f-group">
+
+                <label class="f-label">نوع VVM</label>
+
+                <select asp-for="NewLine.VvmTypeId"
+                        asp-items="ViewBag.VvmTypeList"
+                        class="f-control"
+                        id="VvmTypeId">
+
+                    <option value="">انتخاب کنید...</option>
+
+                </select>
+
+            </div>
+
+            <div class="f-group">
+
+                <label class="f-label">مرحله VVM</label>
+
+                <select asp-for="NewLine.VvmStageId"
+                        asp-items="ViewBag.VvmstageList"
+                        class="f-control"
+                        id="VvmStageId"
+                        disabled>
+
+                    <option value="">ابتدا نوع VVM را انتخاب کنید</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="fg-3" style="margin-bottom:14px;">
+
+            <div class="f-group">
+                <label class="f-label">نام تجاری</label>
+                <select asp-for="NewLine.CommertialNameId"
+                        asp-items="ViewBag.CommercialNameList" class="f-control">
+                    <option value="">انتخاب کنید...</option>
+                </select>
+            </div>
+
+            <div class="f-group">
+                <label class="f-label">سازنده</label>
+                <select asp-for="NewLine.ManufacturerId"
+                        asp-items="ViewBag.ManufacturerList" class="f-control">
+                    <option value="">انتخاب کنید...</option>
+                </select>
+            </div>
+
+            <div class="f-group">
+                <label class="f-label">مورد استفاده</label>
+                <select asp-for="NewLine.UseId" asp-items="ViewBag.UseList" class="f-control">
+                    <option value="">انتخاب کنید...</option>
+                </select>
+            </div>
+
+        </div>
+
+        <input type="hidden" name="NewLine.Quantity" id="QuantityHidden"
+               value="@Model?.NewLine?.Quantity" />
+
+        <div class="section-divider"></div>
+
+        <div class="date-section">
+
+            <div class="date-block">
+                <div class="date-block-header">
+                    <div class="date-group-label">تاریخ تولید <span class="opt">(خودکار)</span></div>
+                    <button type="button" class="btn-date-toggle" data-target="prod"
+                            style="display:none;" title="نمایش میلادی">
+                        <i class="fa fa-exchange"></i>
+                    </button>
+                </div>
+                <div class="date-inner" id="prod-shamsi-wrap">
+                    <input type="text" id="ProdDay" class="f-control" placeholder="روز" disabled style="text-align:center;" />
+                    <input type="text" id="ProdMonth" class="f-control" placeholder="ماه" disabled style="text-align:center;" />
+                    <input type="text" id="ProdYear" class="f-control" placeholder="سال" disabled style="text-align:center;" />
+                </div>
+                <div class="date-inner" id="prod-miladi-wrap" style="display:none;">
+                    <input type="text" id="ProdDayM" class="f-control" placeholder="Day" disabled style="text-align:center;" />
+                    <input type="text" id="ProdMonthM" class="f-control" placeholder="Month" disabled style="text-align:center;" />
+                    <input type="text" id="ProdYearM" class="f-control" placeholder="Year" disabled style="text-align:center;" />
+                </div>
+                <input type="hidden" id="ProductionDate" value="@Model?.NewLine?.ProductionDateShamsi" />
+                <input type="hidden" asp-for="NewLine.ProductionDate" />
+            </div>
+
+            <div class="date-block">
+                <div class="date-block-header">
+                    <div class="date-group-label">تاریخ انقضا <span class="opt">(خودکار)</span></div>
+                    <button type="button" class="btn-date-toggle" data-target="exp"
+                            style="display:none;" title="نمایش میلادی">
+                        <i class="fa fa-exchange"></i>
+                    </button>
+                </div>
+                <div class="date-inner" id="exp-shamsi-wrap">
+                    <input type="text" id="ExpDay" class="f-control" placeholder="روز" disabled style="text-align:center;" />
+                    <input type="text" id="ExpMonth" class="f-control" placeholder="ماه" disabled style="text-align:center;" />
+                    <input type="text" id="ExpYear" class="f-control" placeholder="سال" disabled style="text-align:center;" />
+                </div>
+                <div class="date-inner" id="exp-miladi-wrap" style="display:none;">
+                    <input type="text" id="ExpDayM" class="f-control" placeholder="Day" disabled style="text-align:center;" />
+                    <input type="text" id="ExpMonthM" class="f-control" placeholder="Month" disabled style="text-align:center;" />
+                    <input type="text" id="ExpYearM" class="f-control" placeholder="Year" disabled style="text-align:center;" />
+                </div>
+                <input type="hidden" id="ExpiryDate" value="@Model?.NewLine?.ExpiryDateShamsi" />
+                <input type="hidden" asp-for="NewLine.ExpiryDate" />
+            </div>
+
+        </div>
+
+        <div class="f-group" style="margin-bottom:16px;">
+            <label class="f-label">ملاحظات</label>
+            <textarea asp-for="NewLine.Note" class="f-control"
+                      placeholder="ملاحظات کالا را وارد کنید"></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end;">
+            <button type="submit" name="command" value="addLine" class="btn-add-line">
+                <i class="fa fa-plus"></i>
+                افزودن کالا
+            </button>
+        </div>
+
+    </div>
+
+</div>

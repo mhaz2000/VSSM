@@ -1,0 +1,26 @@
+﻿<div class="form-footer">
+
+    @{
+        ViewData["BtnValue"] = "confirm";
+        ViewData["BtnLabel"] = "ثبت";
+        ViewData["BtnIcon"] = "fa-check";
+        ViewData["BtnClass"] = "btn-confirm";
+    }
+    <partial name="Partials/_SubmitButton" />
+
+    @{
+        ViewData["BtnValue"] = "draft";
+        ViewData["BtnLabel"] = "پیش‌نویس";
+        ViewData["BtnIcon"] = "fa-save";
+        ViewData["BtnClass"] = "btn-draft";
+    }
+    <partial name="Partials/_SubmitButton" />
+
+    <a asp-action="Index" class="btn-back">
+        <i class="fa fa-arrow-right"></i>
+        بازگشت
+    </a>
+
+</div>
+
+=<div id="pageOverlay" class="page-overlay" hidden></div>

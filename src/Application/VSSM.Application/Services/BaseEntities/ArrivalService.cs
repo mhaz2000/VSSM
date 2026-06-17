@@ -38,7 +38,6 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
             TotalItems = totalItems
         };
 
-        // 1. ابتدا pagination روی tblArrivals اعمال شه (نه بعد از join)
         var pagedArrivals = await query
             .OrderByDescending(x => x.Date)
             .Skip(paging.Skip)
@@ -55,7 +54,6 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
             })
             .ToListAsync(token);
 
-        // 2. بعد join رو در حافظه انجام بده
         var fiscalIds = pagedArrivals
             .Where(x => x.FiscalPeriodId.HasValue)
             .Select(x => x.FiscalPeriodId.Value)
@@ -68,7 +66,6 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
                .ToDictionaryAsync(f => f.FiscalPeriodId, f => f.FullName, token)
            : new Dictionary<int, string>();
 
-        // 3. Map به DTO
         var list = pagedArrivals.Select(a => new ArrivalListDto
         {
             ArrivalId = a.ArrivalId,

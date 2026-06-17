@@ -244,6 +244,9 @@ $(function () {
         $("<input>").attr({ type: "hidden", name: "command", value: command })
             .appendTo("#arrivalForm");
 
+        SubmitBtn.startLoading(this);   // ← اضافه کن اینجا
+
+
         $("#arrivalForm").submit();
     });
 

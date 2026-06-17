@@ -1,0 +1,39 @@
+@using VSSM.Presentation.Web.Models.Arrival
+@model ArrivalViewModel
+
+<partial name="_ValidationScriptsPartial" />
+
+<script src="~/js/shared/datepicker.js"></script>
+
+<script src="~/js/shared/toast.js"></script>
+<script src="~/js/shared/shamsi-date.js"></script>
+<script src="~/js/shared/vvm-cascade.js"></script>
+
+<script>
+
+    var arrivalServerMsg = "@(TempData["ToastMessage"] as string ?? "")";
+
+    var arrivalServerType = "@(TempData["ToastType"] as string ?? "info")";
+
+    var arrivalGetBatchInfoUrl = "@Url.Action("GetBatchInfo", "Arrival")";
+
+    var arrivalExistItemName = @Html.Raw(Json.Serialize(Model?.NewLine?.ItemName ?? ""));
+
+    var arrivalExistDoseName = @Html.Raw(Json.Serialize(Model?.NewLine?.DoseName ?? ""));
+
+    var arrivalExistItemId = @Html.Raw(Json.Serialize(Model?.NewLine?.ItemId?.ToString() ?? ""));
+
+    var arrivalExistDoseId = @Html.Raw(Json.Serialize(Model?.NewLine?.DosePerVialId?.ToString() ?? ""));
+
+    var arrivalItemName = @Html.Raw(Json.Serialize(Model?.NewLine?.ItemName ?? ""));
+
+    var arrivalDoseName = @Html.Raw(Json.Serialize(Model?.NewLine?.DoseName ?? ""));
+
+    $(function () {
+        DatePicker.attach($('#Date'));
+    });
+
+</script>
+
+<script src="~/js/components/shared/submit-btn.js"></script>
+<script src="~/js/components/arrivals/arrival-form.js"></script>

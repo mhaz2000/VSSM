@@ -1,0 +1,62 @@
+@using VSSM.Presentation.Web.Models.Arrival
+@model ArrivalViewModel
+
+@{
+    string formTitle = Model?.ArrivalId > 0 ? "ویرایش ورودی" : "ثبت ورودی جدید";
+}
+
+<div class="a-card">
+
+    <div class="a-card-header">
+        <h6>
+            <i class="fa fa-plus-circle" style="color:#1d6fb8;"></i>
+            @formTitle
+        </h6>
+    </div>
+
+    <div class="a-card-body">
+
+        <div class="fg-3" style="margin-bottom:14px;">
+
+            <div class="f-group">
+                <label class="f-label">شماره گزارش</label>
+                <input asp-for="ReportNumber" class="f-control" placeholder="شماره گزارش را وارد کنید" />
+                <span asp-validation-for="ReportNumber" class="text-danger" style="font-size:11px;"></span>
+            </div>
+
+            <div class="f-group">
+                <label class="f-label">تاریخ ورود <span class="req-tag">اجباری</span></label>
+
+                <div class="datepicker-wrap">
+                    <input asp-for="Date" type="text" id="Date" class="f-control datepicker-input"
+                           placeholder="انتخاب تاریخ" autocomplete="off" />
+                    <i class="fa fa-calendar datepicker-ico"></i>
+                </div>
+
+                <span asp-validation-for="Date" class="text-danger" style="font-size:11px;"></span>
+            </div>
+
+            <div class="f-group">
+
+                <label class="f-label">سری ساخت <span class="req-tag">اجباری</span></label>
+
+                <input asp-for="NewLine.BatchNum"
+                       class="f-control"
+                       id="BatchNum"
+                       placeholder="سری ساخت را وارد کنید"
+                       autocomplete="off" />
+
+                <span asp-validation-for="NewLine.BatchNum" class="text-danger" style="font-size:11px;"></span>
+
+            </div>
+
+        </div>
+
+        <div class="f-group">
+            <label class="f-label">ملاحظات</label>
+            <textarea asp-for="Note" class="f-control" placeholder="ملاحظات را وارد کنید"></textarea>
+        </div>
+
+    </div>
+
+</div>

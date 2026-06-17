@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace VSSM.Presentation.Web.Views.Arrival
 {
-    public class newModel : PageModel
+    public class CreateModel : PageModel
     {
         public void OnGet()
         {

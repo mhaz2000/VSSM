@@ -71,7 +71,7 @@ public class DispatchService : IDispatchService
             from store in storeJ.DefaultIfEmpty()
             select new
             {
-                ids.ItemDetailStoreId,
+                ids.PKItemDetailStoreId,
                 id.BatchNumber,
                 id.ExpiryDate,
                 CurrentStock = ids.CurrentStock ?? 0,
@@ -86,7 +86,7 @@ public class DispatchService : IDispatchService
         // بند ۷a: تبدیل تاریخ انقضا به شمسی در حافظه (نه داخل EF query)
         var result = rawRows.Select(r => new BatchRowDto
         {
-            ItemDetailStoreId = r.ItemDetailStoreId,
+            ItemDetailStoreId = r.PKItemDetailStoreId,
             ItemId = item.ItemId,
             ItemName = item.FullName,
             BatchNumber = r.BatchNumber,
@@ -101,7 +101,7 @@ public class DispatchService : IDispatchService
 
             // بند ۶: اطلاعات حلال — در حافظه محاسبه می‌شود
             RequiresDiluent = item.RequiresDiluent == true,
-            DiluentItemDetailStoreId = diluentStore?.ItemDetailStoreId,
+            DiluentItemDetailStoreId = diluentStore?.PKItemDetailStoreId,
             DiluentItemId = diluentItem?.ItemId,
             DiluentItemName = diluentItem?.FullName,
             DiluentBatchNumber = diluentStore?.ItemDetail?.BatchNumber,
@@ -365,7 +365,7 @@ public class DispatchService : IDispatchService
                 .Where(d => d.ReceiverStatus == 0 && d.ReceiverId == recipientId && d.IsConfirmed == true)
                 on line.DispatchId equals dispatch.DispatchId
             join ids in _context.TblItemDetailStores
-                on line.ItemDetailStoreId equals ids.ItemDetailStoreId
+                on line.ItemDetailStoreId equals ids.PKItemDetailStoreId
             join id in _context.TblItemDetails
                 on ids.ItemDetailId equals id.ItemDetailId
             select new
@@ -525,7 +525,7 @@ public class DispatchService : IDispatchService
                         .AsNoTracking()
 
                     join itemDetailStore in _context.TblItemDetailStores
-                        on dispatchLine.ItemDetailStoreId equals itemDetailStore.ItemDetailStoreId
+                        on dispatchLine.ItemDetailStoreId equals itemDetailStore.PKItemDetailStoreId
                     join itemDetail in _context.TblItemDetails
                         on itemDetailStore.ItemDetailId equals itemDetail.ItemDetailId
                     join item in _context.TblItems

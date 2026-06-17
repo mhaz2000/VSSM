@@ -65,7 +65,7 @@ namespace VSSM.Application.Services.BaseEntities
                             on itmDtl.ManufacturerId equals manufacture.ManufacturerId into manufactureInfo
                         from m in manufactureInfo.DefaultIfEmpty()
                         join stage in _db.TblVvmstages
-                            on i.VvmstageId equals stage.VvmstageId into stageInfo
+                            on i.FkVvmStageId equals stage.VvmstageId into stageInfo
                         from si in stageInfo.DefaultIfEmpty()
                         join dpv in _db.TblDosePerVials
                             on itmDtl.DosePerVialId equals dpv.DosePerVialId into dosePervials
@@ -86,7 +86,7 @@ namespace VSSM.Application.Services.BaseEntities
                                            on dDtl.ManufacturerId equals dMan.ManufacturerId into dManInfo
                                        from dm in dManInfo.DefaultIfEmpty()
                                        join dStage in _db.TblVvmstages
-                                           on ds.VvmstageId equals dStage.VvmstageId into dStageInfo
+                                           on ds.FkVvmStageId equals dStage.VvmstageId into dStageInfo
                                        from dsi in dStageInfo.DefaultIfEmpty()
                                        join dDpv in _db.TblDosePerVials
                                            on dDtl.DosePerVialId equals dDpv.DosePerVialId into dDoseInfo
@@ -101,7 +101,7 @@ namespace VSSM.Application.Services.BaseEntities
                                            CurrentStock = ds.CurrentStock ?? 0,
                                            BatchNumber = dDtl.BatchNumber,
                                            StoreName = dS.Name,
-                                           ItemDetailStoreId = ds.ItemDetailStoreId,
+                                           ItemDetailStoreId = ds.PKItemDetailStoreId,
                                            StoreId = dS.StoreId,
                                            Manufacture = dm.FullName
                                        }).FirstOrDefault() 
@@ -117,7 +117,7 @@ namespace VSSM.Application.Services.BaseEntities
                             CurrentStock = i.CurrentStock ?? 0,
                             BatchNumber = itmDtl.BatchNumber,
                             StoreName = s.Name,
-                            ItemDetailStoreId = i.ItemDetailStoreId,
+                            ItemDetailStoreId = i.PKItemDetailStoreId,
                             StoreId = s.StoreId,
                             Manufacture = m.FullName,
                             Diluent = diluent

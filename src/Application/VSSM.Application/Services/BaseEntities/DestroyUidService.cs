@@ -63,23 +63,28 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
     }
 
     public async Task<(bool Success, string Message, List<DestroyUidSearchResultDto> Data)>
-        SearchByUidAsync(string uid, int userStoreId, CancellationToken token)
+        SearchByUidAsync(string uid, int userRecipientId, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(uid))
             return (false, "UID اجباری است", []);
-
         if (uid.Length < 20)
             return (false, "UID وارد شده معتبر نمی‌باشد", []);
 
+        var validStoreIds = await db.TblStores
+            .Where(s => s.RecipientId == userRecipientId)
+            .Select(s => s.StoreId)
+            .ToListAsync(token);
+
         var uidRecord = await db.TblUidInfo
-              .AsNoTracking()
-              .Include(u => u.OrderInfo)
-              .FirstOrDefaultAsync(u =>
-                  (u.FirstLevelUid == uid || u.SecLevelUid == uid || u.ParentUid == uid) &&
-                  u.IsActive == true &&
-                  u.Used == false &&
-                  u.FkDestroyId == null &&
-                  u.CurrentStore == userStoreId, token);
+            .AsNoTracking()
+            .Include(u => u.OrderInfo)
+            .FirstOrDefaultAsync(u =>
+                (u.FirstLevelUid == uid || u.SecLevelUid == uid || u.ParentUid == uid) &&
+                u.IsActive == true &&
+                u.Used == false &&
+                u.FkDestroyId == null &&
+                u.CurrentStore != null &&
+                validStoreIds.Contains(u.CurrentStore.Value), token);
 
         if (uidRecord == null)
             return (false, "UID یافت نشد", []);
@@ -91,7 +96,8 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
             u.IsActive == true &&
             u.Used == false &&
             u.FkDestroyId == null &&
-            u.CurrentStore == userStoreId, token);
+            u.CurrentStore != null &&
+            validStoreIds.Contains(u.CurrentStore.Value), token);
 
         var itemName = await db.TblItems
             .AsNoTracking()

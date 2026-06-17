@@ -6,8 +6,10 @@ namespace VSSM.Application.Interfaces.BaseEntities;
 public interface IUidInfoService
 {
 
-    Task<List<UidInfoDto>> GetAvailableByBatchNum(string batchNum, CancellationToken token);
-
+    Task<List<UidInfoDto>> GetAvailableByBatchNum(
+        string batchNum,
+        int recipientId,  
+        CancellationToken token);
 
     Task SetArrivalFkForBatchNums(
         List<string> batchNums,

@@ -39,7 +39,7 @@ namespace VSSM.Application.Services.BaseEntities
                 t.ExpiryDate == DateTimeHelper.ToGregorian(inputModel.ExpiryDate));
 
             var itemDetailStoreQuery = storeIds.Any() ? _context.TblItemDetailStores.Where(t => t.StoreId.HasValue && storeIds.Contains(t.StoreId.Value)) : _context.TblItemDetailStores;
-            itemDetailStoreQuery = inputModel.VvmstageId is not null ? _context.TblItemDetailStores.Where(t => t.VvmstageId == inputModel.VvmstageId) : itemDetailStoreQuery;
+            itemDetailStoreQuery = inputModel.VvmstageId is not null ? _context.TblItemDetailStores.Where(t => t.FkVvmStageId == inputModel.VvmstageId) : itemDetailStoreQuery;
 
             var storeQuery = _context.TblStores.AsQueryable();
             if (inputModel.AllSubRecipientStocks)
@@ -80,7 +80,7 @@ namespace VSSM.Application.Services.BaseEntities
                 from vt in vtJoin.DefaultIfEmpty()
 
                 join vs in _context.TblVvmstages
-                    on ids.VvmstageId equals vs.VvmstageId into vsJoin
+                    on ids.FkVvmStageId equals vs.VvmstageId into vsJoin
                 from vs in vsJoin.DefaultIfEmpty()
 
                 group new { i, id, ids, s, m, c, dpv, vt, vs }
@@ -183,7 +183,7 @@ namespace VSSM.Application.Services.BaseEntities
                 t.ExpiryDate == DateTimeHelper.ToGregorian(inputModel.ExpiryDate));
 
             var itemDetailStoreQuery = storeIds.Any() ? _context.TblItemDetailStores.Where(t => t.StoreId.HasValue && storeIds.Contains(t.StoreId.Value)) : _context.TblItemDetailStores;
-            itemDetailStoreQuery = inputModel.VvmstageId is not null ? _context.TblItemDetailStores.Where(t => t.VvmstageId == inputModel.VvmstageId) : itemDetailStoreQuery;
+            itemDetailStoreQuery = inputModel.VvmstageId is not null ? _context.TblItemDetailStores.Where(t => t.FkVvmStageId == inputModel.VvmstageId) : itemDetailStoreQuery;
 
             var storeQuery = _context.TblStores.AsQueryable();
             if (inputModel.AllSubRecipientStocks)
@@ -264,7 +264,7 @@ namespace VSSM.Application.Services.BaseEntities
                 t.ExpiryDate == DateTimeHelper.ToGregorian(inputModel.ExpiryDate));
 
             var itemDetailStoreQuery = storeIds.Any() ? _context.TblItemDetailStores.Where(t => t.StoreId.HasValue && storeIds.Contains(t.StoreId.Value)) : _context.TblItemDetailStores;
-            itemDetailStoreQuery = inputModel.VvmstageId is not null ? _context.TblItemDetailStores.Where(t => t.VvmstageId == inputModel.VvmstageId) : itemDetailStoreQuery;
+            itemDetailStoreQuery = inputModel.VvmstageId is not null ? _context.TblItemDetailStores.Where(t => t.FkVvmStageId == inputModel.VvmstageId) : itemDetailStoreQuery;
 
             var storeQuery = _context.TblStores.AsQueryable();
             if (inputModel.AllSubRecipientStocks)
@@ -338,7 +338,7 @@ namespace VSSM.Application.Services.BaseEntities
                 t.ExpiryDate == DateTimeHelper.ToGregorian(inputModel.ExpiryDate));
 
             var itemDetailStoreQuery = storeIds.Any() ? _context.TblItemDetailStores.Where(t => t.StoreId.HasValue && storeIds.Contains(t.StoreId.Value)) : _context.TblItemDetailStores;
-            itemDetailStoreQuery = inputModel.VvmstageId is not null ? _context.TblItemDetailStores.Where(t => t.VvmstageId == inputModel.VvmstageId) : itemDetailStoreQuery;
+            itemDetailStoreQuery = inputModel.VvmstageId is not null ? _context.TblItemDetailStores.Where(t => t.FkVvmStageId == inputModel.VvmstageId) : itemDetailStoreQuery;
 
             var storeQuery = _context.TblStores.AsQueryable();
             if (inputModel.AllSubRecipientStocks)

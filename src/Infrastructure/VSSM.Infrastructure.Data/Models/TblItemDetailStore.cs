@@ -7,7 +7,7 @@ namespace VSSM.Infrastructure.Data.Models;
 
 public partial class TblItemDetailStore
 {
-    public int ItemDetailStoreId { get; set; }
+    public int PKItemDetailStoreId { get; set; }
 
     public int? ItemDetailId { get; set; }
 
@@ -17,7 +17,8 @@ public partial class TblItemDetailStore
 
     public DateTime? EntryDate { get; set; }
 
-    public int? VvmstageId { get; set; }
+    public int? FkVvmStageId{ get; set; }
+    public virtual TblBaseInfo FkVvmStage { get; set; }
 
     public virtual TblItemDetail ItemDetail { get; set; }
 
@@ -27,5 +28,4 @@ public partial class TblItemDetailStore
 
     public virtual ICollection<TblDispatchLine> TblDispatchLines { get; set; } = new List<TblDispatchLine>();
 
-    public virtual TblVvmstage Vvmstage { get; set; }
 }

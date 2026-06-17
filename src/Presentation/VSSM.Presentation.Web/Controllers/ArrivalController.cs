@@ -14,10 +14,9 @@ public class ArrivalController(
     IFiscalPeriodService fiscalService,
     IItemService itemService,
     IStoreService storeService,
-    IManufacturerService manufacturerService,
     IDosePerVialService dosePerVialService,
     ICommercialNameService commercialNameService,
-    IBaseInfoService baseInfoService,      
+    IBaseInfoService baseInfoService,
     IItemClassService itemClassService,
     IOrderInfoService orderInfoService,
     IUidInfoService uidInfoService) : BaseController
@@ -288,7 +287,7 @@ public class ArrivalController(
             return View("New", model);
         }
 
-            var batchNum = model.NewLine.BatchNum.Trim();
+        var batchNum = model.NewLine.BatchNum.Trim();
 
         if (model.Lines != null && model.Lines.Any(l =>
             string.Equals(l.BatchNum, batchNum, StringComparison.OrdinalIgnoreCase)))
@@ -307,7 +306,11 @@ public class ArrivalController(
         }
 
         // Step 3: بررسی وجود uid با arrival_fk_id خالی
-        var availableUids = await uidInfoService.GetAvailableByBatchNum(batchNum, token);
+        var availableUids = await uidInfoService.GetAvailableByBatchNum(
+            batchNum,
+            CurrentUserRecipientId ?? 0,
+            token);
+
         if (!availableUids.Any())
         {
             TempData["ToastMessage"] = "کلیه ویال‌های مربوط به سری ساخت وارد شده ورود خورده‌اند";
@@ -346,7 +349,7 @@ public class ArrivalController(
             };
             await arrivalService.AddLine(model.ArrivalId.Value, diluentLineDto, token);
         }
-            
+
         TempData["ToastMessage"] = "کالا اضافه شد";
         TempData["ToastType"] = "success";
 
@@ -365,7 +368,11 @@ public class ArrivalController(
         if (orderInfo == null)
             return Json(new { success = false, message = "فایل مربوط به سری ساخت مورد نظر آپلود نشده است" });
 
-        var availableUids = await uidInfoService.GetAvailableByBatchNum(batchNum, token);
+        var availableUids = await uidInfoService.GetAvailableByBatchNum(
+            batchNum,
+            CurrentUserRecipientId ?? 0,
+            token);
+
         if (!availableUids.Any())
             return Json(new { success = false, message = "کلیه ویال‌های مربوط به سری ساخت وارد شده ورود خورده‌اند" });
 
@@ -446,24 +453,26 @@ public class ArrivalController(
 
         await arrivalService.Confirm(model.ArrivalId.Value, BuildCreateDto(model), token);
 
-        // Lines رو از DB بخون نه از model
         var dto = await arrivalService.GetById(model.ArrivalId.Value, token);
-        var batchNums = dto?.Lines.Select(l => l.BatchNum).ToList() ?? new List<string>();
-        var firstLine = dto?.Lines.FirstOrDefault();
 
-        await uidInfoService.SetArrivalFkForBatchNums(
-            batchNums,
-            model.ArrivalId.Value,
-            firstLine?.DosePerVialId,
-            firstLine?.StoreId,
-            firstLine?.ItemId,
-            token);
+        // برای هر سطر جداگانه، با StoreId همان سطر
+        foreach (var line in dto?.Lines ?? new List<ArrivalLineDto>())
+        {
+            if (string.IsNullOrWhiteSpace(line.BatchNum)) continue;
+
+            await uidInfoService.SetArrivalFkForBatchNums(
+                new List<string> { line.BatchNum },
+                model.ArrivalId.Value,
+                line.DosePerVialId,
+                line.StoreId,   // StoreId همین سطر، نه firstLine
+                line.ItemId,
+                token);
+        }
 
         TempData["ToastMessage"] = "ورود تایید شد";
         TempData["ToastType"] = "success";
         return RedirectToAction("Index");
     }
-
     private async Task<IActionResult> DeleteAll(ArrivalViewModel model, CancellationToken token)
     {
         if (!model.ArrivalId.HasValue || model.ArrivalId == 0)

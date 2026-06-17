@@ -1116,28 +1116,31 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
 
         modelBuilder.Entity<TblItemDetailStore>(entity =>
         {
-            entity.HasKey(e => e.ItemDetailStoreId);
+                entity.HasKey(e => e.PKItemDetailStoreId);
 
             entity.ToTable("tblItemDetailStores");
+            entity.Property(e => e.PKItemDetailStoreId).HasColumnName("PK_ITEM_DETAIL_STORE_ID");
+            entity.Property(e => e.EntryDate).HasColumnType("datetime").HasColumnName("ENTRY_DATE");
+            entity.Property(e => e.ItemDetailId).HasColumnName("ITEM_DETAIL_ID");
+            entity.Property(e => e.StoreId).HasColumnName("STORE_ID");
+            entity.Property(e => e.CurrentStock).HasColumnName("CURRENT_STOCK");
+            entity.Property(e => e.FkVvmStageId).HasColumnName("FK_VVM_STAGE_ID");
 
-            entity.Property(e => e.ItemDetailStoreId).HasColumnName("ItemDetailStoreID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.ItemDetailId).HasColumnName("ItemDetailID");
-            entity.Property(e => e.StoreId).HasColumnName("StoreID");
-            entity.Property(e => e.VvmstageId).HasColumnName("VVMStageID");
-
-            entity.HasOne(d => d.ItemDetail).WithMany(p => p.TblItemDetailStores)
+            entity.HasOne(d => d.ItemDetail)
+                .WithMany(p => p.TblItemDetailStores)
                 .HasForeignKey(d => d.ItemDetailId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_tblItemDetailStores_tblItemDetails");
 
-            entity.HasOne(d => d.Store).WithMany(p => p.TblItemDetailStores)
+            entity.HasOne(d => d.Store)
+                .WithMany(p => p.TblItemDetailStores)
                 .HasForeignKey(d => d.StoreId)
                 .HasConstraintName("FK_tblItemDetailStores_tblStores");
 
-            entity.HasOne(d => d.Vvmstage).WithMany(p => p.TblItemDetailStores)
-                .HasForeignKey(d => d.VvmstageId)
-                .HasConstraintName("FK_tblItemDetailStores_tblVVMStages");
+            entity.HasOne(d => d.FkVvmStage)
+                .WithMany()
+                .HasForeignKey(d => d.FkVvmStageId)
+                .HasConstraintName("FK_tblItemDetailStores_tblBaseInfo_VvmStage");
         });
 
         modelBuilder.Entity<TblItemDoseAssignment>(entity =>

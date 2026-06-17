@@ -40,7 +40,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
                 ItemDetailId = itemDetailsStore.ItemDetailId,
                 StoreId = itemDetailsStore.StoreId,
                 DropDownText = item.FullName,
-                ItemDetailStoreId = itemDetailsStore.ItemDetailStoreId,
+                ItemDetailStoreId = itemDetailsStore.PKItemDetailStoreId,
                 ItemFullName = item.FullName
             };
 
@@ -56,7 +56,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
         foreach (var item in dto.Items)
         {
             var itemDetailStore =
-                await _db.TblItemDetailStores.FirstOrDefaultAsync(c => c.ItemDetailStoreId == item.ItemDetailStoreId);
+                await _db.TblItemDetailStores.FirstOrDefaultAsync(c => c.PKItemDetailStoreId == item.ItemDetailStoreId);
 
             if (itemDetailStore is null)
                 continue;
@@ -76,7 +76,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
                     EntryDate = DateTime.Now,
                     StoreId = dto.ToStoreId,
                     CurrentStock = item.Quantity,
-                    VvmstageId = itemDetailStore.VvmstageId,
+                    FkVvmStage = itemDetailStore.FkVvmStage,
                 };
 
                 _db.TblItemDetailStores.Add(newItemDetailStore);
@@ -89,13 +89,13 @@ public class ItemDetailStoreService : IItemDetailStoreService
     {
         var itemDetailStore =
             await _db.TblItemDetailStores.FirstOrDefaultAsync(c =>
-                c.ItemDetailStoreId == id);
+                c.PKItemDetailStoreId == id);
 
         return new ItemDetailStoreDto()
         {
             ItemDetailId = itemDetailStore.ItemDetailId,
             EntryDate = itemDetailStore.EntryDate.Value,
-            ItemDetailStoreId = itemDetailStore.ItemDetailStoreId,
+            ItemDetailStoreId = itemDetailStore.PKItemDetailStoreId,
             CurrentStock = itemDetailStore.CurrentStock ?? 0,
             StoreId = itemDetailStore.StoreId
         };
@@ -148,7 +148,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
             {
                 ItemDetailId = itemDetailStore.ItemDetailId,
                 EntryDate = itemDetailStore.EntryDate.Value,
-                ItemDetailStoreId = itemDetailStore.ItemDetailStoreId,
+                ItemDetailStoreId = itemDetailStore.PKItemDetailStoreId,
                 CurrentStock = itemDetailStore.CurrentStock ?? 0,
                 StoreId = itemDetailStore.StoreId,
                 ItemId = arivalLine.Item.ItemId,

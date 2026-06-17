@@ -29,7 +29,7 @@ public class AdjustmentService : IAdjustmentService
 
         var fiscalPeriod = await _dbContext.TblFiscalPeriods.FirstOrDefaultAsync(c => c.IsActive == true);
         var itemDetailStore = await _dbContext.TblItemDetailStores.FirstOrDefaultAsync(c =>
-            c.ItemDetailStoreId == dto.ItemDetailStoreId);
+            c.PKItemDetailStoreId == dto.ItemDetailStoreId);
 
         var entity = new TblAdjustment
         {
@@ -37,7 +37,7 @@ public class AdjustmentService : IAdjustmentService
             FiscalPeriodId = fiscalPeriod is null ? -1 : fiscalPeriod.FiscalPeriodId,
             ArrivalLineId = -1,
             DispatchLineId = -1,
-            ItemDetailStoreId = itemDetailStore is null ? -1 : itemDetailStore.ItemDetailStoreId,
+            ItemDetailStoreId = itemDetailStore is null ? -1 : itemDetailStore.PKItemDetailStoreId,
             OldQuantity = itemDetailStore is null ? 0 : Convert.ToInt32(itemDetailStore.CurrentStock ?? 0),
             NewQuantity = dto.NewQuantity,
             EntryDate = DateTime.Now,
@@ -100,7 +100,7 @@ public class AdjustmentService : IAdjustmentService
 
         var itemDetailStoreIds = adjustments.Select(a => a.ItemDetailStoreId).Distinct().ToList();
         var itemDetailStores = await _dbContext.TblItemDetailStores.ToListAsync(cancellationToken);
-        itemDetailStores = itemDetailStores.Where(c => itemDetailStoreIds.Contains(c.ItemDetailStoreId)).ToList();
+        itemDetailStores = itemDetailStores.Where(c => itemDetailStoreIds.Contains(c.PKItemDetailStoreId)).ToList();
 
         var itemDetailIds = itemDetailStores.Select(ids => ids.ItemDetailId).Distinct().ToList();
         var itemDetails = await _dbContext.TblItemDetails.ToListAsync(cancellationToken);
@@ -114,7 +114,7 @@ public class AdjustmentService : IAdjustmentService
         var itemClasses = await _dbContext.TblItemsClasses.ToListAsync(cancellationToken);
         itemClasses = itemClasses.Where(c => itemClassIds.Contains(c.ItemClassId)).ToList();
 
-        var itemDetailStoreDict = itemDetailStores.ToDictionary(x => x.ItemDetailStoreId);
+        var itemDetailStoreDict = itemDetailStores.ToDictionary(x => x.PKItemDetailStoreId);
         var itemDetailDict = itemDetails.ToDictionary(x => x.ItemDetailId);
         var itemDict = items.ToDictionary(x => x.ItemId);
         var itemClassDict = itemClasses.ToDictionary(x => x.ItemClassId);

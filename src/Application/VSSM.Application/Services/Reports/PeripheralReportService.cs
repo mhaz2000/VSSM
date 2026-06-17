@@ -39,7 +39,7 @@ namespace VSSM.Application.Services.Reports
                         join id in itemDetails on i.ItemId equals id.ItemId
                         join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
                         join s in stores on ids.StoreId equals s.StoreId
-                        join vs in _context.TblVvmstages on ids.VvmstageId equals vs.VvmstageId
+                        join vs in _context.TblVvmstages on ids.FkVvmStageId equals vs.VvmstageId
                         join cn in _context.TblCommercialNames on id.CommercialNameId equals cn.CommercialNameId
                         join dpv in _context.TblDosePerVials on id.DosePerVialId equals dpv.DosePerVialId
                         group new { i, id, s, cn, ids, dpv } by new

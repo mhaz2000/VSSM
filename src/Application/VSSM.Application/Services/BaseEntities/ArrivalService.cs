@@ -38,21 +38,50 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
             TotalItems = totalItems
         };
 
-        var list = await (
-            from a in query.OrderByDescending(x => x.Date).Skip(paging.Skip).Take(paging.PageSize)
-            join f in db.TblFiscalPeriods on a.FiscalPeriodId equals f.FiscalPeriodId into fj
-            from f in fj.DefaultIfEmpty()
-            select new ArrivalListDto
+        // 1. ابتدا pagination روی tblArrivals اعمال شه (نه بعد از join)
+        var pagedArrivals = await query
+            .OrderByDescending(x => x.Date)
+            .Skip(paging.Skip)
+            .Take(paging.PageSize)
+            .Select(a => new
             {
-                ReportNumber = a.ReportNumber,
-                ArrivalId = a.ArrivalId,
-                Date = a.Date,
-                IsConfirmed = a.IsConfirmed,
-                IsDrafted = a.IsDrafted,
-                IsCancelled = a.IsCancelled,
-                FiscalPeriodName = f != null ? f.FullName : null
-            }
-        ).ToListAsync(token);
+                a.ArrivalId,
+                a.ReportNumber,
+                a.Date,
+                a.IsConfirmed,
+                a.IsDrafted,
+                a.IsCancelled,
+                a.FiscalPeriodId
+            })
+            .ToListAsync(token);
+
+        // 2. بعد join رو در حافظه انجام بده
+        var fiscalIds = pagedArrivals
+            .Where(x => x.FiscalPeriodId.HasValue)
+            .Select(x => x.FiscalPeriodId.Value)
+            .Distinct()
+            .ToList();
+
+        var fiscalPeriods = fiscalIds.Any()
+           ? await db.TblFiscalPeriods
+               .Where(f => fiscalIds.Contains(f.FiscalPeriodId))
+               .ToDictionaryAsync(f => f.FiscalPeriodId, f => f.FullName, token)
+           : new Dictionary<int, string>();
+
+        // 3. Map به DTO
+        var list = pagedArrivals.Select(a => new ArrivalListDto
+        {
+            ArrivalId = a.ArrivalId,
+            ReportNumber = a.ReportNumber,
+            Date = a.Date,
+            IsConfirmed = a.IsConfirmed,
+            IsDrafted = a.IsDrafted,
+            IsCancelled = a.IsCancelled,
+            FiscalPeriodName = a.FiscalPeriodId.HasValue
+                ? fiscalPeriods.GetValueOrDefault(a.FiscalPeriodId.Value)
+                : null
+        }).ToList();
+
 
         return new PagingSearchOrderDto<ArrivalListDto>
         {
@@ -202,11 +231,11 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
 
             stores.Add(new TblItemDetailStore
             {
-                ItemDetailId = detail.ItemDetailId, // FK only (no object relation)
+                ItemDetailId = detail.ItemDetailId,
                 StoreId = line.StoreId,
                 CurrentStock = line.Quantity,
                 EntryDate = now,
-                VvmstageId = line.VvmstageId
+                FkVvmStageId = line.FkVvmStageId  // ← ID نه object
             });
         }
 

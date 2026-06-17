@@ -14,10 +14,22 @@
         </label>
     }
 
-    <input type="hidden"
-           id="@Model.Id"
-           name="@Model.Name"
-           value="@Model.SelectedValue" />
+    @if (Model.IsRequired && !string.IsNullOrEmpty(Model.ValidationMessage))
+    {
+        <input type="hidden"
+               id="@Model.Id"
+               name="@Model.Name"
+               value="@Model.SelectedValue"
+               data-val="true"
+               data-val-required="@Model.ValidationMessage" />
+    }
+    else
+    {
+        <input type="hidden"
+               id="@Model.Id"
+               name="@Model.Name"
+               value="@Model.SelectedValue" />
+    }
 
     <div class="ss-control">
         <div class="ss-display form-select d-flex justify-content-between align-items-center" style="padding: 10px !important;max-height: 3rem;">

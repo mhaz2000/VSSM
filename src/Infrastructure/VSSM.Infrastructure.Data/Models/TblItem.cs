@@ -41,8 +41,6 @@ public partial class TblItem
 
     public int? PresentationId { get; set; }
 
-    public virtual TblItemsClass ItemClass { get; set; }
-
     public int? FkClassId { get; set; }
     public virtual TblBaseInfo FkClass { get; set; }
 

@@ -91,13 +91,15 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
 
         var order = uidRecord.OrderInfo;
 
-        var uidCount = await db.TblUidInfo.CountAsync(u =>
-            u.FkOrderInfo == order.PkOrderInfo &&
+        var childCount = await db.TblUidInfo.CountAsync(u =>
+            u.ParentUid == uid &&
             u.IsActive == true &&
             u.Used == false &&
             u.FkDestroyId == null &&
             u.CurrentStore != null &&
             validStoreIds.Contains(u.CurrentStore.Value), token);
+
+        var uidCount = childCount > 0 ? childCount : 1;
 
         var itemName = await db.TblItems
             .AsNoTracking()
@@ -108,6 +110,7 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
         var result = new DestroyUidSearchResultDto
         {
             PkOrderInfo = order.PkOrderInfo,
+            SearchedUid = uid,   
             BatchNumber = order.BatchNumber,
             ItemName = itemName,
             DosePerVial = order.FkDosePerVialId,
@@ -237,8 +240,13 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
     }
 
     public async Task<int> CountDestroyableUidsAsync(
-    List<DestroyUidSubmitDto> items, int userStoreId, CancellationToken token)
+        List<DestroyUidSubmitDto> items, int userRecipientId, CancellationToken token)
     {
+        var validStoreIds = await db.TblStores
+            .Where(s => s.RecipientId == userRecipientId)
+            .Select(s => s.StoreId)
+            .ToListAsync(token);
+
         var orderIds = items.Select(i => i.PkOrderInfo).ToList();
 
         return await db.TblUidInfo
@@ -246,14 +254,23 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
                         u.IsActive == true &&
                         u.Used == false &&
                         u.FkDestroyId == null &&
-                        u.CurrentStore == userStoreId)
+                        u.CurrentStore != null &&
+                        validStoreIds.Contains(u.CurrentStore.Value))
             .CountAsync(token);
     }
 
     public async Task<(bool Success, string Message)> SubmitDestroyAsync(
-        List<DestroyUidSubmitDto> items, int userId, int userStoreId, CancellationToken token,
+        List<DestroyUidSubmitDto> items, int userId, int userRecipientId, CancellationToken token,
         Func<int, Task>? onProgress = null)
     {
+        var validStoreIds = await db.TblStores
+            .Where(s => s.RecipientId == userRecipientId)
+            .Select(s => s.StoreId)
+            .ToListAsync(token);
+
+        if (validStoreIds.Count == 0)
+            return (false, "انبار معتبری برای کاربر جاری یافت نشد");
+
         var lastNumber = await db.TblDestroyUids.AnyAsync(token)
             ? await db.TblDestroyUids.MaxAsync(d => d.DestroyNumber, token)
             : 0;
@@ -267,22 +284,26 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
             foreach (var item in items)
             {
                 var uids = await db.TblUidInfo
-                    .Where(u => u.FkOrderInfo == item.PkOrderInfo &&
-                                u.IsActive == true &&
-                                u.Used == false &&
-                                u.FkDestroyId == null &&
-                                u.CurrentStore == userStoreId)
-                    .ToListAsync(token);
+                  .Where(u => u.FkOrderInfo == item.PkOrderInfo &&
+                              u.IsActive == true &&
+                              u.Used == false &&
+                              u.FkDestroyId == null &&
+                              u.CurrentStore != null &&
+                              validStoreIds.Contains(u.CurrentStore.Value) &&
+                              (item.SearchedUid == null ||
+                               u.ParentUid == item.SearchedUid ||
+                               u.FirstLevelUid == item.SearchedUid ||
+                               u.SecLevelUid == item.SearchedUid))
+                  .ToListAsync(token);
 
                 if (uids.Count == 0) continue;
 
-                // ── Bulk insert ──
                 var destroys = uids.Select(uid => new TblDestroyUid
                 {
                     FkUid = uid.PkUidInfo,
                     DestroyDate = item.DestroyDate,
                     DestroyNumber = destroyNumber,
-                    FkLocationDestroy = userStoreId,
+                    FkLocationDestroy = userRecipientId,
                     FkDestroyeBy = userId,
                     FkDestroyReasonId = item.DestroyReasonId,
                     CreationTime = now,
@@ -297,7 +318,6 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
 
                 await db.SaveChangesAsync(token);
 
-                // ── progress callback ──
                 done += uids.Count;
                 if (onProgress != null)
                     await onProgress(done);

@@ -3,10 +3,11 @@
 public class DestroyUidSearchResultDto
 {
     public int PkOrderInfo { get; set; }
-    public string BatchNumber { get; set; } = null!;
-    public string ItemName { get; set; } = null!;
-    public int DosePerVial { get; set; }
-    public string ProductionDate { get; set; } = null!;
-    public string ExpiryDate { get; set; } = null!;
+    public string? SearchedUid { get; set; } 
+    public string? BatchNumber { get; set; }
+    public string? ItemName { get; set; }
+    public int? DosePerVial { get; set; }
+    public string? ProductionDate { get; set; }
+    public string? ExpiryDate { get; set; }
     public int UidCount { get; set; }
 }

@@ -268,3 +268,14 @@
     .a-card-body.du-locked .du-seg-btn {
         cursor: not-allowed;
     }
+
+.datepicker-input.has-value {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #93c5fd;
+    font-weight: 600;
+}
+
+.datepicker-input {
+    color: #9ca3af; 
+}

@@ -12,21 +12,18 @@
     string draftBtnLabel = "پیش فاکتور";
 }
 
-@* ── استایل‌ها ── *@
 @section Styles {
-    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
     <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
     <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
     <link href="~/css/components/shared/btn.css" rel="stylesheet" />
     <link href="~/css/components/shared/toast.css" rel="stylesheet" />
     <link href="~/css/components/shared/lines-table.css" rel="stylesheet" />
     <link href="~/css/components/shared/uid-modal.css" rel="stylesheet" />
-    @* ✅ مورد ۶: اضافه شد css کامپوننت SearchableSelect *@
     <link href="~/css/components/shared/search-bar.css" rel="stylesheet" />
     <link href="~/css/components/dispatches/dispatch-form.css" rel="stylesheet" />
+    <link href="~/css/components/shared/datepicker.css" rel="stylesheet" />
 }
 
-@* ── Toast container ── *@
 <div id="toastContainer"></div>
 
 @* ── مودال افزودن UID ── *@
@@ -77,9 +74,13 @@
 
                     <div class="f-group">
                         <label class="f-label">تاریخ ارسال <span class="req-tag">اجباری</span></label>
-                        @* ✅ مورد ۲: تاریخ پیش‌فرض روز جاری از datepicker تنظیم می‌شود *@
-                        <input asp-for="Date" id="Date" class="f-control"
-                               placeholder="مثال: ۱۴۰۴/۰۱/۱۵" autocomplete="off" />
+                        <div class="datepicker-wrap">
+                            <input asp-for="Date" id="Date"
+                                   class="f-control datepicker-input"
+                                   placeholder="مثال: ۱۴۰۴/۰۱/۱۵"
+                                   autocomplete="off" />
+                            <i class="fa fa-calendar datepicker-ico"></i>
+                        </div>
                         <span asp-validation-for="Date" class="text-danger" style="font-size:11px;"></span>
                     </div>
 
@@ -315,11 +316,11 @@
 
 @section Scripts {
     <script src="~/js/persian-date.js"></script>
-    <script src="~/js/persian-datepicker.js"></script>
 
     @* ── shared modules ── *@
     <script src="~/js/shared/toast.js"></script>
     <script src="~/js/shared/uid-modal.js"></script>
+    <script src="~/js/shared/datepicker.js"></script>
     <script src="~/js/shared/batch-table.js"></script>
 
     @* ── متغیرهای تزریقی از C# به JS ── *@

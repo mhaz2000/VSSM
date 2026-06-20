@@ -55,3 +55,30 @@
     .btn-action-uid:hover {
         background: #ecfdf5;
     }
+
+/* ── datepicker-wrap shared ── */
+.datepicker-wrap {  
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.datepicker-ico {
+    position: absolute;
+    left: 10px; /* RTL: آیکون سمت چپ */
+    color: #9ca3af;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.datepicker-input {
+    color: #9ca3af;
+    padding-left: 32px; /* فضا برای آیکون */
+}
+
+    .datepicker-input.has-value {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #93c5fd;
+        font-weight: 600;
+    }

@@ -14,9 +14,41 @@ $(function () {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
-    if ($.fn.pDatepicker) {
-        $('#Date').pDatepicker({ format: 'YYYY/MM/DD', autoClose: true });
-    }
+    // ── DatePicker فیلد تاریخ ارسال ──
+    // از همان DatePicker مشترک پروژه (datepicker.js) استفاده می‌شود
+    // دقیقاً همان الگوی destroy-uid — pDatepicker اینجا استفاده نمی‌شود
+    var $dateInput = $('#Date');
+
+    // placeholder = تاریخ امروز شمسی (از تابع داخلی datepicker.js استفاده نمی‌شود،
+    // پس خودمان محاسبه می‌کنیم)
+    (function setTodayPlaceholder() {
+        var n = new Date();
+        var gy = n.getFullYear(), gm = n.getMonth() + 1, gd = n.getDate();
+        // تبدیل ساده میلادی به شمسی (همان الگوریتم datepicker.js)
+        var g_d_no, j_d_no, j_np, i, j_y, j_m, j_d;
+        var g_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        var j_days = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+        gy -= 1600; gm -= 1; gd -= 1;
+        g_d_no = 365 * gy + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400);
+        for (i = 0; i < gm; i++) g_d_no += g_days[i];
+        if (gm > 1 && ((gy + 1600) % 4 === 0 && ((gy + 1600) % 100 !== 0 || (gy + 1600) % 400 === 0))) g_d_no++;
+        g_d_no += gd;
+        j_d_no = g_d_no - 79;
+        j_np = Math.floor(j_d_no / 12053); j_d_no %= 12053;
+        j_y = 979 + 33 * j_np + 4 * Math.floor(j_d_no / 1461);
+        j_d_no %= 1461;
+        if (j_d_no >= 366) { j_y += Math.floor((j_d_no - 1) / 365); j_d_no = (j_d_no - 1) % 365; }
+        for (i = 0; i < 11 && j_d_no >= j_days[i]; i++) j_d_no -= j_days[i];
+        j_m = i + 1; j_d = j_d_no + 1;
+        var pad = function (x) { return x < 10 ? '0' + x : '' + x; };
+        $dateInput.attr('placeholder', j_y + '/' + pad(j_m) + '/' + pad(j_d));
+    })();
+
+    DatePicker.attach($dateInput);
+    if ($dateInput.val()) $dateInput.addClass('has-value');
+    $dateInput.on('change', function () {
+        $(this).toggleClass('has-value', !!$(this).val());
+    });
 
     initBatchTable({
         tbodyId: 'itemDetailsTbody',

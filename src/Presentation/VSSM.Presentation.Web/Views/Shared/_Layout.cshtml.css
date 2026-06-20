@@ -1,6 +1,15 @@
 ﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
+
+body {
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+}
+
+input, select, textarea, button {
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+}
+
 a.navbar-brand {
   white-space: normal;
   text-align: center;

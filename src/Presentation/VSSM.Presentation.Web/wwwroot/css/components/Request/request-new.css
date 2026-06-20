@@ -1,0 +1,61 @@
+﻿/* ═══════════════════════════════════════════
+   request-new.css  —  فرم ثبت / ویرایش درخواست
+   ═══════════════════════════════════════════ */
+
+.rq-page {
+    margin: 1.5rem;
+    direction: rtl;
+}
+
+
+/* ── فاصله بین ردیف‌های فیلد ── */
+.fg-3 {
+    margin-bottom: 14px;
+}
+
+/* ── فوتر دکمه افزودن ردیف ── */
+.rq-add-line-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+}
+
+/* ── دکمه حذف در فوتر (پهن‌تر از آیکون ۲۸px) ── */
+.rq-btn-del {
+    width: auto !important;
+    padding: 0 16px !important;
+    height: 38px !important;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    gap: 6px;
+}
+
+/* ── ردیف خالی جدول ── */
+.rq-empty-row {
+    text-align: center;
+    color: #9ca3af;
+    padding: 32px 0 !important;
+    font-size: 13px;
+}
+
+    .rq-empty-row i {
+        display: block;
+        font-size: 26px;
+        margin-bottom: 8px;
+        color: #d1d5db;
+    }
+
+/* غیرفعال تا کالا انتخاب نشده */
+#requestForm:not([data-has-item="true"]) .rq-needs-item {
+    opacity: .45;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+/* غیرفعال تا ردیفی اضافه نشده */
+#requestForm:not([data-has-record="true"]) .rq-needs-record {
+    opacity: .45;
+    pointer-events: none;
+    cursor: not-allowed;
+}

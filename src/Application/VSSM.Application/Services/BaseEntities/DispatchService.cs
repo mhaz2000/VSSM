@@ -463,9 +463,9 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 ProductionDate = item.ProductionDate,
                 Quantity = item.Quantity,
                 StoreId = storeId,
-                UseId = item.UseId,
-                VvmstageId = item.VvmstageId,
-                VvmtypeId = item.VvmtypeId,
+                FkUseId = item.FkUseBaseInfo,
+                FkVvmStageId = item.FkVvmStageBaseInfo,
+                FkVvmTypeId = item.FkVvmTypeBaseInfo,
             });
 
             itemDetailStores.Add(new TblItemDetailStore

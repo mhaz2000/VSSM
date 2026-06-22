@@ -1,14 +1,18 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities
+@using VSSM.Application.DTOs.BaseEntities.BaseInfo
 @using VSSM.Application.DTOs.BaseEntities.Dispatches
 @using VSSM.Application.DTOs.BaseEntities.Recipient
 @using VSSM.Presentation.Web.Models.Base
 @model CreateDispatchDto
 
 @{
-    var transportModes = ViewBag.TransportModes as List<EnumListDto>;
     var recipients = ViewBag.Recipients as List<RecipientGetDto>;
-    var receivingModes = ViewBag.ReceivingModes as List<EnumListDto>;
-    var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
+
+    var transportModes = ViewBag.TransportModes as List<SelectListItem>;
+    var receivingMethods = ViewBag.ReceivingMethods as List<SelectListItem>;
+    var itemTypes = ViewBag.ItemTypes as List<SelectListItem>;
+    var vvmStages = ViewBag.VvmStages as List<SelectListItem>;
+
     string draftBtnLabel = "پیش فاکتور";
 }
 
@@ -89,9 +93,9 @@
                         @* ✅ مورد ۳: فیلتر نوع کالا — فقط واکسن (fkclassid=55) نمایش داده می‌شود *@
                         <select id="itemClassSelect" class="f-control">
                             <option value="">انتخاب کنید...</option>
-                            @foreach (var ic in itemClasses)
+                            @foreach (var ic in itemTypes)
                             {
-                                <option value="@ic.Id">@ic.Name</option>
+                                <option value="@ic.Value">@ic.Text</option>
                             }
                         </select>
                     </div>
@@ -160,9 +164,9 @@
                         <label class="f-label">روش دریافت</label>
                         <select asp-for="ReceivingMode" class="f-control">
                             <option value="">انتخاب کنید...</option>
-                            @foreach (var m in receivingModes)
+                            @foreach (var m in receivingMethods)
                             {
-                                <option value="@m.Name">@m.Description</option>
+                                <option value="@m.Value">@m.Text</option>
                             }
                         </select>
                     </div>
@@ -173,7 +177,7 @@
                             <option value="">انتخاب کنید...</option>
                             @foreach (var m in transportModes)
                             {
-                                <option value="@m.Name">@m.Description</option>
+                                <option value="@m.Value">@m.Text</option>
                             }
                         </select>
                     </div>
@@ -186,9 +190,9 @@
                         <label class="f-label">مرحله VVM</label>
                         <select id="vvmStagesSelect" class="f-control">
                             <option value="">انتخاب کنید</option>
-                            @foreach (var s in ViewBag.VVMStages)
+                            @foreach (var s in vvmStages)
                             {
-                                <option value="@s.VvmstageId">@s.FullName</option>
+                                <option value="@s.Value">@s.Text</option>
                             }
                         </select>
                     </div>

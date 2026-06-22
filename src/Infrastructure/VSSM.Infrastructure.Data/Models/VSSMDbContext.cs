@@ -815,9 +815,30 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.ItemId).HasColumnName("ItemID");
             entity.Property(e => e.ManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.StoreId).HasColumnName("StoreID");
-            entity.Property(e => e.UseId).HasColumnName("UseID");
-            entity.Property(e => e.VvmstageId).HasColumnName("VVMStageID");
-            entity.Property(e => e.VvmtypeId).HasColumnName("VVMTypeID");
+
+
+            entity.Property(e => e.FkUseBaseInfo).HasColumnName("FK_USE_BASE_INFO");
+            entity.Property(e => e.FkVvmTypeBaseInfo).HasColumnName("FK_VVM_TYPE_BASE_INFO");
+            entity.Property(e => e.FkVvmStageBaseInfo).HasColumnName("FK_VVM_STAGE_BASE_INFO");
+
+            entity.HasOne(d => d.UseBaseInfo)
+                .WithMany()
+                .HasForeignKey(d => d.FkUseBaseInfo)
+                .HasConstraintName("FK_tblDispatchLines_tblBaseInfo_Use")
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(d => d.VvmTypeBaseInfo)
+                .WithMany()
+                .HasForeignKey(d => d.FkVvmTypeBaseInfo)
+                .HasConstraintName("FK_tblDispatchLines_tblBaseInfo_VvmType")
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(d => d.VvmStageBaseInfo)
+                .WithMany()
+                .HasForeignKey(d => d.FkVvmStageBaseInfo)
+                .HasConstraintName("FK_tblDispatchLines_tblBaseInfo_VvmStage")
+                .OnDelete(DeleteBehavior.NoAction);
+
 
             entity.HasOne(d => d.Dispatch).WithMany(p => p.TblDispatchLines)
                 .HasForeignKey(d => d.DispatchId)
@@ -843,18 +864,6 @@ public partial class VSSMDbContext : DbContext
             entity.HasOne(d => d.Store).WithMany(p => p.TblDispatchLines)
                 .HasForeignKey(d => d.StoreId)
                 .HasConstraintName("FK_tblDispatchLines_tblStores");
-
-            entity.HasOne(d => d.Use).WithMany(p => p.TblDispatchLines)
-                .HasForeignKey(d => d.UseId)
-                .HasConstraintName("FK_tblDispatchLines_tblUses");
-
-            entity.HasOne(d => d.Vvmstage).WithMany(p => p.TblDispatchLines)
-                .HasForeignKey(d => d.VvmstageId)
-                .HasConstraintName("FK_tblDispatchLines_tblVVMStages");
-
-            entity.HasOne(d => d.Vvmtype).WithMany(p => p.TblDispatchLines)
-                .HasForeignKey(d => d.VvmtypeId)
-                .HasConstraintName("FK_tblDispatchLines_tblVVMTypes");
         });
 
         modelBuilder.Entity<TblDispatchPack>(entity =>

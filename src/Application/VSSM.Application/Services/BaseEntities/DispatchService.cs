@@ -277,8 +277,8 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 Quantity = item.DoseCount,
                 DosePerVialId = itemDetail.DosePerVialId,
                 StoreId = item.StoreId,
-                VvmtypeId = itemDetail.VvmtypeId,
-                VvmstageId = item.VvmstageId,
+                FkVvmTypeBaseInfo = itemDetail.VvmtypeId,
+                FkVvmStageBaseInfo = item.VvmstageId,
                 ManufacturerId = itemDetail.ManufacturerId,
                 ItemDetailStoreId = item.ItemDetailStoreId,
                 Note = item.Note,
@@ -340,8 +340,8 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 Quantity = item.DoseCount,
                 DosePerVialId = itemDetail.DosePerVialId,
                 StoreId = item.StoreId,
-                VvmtypeId = itemDetail.VvmtypeId,
-                VvmstageId = item.VvmstageId,
+                FkVvmTypeBaseInfo = itemDetail.VvmtypeId,
+                FkVvmStageBaseInfo = item.VvmstageId,
                 ManufacturerId = itemDetail.ManufacturerId,
                 ItemDetailStoreId = item.ItemDetailStoreId,
                 Note = item.Note,
@@ -409,9 +409,9 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 line.ManufacturerId,
                 id.ProductionDate,
                 line.Quantity,
-                line.UseId,
-                line.VvmstageId,
-                line.VvmtypeId,
+                line.FkUseBaseInfo,
+                line.FkVvmStageBaseInfo,
+                line.FkVvmTypeBaseInfo,
             }).ToListAsync(cancellationToken);
 
         if (data.Count == 0) return;
@@ -507,7 +507,7 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
 
         var items = from line in context.TblDispatchLines.Where(t => t.DispatchId == id)
                     join item in context.TblItems on line.ItemId equals item.ItemId
-                    join vvmstage in context.TblVvmstages on line.VvmstageId equals vvmstage.VvmstageId into vvmstages
+                    join vvmstage in context.TblVvmstages on line.FkVvmStageBaseInfo equals vvmstage.VvmstageId into vvmstages
                     from vvmstage in vvmstages.DefaultIfEmpty()
                     select new { line, item, vvmstage };
 
@@ -534,7 +534,7 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 VvmstageName = i.vvmstage.FullName,
                 ExpiryDate = i.line.ExpiryDate,
                 DoseCount = i.line.Quantity ?? 0,
-                VvmstageId = i.line.VvmstageId ?? 0,
+                VvmstageId = i.line.FkVvmStageBaseInfo ?? 0,
                 Note = i.line.Note,
                 BatchNumber = i.line.BatchNumber,
                 StoreId = i.line.StoreId
@@ -569,7 +569,7 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                     from doesPerVial in doesPerVialJoin.DefaultIfEmpty()
 
                     join vvmStage in context.TblVvmstages
-                        on dispatchLine.VvmstageId equals vvmStage.VvmstageId
+                        on dispatchLine.FkVvmStageBaseInfo equals vvmStage.VvmstageId
                         into vvmStageJoin
                     from vvmStage in vvmStageJoin.DefaultIfEmpty()
 
@@ -686,7 +686,7 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
 
     public async Task<(bool isSuccess, string message, int count, int itemId)> SetUidAsync(int dispatchLineId, int id, string uid)
     {
-        var uidInfoList = await context.TblUidInfo.Where(t =>
+        var uidInfoList = await context.TblUidInfo.AsNoTracking().Where(t =>
                 (t.FirstLevelUid == uid || t.SecLevelUid == uid || t.ParentUid == uid) &&
                 t.IsActive && t.OrderInfo.FkArrivalId != null && t.OrderInfo.Status == OrderInfoStatus.APPLIED.ToString())
             .Include(t => t.OrderInfo)

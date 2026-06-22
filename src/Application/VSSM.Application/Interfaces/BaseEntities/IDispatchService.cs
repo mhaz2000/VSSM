@@ -20,9 +20,6 @@ public interface IDispatchService
     Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken);
     Task<(bool isSuccess, string message, int count, int itemId)> SetUidAsync(int dispatchLineId, int id, string uid);
 
-    /// <summary>
-    /// بند ۱: لود کالاها بر اساس نوع کالا برای دراپ‌دان
-    /// </summary>
     Task<List<ItemLookupDto>> GetItemsByClassAsync(int classId, CancellationToken ct = default);
 
     /// <summary>

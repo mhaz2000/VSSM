@@ -10,18 +10,11 @@ using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities;
 
-public class DispatchService : IDispatchService
+public class DispatchService(VSSMDbContext context) : IDispatchService
 {
-    private readonly VSSMDbContext _context;
-
-    public DispatchService(VSSMDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<List<ItemLookupDto>> GetItemsByClassAsync(int classId, CancellationToken ct = default)
     {
-        return await _context.TblItems
+        return await context.TblItems
             .Where(i => i.FkClassId == classId && (i.IsActive == null || i.IsActive == true))
             .Select(i => new ItemLookupDto
             {
@@ -32,9 +25,43 @@ public class DispatchService : IDispatchService
             .ToListAsync(ct);
     }
 
+    public async Task<(bool isSuccess, string message)> ValidateUidAsync(
+    int itemDetailStoreId, string uid)
+    {
+        var store = await context.TblItemDetailStores
+            .AsNoTracking()
+            .Include(s => s.ItemDetail)
+            .FirstOrDefaultAsync(s => s.PKItemDetailStoreId == itemDetailStoreId);
+
+        if (store == null)
+            return (false, "سری ساخت یافت نشد");
+
+        var uidInfoList = await context.TblUidInfo
+            .AsNoTracking()
+            .Where(t =>
+                (t.FirstLevelUid == uid || t.SecLevelUid == uid || t.ParentUid == uid) &&
+                t.IsActive &&
+                t.OrderInfo.FkArrivalId != null &&
+                t.OrderInfo.Status == OrderInfoStatus.APPLIED.ToString())
+            .Include(t => t.OrderInfo)
+            .Select(s => new { s.PkUidInfo, s.OrderInfo.FkItemId, s.OrderInfo.BatchNumber })
+            .ToListAsync();
+
+        if (!uidInfoList.Any())
+            return (false, "برای بارکد اسکن شده، ویالی یافت نشد");
+
+        if (uidInfoList.First().FkItemId != store.ItemDetail.ItemId)
+            return (false, "بارکد اسکن شده متعلق به این کالا نمی‌باشد");
+
+        if (uidInfoList.First().BatchNumber != store.ItemDetail.BatchNumber)
+            return (false, "بارکد اسکن شده متعلق به این سری ساخت نمی‌باشد");
+
+        return (true, string.Empty);
+    }
+
     public async Task<List<BatchRowDto>> GetBatchesByItemAsync(int itemId, CancellationToken ct = default)
     {
-        var item = await _context.TblItems.FindAsync(itemId);
+        var item = await context.TblItems.FindAsync(itemId);
 
         // بند ۶: پیدا کردن حلال مرتبط در صورت RequiresDiluent = true
         // از فیلد DiluentId در TblItem استفاده می‌شود (IsDiluent وجود ندارد)
@@ -42,11 +69,11 @@ public class DispatchService : IDispatchService
         TblItemDetailStore? diluentStore = null;
         if (item?.RequiresDiluent == true && item.DiluentId.HasValue)
         {
-            diluentItem = await _context.TblItems.FindAsync(item.DiluentId.Value);
+            diluentItem = await context.TblItems.FindAsync(item.DiluentId.Value);
 
             if (diluentItem != null)
             {
-                diluentStore = await _context.TblItemDetailStores
+                diluentStore = await context.TblItemDetailStores
                     .Include(s => s.ItemDetail)
                     .Where(s => s.ItemDetail.ItemId == diluentItem.ItemId && s.CurrentStock > 0)
                     .OrderByDescending(s => s.ItemDetailId)
@@ -57,16 +84,16 @@ public class DispatchService : IDispatchService
         // بند ۷a + بند ۶: query بدون ToShamsi (چون EF نمی‌تواند ترجمه کند)
         // تاریخ‌ها به صورت خام برگشت داده و سپس در حافظه تبدیل می‌شوند
         var rawRows = await (
-            from ids in _context.TblItemDetailStores
+            from ids in context.TblItemDetailStores
                 .Where(s => s.ItemDetail.ItemId == itemId && s.CurrentStock > 0)
-            join id in _context.TblItemDetails on ids.ItemDetailId equals id.ItemDetailId
-            join mfr in _context.TblManufacturers on id.ManufacturerId equals mfr.ManufacturerId
+            join id in context.TblItemDetails on ids.ItemDetailId equals id.ItemDetailId
+            join mfr in context.TblManufacturers on id.ManufacturerId equals mfr.ManufacturerId
                 into mfrJ
             from mfr in mfrJ.DefaultIfEmpty()
-            join dpv in _context.TblDosePerVials on id.DosePerVialId equals dpv.DosePerVialId
+            join dpv in context.TblDosePerVials on id.DosePerVialId equals dpv.DosePerVialId
                 into dpvJ
             from dpv in dpvJ.DefaultIfEmpty()
-            join store in _context.TblStores on ids.StoreId equals store.StoreId
+            join store in context.TblStores on ids.StoreId equals store.StoreId
                 into storeJ
             from store in storeJ.DefaultIfEmpty()
             select new
@@ -123,14 +150,14 @@ public class DispatchService : IDispatchService
     {
         foreach (var line in lines)
         {
-            var store = await _context.TblItemDetailStores.FindAsync(line.ItemDetailStoreId);
+            var store = await context.TblItemDetailStores.FindAsync(line.ItemDetailStoreId);
             if (store == null) continue;
 
             store.CurrentStock = (store.CurrentStock ?? 0) - line.DoseCount;
             if (store.CurrentStock < 0) store.CurrentStock = 0;
         }
 
-        await _context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -139,20 +166,20 @@ public class DispatchService : IDispatchService
     // ──────────────────────────────────────────────────────────────────────────
     public async Task RestoreStockAsync(int dispatchId, CancellationToken ct = default)
     {
-        var lines = await _context.TblDispatchLines
+        var lines = await context.TblDispatchLines
             .Where(l => l.DispatchId == dispatchId)
             .ToListAsync(ct);
 
         foreach (var line in lines)
         {
             if (line.ItemDetailStoreId == null) continue;
-            var store = await _context.TblItemDetailStores.FindAsync(line.ItemDetailStoreId);
+            var store = await context.TblItemDetailStores.FindAsync(line.ItemDetailStoreId);
             if (store == null) continue;
 
             store.CurrentStock = (store.CurrentStock ?? 0) + (line.Quantity ?? 0);
         }
 
-        await _context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -163,25 +190,25 @@ public class DispatchService : IDispatchService
     public async Task LinkUidsToDispatchUidAsync(int dispatchId, CancellationToken ct = default)
     {
         // تمام رکوردهای tblDispatchUid مرتبط با این dispatch
-        var dispatchUids = await _context.TblDispatchUids
+        var dispatchUids = await context.TblDispatchUids
             .Where(du => du.FKDispatchId == dispatchId)
             .ToListAsync(ct);
 
         foreach (var du in dispatchUids)
         {
             // بند ۹: بروزرسانی FK_DISPATCH_UID در tblUidInfo
-            var uidInfo = await _context.TblUidInfo.FindAsync(du.FKUidInfo);
+            var uidInfo = await context.TblUidInfo.FindAsync(du.FKUidInfo);
             if (uidInfo == null) continue;
 
             uidInfo.FKDispatchUid = du.PKDispatchUid;
         }
 
-        await _context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
     }
 
     public async Task ConfirmDispatchAsync(int id, CancellationToken cancellationToken)
     {
-        var dispatch = await _context.TblDispatches.FindAsync(id);
+        var dispatch = await context.TblDispatches.FindAsync(id);
 
         if (dispatch.IsConfirmed.HasValue && dispatch.IsConfirmed.Value)
             return;
@@ -191,13 +218,13 @@ public class DispatchService : IDispatchService
         dispatch.ConfirmationTime = DateTime.Now;
         dispatch.DispatchVoucherNumber = (int.Parse(dispatch.DispatchVoucherNumber) + 1).ToString();
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
     }
 
     public async Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken)
     {
-        var dispatch = await _context.TblDispatches.FindAsync(updateDispatcheDto.Id);
+        var dispatch = await context.TblDispatches.FindAsync(updateDispatcheDto.Id);
 
         dispatch.SenderId = updateDispatcheDto.SenderId;
         dispatch.ReceiverId = updateDispatcheDto.ReceiverId;
@@ -216,16 +243,16 @@ public class DispatchService : IDispatchService
         if (submitType == "final")
             dispatch.SeqPreview = 0;
 
-        var dispatchLines = await _context.TblDispatchLines.Where(t => t.DispatchId == updateDispatcheDto.Id).ToListAsync();
+        var dispatchLines = await context.TblDispatchLines.Where(t => t.DispatchId == updateDispatcheDto.Id).ToListAsync();
 
-        _context.TblDispatchLines.RemoveRange(dispatchLines);
+        context.TblDispatchLines.RemoveRange(dispatchLines);
 
         var removedItems = dispatchLines.Select(s => s.ItemId!.Value).ToList().Except(updateDispatcheDto.Items.Select(s => s.ItemId));
         
-        var dispatchUids = _context.TblDispatchUids.Where(t => removedItems.Contains(t.UidInfo.OrderInfo.FkItemId) && t.FKDispatchId == updateDispatcheDto.Id)
+        var dispatchUids = context.TblDispatchUids.Where(t => removedItems.Contains(t.UidInfo.OrderInfo.FkItemId) && t.FKDispatchId == updateDispatcheDto.Id)
             .Include(t => t.UidInfo).ThenInclude(t=> t.OrderInfo);
 
-        _context.TblDispatchUids.RemoveRange(dispatchUids);
+        context.TblDispatchUids.RemoveRange(dispatchUids);
 
         float totalPrice = 0;
         float totalVolume = 0;
@@ -233,9 +260,9 @@ public class DispatchService : IDispatchService
         StringBuilder stringBuilder = new StringBuilder();
         foreach (var item in updateDispatcheDto.Items)
         {
-            var itemInfo = await _context.TblItems.FindAsync(item.ItemId);
-            var itemDetailStore = await _context.TblItemDetailStores.FindAsync(item.ItemDetailStoreId);
-            var itemDetail = await _context.TblItemDetails.Include(t => t.DosePerVial)
+            var itemInfo = await context.TblItems.FindAsync(item.ItemId);
+            var itemDetailStore = await context.TblItemDetailStores.FindAsync(item.ItemDetailStoreId);
+            var itemDetail = await context.TblItemDetails.Include(t => t.DosePerVial)
                 .FirstOrDefaultAsync(t=> t.ItemDetailId == itemDetailStore.ItemDetailId);
 
             int numvial = 0;
@@ -262,18 +289,18 @@ public class DispatchService : IDispatchService
 
             totalVolume += item.Volume ?? 0;
 
-            _context.TblDispatchLines.Add(line);
+            context.TblDispatchLines.Add(line);
         }
         if (!string.IsNullOrEmpty(stringBuilder.ToString()))
             throw new ApplicationException(stringBuilder.ToString());
 
-        _context.TblDispatches.Update(dispatch);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.TblDispatches.Update(dispatch);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<long> CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken)
+    public async Task<(int dispatchId, long seqPreview)> CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken)
     {
-        var fiscalPeriod = await _context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
+        var fiscalPeriod = await context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
 
         var dispatch = new TblDispatch
         {
@@ -302,9 +329,9 @@ public class DispatchService : IDispatchService
 
         foreach (var item in createDispatcheDto.Items)
         {
-            var itemInfo = await _context.TblItems.FindAsync(item.ItemId);
-            var itemDetailStore = await _context.TblItemDetailStores.FindAsync(item.ItemDetailStoreId);
-            var itemDetail = await _context.TblItemDetails.FindAsync(itemDetailStore.ItemDetailId);
+            var itemInfo = await context.TblItems.FindAsync(item.ItemId);
+            var itemDetailStore = await context.TblItemDetailStores.FindAsync(item.ItemDetailStoreId);
+            var itemDetail = await context.TblItemDetails.FindAsync(itemDetailStore.ItemDetailId);
 
 
             var line = new TblDispatchLine
@@ -328,18 +355,18 @@ public class DispatchService : IDispatchService
             dispatch.TblDispatchLines.Add(line);
         }
 
-        var result = await _context.TblDispatches.AddAsync(dispatch, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-        return result.Entity.SeqPreview;
+        var result = await context.TblDispatches.AddAsync(dispatch, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
+        return (dispatch.DispatchId, dispatch.SeqPreview);
     }
 
     public async Task DeleteDispatchAsync(int id, CancellationToken cancellationToken)
     {
-        var dispatch = await _context.TblDispatches.FindAsync(id);
+        var dispatch = await context.TblDispatches.FindAsync(id);
 
-        _context.TblDispatches.Remove(dispatch);
+        context.TblDispatches.Remove(dispatch);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
     }
 
@@ -354,19 +381,19 @@ public class DispatchService : IDispatchService
         var batchNumbers = new HashSet<string>();
 
         // ── ۱. واکشی همه داده با یک کوئری ──
-        var fiscalPeriodId = await _context.TblFiscalPeriods
+        var fiscalPeriodId = await context.TblFiscalPeriods
             .Where(f => f.IsActive.Value)
             .Select(f => f.FiscalPeriodId)
             .FirstOrDefaultAsync(cancellationToken);
 
         var data = await (
-            from line in _context.TblDispatchLines.Where(l => lineIds.Contains(l.DispatchLineId))
-            join dispatch in _context.TblDispatches
+            from line in context.TblDispatchLines.Where(l => lineIds.Contains(l.DispatchLineId))
+            join dispatch in context.TblDispatches
                 .Where(d => d.ReceiverStatus == 0 && d.ReceiverId == recipientId && d.IsConfirmed == true)
                 on line.DispatchId equals dispatch.DispatchId
-            join ids in _context.TblItemDetailStores
+            join ids in context.TblItemDetailStores
                 on line.ItemDetailStoreId equals ids.PKItemDetailStoreId
-            join id in _context.TblItemDetails
+            join id in context.TblItemDetails
                 on ids.ItemDetailId equals id.ItemDetailId
             select new
             {
@@ -399,8 +426,8 @@ public class DispatchService : IDispatchService
             CreationTime = now,
             CreatedBy = userId
         };
-        _context.TblReceiveDispatches.Add(receiveDispatch);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.TblReceiveDispatches.Add(receiveDispatch);
+        await context.SaveChangesAsync(cancellationToken);
 
         // ── ۳. ساخت Arrival و خطوطش ──
         var arrival = new TblArrival
@@ -452,12 +479,12 @@ public class DispatchService : IDispatchService
             batchNumbers.Add(item.BatchNumber);
         }
 
-        _context.TblItemDetailStores.AddRange(itemDetailStores);
-        _context.TblArrivals.Add(arrival);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.TblItemDetailStores.AddRange(itemDetailStores);
+        context.TblArrivals.Add(arrival);
+        await context.SaveChangesAsync(cancellationToken);
 
         // ── ۴. آپدیت UIDها با یک کوئری ──
-        var uids = await _context.TblUidInfo
+        var uids = await context.TblUidInfo
             .Where(u => batchNumbers.Contains(u.OrderInfo.BatchNumber) && u.FkReceiveDispatchId == null)
             .ToListAsync(cancellationToken);
 
@@ -466,21 +493,21 @@ public class DispatchService : IDispatchService
             uid.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
         }
 
-        var currentDispatch = await _context.TblDispatches.FindAsync(first.DispatchId);
+        var currentDispatch = await context.TblDispatches.FindAsync(first.DispatchId);
         currentDispatch.ArrivalId = arrival.ArrivalId;
         currentDispatch.ReceiverStatus = 2;
         currentDispatch.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
     public async Task<UpdateDispatchDto?> GetByIdAsync(int id)
     {
-        var dispatch = await _context.TblDispatches.FindAsync(id);
+        var dispatch = await context.TblDispatches.FindAsync(id);
         if (dispatch is null) return null;
 
-        var items = from line in _context.TblDispatchLines.Where(t => t.DispatchId == id)
-                    join item in _context.TblItems on line.ItemId equals item.ItemId
-                    join vvmstage in _context.TblVvmstages on line.VvmstageId equals vvmstage.VvmstageId into vvmstages
+        var items = from line in context.TblDispatchLines.Where(t => t.DispatchId == id)
+                    join item in context.TblItems on line.ItemId equals item.ItemId
+                    join vvmstage in context.TblVvmstages on line.VvmstageId equals vvmstage.VvmstageId into vvmstages
                     from vvmstage in vvmstages.DefaultIfEmpty()
                     select new { line, item, vvmstage };
 
@@ -520,28 +547,28 @@ public class DispatchService : IDispatchService
 
     public Task<List<ToBeArrivedDispatchLineDto>> GetDispatchLinesAsync(long dispatchId, CancellationToken cancellationToken)
     {
-        var query = from dispatchLine in _context.TblDispatchLines
+        var query = from dispatchLine in context.TblDispatchLines
                         .Where(dl => dl.DispatchId == dispatchId)
                         .AsNoTracking()
 
-                    join itemDetailStore in _context.TblItemDetailStores
+                    join itemDetailStore in context.TblItemDetailStores
                         on dispatchLine.ItemDetailStoreId equals itemDetailStore.PKItemDetailStoreId
-                    join itemDetail in _context.TblItemDetails
+                    join itemDetail in context.TblItemDetails
                         on itemDetailStore.ItemDetailId equals itemDetail.ItemDetailId
-                    join item in _context.TblItems
+                    join item in context.TblItems
                         on dispatchLine.ItemId equals item.ItemId
 
-                    join manufacturer in _context.TblManufacturers
+                    join manufacturer in context.TblManufacturers
                         on dispatchLine.ManufacturerId equals manufacturer.ManufacturerId
                         into manufacturerJoin
                     from manufacturer in manufacturerJoin.DefaultIfEmpty()
 
-                    join doesPerVial in _context.TblDosePerVials
+                    join doesPerVial in context.TblDosePerVials
                         on dispatchLine.DosePerVialId equals doesPerVial.DosePerVialId
                         into doesPerVialJoin
                     from doesPerVial in doesPerVialJoin.DefaultIfEmpty()
 
-                    join vvmStage in _context.TblVvmstages
+                    join vvmStage in context.TblVvmstages
                         on dispatchLine.VvmstageId equals vvmStage.VvmstageId
                         into vvmStageJoin
                     from vvmStage in vvmStageJoin.DefaultIfEmpty()
@@ -571,8 +598,8 @@ public class DispatchService : IDispatchService
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
         // base query using joins
-        var query = from d in _context.TblDispatches.Where(dispatch => dispatch.SenderId == senderId)
-                    join r in _context.TblUsers on d.ReceiverId equals r.UserId into rj
+        var query = from d in context.TblDispatches.Where(dispatch => dispatch.SenderId == senderId)
+                    join r in context.TblUsers on d.ReceiverId equals r.UserId into rj
                     from r in rj.DefaultIfEmpty()
                     select new DispatchListDto
                     {
@@ -622,9 +649,9 @@ public class DispatchService : IDispatchService
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
         // base query using joins
-        var query = from d in _context.TblDispatches.Where(dispatch => dispatch.ReceiverStatus == 0 &&
+        var query = from d in context.TblDispatches.Where(dispatch => dispatch.ReceiverStatus == 0 &&
                             dispatch.ReceiverId == receiverId && dispatch.IsConfirmed.HasValue && dispatch.IsConfirmed.Value)
-                    join r in _context.TblRecipients on d.SenderId equals r.RecipientId into rj
+                    join r in context.TblRecipients on d.SenderId equals r.RecipientId into rj
                     from r in rj.DefaultIfEmpty()
                     select new ToBeArrivedDispatchListDto
                     {
@@ -659,35 +686,46 @@ public class DispatchService : IDispatchService
 
     public async Task<(bool isSuccess, string message, int count, int itemId)> SetUidAsync(int dispatchLineId, int id, string uid)
     {
-        var uidInfoList = await _context.TblUidInfo.Where(t =>
+        var uidInfoList = await context.TblUidInfo.Where(t =>
                 (t.FirstLevelUid == uid || t.SecLevelUid == uid || t.ParentUid == uid) &&
                 t.IsActive && t.OrderInfo.FkArrivalId != null && t.OrderInfo.Status == OrderInfoStatus.APPLIED.ToString())
             .Include(t => t.OrderInfo)
             .Select(s => new { s.PkUidInfo, s.OrderInfo.FkItemId, s.OrderInfo.BatchNumber })
             .ToListAsync();
 
-        var dispatch = await _context.TblDispatches.FindAsync(id);
+        var dispatch = await context.TblDispatches.FindAsync(id);
 
         if (!uidInfoList.Any())
             return (false, "برای بارکد اسکن شده، ویالی یافت نشد.", 0, 0 );
 
-        var dispatchItem = await _context.TblDispatchLines.FindAsync(dispatchLineId);
+        var dispatchItem = await context.TblDispatchLines.FindAsync(dispatchLineId);
         if(dispatchItem is null || dispatchItem.ItemId != uidInfoList.FirstOrDefault()!.FkItemId)
             return (false, "بارکد اسکن شده متعلق به این کالا نمی‌باشد.", 0, 0);
 
         if(dispatchItem.BatchNumber != uidInfoList.FirstOrDefault()!.BatchNumber)
             return (false, "بارکد اسکن شده متعلق به این سری ساخت نمی‌باشد.", 0, 0);
 
+        var alreadyScanned = await context.TblDispatchUids
+            .CountAsync(du => du.FKDispatchId == id
+                           && du.UidInfo.OrderInfo.FkItemId == dispatchItem.ItemId);
+
+        var storeRecord = await context.TblItemDetailStores
+            .FirstOrDefaultAsync(s => s.ItemDetail.ItemId == dispatchItem.ItemId
+                                    && s.ItemDetail.BatchNumber == dispatchItem.BatchNumber);
+
+        if (storeRecord != null && alreadyScanned >= (storeRecord.CurrentStock ?? 0))
+            return (false, "موجودی این سری ساخت به اتمام رسیده است", 0, 0);
+
         foreach (var item in uidInfoList)
         {
-            await _context.TblDispatchUids.AddAsync(new TblDispatchUid()
+            await context.TblDispatchUids.AddAsync(new TblDispatchUid()
             {
                 Dispatch = dispatch,
                 FKUidInfo = item.PkUidInfo,
             });
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return (true, string.Empty, uidInfoList.Count(), dispatchItem.ItemId.Value);
     }
 }

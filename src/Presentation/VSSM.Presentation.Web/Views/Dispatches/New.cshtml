@@ -248,7 +248,7 @@
                 </div>
 
                 <div style="padding:12px 0 0; display:flex; justify-content:flex-end;">
-                    <button type="button" class="btn-add-line" onclick="addSelectedItem()">
+                    <button type="button" class="btn-add-line rq-needs-item" onclick="addSelectedItem()">
                         <i class="fa fa-plus"></i> افزودن
                     </button>
                 </div>
@@ -297,22 +297,38 @@
             </div>
         </div>
 
-        @* ── فوتر ── *@
+
+        @* ═══ فوتر: دکمه‌ها ═══ *@
         <div class="form-footer">
-            @* ✅ مورد ۵: دکمه افزودن = ارسال به فرم مدیریت *@
-            <button type="button" class="btn-confirm js-footer-btn" data-submit="final">
-                <i class="fa fa-check"></i> ارسال
-            </button>
-            <button type="button" class="btn-draft js-footer-btn" data-submit="draft">
-                <i class="fa fa-file-text"></i> @draftBtnLabel
-            </button>
-            <button type="button" class="btn-back" style="border-color:#dc2626;color:#dc2626;"
-                    onclick="confirmDelete()">
-                <i class="fa fa-trash"></i> حذف
-            </button>
-            <a asp-action="Index" class="btn-back">
-                <i class="fa fa-arrow-right"></i> بازگشت
+            <a class="btn-back" asp-action="Index">
+                <i class="fa fa-arrow-right"></i>
+                بازگشت
             </a>
+
+            <button type="submit"
+                    name="command"
+                    value="StatusDelete"
+                    class="btn-back rq-needs-record"
+                    style="border-color:#dc2626; color:#dc2626;">
+                <i class="fa fa-trash"></i>
+                حذف
+            </button>
+
+            <button type="submit"
+                    name="command"
+                    value="StatusDraft"
+                    class="btn-draft rq-needs-record">
+                <i class="fa fa-floppy-o"></i>
+                پیش‌نویس
+            </button>
+
+            <button type="submit"
+                    name="command"
+                    value="StatusSent"
+                    class="btn-confirm rq-needs-record">
+                <i class="fa fa-plus"></i>
+                ثبت
+            </button>
         </div>
 
     </form>
@@ -327,15 +343,15 @@
     <script src="~/js/shared/datepicker.js"></script>
     <script src="~/js/shared/batch-table.js"></script>
 
-    @* ── متغیرهای تزریقی از C# به JS ── *@
     <script>
         var dispatchServerMsg        = "@(TempData["ToastMessage"] as string ?? "")";
         var dispatchServerType       = "@(TempData["ToastType"] as string ?? "info")";
         var dispatchGetItemsByClass  = "@Url.Action("GetItemsByClass", "Dispatches")";
         var dispatchGetBatchesByItem = "@Url.Action("GetBatchesByItem", "Dispatches")";
         var setUidUrl                = "@Url.Action("SetUid", "Dispatches")";
+        var validateUidUrl           = "@Url.Action("ValidateUid", "Dispatches")";
+
     </script>
 
-    @* ── لاجیک اختصاصی فرم ── *@
     <script src="~/js/components/dispatches/dispatch-form.js"></script>
 }

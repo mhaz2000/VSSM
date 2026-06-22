@@ -48,17 +48,20 @@ public class DispatchesController(
             return View(createDispatcheDto);
         }
 
-        var result = await dispatchService.CreateDispatchAsync(
+
+
+        var (dispatchId, seqPreview) = await dispatchService.CreateDispatchAsync(
             createDispatcheDto, submitType, cancellationToken);
 
-        await dispatchService.DecrementStockOnFinalAsync(
-            createDispatcheDto.Items, cancellationToken);
-
         if (submitType == "final")
-            await dispatchService.LinkUidsToDispatchUidAsync((int)result, cancellationToken);
+        {
+            await dispatchService.DecrementStockOnFinalAsync(createDispatcheDto.Items, cancellationToken);
+            await dispatchService.LinkUidsToDispatchUidAsync(dispatchId, cancellationToken);
+        }
 
-        TempData["ToastMessage"] = $"پیش فاکتور با شماره {result} با موفقیت ثبت شد.";
+        TempData["ToastMessage"] = $"پیش فاکتور با شماره {seqPreview} با موفقیت ثبت شد.";
         TempData["ToastType"] = "success";
+
 
         return RedirectToAction(nameof(Index));
     }
@@ -278,6 +281,13 @@ public class DispatchesController(
     {
         var response = await dispatchService.SetUidAsync(dispatchLineId, id, uid);
         return Ok(new { Success = response.isSuccess, Message = response.message, Count = response.count, RowId = response.itemId });
+    }
+
+    [HttpPost("ValidateUid")]
+    public async Task<IActionResult> ValidateUid(int itemDetailStoreId, string uid)
+    {
+        var result = await dispatchService.ValidateUidAsync(itemDetailStoreId, uid);
+        return Ok(new { isSuccess = result.isSuccess, message = result.message });
     }
 
     private async Task PopulateLookupViewBagsAsync(CancellationToken ct)

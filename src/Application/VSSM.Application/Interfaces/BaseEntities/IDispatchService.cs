@@ -1,13 +1,14 @@
-﻿using VSSM.Application.DTOs;
-using VSSM.Application.DTOs.BaseEntities.Dispatches;
+﻿using VSSM.Application.DTOs.BaseEntities.Dispatches;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
 public interface IDispatchService
 {
+
+    Task<(bool isSuccess, string message)> ValidateUidAsync(int itemDetailStoreId, string uid);
     Task DeleteDispatchAsync(int id, CancellationToken cancellationToken);
     Task ConfirmDispatchAsync(int id, CancellationToken cancellationToken);
-    Task<long> CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken);
+    Task<(int dispatchId, long seqPreview)> CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken);
     Task<(List<DispatchListDto> data, int count)> GetPagedDispatchesAsync(string? search, int page, int pageSize,
         string sortField, string sortOrder, string? status, int senderId, CancellationToken cancellationToken);
 

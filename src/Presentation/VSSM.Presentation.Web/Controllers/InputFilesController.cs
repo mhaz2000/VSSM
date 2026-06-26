@@ -44,6 +44,8 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
                     new() { Header = "ایجاد کننده", PropertyName = nameof(OrderInfoDto.CreatedBy), Sortable = false },
                     new() { Header = "سری ساخت", PropertyName = nameof(OrderInfoDto.BatchNumber), Sortable = false },
                     new() { Header = "تعداد", PropertyName = nameof(OrderInfoDto.Quantity), Sortable = false },
+                    new() { Header = "نام کالا", PropertyName = nameof(OrderInfoDto.ItemName), Sortable = false },
+                    new() { Header = "دوز بر ویال", PropertyName = nameof(OrderInfoDto.DoseName), Sortable = false },
                     new() { Header = "وضعیت", PropertyName = nameof(OrderInfoDto.Status), Sortable = false },
                     new() { Header = "عملیات", IsActionColumn = true}
                 },
@@ -124,7 +126,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() || 
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() ||
                                 (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
                                 return "تایید نهایی";
 
@@ -135,6 +137,15 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
                         RouteIdProperty = nameof(OrderInfoDto.Id),
                         LinkClass = "",
                         Method = "Post",
+                        DynamicLinkClass = item =>
+                        {
+                            var row = (OrderInfoDto)item;
+
+                            if(row.Status == OrderInfoStatus.READ.ToString())
+                                return "confirm-read";
+
+                            return "";
+                        },
                         DynamicIconStyle= item =>
                         {
                             var row = (OrderInfoDto)item;
@@ -188,12 +199,19 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
     [HttpPost]
     public async Task<ActionResult> Confirm(int id, CancellationToken cancellationToken)
     {
+        await _orderInfoService.ConfirmAsync(id, cancellationToken);
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
     public async Task<ActionResult> DownloadErrorFile(int id, CancellationToken cancellationToken)
     {
+        var hasErrors = await _orderInfoService.HasErrorsAsync(id, cancellationToken);
+        if (!hasErrors)
+        {
+            TempData["ToastMessage"] = "فایل مورد نظر فاقد خطا می‌باشد.";
+            TempData["ToastType"] = "error";
+        }
         return RedirectToAction(nameof(Index));
     }
 

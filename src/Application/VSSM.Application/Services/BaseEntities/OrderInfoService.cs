@@ -11,6 +11,11 @@ namespace VSSM.Application.Services.BaseEntities;
 
 public class OrderInfoService(VSSMDbContext dbContext) : IOrderInfoService
 {
+    public async Task<bool> HasErrorsAsync(int id, CancellationToken token)
+    {
+        return await dbContext.TblUidErrors.AnyAsync(e => e.FkOrderInfo == id, token);
+    }
+
     public async Task<OrderInfoDto?> GetConfirmedByBatchNum(string batchNum, CancellationToken token)
     {
         return await dbContext.TblOrderInfo
@@ -45,8 +50,10 @@ public class OrderInfoService(VSSMDbContext dbContext) : IOrderInfoService
         var query = from o in dbContext.TblOrderInfo
                     join u in dbContext.TblUidInfo on o.PkOrderInfo equals u.FkOrderInfo
                     join user in dbContext.TblUsers on o.CreatedBy equals user.UserId
-                    group new { o, u, user }
-                    by new { o.Status, o.PkOrderInfo, o.FileName, o.CreationTime, o.CreatedBy, o.BatchNumber, user.FirstName, user.LastName }
+                    join item in dbContext.TblItems on o.FkItemId equals item.ItemId
+                    join dose in dbContext.TblBaseInfo on o.FkDosePerVialId equals dose.BaseInfoId
+                    group new { o, u, user, item, dose }
+                    by new { o.Status, o.PkOrderInfo, o.FileName, o.CreationTime, o.CreatedBy, o.BatchNumber, user.FirstName, user.LastName, item.FullName, dose.Title }
                     into g
                     select new OrderInfoDto()
                     {
@@ -56,7 +63,9 @@ public class OrderInfoService(VSSMDbContext dbContext) : IOrderInfoService
                         CreationTime = g.Key.CreationTime.ToShamsi(),
                         CreatedBy = $"{g.Key.FirstName} {g.Key.LastName}",
                         BatchNumber = g.Key.BatchNumber,
-                        Quantity = g.Count()
+                        Quantity = g.Count(),
+                        ItemName = g.Key.FullName,
+                        DoseName = g.Key.Title
                     };
 
         query = query.OrderByDescending(t => t.Id).AsNoTracking();
@@ -69,6 +78,16 @@ public class OrderInfoService(VSSMDbContext dbContext) : IOrderInfoService
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(), total);
+    }
+
+    public async Task ConfirmAsync(int id, CancellationToken cancellationToken)
+    {
+        var entity = await dbContext.TblOrderInfo.FindAsync(id, cancellationToken);
+        if (entity != null)
+        {
+            entity.Status = OrderInfoStatus.APPLIED.ToString();
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task RemoveAsync(int id, CancellationToken cancellationToken)

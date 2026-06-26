@@ -4,6 +4,7 @@ using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.Base;
+using VSSM.Presentation.Web.Models.User;
 
 namespace VSSM.Presentation.Web.Controllers
 {
@@ -74,12 +75,23 @@ namespace VSSM.Presentation.Web.Controllers
                 },
                 new()
                 {
-                    Title = "چاپ پیش فاکتور",
+                    Title = "تغییر رمز عبور",
+                    Controller = "User",
+                    Action = "ChangePassword",
+                    RouteIdProperty = nameof(UserGetDto.UserId),
+                    LinkClass = "",
+                    IconClass = "fa fa-key",
+                    OpenModal = true
+                },
+                new()
+                {
+                    Title = "حذف",
                     Controller = "User",
                     Action = "Delete",
                     RouteIdProperty = nameof(UserGetDto.UserId),
-                    LinkClass = "",
+                    LinkClass = "delete-user",
                     IconClass = "fa fa-trash",
+                    Method = "Post",
                 }
             }
             };
@@ -164,6 +176,8 @@ namespace VSSM.Presentation.Web.Controllers
             else
             {
                 // ========= UPDATE =========
+                // For updates, only validate password if it's provided (not null/empty)
+                // This allows editing other user fields without changing the password
                 var dto = new UserEditDto
                 {
                     UserId = model.UserId.Value,
@@ -195,6 +209,7 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         // ====================== DELETE ============================
+        [HttpPost]
         public async Task<IActionResult> Delete(int id, CancellationToken token)
         {
             await _userService.Delete(id, token);
@@ -205,10 +220,32 @@ namespace VSSM.Presentation.Web.Controllers
             return RedirectToAction("Index");
         }
 
+        // ====================== CHANGE PASSWORD ============================
+        [HttpGet]
+        public IActionResult ChangePassword(int id)
+        {
+            var model = new ChangePasswordViewModel { UserId = id };
+            return PartialView("_ChangePassword", model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model, CancellationToken token)
+        {
+            if (!ModelState.IsValid)
+                return PartialView("_ChangePassword", model);
+
+            await _userService.ChangePassword(model.UserId, model.NewPassword, token);
+
+            TempData["ToastMessage"] = "رمز عبور با موفقیت تغییر یافت";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index");
+        }
+
         // ====================== LOAD DROPDOWNS ============================
         private async Task LoadDropDowns(CancellationToken cancellationToken)
         {
-            ViewBag.RecipientList = (await _recipientService.GetAll(cancellationToken))
+            ViewBag.RecipientList = (await _recipientService.GetActiveRecipients(cancellationToken))
                 .Select(x => new SelectListItem
                 {
                     Value = x.RecipientId.ToString(),

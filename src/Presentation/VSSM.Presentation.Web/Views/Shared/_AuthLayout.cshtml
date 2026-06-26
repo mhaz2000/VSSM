@@ -1,83 +1,419 @@
 ﻿<!DOCTYPE html>
-<html lang="IR-fa" dir="rtl">
+<html lang="fa-IR" dir="rtl">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>سامانه مدیریت نگهداری و توزیع واکسن</title>
-    <link href="~/css/font-awesome.min.css" rel="stylesheet">
-    <link href="~/css/simple-line-icons.css" rel="stylesheet">
-    <!-- Main styles for this application -->
-    <link href="~/dest/style.css" rel="stylesheet">
-    <link href="~/toastify/toast.css" rel="stylesheet" />
-   <style>
-       body{
-           overflow-y: hidden;
-       }
-   </style>
+    <meta name="robots" content="noindex, nofollow" />
+    @* [SECURITY - افتا]: Content Security Policy *@
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline'; frame-ancestors 'none';" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <title>ورود | سامانه مدیریت نگهداری و توزیع واکسن</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --blue-deep: #0D47A1;
+            --blue-mid: #1565C0;
+            --blue-light: #42A5F5;
+            --blue-pale: #BBDEFB;
+            --white: #FFFFFF;
+            --gray-50: #F8FAFC;
+            --gray-100: #F1F5F9;
+            --gray-200: #E2E8F0;
+            --gray-400: #94A3B8;
+            --gray-600: #475569;
+            --gray-800: #1E293B;
+            --error: #EF4444;
+            --error-bg: #FEF2F2;
+            --error-border: #FECACA;
+        }
+
+        body {
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 40%, #90CAF9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+            /* پس‌زمینه انیمیشن‌دار ظریف */
+            body::before {
+                content: '';
+                position: fixed;
+                inset: 0;
+                background: radial-gradient(ellipse 80% 60% at 20% 30%, rgba(255,255,255,0.35) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 70%, rgba(13,71,161,0.15) 0%, transparent 60%);
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            /* دایره‌های تزئینی پس‌زمینه */
+            body::after {
+                content: '';
+                position: fixed;
+                width: 600px;
+                height: 600px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.12);
+                top: -200px;
+                right: -150px;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+        .bg-circle-2 {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: rgba(13,71,161,0.08);
+            bottom: -100px;
+            left: -100px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* کانتینر اصلی */
+        .auth-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 520px;
+            padding: 24px 24px;
+            animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @@keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* کارت */
+        .auth-card {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 36px 40px 32px;
+            box-shadow: 0 4px 6px rgba(13,71,161,0.04), 0 16px 48px rgba(13,71,161,0.12), 0 1px 0 rgba(255,255,255,0.9) inset;
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        /* عنوان بیرون از کارت */
+        .app-header {
+            text-align: center;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        .app-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            line-height: 1.5;
+            margin-bottom: 4px;
+        }
+
+        .app-subtitle {
+            font-size: 0.78rem;
+            color: var(--gray-600);
+            letter-spacing: 0.05em;
+            font-weight: 400;
+        }
+
+        /* لوگو داخل کارت */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            background: var(--white);
+            box-shadow: 0 2px 8px rgba(13,71,161,0.12), 0 0 0 1px rgba(13,71,161,0.06);
+        }
+
+            .logo-wrap img {
+                width: 50px;
+                height: 50px;
+                object-fit: contain;
+            }
+
+        /* هدر فرم — وسط‌چین */
+        .form-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .form-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 4px;
+        }
+
+        .form-subtitle {
+            font-size: 0.85rem;
+            color: var(--gray-400);
+            font-weight: 400;
+        }
+
+        /* فیلدهای ورودی */
+        .field-group {
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 6px;
+        }
+
+        .field-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .field-input {
+            width: 100%;
+            height: 48px;
+            padding: 0 44px 0 16px;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--gray-800);
+            background: var(--gray-50);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            outline: none;
+            text-align: right;
+            direction: rtl;
+        }
+
+            /* حذف آیکون eye پیش‌فرض مرورگر روی فیلد پسورد */
+            .field-input[type="password"]::-ms-reveal,
+            .field-input[type="password"]::-ms-clear,
+            .field-input[type="password"]::-webkit-contacts-auto-fill-button,
+            .field-input[type="password"]::-webkit-credentials-auto-fill-button {
+                display: none !important;
+            }
+
+            /* padding چپ برای فیلد پسورد — جا برای دکمه چشم */
+            .field-input[type="password"],
+            .field-input.is-password {
+                padding-left: 44px;
+            }
+
+            .field-input::placeholder {
+                color: var(--gray-400);
+                font-weight: 300;
+            }
+
+            .field-input:focus {
+                border-color: var(--blue-light);
+                background: var(--white);
+                box-shadow: 0 0 0 4px rgba(66,165,245,0.12);
+            }
+
+            .field-input.has-error {
+                border-color: var(--error);
+                background: var(--white);
+                box-shadow: 0 0 0 4px rgba(239,68,68,0.08);
+            }
+
+        .field-icon {
+            position: absolute;
+            right: 14px;
+            width: 18px;
+            height: 18px;
+            color: var(--gray-400);
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .field-wrap:focus-within .field-icon {
+            color: var(--blue-mid);
+        }
+
+        /* نمایش/پنهان رمز */
+        .toggle-password {
+            position: absolute;
+            left: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: var(--gray-400);
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+            .toggle-password:hover {
+                color: var(--blue-mid);
+            }
+
+        /* پیام خطا — فقط متن قرمز زیر فیلد رمز */
+        .error-text {
+            margin-top: 6px;
+            font-size: 0.82rem;
+            color: var(--error);
+            font-weight: 500;
+            text-align: right;
+        }
+
+        @@keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+
+            20%, 60% {
+                transform: translateX(-4px);
+            }
+
+            40%, 80% {
+                transform: translateX(4px);
+            }
+        }
+
+        /* دکمه ورود */
+        .btn-login {
+            width: 100%;
+            height: 50px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--blue-mid) 0%, var(--blue-deep) 100%);
+            color: var(--white);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+            box-shadow: 0 4px 16px rgba(21,101,192,0.35);
+            position: relative;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+            .btn-login::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+                opacity: 0;
+                transition: opacity 0.2s;
+            }
+
+            .btn-login:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 8px 24px rgba(21,101,192,0.4);
+                filter: brightness(1.05);
+            }
+
+                .btn-login:hover::before {
+                    opacity: 1;
+                }
+
+            .btn-login:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 8px rgba(21,101,192,0.3);
+            }
+
+        /* فوتر */
+        .auth-footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--gray-400);
+            line-height: 1.8;
+        }
+
+            .auth-footer a {
+                color: var(--blue-mid);
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+                .auth-footer a:hover {
+                    text-decoration: underline;
+                }
+
+        /* responsive */
+        @@media (max-width: 560px) {
+            .auth-wrapper {
+                max-width: 100%;
+                padding: 20px 16px;
+            }
+
+            .auth-card {
+                padding: 28px 20px 24px;
+                border-radius: 20px;
+            }
+
+            .app-title {
+                font-size: 1rem;
+                white-space: normal;
+            }
+        }
+    </style>
+
     @await RenderSectionAsync("Styles", false)
-
-
 </head>
-<body class="navbar-fixed sidebar-nav fixed-nav">
-    <div>
+<body>
+    <div class="bg-circle-2" aria-hidden="true"></div>
+
+    <main class="auth-wrapper" role="main">
         @RenderBody()
-    </div>
+    </main>
 
-    <!-- Bootstrap and necessary plugins -->
     <script src="~/js/libs/jquery.min.js"></script>
-    <script src="~/js/libs/tether.min.js"></script>
-    <script src="~/js/libs/bootstrap.min.js"></script>
-    <script src="~/js/libs/pace.min.js"></script>
 
-    <!-- Plugins and scripts required by all views -->
-    <script src="~/js/libs/Chart.min.js"></script>
-
-    <!-- CoreUI main scripts -->
-    <script src="~/js/app.js"></script>
-
-    <!-- Plugins and scripts required by this views -->
-    <!-- Custom scripts required by this view -->
-    <script src="~/js/views/main.js"></script>
-    <script src="~/toastify/toast.js"></script>
-
-    @using System.Text.Json
     @{
         var toastMessage = TempData["ToastMessage"]?.ToString();
         var toastType = TempData["ToastType"]?.ToString();
     }
-
-    <script>
-        const toastMessage = @Html.Raw(JsonSerializer.Serialize(toastMessage));
-        const toastType = @Html.Raw(JsonSerializer.Serialize(toastType ?? "success"));
-
-        if (toastMessage) {
-            showToast(toastMessage, toastType);
-        }
-        
-
-            function verticalAlignMiddle()
-            {
-                var bodyHeight = $(window).height();
-                var formHeight = $('.vamiddle').height();
-                var marginTop = (bodyHeight / 2) - (formHeight / 2);
-                if (marginTop > 0)
-                {
-                    $('.vamiddle').css('margin-top', marginTop);
+    @if (!string.IsNullOrEmpty(toastMessage))
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // نمایش toast اگر کتابخانه موجود باشد
+                if (typeof showToast === 'function') {
+                    showToast(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(toastMessage)),
+                              @Html.Raw(System.Text.Json.JsonSerializer.Serialize(toastType ?? "success")));
                 }
-            }
-            $(document).ready(function()
-            {
-                verticalAlignMiddle();
             });
-            $(window).bind('resize', verticalAlignMiddle);
-    </script>
-    <!-- Grunt watch plugin
-    <script src="//localhost:35729/livereload.js"></script> -->
+        </script>
+    }
+
     @await RenderSectionAsync("Scripts", required: false)
-
-
-
-
 </body>
 </html>
-

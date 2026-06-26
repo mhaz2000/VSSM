@@ -8,10 +8,9 @@ using VSSM.Presentation.Web.Models.Base;
 namespace VSSM.Presentation.Web.Controllers;
 
 public class DispatchesController(
+    IBaseInfoService vvmstageService,
     IStoreService storeService,
     IRecipientService recipientService,
-    IFiscalPeriodService fiscalPeriodService,
-    IDosePerVialService dosePerVialService,
     IDispatchService dispatchService,
     IBaseInfoService baseInfoService) : BaseController
 {

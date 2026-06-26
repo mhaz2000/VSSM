@@ -13,14 +13,15 @@ using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class InputFilesController(IOrderInfoService _orderInfoService, IItemService _itemService, IDosePerVialService _dosePerVialService) : BaseController
+public class InputFilesController(IOrderInfoService _orderInfoService, IItemService _itemService, IBaseInfoService _dosePerVialService) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> Index(CancellationToken cancellationToken, string? search, int pageNumber = 1,
         int pageSize = 10, string sort = "Id", string direction = "desc")
     {
+
         ViewBag.Items = await _itemService.GetActiveVaccines(cancellationToken);
-        ViewBag.DosePerVials = await _dosePerVialService.GetActives(cancellationToken);
+        ViewBag.DosePerVials = await _dosePerVialService.GetByParentIdAsync(84, cancellationToken);
 
         var (data, count) = await _orderInfoService.GetPagedAsync(search, pageNumber, pageSize, sort, direction, cancellationToken);
 
@@ -123,7 +124,8 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString())
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() || 
+                                (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
                                 return "تایید نهایی";
 
                             return string.Empty;
@@ -137,7 +139,8 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString())
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() ||
+                                (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
                                 return "color: green;";
 
                             return string.Empty;
@@ -146,11 +149,12 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString())
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() ||
+                                (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
                                 return "fa fa-check";
 
                             return string.Empty;
-                        },
+                        }
                     }
                 }
         };
@@ -197,7 +201,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
     [HttpGet("GetItemDoesPerVials/{itemId}")]
     public async Task<IActionResult> GetItemDoesPerVials(int itemId, CancellationToken token)
     {
-        var list = (await _dosePerVialService.GetItemDoesPerVialsAsync(itemId, token));
+        var list = (await _itemService.GetItemDoesPerVialsAsync(itemId, token));
         var apiResult = new ApiResult<List<DosePerVialListDto>>
         {
             Success = true,

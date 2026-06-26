@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.DosePerVial;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
@@ -43,6 +44,17 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
         return model.ItemId;
     }
 
+    public async Task<IEnumerable<DosePerVialListDto>> GetItemDoesPerVialsAsync(int itemId, CancellationToken token)
+    {
+        var query = dbContext.TblItemDoseAssignments.Include(t => t.Dose).Where(t => t.ItemId == itemId)
+            .Select(s => new DosePerVialListDto()
+            {
+                DosePerVialId = s.Dose.BaseInfoId,
+                NumDosePerVial = int.Parse(s.Dose.Title)
+            });
+
+        return await query.ToListAsync();
+    }
 
     public async Task<List<ItemListDto>> GetActiveVaccines(CancellationToken cancellationToken)
     {
@@ -72,9 +84,6 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
             })
             .ToListAsync(cancellationToken);
     }
-
-
-
 
     public async Task<List<ItemListDto>> GetActives(CancellationToken cancellationToken)
     {

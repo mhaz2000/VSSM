@@ -18,10 +18,7 @@ namespace VSSM.Presentation.Web.Controllers
         ISourceService _sourceService,
         IRecipientService _recipientService,
         IMemoryCache _cache,
-        IManufacturerService _manufacturerService,
-        IVvmtypeService _vvmtypeService,
-        IVvmstageService _vvmstageService,
-        ICommercialNameService _commercialNameService,
+        IBaseInfoService _baseInfoService,
         IItemDetailsService _itemDetailsService,
         IFiscalPeriodService _fiscalPeriodService)
         : BaseController
@@ -30,14 +27,14 @@ namespace VSSM.Presentation.Web.Controllers
         public async Task<IActionResult> AvailableQuantity(CancellationToken cancellationToken = default)
         {
             // Load dropdowns
-            ViewBag.CommercialNames = await _commercialNameService.GetActives(cancellationToken);
+            ViewBag.CommercialNames = await _baseInfoService.GetByParentIdAsync(35, cancellationToken);
             ViewBag.ItemClasses = await _itemClassService.GetActives(cancellationToken);
             ViewBag.Items = await _itemService.GetActives(cancellationToken);
             ViewBag.Sources = await _sourceService.GetAll(cancellationToken);
             ViewBag.Stores = await _storeService.GetAllWithRecipientId(CurrentUserRecipientId!.Value, cancellationToken);
-            ViewBag.Manufacturers = await _manufacturerService.GetActives(cancellationToken);
-            ViewBag.Vvmstages = await _vvmstageService.GetActives(cancellationToken);
-            ViewBag.Vvmtypes = await _vvmtypeService.GetActives(cancellationToken);
+            ViewBag.Manufacturers = await _baseInfoService.GetByParentIdAsync(48, cancellationToken);
+            ViewBag.Vvmstages = await _baseInfoService.GetByParentIdAsync(30, cancellationToken);
+            ViewBag.Vvmtypes = await _baseInfoService.GetByParentIdAsync(22, cancellationToken);
 
             var recipients = await _recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.Value, cancellationToken);
             ViewBag.Recipients = recipients;

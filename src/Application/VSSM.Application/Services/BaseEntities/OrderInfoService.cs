@@ -30,7 +30,7 @@ public class OrderInfoService(VSSMDbContext dbContext) : IOrderInfoService
                 FkItemId = o.FkItemId,
                 FkDosePerVialId = o.FkDosePerVialId,
                 ItemName = o.Item.FullName,
-                DoseName = o.DosePerVial.NumDosePerVial.ToString()
+                DoseName = o.DosePerVial.Title
             })
             .FirstOrDefaultAsync(token);
     }

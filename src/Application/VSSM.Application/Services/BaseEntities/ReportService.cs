@@ -31,7 +31,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             var itemDetailQuery = !string.IsNullOrEmpty(inputModel.BatchNumber) ? _context.TblItemDetails.Where(t => t.BatchNumber.Contains(inputModel.BatchNumber)) : _context.TblItemDetails;
             itemDetailQuery = inputModel.ManufacturerId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
-            itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmtypeId == inputModel.VvmtypeId);
+            itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmTypeId == inputModel.VvmtypeId);
             itemDetailQuery = inputModel.CommercialNameId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ProductinDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ProductionDate.HasValue &&
                 t.ProductionDate == DateTimeHelper.ToGregorian(inputModel.ProductinDate));
@@ -63,24 +63,24 @@ namespace VSSM.Application.Services.BaseEntities
                 join r in _context.TblRecipients
                     on s.RecipientId equals r.RecipientId
 
-                join m in _context.TblManufacturers
-                    on id.ManufacturerId equals m.ManufacturerId into mJoin
+                join m in _context.TblBaseInfo
+                    on id.ManufacturerId equals m.BaseInfoId into mJoin
                 from m in mJoin.DefaultIfEmpty()
 
-                join c in _context.TblCommercialNames
-                    on id.CommercialNameId equals c.CommercialNameId into cJoin
+                join c in _context.TblBaseInfo
+                    on id.CommercialNameId equals c.BaseInfoId into cJoin
                 from c in cJoin.DefaultIfEmpty()
 
-                join dpv in _context.TblDosePerVials
-                    on id.DosePerVialId equals dpv.DosePerVialId into dpvJoin
+                join dpv in _context.TblBaseInfo
+                    on id.DosePerVialId equals dpv.BaseInfoId into dpvJoin
                 from dpv in dpvJoin.DefaultIfEmpty()
 
-                join vt in _context.TblVvmtypes
-                    on id.VvmtypeId equals vt.VvmtypeId into vtJoin
+                join vt in _context.TblBaseInfo
+                    on id.VvmTypeId equals vt.BaseInfoId into vtJoin
                 from vt in vtJoin.DefaultIfEmpty()
 
-                join vs in _context.TblVvmstages
-                    on ids.FkVvmStageId equals vs.VvmstageId into vsJoin
+                join vs in _context.TblBaseInfo
+                    on ids.FkVvmStageId equals vs.BaseInfoId into vsJoin
                 from vs in vsJoin.DefaultIfEmpty()
 
                 group new { i, id, ids, s, m, c, dpv, vt, vs }
@@ -92,12 +92,12 @@ namespace VSSM.Application.Services.BaseEntities
                     id.ProductionDate,
                     Recipient = r.FullName,
                     ItemName = i.FullName,
-                    ManufacturerName = m.FullName,
+                    ManufacturerName = m.Title,
                     StoreName = s.Name,
-                    DoesPerVial = dpv.NumDosePerVial,
-                    CommercialName = c.FullName,
-                    Vvmtype = vt.FullName,
-                    Vvmstage = vs.FullName
+                    DoesPerVial = dpv.Title,
+                    CommercialName = c.Title,
+                    Vvmtype = vt.Title,
+                    Vvmstage = vs.Title
                 } into g
                 select new AvailableQuantityDetailDto
                 {
@@ -105,7 +105,7 @@ namespace VSSM.Application.Services.BaseEntities
                     BatchNumber = g.Key.BatchNumber,
                     ManufacturerName = g.Key.ManufacturerName,
                     ExpiryDate = g.Key.ExpiryDate,
-                    DoesPerVial = g.Key.DoesPerVial,
+                    DoesPerVial = int.Parse(g.Key.DoesPerVial),
                     Stock = g.Key.StoreName,
                     Recipient = g.Key.Recipient,
                     ProductionDate = g.Key.ProductionDate,
@@ -175,7 +175,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             var itemDetailQuery = !string.IsNullOrEmpty(inputModel.BatchNumber) ? _context.TblItemDetails.Where(t => t.BatchNumber.Contains(inputModel.BatchNumber)) : _context.TblItemDetails;
             itemDetailQuery = inputModel.ManufacturerId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
-            itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmtypeId == inputModel.VvmtypeId);
+            itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmTypeId == inputModel.VvmtypeId);
             itemDetailQuery = inputModel.CommercialNameId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ProductinDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ProductionDate.HasValue &&
                 t.ProductionDate == DateTimeHelper.ToGregorian(inputModel.ProductinDate));
@@ -206,10 +206,10 @@ namespace VSSM.Application.Services.BaseEntities
                     on id.ItemDetailId equals ids.ItemDetailId
                 join s in storeQuery
                     on ids.StoreId equals s.StoreId
-                join v in _context.TblDosePerVials
-                    on id.DosePerVialId equals v.DosePerVialId
+                join v in _context.TblBaseInfo
+                    on id.DosePerVialId equals v.BaseInfoId
                 group new { i, ids, v, ic }
-                by new { ItemName = i.FullName, i.Code, v.NumDosePerVial, ItemClass = ic.FullName, id.BatchNumber, id.ExpiryDate }
+                by new { ItemName = i.FullName, i.Code, DosePerVial = v.Title, ItemClass = ic.FullName, id.BatchNumber, id.ExpiryDate }
                     into g
                 select new AvailableQuantityQuantitySummaryDto
                 {
@@ -218,7 +218,7 @@ namespace VSSM.Application.Services.BaseEntities
                     ItemClass = g.Key.ItemClass,
                     BatchNumber = g.Key.BatchNumber,
                     ExpiryDate = g.Key.ExpiryDate,
-                    DoesPerVial = g.Key.NumDosePerVial,
+                    DoesPerVial = int.Parse(g.Key.DosePerVial),
                     CurrentStock = g.Sum(s => s.ids.CurrentStock)
                 };
 
@@ -256,7 +256,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             var itemDetailQuery = !string.IsNullOrEmpty(inputModel.BatchNumber) ? _context.TblItemDetails.Where(t => t.BatchNumber.Contains(inputModel.BatchNumber)) : _context.TblItemDetails;
             itemDetailQuery = inputModel.ManufacturerId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
-            itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmtypeId == inputModel.VvmtypeId);
+            itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmTypeId == inputModel.VvmtypeId);
             itemDetailQuery = inputModel.CommercialNameId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ProductinDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ProductionDate.HasValue &&
                 t.ProductionDate == DateTimeHelper.ToGregorian(inputModel.ProductinDate));
@@ -330,7 +330,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             var itemDetailQuery = !string.IsNullOrEmpty(inputModel.BatchNumber) ? _context.TblItemDetails.Where(t => t.BatchNumber.Contains(inputModel.BatchNumber)) : _context.TblItemDetails;
             itemDetailQuery = inputModel.ManufacturerId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
-            itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmtypeId == inputModel.VvmtypeId);
+            itemDetailQuery = inputModel.VvmtypeId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.VvmTypeId == inputModel.VvmtypeId);
             itemDetailQuery = inputModel.CommercialNameId is null ? itemDetailQuery : _context.TblItemDetails.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
             itemDetailQuery = string.IsNullOrEmpty(inputModel.ProductinDate) ? itemDetailQuery : itemDetailQuery.Where(t => t.ProductionDate.HasValue &&
                 t.ProductionDate == DateTimeHelper.ToGregorian(inputModel.ProductinDate));
@@ -359,16 +359,16 @@ namespace VSSM.Application.Services.BaseEntities
                     on id.ItemDetailId equals ids.ItemDetailId
                 join s in storeQuery
                     on ids.StoreId equals s.StoreId
-                join v in _context.TblDosePerVials 
-                    on id.DosePerVialId equals v.DosePerVialId
+                join v in _context.TblBaseInfo 
+                    on id.DosePerVialId equals v.BaseInfoId
                 group new { i, ids, v }
-                by new { i.FullName, i.Code, v.NumDosePerVial }
+                by new { i.FullName, i.Code, NumDosePerVial = v.Title }
                     into g
                 select new AvailableQuantitySummaryWithDosePerVialDto
                 {
                     ItemName = g.Key.FullName,
                     ItemCode = g.Key.Code,
-                    DoesPerVial = g.Key.NumDosePerVial,
+                    DoesPerVial = int.Parse(g.Key.NumDosePerVial),
                     CurrentStock = g.Sum(s => s.ids.CurrentStock)
                 };
 
@@ -486,7 +486,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join id in _context.TblItemDetails on i.ItemId equals id.ItemId
                 join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
                 join s in stores on ids.StoreId equals s.StoreId
-                join m in _context.TblManufacturers on id.ManufacturerId equals m.ManufacturerId
+                join m in _context.TblBaseInfo on id.ManufacturerId equals m.BaseInfoId
 
                 group new { ids, id, i, ic, s, m }
                 by new
@@ -496,7 +496,7 @@ namespace VSSM.Application.Services.BaseEntities
                     id.ExpiryDate,
                     ItemClassName = ic.FullName,
                     ItemName = i.FullName,
-                    ManufacturerName = m.FullName,
+                    ManufacturerName = m.Title,
                     StoreName = s.Name
                 }
                 into g
@@ -660,15 +660,15 @@ namespace VSSM.Application.Services.BaseEntities
             var query = from i in _context.TblItems.Where(t => t.ItemId == itemId)
                         join id in _context.TblItemDetails.Where(t => t.BatchNumber == batchNumber) on i.ItemId equals id.ItemId
                         join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
-                        join m in _context.TblManufacturers on id.ManufacturerId equals m.ManufacturerId
-                        join v in _context.TblDosePerVials on id.DosePerVialId equals v.DosePerVialId
+                        join m in _context.TblBaseInfo on id.ManufacturerId equals m.BaseInfoId
+                        join v in _context.TblBaseInfo on id.DosePerVialId equals v.BaseInfoId
                         select new ItemIndicatorDetailDto()
                         {
                             BatchNumber = id.BatchNumber,
                             ItemName = i.FullName,
                             CurrentStock = ids.CurrentStock,
-                            Manufacturer = m.FullName,
-                            NumDosePerVial = v.NumDosePerVial,
+                            Manufacturer = m.Title,
+                            NumDosePerVial = int.Parse(v.Title),
                             ExpiryDate = id.ExpiryDate
                         };
 

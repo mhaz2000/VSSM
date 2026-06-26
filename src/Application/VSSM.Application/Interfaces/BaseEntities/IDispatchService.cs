@@ -1,13 +1,14 @@
-﻿using VSSM.Application.DTOs;
-using VSSM.Application.DTOs.BaseEntities.Dispatches;
+﻿using VSSM.Application.DTOs.BaseEntities.Dispatches;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
 public interface IDispatchService
 {
+
+    Task<(bool isSuccess, string message)> ValidateUidAsync(int itemDetailStoreId, string uid);
     Task DeleteDispatchAsync(int id, CancellationToken cancellationToken);
     Task ConfirmDispatchAsync(int id, CancellationToken cancellationToken);
-    Task<long> CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken);
+    Task<(int dispatchId, long seqPreview)> CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken);
     Task<(List<DispatchListDto> data, int count)> GetPagedDispatchesAsync(string? search, int page, int pageSize,
         string sortField, string sortOrder, string? status, int senderId, CancellationToken cancellationToken);
 
@@ -19,9 +20,6 @@ public interface IDispatchService
     Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken);
     Task<(bool isSuccess, string message, int count, int itemId)> SetUidAsync(int dispatchLineId, int id, string uid);
 
-    /// <summary>
-    /// بند ۱: لود کالاها بر اساس نوع کالا برای دراپ‌دان
-    /// </summary>
     Task<List<ItemLookupDto>> GetItemsByClassAsync(int classId, CancellationToken ct = default);
 
     /// <summary>

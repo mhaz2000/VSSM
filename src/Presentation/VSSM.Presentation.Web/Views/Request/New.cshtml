@@ -1,293 +1,225 @@
 ﻿@using VSSM.Presentation.Web.Models.Request
 @model RequestViewModel
+
 @{
-    string formName = "ثبت";
-    if (Model != null && Model.Id > 0)
-        formName = "ویرایش";
+    bool isEdit = Model?.Id > 0;
+    bool hasLines = Model?.RequestLines != null && Model.RequestLines.Any();
 }
 
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/lines-table.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/submit-btn.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/request/request-new.css" rel="stylesheet" asp-append-version="true" />
+}
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
+<div class="rq-page" dir="rtl">
+    <form asp-action="Create" method="post" id="requestForm" data-has-record="@(hasLines ? "true" : "false")">
+        <input type="hidden" asp-for="Id" />
 
+        @* ═══ کارت اول: ثبت درخواست ═══ *@
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-file-text-o" style="color:#1d6fb8; font-size:16px;"></i>
+                <h6 style="font-size:16px;">ثبت درخواست</h6>
+            </div>
+            <div class="a-card-body">
 
-        <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <div>
-                        <h5>@formName  درخواست</h5>
+                @* ردیف ۱: نوع کالا | کالا | مقدار مجاز *@
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
+                        <select id="ItemClassId"
+                                asp-for="NewLine.ItemClassId"
+                                asp-items="ViewBag.ItemClassList"
+                                class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
+                        <select id="ItemId"
+                                asp-for="NewLine.ItemId"
+                                class="f-control"
+                                disabled>
+                            <option value="">ابتدا نوع کالا را انتخاب کنید</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">مقدار مجاز</label>
+                        <input type="text" class="f-control" asp-for="NewLine.Anncount" id="anncount" readonly />
                     </div>
                 </div>
+
+                @* ردیف ۲: تعداد موجودی انبار | مقدار ورودی | تعداد مصرف شده *@
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">تعداد موجودی انبار</label>
+                        <input type="text" class="f-control" asp-for="NewLine.Currentcount" id="currentcount" readonly />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">مقدار ورودی</label>
+                        <input type="text" class="f-control" asp-for="NewLine.Arivcount" id="arivcount" readonly />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">تعداد مصرف شده</label>
+                        <input type="text" class="f-control" asp-for="NewLine.Usedcount" id="usedcount" readonly />
+                    </div>
+                </div>
+
+                @* ردیف ۳: ذخیره ایمن | زمان بین درخواست و ورود | جهت دوره *@
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">ذخیره ایمن (ماه)</label>
+                        <input type="text" class="f-control" asp-for="NewLine.InventoryHealth" id="inventoryHealth" readonly />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">زمان بین درخواست و ورود محموله (روز)</label>
+                        <input type="text" class="f-control" asp-for="NewLine.TimeBetweenRequestAndArrival" id="timeBetweenRequestAndArrival" readonly />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">جهت دوره</label>
+                        <select asp-items="ViewBag.ForPeriodList"
+                                asp-for="NewLine.Forperiod"
+                                id="forperiod"
+                                class="f-control">
+                        </select>
+                    </div>
+                </div>
+
+                @* ردیف ۴: تعداد پیشنهادی | تعداد درخواستی | ملاحظات *@
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">تعداد پیشنهادی</label>
+                        <input type="text" class="f-control" asp-for="NewLine.Offercount" id="offercount" readonly />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">تعداد درخواستی <span class="req-tag">اجباری</span></label>
+                        <input type="text" class="f-control" asp-for="NewLine.Reqcount" id="reqcount" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">ملاحظات <span class="opt">(اختیاری)</span></label>
+                        <input type="text" class="f-control" asp-for="Note" id="note" placeholder="ملاحظات..." />
+                    </div>
+                </div>
+
+                @* دکمه افزودن ردیف *@
+                <div class="rq-add-line-footer">
+                    <button type="submit"
+                            name="command"
+                            value="addLine"
+                            class="btn-add-line rq-needs-item">
+                        <i class="fa fa-plus"></i>
+                        افزودن
+                    </button>
+                </div>
+
             </div>
         </div>
 
-        <div>
-
-            <div class="card">
-                <div class="card-block">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <form asp-action="Create" method="post" class="form-horizontal">
-                        <input type="hidden" asp-for="Id" />
-                        <div class="col-lg-12">
-
-                            
-                                <!-- نوع کالا -->
-                                <div class="form-group col-md-6">
-                                    <span class="form-label">نوع کالا :</span>
-                                <select id="ItemClassId" asp-for="NewLine.ItemClassId"
-                                            asp-items="ViewBag.itemClassList" 
-                                            class="form-select">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-
-                                <!-- کالا -->
-                            <div class="form-group col-md-6">
-                                    <span class="form-label">کالا :</span>
-                                <select id="ItemId" asp-for="NewLine.ItemId"
-                                        class="form-select" 
-                                            disabled>
-                                        <option value="">ابتدا نوع کالا را انتخاب کنید</option>
-                                    </select>
-                                </div>
-                            
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    مقدار مجاز : 
-                                </span>
-                                <input type="text" class="form-control disabled" asp-for="NewLine.Anncount" id="anncount"  />
-                            </div>
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    تعداد موجودی انبار :
-                                </span>
-                                <input type="text" class="form-control disabled" asp-for="NewLine.Currentcount" id="currentcount" />
-                            </div>
-
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    مقدار ورودی :
-                                </span>
-                                <input type="text" class="form-control disabled" asp-for="NewLine.Arivcount" id="arivcount" />
-                            </div>
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    تعداد مصرف شده :
-                                </span>
-                                <input type="text" class="form-control disabled" asp-for="NewLine.Usedcount" id="usedcount" />
-                            </div>
-
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    سلامت موجودی (ماه) :
-                                </span>
-                                <input type="text" class="form-control disabled" asp-for="NewLine.InventoryHealth" id="inventoryHealth" />
-                            </div>
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    زمان بین درخواست و ورود محموله (روز) :
-                                </span>
-                                <input type="text" class="form-control disabled" asp-for="NewLine.TimeBetweenRequestAndArrival"
-                                       id="timeBetweenRequestAndArrival"  />
-                            </div>
-
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    جهت دوره :
-                                </span>
-                                <select asp-items="ViewBag.ForPeriodList" asp-for="NewLine.Forperiod" id="forperiod" class="form-select">
-                                    </select>
-                            </div>
-                            
-
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    تعداد پیشنهادی :
-                                </span>
-                                <input type="text" class="form-control disabled" asp-for="NewLine.Offercount" id="offercount" />
-                            </div>
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    تعداد درخواستی :
-                                </span>
-                                <input type="text" class="form-control" asp-for="NewLine.Reqcount" id="reqcount" />
-                            </div>
-
-
-                            <div class="col-lg-12"></div>
-                            <div class="col-lg-5"></div>
-                            <div class="col-lg-4">
-                                <div class="text-center mt-4 align-middle">
-                                    <div class="text-center mt-3 allign-text">
-                                        <button type="submit"
-                                                name="command"
-                                                value="addLine"
-                                                class="btn btn-outline-info px-4 pale-green-btn">
-                                            افزودن 
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-
-
-                        <div class="row col-lg-12"><br /></div>
-
-                        <div class="col-lg-12 allign-text">
-                            <table class="table table-bordered table-striped table-condensed lines-table">
-                                <thead>
+        @* ═══ کارت دوم: اقلام درخواست ═══ *@
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-list" style="color:#1d6fb8;"></i>
+                <h6>اقلام درخواست</h6>
+            </div>
+            <div class="a-card-body">
+                <div class="lines-table-wrap">
+                    <table class="lines-table">
+                        <thead>
+                            <tr>
+                                <th>کالا</th>
+                                <th>مقدار مجاز</th>
+                                <th>تعداد ورودی</th>
+                                <th>تعداد مصرف شده</th>
+                                <th>موجودی انبار</th>
+                                <th>جهت دوره</th>
+                                <th>تعداد پیشنهادی</th>
+                                <th>تعداد درخواستی</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.RequestLines != null && Model.RequestLines.Any())
+                            {
+                                for (int i = 0; i < Model.RequestLines.Count; i++)
+                                {
+                                    var line = Model.RequestLines[i];
                                     <tr>
-                                        <th>کالا</th>
-                                        <th> مقدار مجاز</th>
-                                        <th> تعداد ورودی</th>
-                                        <th>تعداد مصرف شده</th>
-                                        <th>تعداد موجودی انبار</th>
-                                        <th>جهت دوره</th>
-                                        <th>تعداد پیشنهادی</th>
-                                        <th>تعداد درخواستی</th>
-                                        <th>عملیات</th>
+                                        <td>@line.ItemName</td>
+                                        <td>@line.Anncount</td>
+                                        <td>@line.Arivcount</td>
+                                        <td>@line.Usedcount</td>
+                                        <td>@line.Currentcount</td>
+                                        <td>@line.Forperiod</td>
+                                        <td>@line.Offercount</td>
+                                        <td>@line.Reqcount</td>
+                                        <td>
+                                            <button type="submit"
+                                                    name="command"
+                                                    value="deleteLine_@line.Id"
+                                                    class="btn-action btn-action-del js-submit-btn"
+                                                    title="حذف">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @if (Model.RequestLines != null && Model.RequestLines.Any())
-                                    {
-                                        for (int i = 0; i < Model.RequestLines.Count; i++)
-                                        {
-                                            var line = Model.RequestLines[i];
-                                            <tr>
-                                                <td>@line.ItemName</td> 
-                                                <td>@line.Anncount</td>
-                                                <td>@line.Arivcount</td>
-                                                <td>@line.Usedcount</td>
-                                                <td>@line.Currentcount</td>
-                                                <td>@line.Forperiod</td>
-                                                <td>@line.Offercount</td>
-                                                <td>@line.Reqcount</td>
-                                                <td>
-                                                    <button type="submit"
-                                                            name="command"
-                                                            value="deleteLine_@line.Id"
-                                                            class="btn btn-outline-danger btn-sm">
-                                                        حذف
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <tr>
-                                            <td colspan="8" class="text-center text-muted">
-                                                آیتمی ثبت نشده است.
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="row col-lg-12">
-                            <div class="form-group col-md-6">
-                                <span class="form-label">
-                                    ملاحظات :
-                                </span>
-                                <input type="text" class="form-control" asp-for="Note" id="note" />
-                            </div>
-                        </div>
-                        <div class="row col-lg-12"><br /></div>
-                        <div class="card-block">
-                            <div class="row col-lg-2"></div>
-                            <button type="submit"
-                                    name="command"
-                                    value="StatusSent" class="btn btn-outline-primary">
-                                لطفا ارسال نمایید
-                            </button>
-                            <button type="button" name="command"
-                                    value="StatusDraft" class="btn btn-warning">
-                                پیش نویس
-                            </button>
-                            <button type="button" name="command"
-                                    value="StatusDelete" class="btn btn-danger">
-                                حذف
-                            </button>
-                            <a type="button" class="btn btn-primary px-5" asp-action="Index">مشاهده لیست</a>
-                        </div>
-                    </form>
-                    
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="rq-empty-row">
+                                        <i class="fa fa-inbox"></i>
+                                        آیتمی ثبت نشده است
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <!--/col-->
-    </div>
-    <!--/row-->
-</div>
 
+        @* ═══ فوتر: دکمه‌ها ═══ *@
+        <div class="form-footer">
+            <a class="btn-back" asp-action="Index">
+                <i class="fa fa-arrow-right"></i>
+                بازگشت
+            </a>
+
+            <button type="submit"
+                    name="command"
+                    value="StatusDelete"
+                    class="btn-action btn-action-del rq-btn-del rq-needs-record"
+                    title="حذف درخواست">
+                <i class="fa fa-trash"></i>
+                حذف
+            </button>
+
+            <button type="submit"
+                    name="command"
+                    value="StatusDraft"
+                    class="btn-draft rq-needs-record">
+                <i class="fa fa-floppy-o"></i>
+                پیش‌نویس
+            </button>
+
+            <button type="submit"
+                    name="command"
+                    value="StatusSent"
+                    class="btn-confirm rq-needs-record">
+                <i class="fa fa-paper-plane"></i>
+                ثبت
+            </button>
+        </div>
+
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="~/js/persian-date.js"></script>
-    <script src="~/js/persian-datepicker.js"></script>
-    <script>
-            $(function () {
-
-            const $itemClass = $("#ItemClassId");
-            const $item = $("#ItemId");
-
-            // تغییر نوع کالا
-            $itemClass.on("change", function () {
-
-                const classId = $(this).val();
-
-                // reset
-                $item.prop("disabled", true);
-                $item.empty();
-
-                if (!classId) {
-                    $item.append('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
-                    return;
-                }
-
-                // load filtered items
-                $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
-                    .done(function (data) {
-
-                        $item.append('<option value="">انتخاب کنید...</option>');
-
-                        data.forEach(x => {
-                            $item.append(
-                                `<option value="${x.id}">${x.text}</option>`
-                            );
-                        });
-
-                        $item.prop("disabled", false);
-                    });
-            });
-
-            
-            $item.on("change", function () {
-
-                const itemId = $(this).val();
-
-                $.getJSON("/Request/GetItemDetailsByItem", { itemId: itemId })
-                    .done(function (data) {
-                        $("#anncount").val(data.anncount);
-                        $("#currentcount").val(data.currentcount);
-                        $("#arivcount").val(data.arivcount);
-                        $("#usedcount").val(data.usedcount);
-                        $("#inventoryHealth").val(0);
-                        $("#inventoryHealth").val(0);
-                        $("#timeBetweenRequestAndArrival").val(0);
-                        $("#offercount").val(data.offercount);
-
-                    });
-            });
-
-        });
-
-       
-
-    </script>
-
-
+    <script src="~/js/components/request/request-new.js" asp-append-version="true"></script>
 }

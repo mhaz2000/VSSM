@@ -1,14 +1,9 @@
 /**
  * destroy-uid.js  —  منطق فرم امحا UID
- * ═══════════════════════════════════════════
- * پیش‌نیاز: jQuery، toast.js، datepicker.js، skeleton.js
- * متغیرهای سرور: searchByBatchUrl، searchByUidUrl،
- *                submitDestroyUrl، todayShamsi، reasonList
- * ═══════════════════════════════════════════
  */
 
-var _searchResults = [];          // کل نتایج انباشته‌شده
-var _searchedKeys = new Set();   // کلیدهای قبلاً جستجو‌شده (batch یا uid)
+var _searchResults = [];
+var _searchedKeys = new Set();
 
 /* ══════════════════════════════════════════════
    قفل / آزاد کردن کامل فرم
@@ -32,6 +27,11 @@ function _setFormLocked(on, ctx) {
     } else {
         $('#submitBtn').prop('disabled', on);
     }
+}
+
+function _resetSubmitBtn($btn) {
+    $btn.html('<i class="fa fa-check"></i> ثبت امحا');
+    $btn.prop('disabled', false);
 }
 
 /* ══════════════════════════════════════════════
@@ -86,7 +86,7 @@ function switchMode(mode) {
    ══════════════════════════════════════════════ */
 function doSearch() {
     var mode = $('#btnBatch').hasClass('active') ? 'batch' : 'uid';
-    var url, data;
+    var url, data, currentUid = null;
 
     if (mode === 'batch') {
         var batch = $('#batchInput').val().trim();
@@ -98,20 +98,19 @@ function doSearch() {
         url = searchByBatchUrl;
         data = { batchNumber: batch };
     } else {
-        var uid = $('#uidInput').val().trim();
-        if (!uid) { showToast('UID اجباری است', 'error'); return; }
-        if (uid.length < 20) { showToast('UID وارد شده معتبر نمی‌باشد', 'error'); return; }
-        if (_searchedKeys.has('uid:' + uid)) {
+        currentUid = $('#uidInput').val().trim();
+        if (!currentUid) { showToast('UID اجباری است', 'error'); return; }
+        if (currentUid.length < 20) { showToast('UID وارد شده معتبر نمی‌باشد', 'error'); return; }
+        if (_searchedKeys.has('uid:' + currentUid)) {
             showToast('این UID قبلاً جستجو شده است', 'warning');
             return;
         }
         url = searchByUidUrl;
-        data = { uid: uid };
+        data = { uid: currentUid };
     }
 
     _setFormLocked(true, 'search');
 
-    // اگه نتیجه قبلی داریم، skeleton رو append کن نه جایگزین
     if (_searchResults.length > 0) {
         $('#resultsTbody').append(
             '<tr id="du-loading-row"><td colspan="10" style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">' +
@@ -125,33 +124,37 @@ function doSearch() {
         url: url, type: 'POST', data: data,
         success: function (res) {
             _setFormLocked(false, 'search');
+
             if (!res.success) {
                 showNotFound(res.message);
-                // skeleton رو پاک کن — اگه نتیجه قبلی داریم برگردان، وگرنه empty
                 if (_searchResults.length > 0) renderResults();
                 else resetResults();
                 return;
             }
 
             // ثبت کلید جستجوشده
-            var mode = $('#btnBatch').hasClass('active') ? 'batch' : 'uid';
             var keyVal = mode === 'batch'
                 ? 'batch:' + $('#batchInput').val().trim()
-                : 'uid:' + $('#uidInput').val().trim();
+                : 'uid:' + currentUid;
             _searchedKeys.add(keyVal);
 
-            // اضافه کردن نتایج جدید به لیست انباشته
+            // اضافه کردن نتایج جدید
             $.each(res.data, function (_, item) {
-                // جلوگیری از تکراری بودن بر اساس pkOrderInfo
+                item.searchedUid = currentUid; // در batch mode این null می‌مونه
+
                 var exists = _searchResults.some(function (r) {
-                    return r.pkOrderInfo === item.pkOrderInfo;
+                    return mode === 'batch'
+                        ? r.pkOrderInfo === item.pkOrderInfo
+                        : r.searchedUid === item.searchedUid;
                 });
+
                 if (!exists) _searchResults.push(item);
             });
 
             // پاک کردن input بعد از جستجوی موفق
-            if (mode === 'batch') $('#batchInput').val('');
-            else {
+            if (mode === 'batch') {
+                $('#batchInput').val('');
+            } else {
                 $('#uidInput').val('');
                 $('#uidBar').css({ width: '0%', background: '#3b82f6' });
                 $('#uidCounter').text('0 / 20');
@@ -162,7 +165,6 @@ function doSearch() {
         error: function () {
             _setFormLocked(false, 'search');
             showToast('خطا در ارتباط با سرور', 'error');
-            // skeleton رو پاک کن — اگه نتیجه قبلی داریم برگردان، وگرنه empty
             if (_searchResults.length > 0) renderResults();
             else resetResults();
         }
@@ -196,7 +198,7 @@ function renderResults() {
             '<td>' +
             '<div class="datepicker-wrap">' +
             '<input type="text" class="f-control datepicker-input du-destroy-date" data-idx="' + i + '"' +
-            ' value="' + (todayShamsi || '') + '" placeholder="1404/01/01" autocomplete="off" />' +
+            ' value="" placeholder="' + (todayShamsi || '1404/01/01') + '" autocomplete="off" />' +
             '<i class="fa fa-calendar datepicker-ico"></i>' +
             '</div>' +
             '</td>' +
@@ -211,14 +213,29 @@ function renderResults() {
     $('#resultsTbody').html(html);
 
     $('#resultsTbody .datepicker-input').each(function () {
-        DatePicker.attach($(this));
+        var $inp = $(this);
+        DatePicker.attach($inp);
+        if ($inp.val()) $inp.addClass('has-value');
+        $inp.on('change', function () {
+            $(this).toggleClass('has-value', !!$(this).val());
+        });
     });
 
     if (_searchResults.length > 0) $('#submitBtn').show();
 }
 
 function removeRow(idx) {
+    // کلید جستجو رو هم پاک کن تا بتونه دوباره سرچ کنه
+    var removed = _searchResults[idx];
+    if (removed) {
+        var key = removed.searchedUid
+            ? 'uid:' + removed.searchedUid
+            : 'batch:' + removed.batchNumber;
+        _searchedKeys.delete(key);
+    }
+
     _searchResults.splice(idx, 1);
+
     if (_searchResults.length === 0) {
         resetResults();
     } else {
@@ -231,7 +248,6 @@ function removeRow(idx) {
    ══════════════════════════════════════════════ */
 function showNotFound(msg) {
     showToast(msg || 'اطلاعاتی یافت نشد', 'error');
-    // نتایج قبلی حفظ می‌شن
     if (_searchResults.length === 0) {
         $('#submitBtn').hide();
         $('#resultsTbody').html(
@@ -256,7 +272,7 @@ function resetResults() {
 }
 
 /* ══════════════════════════════════════════════
-   ثبت امحا — SSE + ProgressBar component
+   ثبت امحا — SSE + ProgressBar
    ══════════════════════════════════════════════ */
 function submitDestroy() {
     var payload = [];
@@ -269,6 +285,7 @@ function submitDestroy() {
         if (!reason || !date) { valid = false; return false; }
         payload.push({
             pkOrderInfo: _searchResults[i].pkOrderInfo,
+            searchedUid: _searchResults[i].searchedUid || null,
             destroyReasonId: parseInt(reason),
             destroyDate: date
         });
@@ -289,7 +306,6 @@ function submitDestroy() {
         '</span>'
     );
 
-    // ── ساخت progress bar ─────────────────────────────────────────────
     var pb = ProgressBar.create('#submitProgressWrap', {
         label: 'در حال ثبت امحا...',
         showCount: true,
@@ -298,9 +314,6 @@ function submitDestroy() {
     });
     pb.start(totalUids);
 
-    // ── ارسال JSON از طریق fetch + EventSource ─────────────────────────
-    // چون EventSource فقط GET داره، داده رو با fetch POST می‌فرستیم
-    // و سرور SSE برمی‌گردونه
     fetch(submitDestroyProgressUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -316,7 +329,7 @@ function submitDestroy() {
 
                 buffer += decoder.decode(chunk.value, { stream: true });
                 var lines = buffer.split('\n');
-                buffer = lines.pop(); // آخری ممکنه ناقص باشه
+                buffer = lines.pop();
 
                 var eventName = 'message';
                 lines.forEach(function (line) {
@@ -367,3 +380,10 @@ function _handleSSEEvent(eventName, data, pb, $btn, totalUids) {
         _resetSubmitBtn($btn);
     }
 }
+
+$popup.find('.cal-day:not(.empty)').on('click', function () {
+    var d = $(this).data('d');
+    $input.val(cy + '/' + pad(cm) + '/' + pad(d)).trigger('change');
+    $input.addClass('has-value');  // ← اضافه کن
+    closePicker();
+});

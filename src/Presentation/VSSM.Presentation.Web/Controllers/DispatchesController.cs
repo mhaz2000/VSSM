@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using VSSM.Application.Common.Helpers;
-using VSSM.Application.DTOs.BaseEntities;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Domain.Enums;
+using VSSM.Presentation.Web.Const;
+using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
@@ -13,11 +12,11 @@ public class DispatchesController(
     IStoreService storeService,
     IRecipientService recipientService,
     IDispatchService dispatchService,
-    IItemClassService itemClassService) : BaseController
+    IBaseInfoService baseInfoService) : BaseController
 {
 
     [HttpGet]
-    public async Task<IActionResult> GetItemsByClass(int classId, CancellationToken ct)
+    public async Task<IActionResult> GetItemsByClassAsync(int classId, CancellationToken ct)
     {
         var items = await dispatchService.GetItemsByClassAsync(classId, ct);
         return Json(items.Select(i => new { i.ItemId, i.FullName }));
@@ -40,26 +39,28 @@ public class DispatchesController(
         createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
         createDispatcheDto.EnteredById = CurrentUserId.Value;
 
-        // بند ۴: بررسی quantity > 0 در سمت سرور (دفاعی)
         if (createDispatcheDto.Items.Any(i => i.DoseCount <= 0))
         {
             TempData["ToastMessage"] = "برای کلیه کالاهای ارسالی تعداد را مشخص نمایید";
             TempData["ToastType"] = "error";
-            await PopulateViewBagData(cancellationToken);
+            await PopulateLookupViewBagsAsync(cancellationToken);
             return View(createDispatcheDto);
         }
 
-        var result = await dispatchService.CreateDispatchAsync(
+
+
+        var (dispatchId, seqPreview) = await dispatchService.CreateDispatchAsync(
             createDispatcheDto, submitType, cancellationToken);
 
-        await dispatchService.DecrementStockOnFinalAsync(
-            createDispatcheDto.Items, cancellationToken);
-
         if (submitType == "final")
-            await dispatchService.LinkUidsToDispatchUidAsync((int)result, cancellationToken);
+        {
+            await dispatchService.DecrementStockOnFinalAsync(createDispatcheDto.Items, cancellationToken);
+            await dispatchService.LinkUidsToDispatchUidAsync(dispatchId, cancellationToken);
+        }
 
-        TempData["ToastMessage"] = $"پیش فاکتور با شماره {result} با موفقیت ثبت شد.";
+        TempData["ToastMessage"] = $"پیش فاکتور با شماره {seqPreview} با موفقیت ثبت شد.";
         TempData["ToastType"] = "success";
+
 
         return RedirectToAction(nameof(Index));
     }
@@ -118,7 +119,7 @@ public class DispatchesController(
                     DynamicSkip = item =>
                     {
                         var row = (DispatchListDto)item;
-                  
+
                         return (row.IsConfirmed.HasValue && row.IsConfirmed.Value).ToString();
                     }
 
@@ -210,7 +211,7 @@ public class DispatchesController(
     public async Task<IActionResult> New(CancellationToken cancellationToken)
     {
 
-        await PopulateViewBagData(cancellationToken);
+        await PopulateLookupViewBagsAsync(cancellationToken);
 
         return View();
     }
@@ -236,7 +237,7 @@ public class DispatchesController(
         if (dispatch == null)
             return NotFound();
 
-        await PopulateViewBagData(cancellationToken);
+        await PopulateLookupViewBagsAsync(cancellationToken);
 
         return View(dispatch);
     }
@@ -262,11 +263,11 @@ public class DispatchesController(
         }
         catch (ApplicationException ex)
         {
-            await PopulateViewBagData(cancellationToken);
+            await PopulateLookupViewBagsAsync(cancellationToken);
 
             ViewBag.ErrorMessage = ex.Message;
 
-            await PopulateViewBagData(cancellationToken);
+            await PopulateLookupViewBagsAsync(cancellationToken);
 
             return View("Edit", updateDispatcheDto);
         }
@@ -281,29 +282,33 @@ public class DispatchesController(
         return Ok(new { Success = response.isSuccess, Message = response.message, Count = response.count, RowId = response.itemId });
     }
 
-
-    private async Task PopulateViewBagData(CancellationToken cancellationToken)
+    [HttpPost("ValidateUid")]
+    public async Task<IActionResult> ValidateUid(int itemDetailStoreId, string uid)
     {
-        ViewBag.TransportModes = Enum.GetValues(typeof(TransportMode))
-            .Cast<TransportMode>()
-            .Select(mode => new EnumListDto
-            {
-                Name = mode.ToString(),
-                Description = EnumHelper.GetEnumDescription(mode),
-                Value = (int)mode
-            }).ToList();
-
-        ViewBag.ReceivingModes = Enum.GetValues(typeof(ReceivingMode))
-            .Cast<ReceivingMode>()
-            .Select(mode => new EnumListDto
-            {
-                Name = mode.ToString(),
-                Description = EnumHelper.GetEnumDescription(mode),
-                Value = (int)mode
-            }).ToList();
-
-        ViewBag.Recipients = await recipientService.GetActiveRecipients(cancellationToken);
-        ViewBag.ItemClasses = await itemClassService.GetActives(cancellationToken);
-        ViewBag.VVMStages = await vvmstageService.GetByParentIdAsync(30,cancellationToken);
+        var result = await dispatchService.ValidateUidAsync(itemDetailStoreId, uid);
+        return Ok(new { isSuccess = result.isSuccess, message = result.message });
     }
+
+    private async Task PopulateLookupViewBagsAsync(CancellationToken ct)
+    {
+        ViewBag.TransportModes =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.TransportModes, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.ReceivingMethods =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ReceivingModes, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.ItemTypes =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClasses, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.VvmStages =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.VvmStages, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.Recipients = await recipientService.GetActiveRecipients(ct);
+    }
+
+
 }

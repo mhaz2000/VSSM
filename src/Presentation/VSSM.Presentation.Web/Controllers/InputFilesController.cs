@@ -124,7 +124,8 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString())
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() || 
+                                (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
                                 return "تایید نهایی";
 
                             return string.Empty;
@@ -138,7 +139,8 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString())
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() ||
+                                (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
                                 return "color: green;";
 
                             return string.Empty;
@@ -147,14 +149,11 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
                         {
                             var row = (OrderInfoDto)item;
 
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString())
+                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() ||
+                                (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
                                 return "fa fa-check";
 
                             return string.Empty;
-                        },
-                        DynamicSkip = _ =>
-                        {
-                            return (!(CurrentUserRoleId.HasValue && CurrentUserRoleId == 1)).ToString();
                         }
                     }
                 }

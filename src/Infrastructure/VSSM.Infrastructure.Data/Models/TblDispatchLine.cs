@@ -21,12 +21,6 @@ public partial class TblDispatchLine
 
     public int? StoreId { get; set; }
 
-    public int? UseId { get; set; }
-
-    public int? VvmtypeId { get; set; }
-
-    public int? VvmstageId { get; set; }
-
     public int? ManufacturerId { get; set; }
 
     public int? ItemDetailStoreId { get; set; }
@@ -55,9 +49,10 @@ public partial class TblDispatchLine
 
     public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
 
-    public virtual TblUse Use { get; set; }
-
-    public virtual TblBaseInfo Vvmstage { get; set; }
-
-    public virtual TblBaseInfo Vvmtype { get; set; }
+    public int? FkUseBaseInfo { get; set; }
+    public int? FkVvmTypeBaseInfo { get; set; }
+    public int? FkVvmStageBaseInfo { get; set; }
+    public virtual TblBaseInfo UseBaseInfo { get; set; }
+    public virtual TblBaseInfo VvmTypeBaseInfo { get; set; }
+    public virtual TblBaseInfo VvmStageBaseInfo { get; set; }
 }

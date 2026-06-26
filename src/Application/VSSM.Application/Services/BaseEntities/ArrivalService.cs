@@ -204,7 +204,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
                 DosePerVialId = line.DosePerVialId,
                 ManufacturerId = line.ManufacturerId,
                 CommercialNameId = line.CommertialNameId,
-                VvmtypeId = line.VvmtypeId,
+                VvmTypeId = line.VvmtypeId,
                 BatchNumber = line.BatchNum,
                 ExpiryDate = line.ExpiryDate,
                 ProductionDate = line.ProductionDate,
@@ -327,7 +327,7 @@ ADD LINE (INCREMENTAL)
 ========================= */
     public async Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token)
     {
-        var does = db.TblDosePerVials.First(z => z.DosePerVialId == dto.DosePerVialId).NumDosePerVial;
+        var does = int.Parse(db.TblBaseInfo.First(z => z.BaseInfoId == dto.DosePerVialId).Title);
         if (dto.Quantity % does != 0)
             throw new ValidationException("تعداد باید مضربی از دوز بر ویال باشد");
         //var id = _db.TblArrivalLines.OrderByDescending(z => z.ArrivalLineId).First().ArrivalLineId + 1;
@@ -370,9 +370,9 @@ ADD LINE (INCREMENTAL)
             {
                 Line = l,
                 Item = db.TblItems.FirstOrDefault(i => i.ItemId == l.ItemId),
-                Manufacturer = db.TblManufacturers.FirstOrDefault(m => m.ManufacturerId == l.ManufacturerId),
+                Manufacturer = db.TblBaseInfo.FirstOrDefault(m => m.BaseInfoId == l.ManufacturerId),
                 Store = db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
-                DoseVial = db.TblDosePerVials.FirstOrDefault(d => d.DosePerVialId == l.DosePerVialId)
+                DoseVial = db.TblBaseInfo.FirstOrDefault(d => d.BaseInfoId == l.DosePerVialId)
             })
             .AsNoTracking()
             .ToListAsync();
@@ -403,11 +403,11 @@ ADD LINE (INCREMENTAL)
                 DropDownText = string.Format(
                     "کالا: {0} | سازنده: {1} | تاریخ انقضا: {2} | سری ساخت: {3} | انبار: {4} | دوز بر ویال: {5} | مقدار موجود: {6}",
                     x.Item != null ? x.Item.FullName : "",
-                    x.Manufacturer != null ? x.Manufacturer.FullName : "",
+                    x.Manufacturer != null ? x.Manufacturer.Title : "",
                     l.ExpiryDate != null ? l.ExpiryDate.Value.ToShamsi() : "",
                     l.BatchNum,
                     x.Store != null ? x.Store.Name : "",
-                    x.DoseVial != null ? x.DoseVial.NumDosePerVial : "",
+                    x.DoseVial != null ? x.DoseVial.Title : "",
                     l.Quantity
                 )
             };

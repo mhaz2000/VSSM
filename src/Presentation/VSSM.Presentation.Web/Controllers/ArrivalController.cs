@@ -14,8 +14,7 @@ public class ArrivalController(
     IFiscalPeriodService fiscalService,
     IItemService itemService,
     IStoreService storeService,
-    IDosePerVialService dosePerVialService,
-    ICommercialNameService commercialNameService,
+    IBaseInfoService commercialNameService,
     IBaseInfoService baseInfoService,
     IItemClassService itemClassService,
     IOrderInfoService orderInfoService,
@@ -527,7 +526,7 @@ public class ArrivalController(
     [HttpGet]
     public async Task<IActionResult> GetDosePerVialsByItem(int itemId, CancellationToken token)
     {
-        var list = (await dosePerVialService.GetActivesByItemId(token, itemId))
+        var list = (await itemService.GetItemDoesPerVialsAsync(itemId,token))
             .OrderBy(z => z.NumDosePerVial)
             .Select(x => new { value = x.DosePerVialId, text = x.NumDosePerVial.ToString() });
         return Json(list);
@@ -579,11 +578,11 @@ public class ArrivalController(
         ArrivalId = l.ArrivalId,
         BatchNum = l.BatchNum,
         CommertialNameId = l.CommertialNameId,
-        CommertialName = commercialNameService.GetActives(token).Result
-                               .FirstOrDefault(z => z.CommercialNameId == l.CommertialNameId)?.FullName,
+        CommertialName = commercialNameService.GetByParentIdAsync(35, token).Result
+                               .FirstOrDefault(z => z.Id == l.CommertialNameId)?.Title,
         ItemName = itemService.GetActives(token).Result
                                .FirstOrDefault(z => z.ItemId == l.ItemId)?.FullName,
-        DoseName = dosePerVialService.GetActivesByItemId(token, l.ItemId ?? 0).Result
+        DoseName = itemService.GetItemDoesPerVialsAsync(l.ItemId ?? 0, token).Result
                    .FirstOrDefault(z => z.DosePerVialId == l.DosePerVialId)?.NumDosePerVial.ToString(),
         DosePerVialId = l.DosePerVialId,
         ExpiryDate = l.ExpiryDate,

@@ -47,8 +47,6 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; }
 
-    public virtual DbSet<TblAdjustreason> TblAdjustreasons { get; set; }
-
     public virtual DbSet<TblArrival> TblArrivals { get; set; }
 
     public virtual DbSet<TblArrivalLine> TblArrivalLines { get; set; }
@@ -61,8 +59,6 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblBundleDetail> TblBundleDetails { get; set; }
 
-    public virtual DbSet<TblCommercialName> TblCommercialNames { get; set; }
-
     public virtual DbSet<TblCountryCode> TblCountryCodes { get; set; }
 
     public virtual DbSet<TblCulture> TblCultures { get; set; }
@@ -74,8 +70,6 @@ public partial class VSSMDbContext : DbContext
     public virtual DbSet<TblDispatchPack> TblDispatchPacks { get; set; }
 
     public virtual DbSet<TblDispatchRepConfig> TblDispatchRepConfigs { get; set; }
-
-    public virtual DbSet<TblDosePerVial> TblDosePerVials { get; set; }
 
     public virtual DbSet<TblFiscalPeriod> TblFiscalPeriods { get; set; }
 
@@ -98,8 +92,6 @@ public partial class VSSMDbContext : DbContext
     public virtual DbSet<TblLevel> TblLevels { get; set; }
 
     public virtual DbSet<TblManItemClass> TblManItemClasses { get; set; }
-
-    public virtual DbSet<TblManufacturer> TblManufacturers { get; set; }
 
     public virtual DbSet<TblMessage> TblMessages { get; set; }
 
@@ -177,9 +169,6 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblVoucherConfig> TblVoucherConfigs { get; set; }
 
-    public virtual DbSet<TblVvmstage> TblVvmstages { get; set; }
-
-    public virtual DbSet<TblVvmtype> TblVvmtypes { get; set; }
 
     public virtual DbSet<UserSync> UserSyncs { get; set; }
 
@@ -407,9 +396,9 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.FiscalPeriodId).HasColumnName("FiscalPeriodID");
             entity.Property(e => e.ItemDetailStoreId).HasColumnName("ItemDetailStoreID");
 
-            entity.HasOne(d => d.Adjustmentreason).WithMany(p => p.TblAdjustments)
+            entity.HasOne(d => d.Adjustmentreason).WithMany()
                 .HasForeignKey(d => d.AdjustmentreasonId)
-                .HasConstraintName("FK_tblAdjustments_tblAdjustreasons");
+                .HasConstraintName("FK_tblAdjustments_tblBaseInfo_adjustmentreason");
 
             entity.HasOne(d => d.ArrivalLine).WithMany(p => p.TblAdjustments)
                 .HasForeignKey(d => d.ArrivalLineId)
@@ -481,22 +470,22 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.VvmstageId).HasColumnName("VVMStageID");
             entity.Property(e => e.VvmtypeId).HasColumnName("VVMTypeID");
 
-            entity.HasOne(d => d.Adjustreason).WithMany(p => p.TblAdjustmentArrivalLines)
+            entity.HasOne(d => d.Adjustreason).WithMany()
                 .HasForeignKey(d => d.AdjustreasonId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblAdjustreasons");
+                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_adjustmentreason");
 
             entity.HasOne(d => d.Arrival).WithMany(p => p.TblAdjustmentArrivalLines)
                 .HasForeignKey(d => d.ArrivalId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_tblAdjustmentArrivalLines_tblArrivals");
 
-            entity.HasOne(d => d.CommertialName).WithMany(p => p.TblAdjustmentArrivalLines)
+            entity.HasOne(d => d.CommertialName).WithMany()
                 .HasForeignKey(d => d.CommertialNameId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblCommercialNames");
+                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_commercialNames");
 
-            entity.HasOne(d => d.DosePerVial).WithMany(p => p.TblAdjustmentArrivalLines)
+            entity.HasOne(d => d.DosePerVial).WithMany()
                 .HasForeignKey(d => d.DosePerVialId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblDosePerVials");
+                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_dosePerVials");
 
             entity.HasOne(d => d.ItemDetail).WithMany(p => p.TblAdjustmentArrivalLines)
                 .HasForeignKey(d => d.ItemDetailId)
@@ -506,9 +495,9 @@ public partial class VSSMDbContext : DbContext
                 .HasForeignKey(d => d.ItemId)
                 .HasConstraintName("FK_tblAdjustmentArrivalLines_tblItems");
 
-            entity.HasOne(d => d.Manufacturer).WithMany(p => p.TblAdjustmentArrivalLines)
+            entity.HasOne(d => d.Manufacturer).WithMany()
                 .HasForeignKey(d => d.ManufacturerId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblManufacturers");
+                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_manufacturers");
 
             entity.HasOne(d => d.Store).WithMany(p => p.TblAdjustmentArrivalLines)
                 .HasForeignKey(d => d.StoreId)
@@ -518,28 +507,13 @@ public partial class VSSMDbContext : DbContext
                 .HasForeignKey(d => d.UseId)
                 .HasConstraintName("FK_tblAdjustmentArrivalLines_tblUses");
 
-            entity.HasOne(d => d.Vvmstage).WithMany(p => p.TblAdjustmentArrivalLines)
+            entity.HasOne(d => d.Vvmstage).WithMany()
                 .HasForeignKey(d => d.VvmstageId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblVVMStages");
+                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_VVMStages");
 
-            entity.HasOne(d => d.Vvmtype).WithMany(p => p.TblAdjustmentArrivalLines)
+            entity.HasOne(d => d.Vvmtype).WithMany()
                 .HasForeignKey(d => d.VvmtypeId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblVVMTypes");
-        });
-
-        modelBuilder.Entity<TblAdjustreason>(entity =>
-        {
-            entity.HasKey(e => e.AdjustreasonId);
-
-            entity.ToTable("tblAdjustreasons");
-
-            entity.Property(e => e.AdjustreasonId).HasColumnName("AdjustreasonID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasAnnotation("Relational:DefaultConstraintName", "DF_tblAdjustreasons_EntryDate")
-                .HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
+                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_VVMTypes");
         });
 
         modelBuilder.Entity<TblArrival>(entity =>
@@ -705,18 +679,6 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblBundleDetails_tblBundles");
         });
 
-        modelBuilder.Entity<TblCommercialName>(entity =>
-        {
-            entity.HasKey(e => e.CommercialNameId);
-
-            entity.ToTable("tblCommercialNames");
-
-            entity.Property(e => e.CommercialNameId).HasColumnName("CommercialNameID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
-        });
-
         modelBuilder.Entity<TblCountryCode>(entity =>
         {
             entity
@@ -824,9 +786,9 @@ public partial class VSSMDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_tblDispatchLines_tblDispatches");
 
-            entity.HasOne(d => d.DosePerVial).WithMany(p => p.TblDispatchLines)
+            entity.HasOne(d => d.DosePerVial).WithMany()
                 .HasForeignKey(d => d.DosePerVialId)
-                .HasConstraintName("FK_tblDispatchLines_tblDosePerVials");
+                .HasConstraintName("FK_tblDispatchLines_tblBaseInfo_dosePerVials");
 
             entity.HasOne(d => d.ItemDetailStore).WithMany(p => p.TblDispatchLines)
                 .HasForeignKey(d => d.ItemDetailStoreId)
@@ -836,9 +798,9 @@ public partial class VSSMDbContext : DbContext
                 .HasForeignKey(d => d.ItemId)
                 .HasConstraintName("FK_tblDispatchLines_tblItems");
 
-            entity.HasOne(d => d.Manufacturer).WithMany(p => p.TblDispatchLines)
+            entity.HasOne(d => d.Manufacturer).WithMany()
                 .HasForeignKey(d => d.ManufacturerId)
-                .HasConstraintName("FK_tblDispatchLines_tblManufacturers");
+                .HasConstraintName("FK_tblDispatchLines_tblBaseInfo_manufacturers");
 
             entity.HasOne(d => d.Store).WithMany(p => p.TblDispatchLines)
                 .HasForeignKey(d => d.StoreId)
@@ -848,13 +810,13 @@ public partial class VSSMDbContext : DbContext
                 .HasForeignKey(d => d.UseId)
                 .HasConstraintName("FK_tblDispatchLines_tblUses");
 
-            entity.HasOne(d => d.Vvmstage).WithMany(p => p.TblDispatchLines)
+            entity.HasOne(d => d.Vvmstage).WithMany()
                 .HasForeignKey(d => d.VvmstageId)
-                .HasConstraintName("FK_tblDispatchLines_tblVVMStages");
+                .HasConstraintName("FK_tblDispatchLines_tblBaseInfo_VVMStages");
 
-            entity.HasOne(d => d.Vvmtype).WithMany(p => p.TblDispatchLines)
+            entity.HasOne(d => d.Vvmtype).WithMany()
                 .HasForeignKey(d => d.VvmtypeId)
-                .HasConstraintName("FK_tblDispatchLines_tblVVMTypes");
+                .HasConstraintName("FK_tblDispatchLines_tblBaseInfo_VVMTypes");
         });
 
         modelBuilder.Entity<TblDispatchPack>(entity =>
@@ -889,16 +851,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.RequestNumber).HasColumnName("requestNumber");
             entity.Property(e => e.Store).HasColumnName("store");
             entity.Property(e => e.VoucherNumber).HasColumnName("voucherNumber");
-        });
-
-        modelBuilder.Entity<TblDosePerVial>(entity =>
-        {
-            entity.HasKey(e => e.DosePerVialId);
-
-            entity.ToTable("tblDosePerVials");
-
-            entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<TblFiscalPeriod>(entity =>
@@ -1026,13 +978,12 @@ public partial class VSSMDbContext : DbContext
 
             entity.ToTable("tblItemDetails");
 
-            entity.Property(e => e.FkCommercialNameId).HasColumnName("CommercialNameID");
-entity.Property(e => e.FkVvmTypeId).HasColumnName("VVMTypeID");
-entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
+            entity.Property(e => e.CommercialNameId).HasColumnName("CommercialNameID");
+            entity.Property(e => e.VvmTypeId).HasColumnName("VVMTypeID");
+            entity.Property(e => e.ManufacturerId).HasColumnName("ManufacturerID");
 
             entity.Property(e => e.ItemDetailId).HasColumnName("ItemDetailID");
             entity.Property(e => e.BatchNumber).HasMaxLength(50);
-            entity.Property(e => e.CommercialNameId).HasColumnName("CommercialNameID");
             entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.ExpiryDate).HasColumnType("datetime");
@@ -1043,15 +994,14 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.ItemId).HasColumnName("ItemID");
             entity.Property(e => e.ManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.ProductionDate).HasColumnType("datetime");
-            entity.Property(e => e.VvmtypeId).HasColumnName("VVMTypeID");
 
-            entity.HasOne(d => d.CommercialName).WithMany(p => p.TblItemDetails)
+            entity.HasOne(d => d.CommercialName).WithMany()
                 .HasForeignKey(d => d.CommercialNameId)
-                .HasConstraintName("FK_tblItemDetails_tblCommercialNames");
+                .HasConstraintName("FK_tblItemDetails_tblBaseInfo_commercialNames");
 
-            entity.HasOne(d => d.DosePerVial).WithMany(p => p.TblItemDetails)
+            entity.HasOne(d => d.DosePerVial).WithMany()
                 .HasForeignKey(d => d.DosePerVialId)
-                .HasConstraintName("FK_tblItemDetails_tblDosePerVials");
+                .HasConstraintName("FK_tblItemDetails_tblBaseInfo_dosePerVials");
 
             entity.HasOne(d => d.FiscalPeriod).WithMany(p => p.TblItemDetails)
                 .HasForeignKey(d => d.FiscalPeriodId)
@@ -1061,32 +1011,13 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
                 .HasForeignKey(d => d.ItemId)
                 .HasConstraintName("FK_tblItemDetails_tblItems");
 
-            entity.HasOne(d => d.Manufacturer).WithMany(p => p.TblItemDetails)
+            entity.HasOne(d => d.Manufacturer).WithMany()
                 .HasForeignKey(d => d.ManufacturerId)
-                .HasConstraintName("FK_tblItemDetails_tblManufacturers");
+                .HasConstraintName("FK_tblItemDetails_tblBaseInfo_manufacturers");
 
-            entity.HasOne(d => d.Vvmtype).WithMany(p => p.TblItemDetails)
-                .HasForeignKey(d => d.VvmtypeId)
-                .HasConstraintName("FK_tblItemDetails_tblVVMTypes");
-
-            entity.Property(e => e.FkCommercialNameId).HasColumnName("FK_COMMERCIAL_NAME_ID");
-            entity.Property(e => e.FkVvmTypeId).HasColumnName("FK_VVM_TYPE_ID");
-            entity.Property(e => e.FkManufacturerId).HasColumnName("FK_MANUFACTURER_ID");
-
-            entity.HasOne(d => d.FkCommercialName)
-                .WithMany()
-                .HasForeignKey(d => d.FkCommercialNameId)
-                .HasConstraintName("FK_ITEM_DETAIL_COMMERCIAL_NAME");
-
-            entity.HasOne(d => d.FkVvmType)
-                .WithMany()
-                .HasForeignKey(d => d.FkVvmTypeId)
-                .HasConstraintName("FK_ITEM_DETAIL_VVM_TYPE");
-
-            entity.HasOne(d => d.FkManufacturer)
-                .WithMany()
-                .HasForeignKey(d => d.FkManufacturerId)
-                .HasConstraintName("FK_ITEM_DETAIL_MANUFACTURER");
+            entity.HasOne(d => d.Vvmtype).WithMany()
+                .HasForeignKey(d => d.VvmTypeId)
+                .HasConstraintName("FK_tblItemDetails_tblBaseInfo_VVMTypes");
         });
 
 
@@ -1131,9 +1062,9 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.ItemId).HasColumnName("ItemID");
 
-            entity.HasOne(d => d.Dose).WithMany(p => p.TblItemDoseAssignments)
+            entity.HasOne(d => d.Dose).WithMany()
                 .HasForeignKey(d => d.DoseId)
-                .HasConstraintName("FK_tblItemDoseAssignments_tblDosePerVials");
+                .HasConstraintName("FK_tblItemDoseAssignments_tblBaseInfo_dosePerVials");
 
             entity.HasOne(d => d.Item).WithMany(p => p.TblItemDoseAssignments)
                 .HasForeignKey(d => d.ItemId)
@@ -1240,21 +1171,9 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
                 .HasForeignKey(d => d.ItemClassId)
                 .HasConstraintName("FK_tblManItemClass_tblItemsClass");
 
-            entity.HasOne(d => d.Manufacturer).WithMany(p => p.TblManItemClasses)
+            entity.HasOne(d => d.Manufacturer).WithMany()
                 .HasForeignKey(d => d.ManufacturerId)
-                .HasConstraintName("FK_tblManItemClass_tblManufacturers");
-        });
-
-        modelBuilder.Entity<TblManufacturer>(entity =>
-        {
-            entity.HasKey(e => e.ManufacturerId);
-
-            entity.ToTable("tblManufacturers");
-
-            entity.Property(e => e.ManufacturerId).HasColumnName("ManufacturerID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
+                .HasConstraintName("FK_tblManItemClass_tblBaseInfo_manufacturers");
         });
 
         modelBuilder.Entity<TblMessage>(entity =>
@@ -1589,9 +1508,9 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.RequestId).HasColumnName("RequestID");
             entity.Property(e => e.Usedcount).HasColumnName("usedcount");
 
-            entity.HasOne(d => d.DosePerVial).WithMany(p => p.TblRequestLines)
+            entity.HasOne(d => d.DosePerVial).WithMany()
                 .HasForeignKey(d => d.DosePerVialId)
-                .HasConstraintName("FK_tblRequestLine_tblDosePerVials");
+                .HasConstraintName("FK_tblRequestLine_tblBaseInfo_dosePerVials");
 
             entity.HasOne(d => d.Item).WithMany(p => p.TblRequestLines)
                 .HasForeignKey(d => d.ItemId)
@@ -1938,30 +1857,6 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.Property(e => e.SignPlaceHolder4).HasMaxLength(200);
         });
 
-        modelBuilder.Entity<TblVvmstage>(entity =>
-        {
-            entity.HasKey(e => e.VvmstageId);
-
-            entity.ToTable("tblVVMStages");
-
-            entity.Property(e => e.VvmstageId).HasColumnName("VVMStageID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
-        });
-
-        modelBuilder.Entity<TblVvmtype>(entity =>
-        {
-            entity.HasKey(e => e.VvmtypeId);
-
-            entity.ToTable("tblVVMTypes");
-
-            entity.Property(e => e.VvmtypeId).HasColumnName("VVMTypeID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
-        });
-
         modelBuilder.Entity<UserSync>(entity =>
         {
             entity
@@ -2073,7 +1968,7 @@ entity.Property(e => e.FkManufacturerId).HasColumnName("ManufacturerID");
             entity.HasOne(d => d.DosePerVial)
                 .WithMany()
                 .HasForeignKey(d => d.FkDosePerVialId)
-                .HasConstraintName("FK_tblOrderInfo_DosePerVial");
+                .HasConstraintName("FK_tblOrderInfo_tblBaseInfo_dosePerVial");
 
 
             entity.HasOne(d => d.Arrival)

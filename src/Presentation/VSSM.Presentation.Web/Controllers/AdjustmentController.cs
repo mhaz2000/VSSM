@@ -14,11 +14,11 @@ public class AdjustmentController : BaseController
     private readonly IItemClassService _itemClassService;
     private readonly IItemService _itemService;
     private readonly IArrivalService _arrivalService;
-    private readonly IAdjustReasonService _adjustReasonService;
+    private readonly IBaseInfoService _adjustReasonService;
     private readonly IItemDetailStoreService _detailStoreService;
 
     public AdjustmentController(IAdjustmentService adjustmentService, IItemClassService itemClassService,
-        IItemService itemService, IArrivalService arrivalService, IAdjustReasonService adjustReasonService, IItemDetailStoreService detailStoreService)
+        IItemService itemService, IArrivalService arrivalService, IBaseInfoService adjustReasonService, IItemDetailStoreService detailStoreService)
     {
         _adjustmentService = adjustmentService;
         _itemClassService = itemClassService;
@@ -102,7 +102,7 @@ public class AdjustmentController : BaseController
         ViewBag.ItemGroups = itemList;
         var itemDetailStores = await _detailStoreService.GetActives(CurrentUserRecipientId.Value);
         ViewBag.ItemDetailStores = itemDetailStores;
-        var adjustReasons = await _adjustReasonService.GetActives(cancellationToken);
+        var adjustReasons = await _adjustReasonService.GetByParentIdAsync(37 ,cancellationToken);
         ViewBag.AdjustReasons = adjustReasons;
     }
 

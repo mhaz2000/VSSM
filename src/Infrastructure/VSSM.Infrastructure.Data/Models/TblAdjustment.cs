@@ -31,7 +31,7 @@ public partial class TblAdjustment
 
     public string Note { get; set; }
 
-    public virtual TblAdjustreason Adjustmentreason { get; set; }
+    public virtual TblBaseInfo Adjustmentreason { get; set; }
 
     public virtual TblArrivalLine ArrivalLine { get; set; }
 

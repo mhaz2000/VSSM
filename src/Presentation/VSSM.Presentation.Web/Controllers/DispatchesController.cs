@@ -3,22 +3,15 @@ using VSSM.Application.Common.Helpers;
 using VSSM.Application.DTOs.BaseEntities;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
 using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
 
 public class DispatchesController(
-    IManufacturerService manufacturerService,
-    IVvmstageService vvmstageService,
-    IVvmtypeService vvmtypeService,
-    IUseService useService,
+    IBaseInfoService vvmstageService,
     IStoreService storeService,
     IRecipientService recipientService,
-    IFiscalPeriodService fiscalPeriodService,
-    IDosePerVialService dosePerVialService,
-    IItemService itemService,
     IDispatchService dispatchService,
     IItemClassService itemClassService) : BaseController
 {
@@ -311,6 +304,6 @@ public class DispatchesController(
 
         ViewBag.Recipients = await recipientService.GetActiveRecipients(cancellationToken);
         ViewBag.ItemClasses = await itemClassService.GetActives(cancellationToken);
-        ViewBag.VVMStages = await vvmstageService.GetActives(cancellationToken);
+        ViewBag.VVMStages = await vvmstageService.GetByParentIdAsync(30,cancellationToken);
     }
 }

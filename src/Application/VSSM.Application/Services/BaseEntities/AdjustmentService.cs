@@ -95,8 +95,8 @@ public class AdjustmentService : IAdjustmentService
             .ToListAsync(cancellationToken);
 
         var adjustreasonsId = adjustments.Select(c => c.AdjustmentreasonId);
-        var adjustreasons = await _dbContext.TblAdjustreasons.ToListAsync(cancellationToken);
-        adjustreasons = adjustreasons.Where(c => adjustreasonsId.Contains(c.AdjustreasonId)).ToList();
+        var adjustreasons = await _dbContext.TblBaseInfo.Where(t=> t.ParentId == 37).ToListAsync(cancellationToken);
+        adjustreasons = adjustreasons.Where(c => adjustreasonsId.Contains(c.BaseInfoId)).ToList();
 
         var itemDetailStoreIds = adjustments.Select(a => a.ItemDetailStoreId).Distinct().ToList();
         var itemDetailStores = await _dbContext.TblItemDetailStores.ToListAsync(cancellationToken);
@@ -142,7 +142,7 @@ public class AdjustmentService : IAdjustmentService
                 if (i != null)
                     itemClassDict.TryGetValue(i.FkClassId.Value, out ic);
 
-                var adjustreason = adjustreasons.FirstOrDefault(c => c.AdjustreasonId == a.AdjustmentreasonId);
+                var adjustreason = adjustreasons.FirstOrDefault(c => c.BaseInfoId == a.AdjustmentreasonId);
                 
                 adjustmentDtos.Add(new AdjustmentDto
                 {
@@ -160,7 +160,7 @@ public class AdjustmentService : IAdjustmentService
                     ItemDetailStoreId = a.ItemDetailStoreId,
                     ItemFullName = i?.FullName is null ? "" : i?.FullName,
                     ItemClassFullName = ic?.FullName is null ? "" : ic?.FullName,
-                    AdjustreasonTitle = adjustreason?.FullName?? "" 
+                    AdjustreasonTitle = adjustreason?.Title?? "" 
                 });
             }
             catch (Exception e)

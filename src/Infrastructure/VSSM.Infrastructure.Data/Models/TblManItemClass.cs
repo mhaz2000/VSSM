@@ -15,5 +15,5 @@ public partial class TblManItemClass
 
     public virtual TblItemsClass ItemClass { get; set; }
 
-    public virtual TblManufacturer Manufacturer { get; set; }
+    public virtual TblBaseInfo Manufacturer { get; set; }
 }

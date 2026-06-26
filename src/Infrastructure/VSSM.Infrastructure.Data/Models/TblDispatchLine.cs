@@ -43,13 +43,13 @@ public partial class TblDispatchLine
 
     public virtual TblDispatch Dispatch { get; set; }
 
-    public virtual TblDosePerVial DosePerVial { get; set; }
+    public virtual TblBaseInfo DosePerVial { get; set; }
 
     public virtual TblItem Item { get; set; }
 
     public virtual TblItemDetailStore ItemDetailStore { get; set; }
 
-    public virtual TblManufacturer Manufacturer { get; set; }
+    public virtual TblBaseInfo Manufacturer { get; set; }
 
     public virtual TblStore Store { get; set; }
 
@@ -57,7 +57,7 @@ public partial class TblDispatchLine
 
     public virtual TblUse Use { get; set; }
 
-    public virtual TblVvmstage Vvmstage { get; set; }
+    public virtual TblBaseInfo Vvmstage { get; set; }
 
-    public virtual TblVvmtype Vvmtype { get; set; }
+    public virtual TblBaseInfo Vvmtype { get; set; }
 }

@@ -73,25 +73,25 @@ public partial class TblAdjustmentArrivalLine
 
     public DateTime? SendDate { get; set; }
 
-    public virtual TblAdjustreason Adjustreason { get; set; }
+    public virtual TblBaseInfo Adjustreason { get; set; }
 
     public virtual TblArrival Arrival { get; set; }
 
-    public virtual TblCommercialName CommertialName { get; set; }
+    public virtual TblBaseInfo CommertialName { get; set; }
 
-    public virtual TblDosePerVial DosePerVial { get; set; }
+    public virtual TblBaseInfo DosePerVial { get; set; }
 
     public virtual TblItem Item { get; set; }
 
     public virtual TblItemDetail ItemDetail { get; set; }
 
-    public virtual TblManufacturer Manufacturer { get; set; }
+    public virtual TblBaseInfo Manufacturer { get; set; }
 
     public virtual TblStore Store { get; set; }
 
     public virtual TblUse Use { get; set; }
 
-    public virtual TblVvmstage Vvmstage { get; set; }
+    public virtual TblBaseInfo Vvmstage { get; set; }
 
-    public virtual TblVvmtype Vvmtype { get; set; }
+    public virtual TblBaseInfo Vvmtype { get; set; }
 }

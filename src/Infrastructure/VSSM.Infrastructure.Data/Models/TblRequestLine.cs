@@ -35,7 +35,7 @@ public partial class TblRequestLine
 
     public int? DosePerVialId { get; set; }
 
-    public virtual TblDosePerVial DosePerVial { get; set; }
+    public virtual TblBaseInfo DosePerVial { get; set; }
 
     public virtual TblItem Item { get; set; }
 

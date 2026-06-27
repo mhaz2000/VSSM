@@ -39,9 +39,9 @@ namespace VSSM.Application.Services.Reports
                         join id in itemDetails on i.ItemId equals id.ItemId
                         join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
                         join s in stores on ids.StoreId equals s.StoreId
-                        join vs in _context.TblVvmstages on ids.FkVvmStageId equals vs.VvmstageId
-                        join cn in _context.TblCommercialNames on id.CommercialNameId equals cn.CommercialNameId
-                        join dpv in _context.TblDosePerVials on id.DosePerVialId equals dpv.DosePerVialId
+                        join vs in _context.TblBaseInfo on ids.FkVvmStageId equals vs.BaseInfoId
+                        join cn in _context.TblBaseInfo on id.CommercialNameId equals cn.BaseInfoId
+                        join dpv in _context.TblBaseInfo on id.DosePerVialId equals dpv.BaseInfoId
                         group new { i, id, s, cn, ids, dpv } by new
                         {
                             i.ItemId,
@@ -61,10 +61,10 @@ namespace VSSM.Application.Services.Reports
                             StoreName = g.Key.Name,
 
                             TotalStock = g.Sum(t => t.ids.CurrentStock),
-                            DosePerVialCount = g.Sum(t => t.dpv.NumDosePerVial),
-                            VialCount = g.Sum(t => t.ids.CurrentStock) / g.Sum(t => t.dpv.NumDosePerVial),
+                            DosePerVialCount = g.Sum(t => int.Parse(t.dpv.Title)),
+                            VialCount = g.Sum(t => t.ids.CurrentStock) / g.Sum(t => int.Parse(t.dpv.Title)),
                             ExpiryDate = g.Max(t => t.id.ExpiryDate),
-                            CommercialName = g.Max(t => t.cn.FullName),
+                            CommercialName = g.Max(t => t.cn.Title),
                         };
 
             var total = await query.CountAsync();

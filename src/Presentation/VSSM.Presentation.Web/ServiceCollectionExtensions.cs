@@ -55,15 +55,10 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IItemClassService, ItemClassService>();
             services.AddScoped<ILevelService, LevelService>();
             services.AddScoped<IItemService, ItemService>();
-            services.AddScoped<IAdjustReasonService, AdjustReasonService>();
-            services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IManItemClassService, ManItemClassService>();
             services.AddScoped<IUserHomeService, UserHomeService>();
             services.AddScoped<IArrivalRepConfigService, ArrivalRepConfigService>();
             services.AddScoped<IVoucherConfigService, VoucherConfigService>();
-            services.AddScoped<ICommercialNameService, CommercialNameService>();
-            services.AddScoped<IVvmtypeService, VvmtypeService>();
-            services.AddScoped<IVvmstageService, VvmstageService>();
             services.AddScoped<IDispatchRepConfigService, DispatchRepConfigService>();
             services.AddScoped<IStoreUsageWarningService, StoreUsageWarningService>();
             services.AddScoped<IOrderInfoService, OrderInfoService>();
@@ -95,7 +90,6 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IRecipientService, RecipientService>();
             services.AddScoped<IBaseInfoService, BaseInfoService>();
             services.AddScoped<IRecipientConfigurationService, RecipientConfigurationService>();
-            services.AddScoped<IDosePerVialService, DosePerVialService>();
             services.AddScoped<IItemDoseAssignmentService, ItemDoseAssignmentService>();
             services.AddScoped<IMinMaxItemService, MinMaxItemService>();
             services.AddScoped<IArrivalService, ArrivalService>();

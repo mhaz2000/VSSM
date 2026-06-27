@@ -87,10 +87,10 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
             from ids in context.TblItemDetailStores
                 .Where(s => s.ItemDetail.ItemId == itemId && s.CurrentStock > 0)
             join id in context.TblItemDetails on ids.ItemDetailId equals id.ItemDetailId
-            join mfr in context.TblManufacturers on id.ManufacturerId equals mfr.ManufacturerId
+            join mfr in context.TblBaseInfo on id.ManufacturerId equals mfr.BaseInfoId
                 into mfrJ
             from mfr in mfrJ.DefaultIfEmpty()
-            join dpv in context.TblDosePerVials on id.DosePerVialId equals dpv.DosePerVialId
+            join dpv in context.TblBaseInfo on id.DosePerVialId equals dpv.BaseInfoId
                 into dpvJ
             from dpv in dpvJ.DefaultIfEmpty()
             join store in context.TblStores on ids.StoreId equals store.StoreId
@@ -102,9 +102,9 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 id.BatchNumber,
                 id.ExpiryDate,
                 CurrentStock = ids.CurrentStock ?? 0,
-                DosePerVialStr = dpv != null ? dpv.NumDosePerVial.ToString() : "-",
-                DosePerVialNum = dpv != null ? dpv.NumDosePerVial : 0,
-                ManufacturerName = mfr != null ? mfr.FullName : "-",
+                DosePerVialStr = dpv != null ? dpv.Title : "-",
+                DosePerVialNum = dpv != null ? int.Parse(dpv.Title) : 0,
+                ManufacturerName = mfr != null ? mfr.Title : "-",
                 StoreId = store != null ? store.StoreId : 0,
                 StoreName = store != null ? store.Name : "-",
             }
@@ -266,8 +266,8 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 .FirstOrDefaultAsync(t=> t.ItemDetailId == itemDetailStore.ItemDetailId);
 
             int numvial = 0;
-            if(itemDetail is not null && itemDetail.DosePerVial is not null && itemDetail.DosePerVial.NumDosePerVial != 0)
-                numvial = item.DoseCount / itemDetail.DosePerVial.NumDosePerVial;
+            if(itemDetail is not null && itemDetail.DosePerVial is not null)
+                numvial = item.DoseCount / int.Parse(itemDetail.DosePerVial.Title);
 
             var line = new TblDispatchLine
             {
@@ -277,7 +277,7 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 Quantity = item.DoseCount,
                 DosePerVialId = itemDetail.DosePerVialId,
                 StoreId = item.StoreId,
-                FkVvmTypeBaseInfo = itemDetail.VvmtypeId,
+                FkVvmTypeBaseInfo = itemDetail.VvmTypeId,
                 FkVvmStageBaseInfo = item.VvmstageId,
                 ManufacturerId = itemDetail.ManufacturerId,
                 ItemDetailStoreId = item.ItemDetailStoreId,
@@ -340,7 +340,7 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 Quantity = item.DoseCount,
                 DosePerVialId = itemDetail.DosePerVialId,
                 StoreId = item.StoreId,
-                FkVvmTypeBaseInfo = itemDetail.VvmtypeId,
+                FkVvmTypeBaseInfo = itemDetail.VvmTypeId,
                 FkVvmStageBaseInfo = item.VvmstageId,
                 ManufacturerId = itemDetail.ManufacturerId,
                 ItemDetailStoreId = item.ItemDetailStoreId,
@@ -507,7 +507,7 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
 
         var items = from line in context.TblDispatchLines.Where(t => t.DispatchId == id)
                     join item in context.TblItems on line.ItemId equals item.ItemId
-                    join vvmstage in context.TblVvmstages on line.FkVvmStageBaseInfo equals vvmstage.VvmstageId into vvmstages
+                    join vvmstage in context.TblBaseInfo on line.FkVvmStageBaseInfo equals vvmstage.BaseInfoId into vvmstages
                     from vvmstage in vvmstages.DefaultIfEmpty()
                     select new { line, item, vvmstage };
 
@@ -531,7 +531,7 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                 FkClassId = i.item.FkClassId ?? 0,
                 ItemName = i.item.FullName,
                 ItemId = i.line.ItemId ?? 0,
-                VvmstageName = i.vvmstage.FullName,
+                VvmstageName = i.vvmstage.Title,
                 ExpiryDate = i.line.ExpiryDate,
                 DoseCount = i.line.Quantity ?? 0,
                 VvmstageId = i.line.FkVvmStageBaseInfo ?? 0,
@@ -558,18 +558,18 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                     join item in context.TblItems
                         on dispatchLine.ItemId equals item.ItemId
 
-                    join manufacturer in context.TblManufacturers
-                        on dispatchLine.ManufacturerId equals manufacturer.ManufacturerId
+                    join manufacturer in context.TblBaseInfo
+                        on dispatchLine.ManufacturerId equals manufacturer.BaseInfoId
                         into manufacturerJoin
                     from manufacturer in manufacturerJoin.DefaultIfEmpty()
 
-                    join doesPerVial in context.TblDosePerVials
-                        on dispatchLine.DosePerVialId equals doesPerVial.DosePerVialId
+                    join doesPerVial in context.TblBaseInfo
+                        on dispatchLine.DosePerVialId equals doesPerVial.BaseInfoId
                         into doesPerVialJoin
                     from doesPerVial in doesPerVialJoin.DefaultIfEmpty()
 
-                    join vvmStage in context.TblVvmstages
-                        on dispatchLine.FkVvmStageBaseInfo equals vvmStage.VvmstageId
+                    join vvmStage in context.TblBaseInfo
+                        on dispatchLine.FkVvmStageBaseInfo equals vvmStage.BaseInfoId
                         into vvmStageJoin
                     from vvmStage in vvmStageJoin.DefaultIfEmpty()
 
@@ -583,10 +583,10 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
                         ItemName = item.FullName,
                         BatchNumber = itemDetail.BatchNumber,
                         DoseCount = dispatchLine.Quantity,
-                        DoesPerVial = doesPerVial.NumDosePerVial,
+                        DoesPerVial = int.Parse(doesPerVial.Title),
                         ExpiryDate = dispatchLine.ExpiryDate,
-                        Manufacure = manufacturer.FullName,
-                        Vvmstage = vvmStage.FullName
+                        Manufacure = manufacturer.Title,
+                        Vvmstage = vvmStage.Title
                     };
 
         return query.ToListAsync(cancellationToken);

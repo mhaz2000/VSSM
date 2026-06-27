@@ -37,23 +37,21 @@ public partial class TblDispatchLine
 
     public virtual TblDispatch Dispatch { get; set; }
 
-    public virtual TblDosePerVial DosePerVial { get; set; }
+    public virtual TblBaseInfo DosePerVial { get; set; }
 
     public virtual TblItem Item { get; set; }
 
     public virtual TblItemDetailStore ItemDetailStore { get; set; }
 
-    public virtual TblManufacturer Manufacturer { get; set; }
+    public virtual TblBaseInfo Manufacturer { get; set; }
 
     public virtual TblStore Store { get; set; }
 
     public virtual ICollection<TblAdjustment> TblAdjustments { get; set; } = new List<TblAdjustment>();
 
-
     public int? FkUseBaseInfo { get; set; }
     public int? FkVvmTypeBaseInfo { get; set; }
     public int? FkVvmStageBaseInfo { get; set; }
-
     public virtual TblBaseInfo UseBaseInfo { get; set; }
     public virtual TblBaseInfo VvmTypeBaseInfo { get; set; }
     public virtual TblBaseInfo VvmStageBaseInfo { get; set; }

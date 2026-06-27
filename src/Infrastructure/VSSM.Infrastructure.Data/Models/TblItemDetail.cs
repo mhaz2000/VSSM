@@ -16,12 +16,8 @@ public partial class TblItemDetail
     public int? DosePerVialId { get; set; }
 
     public int? ManufacturerId { get; set; }
-
-    [Obsolete("Use FkCommercialNameId instead. This field will be removed after database cleanup.")]
+    public int? VvmTypeId { get; set; }
     public int? CommercialNameId { get; set; }
-
-    [Obsolete("Use FkVvmTypeId instead. This field will be removed after database cleanup.")]
-    public int? VvmtypeId { get; set; }
 
     public string BatchNumber { get; set; }
 
@@ -36,29 +32,20 @@ public partial class TblItemDetail
     public bool? IsConfirmed { get; set; }
 
 
-    public int? FkCommercialNameId { get; set; }
-    public int? FkVvmTypeId { get; set; }
-    public int? FkManufacturerId { get; set; }
+    public virtual TblBaseInfo CommercialName { get; set; }
 
-    public virtual TblBaseInfo FkCommercialName { get; set; }
-    public virtual TblBaseInfo FkVvmType { get; set; }
-    public virtual TblBaseInfo FkManufacturer { get; set; }
-
-
-    public virtual TblCommercialName CommercialName { get; set; }
-
-    public virtual TblDosePerVial DosePerVial { get; set; }
+    public virtual TblBaseInfo DosePerVial { get; set; }
 
     public virtual TblFiscalPeriod FiscalPeriod { get; set; }
 
     public virtual TblItem Item { get; set; }
 
-    public virtual TblManufacturer Manufacturer { get; set; }
+    public virtual TblBaseInfo Manufacturer { get; set; }
 
     public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
 
     public virtual ICollection<TblItemDetailStore> TblItemDetailStores { get; set; } = new List<TblItemDetailStore>();
 
-    public virtual TblVvmtype Vvmtype { get; set; }
+    public virtual TblBaseInfo Vvmtype { get; set; }
 
 }

@@ -17,9 +17,9 @@ namespace VSSM.Presentation.Web.Controllers
         private readonly IItemService _itemService;
         private readonly IItemClassService _itemClassService;
         private readonly IItemDoseAssignmentService _itemDoseAssignmentService;
-        private readonly IDosePerVialService _dosePerVialService;
+        private readonly IBaseInfoService _dosePerVialService;
         public ItemDoseAssignmentController(IItemDoseAssignmentService itemDoseAssignmentService,
-                                            IDosePerVialService dosePerVialService,
+                                            IBaseInfoService dosePerVialService,
                                             IItemService itemService, IItemClassService itemClassService)
         {
             _itemService = itemService;
@@ -113,7 +113,7 @@ namespace VSSM.Presentation.Web.Controllers
             //var item = await _itemService.GetActives(cancellationTOken);
             //ViewBag.Item = item;
 
-            var dosePerVial = await _dosePerVialService.GetActives(cancellationTOken);
+            var dosePerVial = await _dosePerVialService.GetByParentIdAsync(84, cancellationTOken);
             ViewBag.DosePerVial = dosePerVial;
         }
 

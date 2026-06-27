@@ -35,11 +35,11 @@ namespace VSSM.Application.Services.BaseEntities
                 join itm in _context.TblItems
                     on itmDtl.ItemId equals itm.ItemId
 
-                join manufacturer in _context.TblManufacturers
-                    on line.ManufacturerId equals manufacturer.ManufacturerId
+                join manufacturer in _context.TblBaseInfo
+                    on line.ManufacturerId equals manufacturer.BaseInfoId
 
-                join vvmStage in _context.TblVvmstages
-                    on line.VvmstageId equals vvmStage.VvmstageId
+                join vvmStage in _context.TblBaseInfo
+                    on line.VvmstageId equals vvmStage.BaseInfoId
 
                 join store in _context.TblStores
                     on line.StoreId equals store.StoreId
@@ -52,8 +52,8 @@ namespace VSSM.Application.Services.BaseEntities
                 {
                     ItemName = itm.FullName,
                     BatchNumber = line.BatchNum,
-                    Manufacturer = manufacturer.FullName,
-                    VVMStage = vvmStage.FullName,
+                    Manufacturer = manufacturer.Title,
+                    VVMStage = vvmStage.Title,
                     StockName = store.Name,
                     ExpiredDate = line.ExpiryDate,
                     Quantity = stock.Quantity

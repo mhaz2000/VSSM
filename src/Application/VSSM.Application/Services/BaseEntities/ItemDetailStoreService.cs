@@ -111,9 +111,9 @@ public class ItemDetailStoreService : IItemDetailStoreService
             {
                 Line = l,
                 Item = _db.TblItems.FirstOrDefault(i => i.ItemId == l.ItemId),
-                Manufacturer = _db.TblManufacturers.FirstOrDefault(m => m.ManufacturerId == l.ManufacturerId),
+                Manufacturer = _db.TblBaseInfo.FirstOrDefault(m => m.BaseInfoId == l.ManufacturerId),
                 Store = _db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
-                DoseVial = _db.TblDosePerVials.FirstOrDefault(d => d.DosePerVialId == l.DosePerVialId),
+                DoseVial = _db.TblBaseInfo.FirstOrDefault(d => d.BaseInfoId == l.DosePerVialId),
                 ItemDetail = _db.TblItemDetails.FirstOrDefault(d => d.ItemDetailId == l.ItemDetailId)
             })
             .AsNoTracking()
@@ -155,11 +155,11 @@ public class ItemDetailStoreService : IItemDetailStoreService
                 DropDownText = string.Format(
                     "کالا: {0} | سازنده: {1} | تاریخ انقضا: {2} | سری ساخت: {3} | انبار: {4} | دوز بر ویال: {5} | مقدار موجود: {6}",
                     arivalLine.Item != null ? arivalLine.Item.FullName : "",
-                    arivalLine.Manufacturer != null ? arivalLine.Manufacturer.FullName : "",
+                    arivalLine.Manufacturer != null ? arivalLine.Manufacturer.Title : "",
                     line.ExpiryDate != null ? line.ExpiryDate.Value.ToShamsi() : "",
                     line.BatchNum,
                     arivalLine.Store != null ? arivalLine.Store.Name : "",
-                    arivalLine.DoseVial != null ? arivalLine.DoseVial.NumDosePerVial : "",
+                    arivalLine.DoseVial != null ? arivalLine.DoseVial.Title : "",
                     line.Quantity
                 )
             };

@@ -1,11 +1,7 @@
-﻿@using VSSM.Application.DTOs.BaseEntities.CommercialName
-@using VSSM.Application.DTOs.BaseEntities.FiscalPeriod
-@using VSSM.Application.DTOs.BaseEntities.Manufacturer
+﻿@using VSSM.Application.DTOs.BaseEntities.BaseInfo
 @using VSSM.Application.DTOs.BaseEntities.Recipient
 @using VSSM.Application.DTOs.BaseEntities.Source
 @using VSSM.Application.DTOs.BaseEntities.Store
-@using VSSM.Application.DTOs.BaseEntities.Vvmstage
-@using VSSM.Application.DTOs.BaseEntities.Vvmtype
 @using VSSM.Presentation.Web.Models.Base
 
 @{
@@ -19,10 +15,10 @@
     var items = ViewBag.Items as List<ItemListDto>;
     var sources = ViewBag.Sources as List<SourceGetDto>;
     var stores = ViewBag.Stores as List<StoreListDto>;
-    var commercialNames = ViewBag.CommercialNames as List<CommercialNameDto>;
-    var manufacturers = ViewBag.Manufacturers as List<ManufacturerDto>;
-    var vvmstages = ViewBag.Vvmstages as List<VvmstageDto>;
-    var vvmtypes = ViewBag.Vvmtypes as List<VvmtypeDto>;
+    var commercialNames = ViewBag.CommercialNames as List<BaseInfoDto>;
+    var manufacturers = ViewBag.Manufacturers as List<BaseInfoDto>;
+    var vvmstages = ViewBag.Vvmstages as List<BaseInfoDto>;
+    var vvmtypes = ViewBag.Vvmtypes as List<BaseInfoDto>;
 }
 
 
@@ -179,8 +175,8 @@
                                                             Options = manufacturers
                                                         .Select(x => new SelectOption
                                                         {
-                                                            Value = x.ManufacturerId.ToString(),
-                                                            Text = x.FullName
+                                                            Value = x.Id.ToString(),
+                                                            Text = x.Title
                                                         }).ToList()
                                                         })
                         </div>
@@ -196,8 +192,8 @@
                                                             Options = vvmtypes
                                                         .Select(x => new SelectOption
                                                         {
-                                                            Value = x.VvmtypeId.ToString(),
-                                                            Text = x.FullName
+                                                            Value = x.Id.ToString(),
+                                                            Text = x.Title
                                                         }).ToList()
                                                         })
                         </div>
@@ -213,8 +209,8 @@
                                                             Options = vvmstages
                                                         .Select(x => new SelectOption
                                                         {
-                                                            Value = x.VvmstageId.ToString(),
-                                                            Text = x.FullName
+                                                            Value = x.Id.ToString(),
+                                                            Text = x.Title
                                                         }).ToList()
                                                         })
                         </div>
@@ -230,8 +226,8 @@
                                                             Options = commercialNames
                                                         .Select(x => new SelectOption
                                                         {
-                                                            Value = x.CommercialNameId.ToString(),
-                                                            Text = x.FullName
+                                                            Value = x.Id.ToString(),
+                                                            Text = x.Title
                                                         }).ToList()
                                                         })
                         </div>

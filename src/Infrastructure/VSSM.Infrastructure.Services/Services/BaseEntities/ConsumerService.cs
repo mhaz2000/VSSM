@@ -78,7 +78,7 @@ public sealed class ConsumerService : IConsumerService
         try
         {
             var newConsumedCount = (uidInfo.ConsumedCount ?? 0) + 1;
-            var dosePerVial = uidInfo.OrderInfo?.DosePerVial?.NumDosePerVial ?? 0;
+            var dosePerVial = int.Parse(uidInfo.OrderInfo?.DosePerVial?.Title ?? "0");
             var isFullyConsumed = newConsumedCount >= dosePerVial && dosePerVial > 0;
 
             await _db.TblUidInfo

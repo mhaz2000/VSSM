@@ -37,7 +37,7 @@ public partial class TblOrderInfo
 
     public virtual TblItem Item { get; set; }
     public virtual TblArrival Arrival { get; set; }
-    public virtual TblDosePerVial DosePerVial  { get; set; }
+    public virtual TblBaseInfo DosePerVial  { get; set; }
 
     public virtual ICollection<TblUidInfo> TblUidInfos { get; set; }
         = new List<TblUidInfo>();

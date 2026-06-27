@@ -17,7 +17,7 @@ public partial class TblItemDoseAssignment
 
     public DateTime? EntryDate { get; set; }
 
-    public virtual TblDosePerVial Dose { get; set; }
+    public virtual TblBaseInfo Dose { get; set; }
 
     public virtual TblItem Item { get; set; }
 }

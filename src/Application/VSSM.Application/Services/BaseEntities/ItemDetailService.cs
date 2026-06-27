@@ -61,14 +61,14 @@ namespace VSSM.Application.Services.BaseEntities
                         join str in _db.TblStores.Where(store => store.RecipientId == recipientId)
                             on i.StoreId equals str.StoreId into itemAndStore
                         from s in itemAndStore
-                        join manufacture in _db.TblManufacturers
-                            on itmDtl.ManufacturerId equals manufacture.ManufacturerId into manufactureInfo
+                        join manufacture in _db.TblBaseInfo
+                            on itmDtl.ManufacturerId equals manufacture.BaseInfoId into manufactureInfo
                         from m in manufactureInfo.DefaultIfEmpty()
-                        join stage in _db.TblVvmstages
-                            on i.FkVvmStageId equals stage.VvmstageId into stageInfo
+                        join stage in _db.TblBaseInfo
+                            on i.FkVvmStageId equals stage.BaseInfoId into stageInfo
                         from si in stageInfo.DefaultIfEmpty()
-                        join dpv in _db.TblDosePerVials
-                            on itmDtl.DosePerVialId equals dpv.DosePerVialId into dosePervials
+                        join dpv in _db.TblBaseInfo
+                            on itmDtl.DosePerVialId equals dpv.BaseInfoId into dosePervials
                         from dosePervial in dosePervials.DefaultIfEmpty()
 
                         let diluent = (from dItem in _db.TblItems
@@ -82,44 +82,44 @@ namespace VSSM.Application.Services.BaseEntities
                                        join dStr in _db.TblStores.Where(store => store.RecipientId == recipientId)
                                            on ds.StoreId equals dStr.StoreId into dStoreFiltered
                                        from dS in dStoreFiltered
-                                       join dMan in _db.TblManufacturers
-                                           on dDtl.ManufacturerId equals dMan.ManufacturerId into dManInfo
+                                       join dMan in _db.TblBaseInfo
+                                           on dDtl.ManufacturerId equals dMan.BaseInfoId into dManInfo
                                        from dm in dManInfo.DefaultIfEmpty()
-                                       join dStage in _db.TblVvmstages
-                                           on ds.FkVvmStageId equals dStage.VvmstageId into dStageInfo
+                                       join dStage in _db.TblBaseInfo
+                                           on ds.FkVvmStageId equals dStage.BaseInfoId into dStageInfo
                                        from dsi in dStageInfo.DefaultIfEmpty()
-                                       join dDpv in _db.TblDosePerVials
-                                           on dDtl.DosePerVialId equals dDpv.DosePerVialId into dDoseInfo
+                                       join dDpv in _db.TblBaseInfo
+                                           on dDtl.DosePerVialId equals dDpv.BaseInfoId into dDoseInfo
                                        from ddpv in dDoseInfo.DefaultIfEmpty()
                                        select new ToDispatchItemDetailDto
                                        {
-                                           NumDosePerVial = ddpv == null ? 1 : ddpv.NumDosePerVial,
+                                           NumDosePerVial = ddpv == null ? 1 : int.Parse(ddpv.Title),
                                            ItemId = dDtl.ItemId,
                                            ItemName = dItem.FullName,
                                            ExpiryDate = dDtl.ExpiryDate,
-                                           VVMStep = dsi.FullName,
+                                           VVMStep = dsi.Title,
                                            CurrentStock = ds.CurrentStock ?? 0,
                                            BatchNumber = dDtl.BatchNumber,
                                            StoreName = dS.Name,
                                            ItemDetailStoreId = ds.PKItemDetailStoreId,
                                            StoreId = dS.StoreId,
-                                           Manufacture = dm.FullName
+                                           Manufacture = dm.Title
                                        }).FirstOrDefault() 
 
                         select new ToDispatchItemDetailDto
                         {
-                            NumDosePerVial = dosePervial == null ? 1 : dosePervial.NumDosePerVial,
+                            NumDosePerVial = dosePervial == null ? 1 : int.Parse(dosePervial.Title),
                             ItemId = itmDtl.ItemId,
                             DiluentId = itm.DiluentId,
                             ItemName = itm.FullName,
                             ExpiryDate = itmDtl.ExpiryDate,
-                            VVMStep = si.FullName,
+                            VVMStep = si.Title,
                             CurrentStock = i.CurrentStock ?? 0,
                             BatchNumber = itmDtl.BatchNumber,
                             StoreName = s.Name,
                             ItemDetailStoreId = i.PKItemDetailStoreId,
                             StoreId = s.StoreId,
-                            Manufacture = m.FullName,
+                            Manufacture = m.Title,
                             Diluent = diluent
                         };
 

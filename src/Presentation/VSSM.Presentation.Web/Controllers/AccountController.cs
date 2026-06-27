@@ -4,13 +4,27 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VSSM.Application.Interfaces.BaseEntities;
+using System.Linq;
 using VSSM.Presentation.Web.Models.Account;
 
 namespace VSSM.Presentation.Web.Controllers
 {
     [AllowAnonymous]
-    public class AccountController(IUserService userService, IRecipientService recipientService) : Controller
+    public class AccountController : Controller
     {
+        private readonly IUserService _userService;
+        private readonly IRecipientService _recipientService;
+
+        // TODO [SECURITY - افتا]: پیاده‌سازی Rate Limiting برای جلوگیری از Brute Force
+        // از Microsoft.AspNetCore.RateLimiting یا ابزار سطح Reverse Proxy (مثل nginx) استفاده کنید.
+        // حداکثر ۵ تلاش ناموفق در ۱۵ دقیقه توصیه می‌شود.
+
+        public AccountController(IUserService userService, IRecipientService recipientService)
+        {
+            _userService = userService;
+            _recipientService = recipientService;
+        }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -24,14 +38,21 @@ namespace VSSM.Presentation.Web.Controllers
         [ValidateAntiForgeryToken] // [SECURITY]: محافظت در برابر CSRF
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            // DEBUG TEMP: نمایش خطاهای ModelState
             if (!ModelState.IsValid)
+            {
+                var errors = string.Join(" | ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+                ViewBag.Error = "خطای اعتبارسنجی: " + errors;
                 return View(model);
+            }
 
             // [SECURITY - افتا]: پیام خطا عمداً مبهم است تا مهاجم نتواند
             // بین "کاربر وجود ندارد" و "رمز اشتباه است" تمایز قائل شود.
             const string genericError = "نام کاربری یا رمز عبور اشتباه است";
 
-            var user = await userService.GetByUsername(model.UserName.Trim(), CancellationToken.None);
+            var user = await _userService.GetByUsername(model.UserName.Trim(), CancellationToken.None);
 
             if (user == null)
             {
@@ -51,12 +72,14 @@ namespace VSSM.Presentation.Web.Controllers
                 return View(model);
             }
 
-            var recipient = await recipientService.GetById(
-                user.RecipientId.GetValueOrDefault(), CancellationToken.None);
+            // recipient ممکن است null باشد — با null-safe handle می‌شود
+            var recipient = user.RecipientId.HasValue && user.RecipientId.Value > 0
+                ? await _recipientService.GetById(user.RecipientId.Value, CancellationToken.None)
+                : null;
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Name, user.FullName ?? string.Empty),
                 new Claim("UserId", user.UserId.ToString()),
                 new Claim("UserRole", user.IsAdmin ? "Admin" : "User"),
                 new Claim("RecipientId", user.RecipientId.GetValueOrDefault().ToString()),

@@ -16,6 +16,20 @@
 
     <div class="a-card-body">
 
+        <input type="hidden" id="ArrivalTypeHidden" name="ArrivalType" value="vaccine" />
+
+        @* تب انتخاب نوع ورودی *@
+        <div class="arrival-tabs" style="margin-bottom:20px;">
+            <button type="button" class="arrival-tab active" id="tabVaccine" data-tab="vaccine">
+                <i class="fa fa-medkit"></i>
+                ورود واکسن
+            </button>
+            <button type="button" class="arrival-tab" id="tabHalal" data-tab="halal">
+                <i class="fa fa-flask"></i>
+                ورود حلال
+            </button>
+        </div>
+
         <div class="fg-3" style="margin-bottom:14px;">
 
             <div class="f-group">
@@ -36,18 +50,15 @@
                 <span asp-validation-for="Date" class="text-danger" style="font-size:11px;"></span>
             </div>
 
-            <div class="f-group">
-
+            @* سری ساخت: فقط برای واکسن نمایش داده می‌شود *@
+            <div class="f-group" id="batchNumGroup">
                 <label class="f-label">سری ساخت <span class="req-tag">اجباری</span></label>
-
                 <input asp-for="NewLine.BatchNum"
                        class="f-control"
                        id="BatchNum"
                        placeholder="سری ساخت را وارد کنید"
                        autocomplete="off" />
-
                 <span asp-validation-for="NewLine.BatchNum" class="text-danger" style="font-size:11px;"></span>
-
             </div>
 
         </div>

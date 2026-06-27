@@ -1,0 +1,49 @@
+﻿/* arrival-tabs.css
+   استایل تب‌های واکسن / حلال در فرم مدیریت ورودی
+*/
+
+.arrival-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 18px;
+    width: fit-content;
+    direction: rtl;
+}
+
+.arrival-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+    .arrival-tab:hover:not(.active) {
+        background: #e9eaec;
+        color: #374151;
+    }
+
+    .arrival-tab.active {
+        background: #fff;
+        color: #1d6fb8;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+        font-weight: 600;
+    }
+
+    .arrival-tab i {
+        font-size: 13px;
+    }

@@ -9,6 +9,6 @@ public class LoginViewModel : ILoginViewModel
     public string UserName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "رمز عبور الزامی است")]
-    [StringLength(128, MinimumLength = 4, ErrorMessage = "رمز عبور باید بین ۴ تا ۱۲۸ کاراکتر باشد")]
+    [StringLength(128, MinimumLength = 3, ErrorMessage = "رمز عبور باید بین ۳ تا ۱۲۸ کاراکتر باشد")]
     public string Password { get; set; } = string.Empty;
 }

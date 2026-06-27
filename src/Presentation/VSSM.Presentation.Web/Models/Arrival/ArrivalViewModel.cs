@@ -8,7 +8,7 @@ public class ArrivalViewModel
 
     [Display(Name = "تاریخ ورود")]
     [Required(ErrorMessage = "تاریخ ورود اجباری است.")]
-    public string Date { get; set; }
+    public string Date { get; set; } = string.Empty;
 
     [Display(Name = "شماره گزارش")]
     public string? ReportNumber { get; set; }
@@ -29,5 +29,5 @@ public class ArrivalViewModel
     public List<ArrivalLineViewModel> Lines { get; set; } = new();
     public ArrivalLineViewModel NewLine { get; set; } = new();
 
-
+    public string ArrivalType { get; set; } = "";
 }

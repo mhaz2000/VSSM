@@ -17,6 +17,11 @@
 
     var arrivalGetBatchInfoUrl = "@Url.Action("GetBatchInfo", "Arrival")";
 
+    // ¬œ—”ùÂ«? API »—«? Õ·«·
+    var arrivalGetHalalItemsUrl = "@Url.Action("GetHalalItems", "Arrival")";
+
+    var arrivalGetHalalDosesUrl = "@Url.Action("GetHalalDoses", "Arrival")";
+
     var arrivalExistItemName = @Html.Raw(Json.Serialize(Model?.NewLine?.ItemName ?? ""));
 
     var arrivalExistDoseName = @Html.Raw(Json.Serialize(Model?.NewLine?.DoseName ?? ""));
@@ -37,3 +42,5 @@
 
 <script src="~/js/shared/submit-btn.js"></script>
 <script src="~/js/components/arrivals/arrival-form.js"></script>
+@* «÷«›Â: „‰ÿﬁ ”Ê∆?ç Ê«ò”‰/Õ·«· *@
+<script src="~/js/components/arrivals/arrival-form-halal.js"></script>

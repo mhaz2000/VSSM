@@ -47,4 +47,8 @@ public class ArrivalLineViewModel
 
     public string? ProductionDateShamsi { get; set; }
     public string? ExpiryDateShamsi { get; set; }
+
+
+    // فیلدهای مخصوص حلال
+    public int? DosePerVial { get; set; }      
 }

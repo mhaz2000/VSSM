@@ -1,0 +1,297 @@
+﻿/* ===== VSSM Dashboard ===== */
+
+.db-page {
+    padding: 20px 24px 32px;
+    background: #F0F2F7;
+    min-height: 100vh;
+    direction: rtl;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+/* ---- ردیف اول: کارت‌های آماری ---- */
+.db-row-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.db-stat-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.06);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+    .db-stat-card:hover {
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        transform: translateY(-1px);
+    }
+
+.db-stat-info {
+    text-align: right;
+}
+
+.db-stat-lbl {
+    font-size: 11px;
+    color: #8A92A6;
+    margin-bottom: 4px;
+}
+
+.db-stat-val {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1C2340;
+    line-height: 1;
+}
+
+.db-stat-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: #fff;
+    line-height: 1;
+}
+
+    .db-stat-btn.green {
+        background: #22C55E;
+    }
+
+    .db-stat-btn.red {
+        background: #EF4444;
+    }
+
+/* ---- ردیف دوم: سه ستون (RTL: راست=کوچک، وسط=area، چپ=bar) ---- */
+.db-row-mid {
+    display: grid;
+    grid-template-columns: 200px 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+    height: 200px;
+}
+
+/* ---- ردیف سوم: دو ستون ---- */
+.db-row-btm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    height: 190px;
+}
+
+/* ---- Card base ---- */
+.db-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+    .db-card:hover {
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        transform: translateY(-1px);
+    }
+
+/* ---- کارت چارت ---- */
+.db-card-chart {
+    padding: 12px 16px 0;
+}
+
+.db-ch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+}
+
+.db-ct {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1C2340;
+}
+
+.db-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+    .db-badge.up {
+        background: #E8F7EE;
+        color: #16A34A;
+    }
+
+    .db-badge.dn {
+        background: #FEF0F0;
+        color: #DC2626;
+    }
+
+.db-chart-wrap {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+    margin: 0 -1px;
+}
+
+/* ---- کارت‌های کوچک راست (محموله + پیش‌نویس) ---- */
+.db-col-sm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.db-card-sm {
+    flex: 1;
+    padding: 14px 16px;
+    justify-content: center;
+}
+
+.db-sm-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.db-sm-text {
+    flex: 1;
+    text-align: right;
+}
+
+.db-sm-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+    background: #E8F7EE;
+    color: #22C55E;
+}
+
+.db-lbl {
+    font-size: 11px;
+    color: #8A92A6;
+    margin-bottom: 4px;
+}
+
+.db-val {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1C2340;
+    line-height: 1;
+}
+
+/* ---- پیش نویس ---- */
+.db-draft-hd {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.db-draft-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3B82F6;
+    flex-shrink: 0;
+}
+
+.db-draft-stats {
+    display: flex;
+}
+
+.db-draft-stat {
+    flex: 1;
+    text-align: center;
+}
+
+    .db-draft-stat + .db-draft-stat {
+        border-right: 1px solid #F0F2F8;
+    }
+
+.db-sub {
+    font-size: 11px;
+    color: #B0B7C8;
+    margin-top: 4px;
+}
+
+/* ---- Breadcrumb ---- */
+.breadcrumb {
+    background: transparent;
+    padding: 10px 24px;
+    margin-bottom: 0;
+    font-size: 13px;
+    color: #8A92A6;
+}
+
+.breadcrumb-item.active {
+    color: #2563EB;
+    font-weight: 600;
+}
+
+/* ---- Animations ---- */
+@keyframes dbFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.db-card, .db-stat-card {
+    animation: dbFadeUp 0.3s ease both;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+    .db-row-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .db-row-mid {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .db-row-btm {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .db-col-sm {
+        flex-direction: row;
+    }
+
+    .db-card-chart {
+        min-height: 180px;
+    }
+
+    .db-page {
+        padding: 12px;
+    }
+}

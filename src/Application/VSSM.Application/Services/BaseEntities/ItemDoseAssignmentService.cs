@@ -1,13 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VSSM.Application.DTOs;
-using VSSM.Application.DTOs.BaseEntities.DosePerVial;
-using VSSM.Application.DTOs.BaseEntities.ItemClass;
 using VSSM.Application.DTOs.BaseEntities.ItemDoseAssignment;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
@@ -52,13 +45,14 @@ namespace VSSM.Application.Services.BaseEntities
 
         public async Task<ItemDoseAssignmentSelectDto> GetById(int id, CancellationToken cancellationToken)
         {
-            var entity = await _dbContext.TblItemDoseAssignments
+            var entity = await _dbContext.TblItemDoseAssignments.Include(t=>t.Item)
                                 .AsNoTracking()
                                 .Where(x => x.ItemDoseAssignmentId == id)
                                 .FirstOrDefaultAsync(cancellationToken);
 
             var dto = new ItemDoseAssignmentSelectDto
             {
+                ItemClassId = entity.Item.FkClassId,
                 ItemDoseAssignmentId = id,
                 ItemId = entity.ItemId,
                 DoseId = entity.DoseId,
@@ -72,36 +66,26 @@ namespace VSSM.Application.Services.BaseEntities
         {
             var paging = new PagingModel { Page = page, PageSize = pageSize };
 
-            IQueryable<TblItemDoseAssignment> query = _dbContext.TblItemDoseAssignments;
+            IQueryable<TblItemDoseAssignment> query = _dbContext.TblItemDoseAssignments.Include(t=>t.Dose).Include(t => t.Item);
 
-            // 1) Search
-            //if (!string.IsNullOrWhiteSpace(search))
-            //{
-            //    query = query.Where(x => x.NumDosePerVial.ToString().Contains(search));
-            //}
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x => x.Item.FullName.ToString().Contains(search));
+            }
 
-            // 2) Sorting
-            //query = sortField switch
-            //{
-            //    "Name" => sortOrder == "asc" ? query.OrderBy(x => x.NumDosePerVial) : query.OrderByDescending(x => x.NumDosePerVial),
-            //    _ => sortOrder == "asc" ? query.OrderBy(x => x.DosePerVialId) : query.OrderByDescending(x => x.DosePerVialId)
-            //};
-
-            // 3) Total count before paging
             paging.TotalItems = await query.CountAsync();
 
-            // 4) Apply paging
-            var items = await query
+            var items = await query.OrderByDescending(t=> t.ItemDoseAssignmentId)
                 .Skip(paging.Skip)
                 .Take(paging.PageSize)
                 .Select(x => new ItemDoseAssignmentListDto
                 {
                     ItemDoseAssignmentId = x.ItemDoseAssignmentId,
-                    ItemId = x.ItemId.GetValueOrDefault(),
-                    ItemName = x.Item.FullName,
-                    DoseId = x.ItemDoseAssignmentId,
-                    DoseNum = 0,
-                    VialPerDoseCm3 = x.ItemDoseAssignmentId
+                    ItemId = x.ItemId,
+                    ItemName = x.Item != null ? x.Item.FullName : string.Empty,
+                    DoseId = x.DoseId,
+                    DoseNum = x.Dose != null ? int.Parse(x.Dose.Title) : 0,
+                    VialPerDoseCm3 = x.VialPerDoseCm3
                 })
                 .ToListAsync(cancellationToken);
 
@@ -113,6 +97,20 @@ namespace VSSM.Application.Services.BaseEntities
                 SortField = sortField,
                 SortOrder = sortOrder
             };
+        }
+
+        public async Task<bool> Delete(int id, CancellationToken cancellationToken)
+        {
+            var entity = await _dbContext.TblItemDoseAssignments
+                                .Where(x => x.ItemDoseAssignmentId == id)
+                                .FirstOrDefaultAsync(cancellationToken);
+
+            if (entity == null)
+                return false;
+
+            _dbContext.TblItemDoseAssignments.Remove(entity);
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> Update(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken)

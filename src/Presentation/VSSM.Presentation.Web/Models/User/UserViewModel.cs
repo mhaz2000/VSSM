@@ -8,7 +8,8 @@ public class UserViewModel
     [Required(ErrorMessage = "نام کاربری نمی‌تواند خالی باشد.")]
     public string UserName { get; set; }
 
-    [Required(ErrorMessage = "کلمه عبور نمی‌تواند خالی باشد.")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$",
+        ErrorMessage = "کلمه عبور باید حداقل ۸ کاراکتر و شامل حروف بزرگ، حروف کوچک، عدد و کاراکتر ویژه باشد.")]
     public string Password { get; set; }
 
     [Required(ErrorMessage = "نام نمی‌تواند خالی باشد.")]

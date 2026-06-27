@@ -3,6 +3,9 @@ using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.User;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
+using System.Text.RegularExpressions;
+
+namespace VSSM.Application.Services.BaseEntities;
 
 public class UserService : IUserService
 {
@@ -44,6 +47,8 @@ public class UserService : IUserService
     // ---------------- CREATE ----------------
     public async Task<int> Create(UserCreateDto dto, CancellationToken token)
     {
+        ValidatePasswordPolicy(dto.Password, "کلمه عبور");
+
         var model = new TblUser
         {
             UserName = dto.UserName,
@@ -76,6 +81,12 @@ public class UserService : IUserService
         var x = await _db.TblUsers.FirstOrDefaultAsync(u => u.UserId == dto.UserId, token);
         if (x == null) throw new Exception("User not found");
 
+        // Only validate password if it's provided (empty update case should be handled by UserController)
+        if (!string.IsNullOrEmpty(dto.Password))
+        {
+            ValidatePasswordPolicy(dto.Password, "کلمه عبور");
+        }
+
         x.UserName = dto.UserName;
         x.Password = dto.Password;
         x.FirstName = dto.FirstName;
@@ -93,6 +104,31 @@ public class UserService : IUserService
         x.Course = dto.Course;
         x.CourseDate = dto.CourseDate;
 
+        await _db.SaveChangesAsync(token);
+        return true;
+    }
+
+    // ---------------- VALIDATE PASSWORD POLICY ----------------
+    private void ValidatePasswordPolicy(string password, string fieldName)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+            return;
+
+        var pattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$";
+        if (!Regex.IsMatch(password, pattern))
+        {
+            throw new Exception($"{fieldName} باید حداقل ۸ کاراکتر و شامل حروف بزرگ، حروف کوچک، عدد و کاراکتر ویژه باشد.");
+        }
+    }
+
+    public async Task<bool> ChangePassword(int userId, string newPassword, CancellationToken token)
+    {
+        ValidatePasswordPolicy(newPassword, "کلمه عبور جدید");
+
+        var x = await _db.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);
+        if (x == null) throw new Exception("User not found");
+
+        x.Password = newPassword;
         await _db.SaveChangesAsync(token);
         return true;
     }

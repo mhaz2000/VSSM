@@ -4,16 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
-    @* [SECURITY - افتا]: Content Security Policy *@
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline'; frame-ancestors 'none';" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="X-Frame-Options" content="DENY" />
-    <title>ورود | سامانه مدیریت نگهداری و توزیع واکسن</title>
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | " : "")سامانه مدیریت نگهداری و توزیع واکسن</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         *, *::before, *::after {
@@ -26,17 +25,13 @@
             --blue-deep: #0D47A1;
             --blue-mid: #1565C0;
             --blue-light: #42A5F5;
-            --blue-pale: #BBDEFB;
             --white: #FFFFFF;
             --gray-50: #F8FAFC;
-            --gray-100: #F1F5F9;
             --gray-200: #E2E8F0;
             --gray-400: #94A3B8;
             --gray-600: #475569;
             --gray-800: #1E293B;
             --error: #EF4444;
-            --error-bg: #FEF2F2;
-            --error-border: #FECACA;
         }
 
         body {
@@ -46,54 +41,55 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             position: relative;
         }
 
-            /* پس‌زمینه انیمیشن‌دار ظریف */
             body::before {
                 content: '';
                 position: fixed;
                 inset: 0;
-                background: radial-gradient(ellipse 80% 60% at 20% 30%, rgba(255,255,255,0.35) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 70%, rgba(13,71,161,0.15) 0%, transparent 60%);
+                background: radial-gradient(ellipse 80% 60% at 20% 30%, rgba(255,255,255,.35) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 70%, rgba(13,71,161,.15) 0%, transparent 60%);
                 pointer-events: none;
                 z-index: 0;
             }
 
-            /* دایره‌های تزئینی پس‌زمینه */
             body::after {
                 content: '';
                 position: fixed;
                 width: 600px;
                 height: 600px;
                 border-radius: 50%;
-                background: rgba(255,255,255,0.12);
+                background: rgba(255,255,255,.12);
                 top: -200px;
                 right: -150px;
                 pointer-events: none;
                 z-index: 0;
             }
 
-        .bg-circle-2 {
+        .bg-circle {
             position: fixed;
             width: 400px;
             height: 400px;
             border-radius: 50%;
-            background: rgba(13,71,161,0.08);
+            background: rgba(13,71,161,.08);
             bottom: -100px;
             left: -100px;
             pointer-events: none;
             z-index: 0;
         }
 
-        /* کانتینر اصلی */
         .auth-wrapper {
             position: relative;
             z-index: 1;
             width: 100%;
             max-width: 520px;
-            padding: 24px 24px;
-            animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeSlideUp .5s cubic-bezier(.16,1,.3,1) both;
         }
 
         @@keyframes fadeSlideUp {
@@ -108,64 +104,85 @@
             }
         }
 
+        /* عنوان بیرون کارت */
+        .app-header {
+            width: calc(100% + 48px);
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .app-title {
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: var(--gray-800);
+            line-height: 1.5;
+            margin-bottom: 4px;
+            letter-spacing: -.02em;
+        }
+
+        .app-subtitle {
+            font-size: .78rem;
+            color: var(--gray-600);
+            letter-spacing: .05em;
+            font-weight: 400;
+        }
+
         /* کارت */
         .auth-card {
             width: 100%;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255,255,255,.93);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
             padding: 36px 40px 32px;
-            box-shadow: 0 4px 6px rgba(13,71,161,0.04), 0 16px 48px rgba(13,71,161,0.12), 0 1px 0 rgba(255,255,255,0.9) inset;
-            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 6px rgba(13,71,161,.04), 0 16px 48px rgba(13,71,161,.12), 0 1px 0 rgba(255,255,255,.9) inset;
+            border: 1px solid rgba(255,255,255,.8);
         }
 
-        /* عنوان بیرون از کارت */
-        .app-header {
+        /* لوگو */
+        .logo-section {
             text-align: center;
-            margin-bottom: 16px;
-            width: 100%;
+            margin-bottom: 20px;
         }
 
-        .app-title {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--gray-800);
-            line-height: 1.5;
-            margin-bottom: 4px;
-        }
-
-        .app-subtitle {
-            font-size: 0.78rem;
-            color: var(--gray-600);
-            letter-spacing: 0.05em;
-            font-weight: 400;
-        }
-
-        /* لوگو داخل کارت */
+        /* لوگو — بدون سایه، جزء فرم */
         .logo-section {
             text-align: center;
             margin-bottom: 20px;
         }
 
         .logo-wrap {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 72px;
-            height: 72px;
-            border-radius: 20px;
-            background: var(--white);
-            box-shadow: 0 2px 8px rgba(13,71,161,0.12), 0 0 0 1px rgba(13,71,161,0.06);
+            position: relative;
+            display: inline-block;
         }
 
             .logo-wrap img {
-                width: 50px;
-                height: 50px;
+                width: 80px;
+                height: 80px;
                 object-fit: contain;
+                display: block;
             }
 
-        /* هدر فرم — وسط‌چین */
+            /* متن روی لوگو — پایین تصویر */
+            .logo-wrap .logo-badge {
+                position: absolute;
+                bottom: -2px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255,255,255,0.88);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                border: 1px solid rgba(21,101,192,0.15);
+                border-radius: 20px;
+                padding: 2px 10px;
+                font-size: .62rem;
+                font-weight: 700;
+                color: #1565C0;
+                white-space: nowrap;
+                letter-spacing: .02em;
+            }
+
+        /* هدر فرم */
         .form-header {
             text-align: center;
             margin-bottom: 24px;
@@ -179,19 +196,19 @@
         }
 
         .form-subtitle {
-            font-size: 0.85rem;
+            font-size: .85rem;
             color: var(--gray-400);
             font-weight: 400;
         }
 
-        /* فیلدهای ورودی */
+        /* فیلدها */
         .field-group {
             margin-bottom: 16px;
         }
 
         .field-label {
             display: block;
-            font-size: 0.82rem;
+            font-size: .82rem;
             font-weight: 600;
             color: var(--gray-600);
             margin-bottom: 6px;
@@ -210,16 +227,15 @@
             border: 1.5px solid var(--gray-200);
             border-radius: 12px;
             font-family: inherit;
-            font-size: 0.92rem;
+            font-size: .92rem;
             color: var(--gray-800);
             background: var(--gray-50);
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            transition: border-color .2s, box-shadow .2s, background .2s;
             outline: none;
             text-align: right;
             direction: rtl;
         }
 
-            /* حذف آیکون eye پیش‌فرض مرورگر روی فیلد پسورد */
             .field-input[type="password"]::-ms-reveal,
             .field-input[type="password"]::-ms-clear,
             .field-input[type="password"]::-webkit-contacts-auto-fill-button,
@@ -227,9 +243,7 @@
                 display: none !important;
             }
 
-            /* padding چپ برای فیلد پسورد — جا برای دکمه چشم */
-            .field-input[type="password"],
-            .field-input.is-password {
+            .field-input[type="password"] {
                 padding-left: 44px;
             }
 
@@ -241,13 +255,13 @@
             .field-input:focus {
                 border-color: var(--blue-light);
                 background: var(--white);
-                box-shadow: 0 0 0 4px rgba(66,165,245,0.12);
+                box-shadow: 0 0 0 4px rgba(66,165,245,.12);
             }
 
             .field-input.has-error {
                 border-color: var(--error);
                 background: var(--white);
-                box-shadow: 0 0 0 4px rgba(239,68,68,0.08);
+                box-shadow: 0 0 0 4px rgba(239,68,68,.08);
             }
 
         .field-icon {
@@ -257,14 +271,13 @@
             height: 18px;
             color: var(--gray-400);
             pointer-events: none;
-            transition: color 0.2s;
+            transition: color .2s;
         }
 
         .field-wrap:focus-within .field-icon {
             color: var(--blue-mid);
         }
 
-        /* نمایش/پنهان رمز */
         .toggle-password {
             position: absolute;
             left: 12px;
@@ -273,7 +286,7 @@
             cursor: pointer;
             padding: 4px;
             color: var(--gray-400);
-            transition: color 0.2s;
+            transition: color .2s;
             display: flex;
             align-items: center;
         }
@@ -282,27 +295,12 @@
                 color: var(--blue-mid);
             }
 
-        /* پیام خطا — فقط متن قرمز زیر فیلد رمز */
         .error-text {
             margin-top: 6px;
-            font-size: 0.82rem;
+            font-size: .82rem;
             color: var(--error);
             font-weight: 500;
             text-align: right;
-        }
-
-        @@keyframes shake {
-            0%, 100% {
-                transform: translateX(0);
-            }
-
-            20%, 60% {
-                transform: translateX(-4px);
-            }
-
-            40%, 80% {
-                transform: translateX(4px);
-            }
         }
 
         /* دکمه ورود */
@@ -317,8 +315,8 @@
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
-            box-shadow: 0 4px 16px rgba(21,101,192,0.35);
+            transition: transform .15s, box-shadow .15s, filter .15s;
+            box-shadow: 0 4px 16px rgba(21,101,192,.35);
             position: relative;
             overflow: hidden;
             margin-top: 8px;
@@ -328,14 +326,14 @@
                 content: '';
                 position: absolute;
                 inset: 0;
-                background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+                background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 60%);
                 opacity: 0;
-                transition: opacity 0.2s;
+                transition: opacity .2s;
             }
 
             .btn-login:hover {
                 transform: translateY(-1px);
-                box-shadow: 0 8px 24px rgba(21,101,192,0.4);
+                box-shadow: 0 8px 24px rgba(21,101,192,.4);
                 filter: brightness(1.05);
             }
 
@@ -345,14 +343,14 @@
 
             .btn-login:active {
                 transform: translateY(0);
-                box-shadow: 0 2px 8px rgba(21,101,192,0.3);
+                box-shadow: 0 2px 8px rgba(21,101,192,.3);
             }
 
         /* فوتر */
         .auth-footer {
             margin-top: 24px;
             text-align: center;
-            font-size: 0.78rem;
+            font-size: .78rem;
             color: var(--gray-400);
             line-height: 1.8;
         }
@@ -367,7 +365,6 @@
                     text-decoration: underline;
                 }
 
-        /* responsive */
         @@media (max-width: 560px) {
             .auth-wrapper {
                 max-width: 100%;
@@ -379,23 +376,44 @@
                 border-radius: 20px;
             }
 
+            .app-header {
+                width: 100%;
+            }
+
             .app-title {
                 font-size: 1rem;
-                white-space: normal;
             }
         }
     </style>
 
-    @await RenderSectionAsync("Styles", false)
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <div class="bg-circle-2" aria-hidden="true"></div>
+    <div class="bg-circle" aria-hidden="true"></div>
 
     <main class="auth-wrapper" role="main">
         @RenderBody()
     </main>
 
-    <script src="~/js/libs/jquery.min.js"></script>
+    <script>
+        (function () {
+            var EYE_OPEN = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+            var EYE_SHUT = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>'
+                         + '<path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>'
+                         + '<path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>'
+                         + '<line x1="1" y1="1" x2="23" y2="23"/>';
+
+            window.togglePassword = function () {
+                var input   = document.getElementById('Password');
+                var icon    = document.getElementById('eye-icon');
+                var btn     = document.querySelector('.toggle-password');
+                var visible = input.type === 'text';
+                input.type     = visible ? 'password' : 'text';
+                icon.innerHTML = visible ? EYE_OPEN : EYE_SHUT;
+                btn.setAttribute('aria-label', visible ? 'نمایش رمز عبور' : 'پنهان کردن رمز عبور');
+            };
+        })();
+    </script>
 
     @{
         var toastMessage = TempData["ToastMessage"]?.ToString();
@@ -405,7 +423,6 @@
     {
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // نمایش toast اگر کتابخانه موجود باشد
                 if (typeof showToast === 'function') {
                     showToast(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(toastMessage)),
                               @Html.Raw(System.Text.Json.JsonSerializer.Serialize(toastType ?? "success")));

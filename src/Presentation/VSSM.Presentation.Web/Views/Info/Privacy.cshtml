@@ -1,0 +1,114 @@
+﻿@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "قوانین حریم خصوصی";
+}
+
+<div class="app-header">
+    <h1 class="app-title">سامانه مدیریت، نگهداری و توزیع واکسن</h1>
+    <p class="app-subtitle">Vaccination Supplies Stock Management</p>
+</div>
+
+<div class="auth-card privacy-card">
+
+    <div class="logo-section">
+        <img src="~/img/Logo.png" alt="لوگو معاونت بهداشت" width="120" height="140" />
+    </div>
+
+    <div class="form-header">
+        <p class="form-title">قوانین حریم خصوصی</p>
+        <p class="form-subtitle">شرایط استفاده از سامانه VSSM</p>
+    </div>
+
+    <div class="privacy-body">
+
+        <div class="privacy-block">
+            <h3>۱. جمع‌آوری اطلاعات</h3>
+            <p>
+                این سامانه تنها اطلاعات ضروری برای احراز هویت و انجام وظایف سازمانی شما را
+                جمع‌آوری می‌کند. هیچ اطلاعاتی بدون رضایت شما به اشخاص ثالث منتقل نمی‌شود.
+            </p>
+        </div>
+
+        <div class="privacy-block">
+            <h3>۲. نحوه استفاده از اطلاعات</h3>
+            <p>
+                اطلاعات کاربران صرفاً برای مدیریت دسترسی، ثبت گزارش‌های عملیاتی، و بهبود
+                عملکرد سامانه استفاده می‌شود. تمام تراکنش‌ها در سیستم ثبت و قابل پیگیری هستند.
+            </p>
+        </div>
+
+        <div class="privacy-block">
+            <h3>۳. امنیت داده‌ها</h3>
+            <p>
+                اطلاعات سامانه با رمزنگاری استاندارد محافظت می‌شود. کاربران موظفند رمز عبور خود را
+                محرمانه نگه دارند و در صورت مشاهده فعالیت مشکوک فوراً اطلاع دهند.
+            </p>
+        </div>
+
+        <div class="privacy-block">
+            <h3>۴. کوکی‌ها</h3>
+            <p>
+                سامانه از کوکی‌های session برای حفظ وضعیت ورود استفاده می‌کند. این کوکی‌ها
+                پس از بستن مرورگر یا خروج از سامانه به‌طور خودکار حذف می‌شوند.
+            </p>
+        </div>
+
+        <div class="privacy-block">
+            <h3>۵. تماس با ما</h3>
+            <p>
+                در صورت هرگونه سوال درباره حریم خصوصی، با واحد پشتیبانی از طریق
+                <a href="mailto:support@vssm.ir">support@vssm.ir</a> تماس بگیرید.
+            </p>
+        </div>
+
+    </div>
+
+    <p class="auth-footer">
+        <a asp-controller="Account" asp-action="Login">← بازگشت به صفحه ورود</a>
+    </p>
+</div>
+
+@section Styles {
+    <style>
+        .privacy-card {
+            max-width: 100%;
+        }
+
+        .privacy-body {
+            margin-bottom: 8px;
+        }
+
+        .privacy-block {
+            padding: 14px 0;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+            .privacy-block:last-child {
+                border-bottom: none;
+            }
+
+            .privacy-block h3 {
+                font-size: .9rem;
+                font-weight: 700;
+                color: #1E293B;
+                margin-bottom: 6px;
+            }
+
+            .privacy-block p {
+                font-size: .84rem;
+                color: #475569;
+                line-height: 1.9;
+                text-align: justify;
+                margin: 0;
+            }
+
+            .privacy-block a {
+                color: #1565C0;
+                text-decoration: none;
+            }
+
+                .privacy-block a:hover {
+                    text-decoration: underline;
+                }
+    </style>
+}

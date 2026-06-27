@@ -1,0 +1,171 @@
+﻿@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "درباره سامانه";
+}
+
+<div class="app-header">
+    <h1 class="app-title">سامانه مدیریت، نگهداری و توزیع واکسن</h1>
+    <p class="app-subtitle">Vaccination Supplies Stock Management</p>
+</div>
+
+<div class="auth-card info-card">
+
+    <div class="logo-section">
+        <img src="~/img/Logo.png" alt="لوگو معاونت بهداشت" width="120" height="140" />
+    </div>
+
+    <div class="info-section">
+        <h2 class="info-title">درباره سامانه</h2>
+
+        <p class="info-body">
+            سامانه مدیریت، نگهداری و توزیع واکسن (VSSM) یک بستر یکپارچه برای مدیریت زنجیره تأمین
+            واکسن‌های کشور است. این سامانه با هدف شفافیت، ردیابی دقیق، و توزیع بهینه واکسن در سطوح
+            مختلف شبکه بهداشت طراحی شده است.
+        </p>
+
+        <div class="info-list">
+            <div class="info-item">
+                <div class="info-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 11 12 14 22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                </div>
+                <div>
+                    <strong>مدیریت موجودی</strong>
+                    <p>ثبت، پایش و کنترل موجودی واکسن در انبارهای مختلف</p>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                </div>
+                <div>
+                    <strong>ردیابی توزیع</strong>
+                    <p>پیگیری جابجایی واکسن از مرکز تا نقاط توزیع نهایی</p>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                </div>
+                <div>
+                    <strong>مدیریت دسترسی</strong>
+                    <p>سطوح دسترسی چندلایه برای کاربران در سطوح مختلف سازمانی</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-meta">
+            <span>نسخه سامانه: <strong>1.0</strong></span>
+            <span>پشتیبانی: <a href="mailto:support@vssm.ir">support@vssm.ir</a></span>
+        </div>
+    </div>
+
+    <p class="auth-footer">
+        <a asp-controller="Account" asp-action="Login">← بازگشت به صفحه ورود</a>
+    </p>
+</div>
+
+@section Styles {
+    <style>
+        .info-card {
+            max-width: 100%;
+        }
+
+        .info-section {
+            margin-bottom: 8px;
+        }
+
+        .info-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .info-body {
+            font-size: .88rem;
+            color: #475569;
+            line-height: 1.9;
+            text-align: justify;
+            margin-bottom: 20px;
+        }
+
+        .info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .info-icon {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #DBEAFE;
+            color: #1565C0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .info-item strong {
+            display: block;
+            font-size: .88rem;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+
+        .info-item p {
+            font-size: .8rem;
+            color: #64748B;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .info-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: .78rem;
+            color: #94A3B8;
+            padding-top: 16px;
+            border-top: 1px solid #E2E8F0;
+        }
+
+            .info-meta a {
+                color: #1565C0;
+                text-decoration: none;
+            }
+
+                .info-meta a:hover {
+                    text-decoration: underline;
+                }
+    </style>
+}

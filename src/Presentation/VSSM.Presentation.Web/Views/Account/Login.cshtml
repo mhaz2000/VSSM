@@ -2,10 +2,11 @@
 @model LoginViewModel
 @{
     Layout = "_AuthLayout";
+    ViewData["Title"] = "ورود";
     var hasError = ViewBag.Error != null;
 }
 
-@* عنوان بیرون از کارت *@
+@* عنوان بیرون کارت — bold و کمی عریض‌تر *@
 <div class="app-header">
     <h1 class="app-title">سامانه مدیریت، نگهداری و توزیع واکسن</h1>
     <p class="app-subtitle">Vaccination Supplies Stock Management</p>
@@ -13,11 +14,9 @@
 
 <div class="auth-card">
 
-    @* لوگو — داخل کارت *@
+    @* لوگو *@
     <div class="logo-section">
-        <div class="logo-wrap">
-            <img src="~/img/VSSMLogo.gif" alt="لوگو سامانه مدیریت واکسن" width="50" height="50" />
-        </div>
+        <img src="~/img/Logo.png" alt="لوگو معاونت بهداشت" width="120" height="140" />
     </div>
 
     @* هدر فرم *@
@@ -26,7 +25,6 @@
         <p class="form-subtitle">وارد حساب کاربری خود شوید.</p>
     </div>
 
-    @* فرم ورود *@
     <form method="post" asp-action="Login" autocomplete="off" novalidate>
         @Html.AntiForgeryToken()
 
@@ -40,15 +38,12 @@
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                 </svg>
-                <input type="text"
-                       id="UserName"
-                       asp-for="UserName"
+                <input type="text" id="UserName" asp-for="UserName"
                        class="field-input @(hasError ? "has-error" : "")"
                        placeholder="نام کاربری"
                        autocomplete="username"
                        spellcheck="false"
                        maxlength="100"
-                       inputmode="text"
                        aria-required="true" />
             </div>
         </div>
@@ -63,16 +58,13 @@
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-                <input type="password"
-                       id="Password"
-                       asp-for="Password"
+                <input type="password" id="Password" asp-for="Password"
                        class="field-input @(hasError ? "has-error" : "")"
                        placeholder="رمز عبور"
                        autocomplete="current-password"
                        maxlength="128"
                        aria-required="true" />
-                <button type="button"
-                        class="toggle-password"
+                <button type="button" class="toggle-password"
                         onclick="togglePassword()"
                         aria-label="نمایش رمز عبور"
                         tabindex="-1">
@@ -94,29 +86,7 @@
     </form>
 
     <p class="auth-footer">
-        با ورود به <a href="#">سامانه</a>، شما شرایط استفاده و
-        <a href="#">قوانین حریم خصوصی</a> ما را می‌پذیرید.
+        با ورود به <a asp-controller="Info" asp-action="About">سامانه</a>، شما شرایط استفاده و
+        <a asp-controller="Info" asp-action="Privacy">قوانین حریم خصوصی</a> ما را می‌پذیرید.
     </p>
 </div>
-
-@section Scripts {
-    <script>
-        (function () {
-            var EYE_OPEN = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-            var EYE_SHUT = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>'
-                         + '<path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>'
-                         + '<path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>'
-                         + '<line x1="1" y1="1" x2="23" y2="23"/>';
-
-            window.togglePassword = function () {
-                var input  = document.getElementById('Password');
-                var icon   = document.getElementById('eye-icon');
-                var btn    = document.querySelector('.toggle-password');
-                var isHidden = input.type === 'password';
-                input.type     = isHidden ? 'text' : 'password';
-                icon.innerHTML = isHidden ? EYE_SHUT : EYE_OPEN;
-                btn.setAttribute('aria-label', isHidden ? 'پنهان کردن رمز عبور' : 'نمایش رمز عبور');
-            };
-        })();
-    </script>
-}

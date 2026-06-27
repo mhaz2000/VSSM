@@ -1,95 +1,91 @@
 ﻿@model ItemDoseAssignmentViewModel
+
 @{
-    string formName = "ثبت";
-    if (Model != null && Model.ItemDoseAssignmentId > 0)
-        formName = "ویرایش";
+    string formName = Model.ItemDoseAssignmentId > 0 ? "ویرایش اختصاص دوز به کالا" : "ثبت اختصاص دوز به کالا";
+    var isEdit = Model.ItemDoseAssignmentId > 0;
 }
 
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/user/user-form.css" rel="stylesheet" />
+}
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
+<div class="user-form-wrap">
+    <strong class="user-form-title">@formName</strong>
 
+    <form asp-action="Create" method="post" style="margin-top: 1rem;">
+        <input type="hidden" asp-for="ItemDoseAssignmentId" />
 
-        <div class="card form-card">
-            <div class="card-header card-form-header">
-                <h5 class="header-title">@formName  اختصاص دوز به کالا</h5>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <!-- اختصاص دوز به کالا -->
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-flask" style="color:#1d6fb8;"></i>
+                <h6>اختصاص دوز به کالا</h6>
             </div>
-                  <div class="card-block">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <form asp-action="Create" method="post" class="form-horizontal">
-                        <input type="hidden" asp-for="ItemDoseAssignmentId" />
-                        <div class="row mx-0 mb-4">
-
-
-                            <!-- نوع کالا -->
-                                <div class="form-group col-lg-6">
-                                    <label class="form-label">نوع کالا <span class="form-label-caption"> (اجباری)</span>
-                                    </label>
-                                    <select id="ItemClassId"
-                                        asp-items="ViewBag.ItemClass" required
-                                            class="form-control form-select">
-                                        <option value="">انتخاب کنید...</option>
-                                    </select>
-                                </div>
-
-                                <!-- کالا -->
-                            <div class="form-group col-lg-6">
-                                    <label class="form-label">کالا 
-                                        <span class="form-label-caption"> (اجباری)</span>
-                                    </label>
-                                <select id="ItemId" asp-for="ItemId"
-                                        class="form-control form-select" required
-                                            disabled>
-                                        <option value="">ابتدا نوع کالا را انتخاب کنید</option>
-                                    </select>
-                                </div>
-
-                            <div class="form-group col-lg-6">
-                                <label class="form-label"> دوز بر ویال
-                                    <span class="form-label-caption"> (اجباری)</span>
-                                </label>
-                                <select class="form-control" asp-for="DoseId">
-                                    <option value="">-- انتخاب کنید --</option>
-
-                                    @foreach (var itemType in ViewBag.DosePerVial)
-                                    {
-                                        <option value="@itemType.DosePerVialId">@itemType.NumDosePerVial</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="form-group col-lg-6">
-                                <label class="form-label" for="DisplayOrder">حجم بر دوز (cm3) :</label>
-                                <input type="number" asp-for="VialPerDoseCm3" name="VialPerDoseCm3" class="form-control" min="0" />
-                            </div>
-
-
-                           
-                         <div class="text-left">
-                            <button type="submit" class="btn btn-success px-5">ثبت</button>
-                            <a asp-action="Index" class="btn btn-success-outlet px-5">بازگشت</a>
-                        </div>
-                    </form>
-
+            <div class="a-card-body">
+                <div class="fg-3">
+                    <div class="f-group">
+                        <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
+                        <select id="ItemClassId"
+                                asp-for="ItemClassId"
+                                asp-items="ViewBag.ItemClass" required
+                                class="f-control">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
+                        <select id="ItemId" asp-for="ItemId"
+                                class="f-control" required disabled>
+                            <option value="">ابتدا نوع کالا را انتخاب کنید</option>
+                        </select>
+                        <span asp-validation-for="ItemId" class="text-danger"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">دوز بر ویال <span class="req-tag">اجباری</span></label>
+                        <select class="f-control" asp-for="DoseId">
+                            <option value="">-- انتخاب کنید --</option>
+                            @foreach (var itemType in ViewBag.DosePerVial)
+                            {
+                                <option value="@itemType.Id">@itemType.Title</option>
+                            }
+                        </select>
+                        <span asp-validation-for="DoseId" class="text-danger"></span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">حجم بر دوز (cm3) <span class="req-tag">اجباری</span></label>
+                        <input type="number" asp-for="VialPerDoseCm3" class="f-control" min="0" />
+                        <span asp-validation-for="VialPerDoseCm3" class="text-danger"></span>
+                    </div>
                 </div>
+            </div>
         </div>
 
-    </div>
+        <!-- فوتر -->
+        <div class="form-footer">
+            <a asp-action="Index" class="btn-back">
+                <i class="fa fa-arrow-right"></i> بازگشت
+            </a>
+            <button type="submit" class="btn-confirm">
+                <i class="fa fa-save"></i> ثبت
+            </button>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
     <script>
         $(function () {
-
             const $itemClass = $("#ItemClassId");
             const $item = $("#ItemId");
 
-            // تغییر نوع کالا
             $itemClass.on("change", function () {
-
                 const classId = $(this).val();
 
-                // reset
                 $item.prop("disabled", true);
                 $item.empty();
 
@@ -98,22 +94,29 @@
                     return;
                 }
 
-                // load filtered items
                 $.getJSON("/Arrival/GetItemsByClass", { classId: classId })
                     .done(function (data) {
-
                         $item.append('<option value="">انتخاب کنید...</option>');
-
                         data.forEach(x => {
                             $item.append(
                                 `<option value="${x.id}">${x.text}</option>`
                             );
                         });
-
                         $item.prop("disabled", false);
+
+                        // If editing, pre-select the ItemId after loading items
+                        var selectedItemId = '@Model.ItemId';
+                        if (selectedItemId) {
+                            $item.val(selectedItemId);
+                        }
                     });
             });
-        });
 
+            // If editing, pre-select ItemClass and trigger load
+            var initialClassId = '@Model.ItemClassId';
+            if (initialClassId) {
+                $itemClass.val(initialClassId).trigger("change");
+            }
+        });
     </script>
 }

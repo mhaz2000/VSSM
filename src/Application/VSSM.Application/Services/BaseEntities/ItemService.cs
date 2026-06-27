@@ -150,7 +150,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
 
         paging.TotalItems = await query.CountAsync();
 
-        var items = await query
+        var items = await query.OrderByDescending(t => t.ItemId)
             .Skip(paging.Skip)
             .Take(paging.PageSize)
             .ToListAsync(cancellationToken);

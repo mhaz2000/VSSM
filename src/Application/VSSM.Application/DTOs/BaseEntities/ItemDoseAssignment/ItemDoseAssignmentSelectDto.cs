@@ -15,5 +15,6 @@ namespace VSSM.Application.DTOs.BaseEntities.ItemDoseAssignment
         public int? DoseId { get; set; }
 
         public float? VialPerDoseCm3 { get; set; }
+        public int? ItemClassId { get; internal set; }
     }
 }

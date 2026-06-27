@@ -22,5 +22,7 @@ namespace VSSM.Application.Interfaces.BaseEntities
          Task<bool> Delete(int id, CancellationToken token);
 
          Task<UserEditDto> GetByUsername(string username, CancellationToken token);
+
+         Task<bool> ChangePassword(int userId, string newPassword, CancellationToken token);
     }
 }

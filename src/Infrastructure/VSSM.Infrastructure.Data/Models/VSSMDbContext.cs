@@ -2014,7 +2014,7 @@ public partial class VSSMDbContext : DbContext
             entity.HasOne(d => d.OrderInfo)
                 .WithMany(p => p.TblUidErrors)
                 .HasForeignKey(d => d.FkOrderInfo)
-                .HasConstraintName("FK_tblUidInfo_InfoOrder");
+                .HasConstraintName("FK_tblUidError_InfoOrder");
         });
 
         modelBuilder.Entity<TblDispatchUid>(entity =>

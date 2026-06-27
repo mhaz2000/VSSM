@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VSSM.Application.DTOs;
-using VSSM.Application.DTOs.BaseEntities.ItemClass;
+﻿using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.ItemDoseAssignment;
 
 namespace VSSM.Application.Interfaces.BaseEntities
@@ -16,5 +10,6 @@ namespace VSSM.Application.Interfaces.BaseEntities
         Task<List<ItemDoseAssignmentListDto>> GetAll(CancellationToken cancellationToken);
         Task<ItemDoseAssignmentSelectDto> GetById(int id, CancellationToken cancellationToken);
         Task<PagingSearchOrderDto<ItemDoseAssignmentListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
+        Task<bool> Delete(int id, CancellationToken cancellationToken);
     }
 }

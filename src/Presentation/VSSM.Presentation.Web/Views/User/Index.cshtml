@@ -11,6 +11,17 @@
     ViewData["Title"] = "مدیریت کاربران";
 }
 
+@if (TempData["ToastMessage"] != null)
+{
+    <script>
+        $(document).ready(function() {
+            var message = '@Html.Raw(TempData["ToastMessage"])';
+            var type = '@TempData["ToastType"]';
+            toastService.show(message, type);
+        });
+    </script>
+}
+
 
 <div class="grid-wrapper">
     <div class="grid-header" style="direction:rtl;">
@@ -47,4 +58,61 @@
     <div>
         @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
+
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" id="changePasswordModalContent">
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تایید حذف</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning" style="font-size:14px; line-height:1.6;">
+                        <i class="fa fa-exclamation-triangle" style="margin-left:6px;"></i>
+                        آیا از حذف این کاربر اطمینان دارید؟
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-danger" id="deleteConfirmSubmit">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            var pendingDeleteForm = null;
+
+            $(document).on("click", ".open-modal", function (e) {
+                e.preventDefault();
+                const url = $(this).data("url");
+                $("#changePasswordModalContent").load(url, function () {
+                    $('#changePasswordModal').modal('show');
+                });
+            });
+
+            $(document).on("click", ".delete-user", function (e) {
+                e.preventDefault();
+                pendingDeleteForm = $(this).closest("form");
+                $("#deleteConfirmModal").modal("show");
+            });
+
+            $("#deleteConfirmSubmit").on("click", function () {
+                if (pendingDeleteForm) {
+                    pendingDeleteForm.submit();
+                }
+                $("#deleteConfirmModal").modal("hide");
+            });
+        });
+    </script>
+}

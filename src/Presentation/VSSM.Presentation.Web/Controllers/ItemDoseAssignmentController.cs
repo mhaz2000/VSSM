@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using NuGet.Common;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemDoseAssignment;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
 using VSSM.Presentation.Web.Models.Item;
 using VSSM.Presentation.Web.Models.ItemDoseAssignment;
+using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
@@ -15,35 +14,77 @@ namespace VSSM.Presentation.Web.Controllers
     public class ItemDoseAssignmentController : BaseController
     {
         private readonly IItemService _itemService;
-        private readonly IItemClassService _itemClassService;
         private readonly IItemDoseAssignmentService _itemDoseAssignmentService;
-        private readonly IBaseInfoService _dosePerVialService;
+        private readonly IBaseInfoService _baseInfoService;
         public ItemDoseAssignmentController(IItemDoseAssignmentService itemDoseAssignmentService,
-                                            IBaseInfoService dosePerVialService,
+                                            IBaseInfoService baseInfoService,
                                             IItemService itemService, IItemClassService itemClassService)
         {
             _itemService = itemService;
-            _itemClassService = itemClassService;
             _itemDoseAssignmentService = itemDoseAssignmentService;
-            _dosePerVialService = dosePerVialService;
+            _baseInfoService = baseInfoService;
         }
 
         public async Task<IActionResult> Index(CancellationToken cancellationToken, string? search,
                                                 int page = 1,
                                                 int pageSize = 10,
-                                                string sortField = "Orders",
+                                                string sortField = "ItemDoseAssignmentId",
                                                 string sortOrder = "desc")
         {
-            var listModel = await _itemDoseAssignmentService.GetPagedList(search,
-                                                                    page,
-                                                                    pageSize,
-                                                                    sortField,
-                                                                    sortOrder,
-                                                                    cancellationToken);
+            var pagedData = await _itemDoseAssignmentService.GetPagedList(search,
+                                                                        page,
+                                                                        pageSize,
+                                                                        sortField,
+                                                                        sortOrder,
+                                                                        cancellationToken);
 
             await PrepareDropdown(cancellationToken);
-            return View(listModel);
 
+            var model = new GridViewModel
+            {
+                SearchTerm = search,
+                CurrentSort = sortField,
+                CurrentDirection = sortOrder,
+                Data = new PagedResult<object>
+                {
+                    Items = pagedData.Items.Cast<object>().ToList(),
+                    PageNumber = page,
+                    PageSize = pageSize,
+                    TotalCount = pagedData.Paging.TotalItems
+                },
+                Columns = new List<GridColumn>
+                {
+                    new() { Header = "کالا", PropertyName = nameof(ItemDoseAssignmentListDto.ItemName), Sortable = true },
+                    new() { Header = "حجم بر دوز (cm3)", PropertyName = nameof(ItemDoseAssignmentListDto.VialPerDoseCm3), Sortable = false },
+                    new() { Header = "دوز بر ویال", PropertyName = nameof(ItemDoseAssignmentListDto.DoseNum), Sortable = false },
+                    new() { Header = "عملیات", IsActionColumn = true}
+                },
+                Actions = new List<GridAction>
+                {
+                    new()
+                    {
+                        Title = "ویرایش",
+                        Controller = "ItemDoseAssignment",
+                        Action = "Edit",
+                        RouteIdProperty = nameof(ItemDoseAssignmentListDto.ItemDoseAssignmentId),
+                        LinkClass = "",
+                        IconClass = "fa fa-edit",
+                        OpenModal = false
+                    },
+                    new()
+                    {
+                        Title = "حذف",
+                        Controller = "ItemDoseAssignment",
+                        Action = "Delete",
+                        RouteIdProperty = nameof(ItemDoseAssignmentListDto.ItemDoseAssignmentId),
+                        LinkClass = "delete-item",
+                        IconClass = "fa fa-trash",
+                        Method = "Post",
+                    }
+                }
+            };
+
+            return View(model);
         }
         public async Task<IActionResult> New()
         {
@@ -93,6 +134,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             var model = new ItemDoseAssignmentViewModel
             {
+                ItemClassId = item.ItemClassId,
                 ItemDoseAssignmentId = item.ItemDoseAssignmentId,
                 ItemId = item.ItemId.GetValueOrDefault(),
                 DoseId = item.DoseId.GetValueOrDefault(),
@@ -104,16 +146,24 @@ namespace VSSM.Presentation.Web.Controllers
             return View("New", model);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id, CancellationToken token)
+        {
+            await _itemDoseAssignmentService.Delete(id, token);
+
+            TempData["ToastMessage"] = "با موفقیت حذف شد";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index");
+        }
+
         private async Task PrepareDropdown(CancellationToken cancellationTOken)
         {
-            ViewBag.ItemClass = (await _itemClassService.GetActives(cancellationTOken))
-             .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+            ViewBag.ItemClass = (await _baseInfoService.GetByParentIdAsync(53 ,cancellationTOken))
+             .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Title })
              .ToList();
 
-            //var item = await _itemService.GetActives(cancellationTOken);
-            //ViewBag.Item = item;
-
-            var dosePerVial = await _dosePerVialService.GetByParentIdAsync(84, cancellationTOken);
+            var dosePerVial = await _baseInfoService.GetByParentIdAsync(84, cancellationTOken);
             ViewBag.DosePerVial = dosePerVial;
         }
 

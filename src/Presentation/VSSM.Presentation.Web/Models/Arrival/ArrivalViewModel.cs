@@ -29,5 +29,11 @@ public class ArrivalViewModel
     public List<ArrivalLineViewModel> Lines { get; set; } = new();
     public ArrivalLineViewModel NewLine { get; set; } = new();
 
-    public string ArrivalType { get; set; } = "";
+    public string ArrivalType { get; set; } = "vaccine";
+
+    public decimal? DosePerVial { get; set; }
+    public decimal? NumVials { get; set; }
+    public string? ProductionDateShamsi { get; set; }
+    public string? ExpiryDateShamsi { get; set; }
+
 }

@@ -4,6 +4,8 @@ using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Presentation.Web.Const;
+using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Arrival;
 using VSSM.Presentation.Web.Models.Base;
 
@@ -15,7 +17,6 @@ public class ArrivalController(
     IItemService itemService,
     IStoreService storeService,
     IBaseInfoService baseInfoService,
-    IItemClassService itemClassService,
     IOrderInfoService orderInfoService,
     IUidInfoService uidInfoService) : BaseController
 {
@@ -43,54 +44,67 @@ public class ArrivalController(
                 TotalCount = list.Paging.TotalPages * pageSize
             },
             Columns = new List<GridColumn>
-            {
-                new() { Header = "دوره فعالیت", PropertyName = nameof(ArrivalListDto.FiscalPeriodName), Sortable = false },
-                new() { Header = "تاریخ ورود",  PropertyName = nameof(ArrivalListDto.DateText),         Sortable = false },
-                new() { Header = "شماره گزارش", PropertyName = nameof(ArrivalListDto.ReportNumber),     Sortable = false },
-                new() { Header = "وضعیت",       PropertyName = nameof(ArrivalListDto.StatusText),       Sortable = false },
-                new() { Header = "عملیات",      IsActionColumn = true }
-            },
-            Actions = new List<GridAction>
-            {
-                new()
+        {
+            new() { Header = "دوره فعالیت", PropertyName = nameof(ArrivalListDto.FiscalPeriodName), Sortable = false },
+            new() { Header = "تاریخ ورود",  PropertyName = nameof(ArrivalListDto.DateText),         Sortable = false },
+            new() { Header = "شماره گزارش", PropertyName = nameof(ArrivalListDto.ReportNumber),     Sortable = false },
+            new() {
+                Header = "وضعیت",
+                PropertyName = nameof(ArrivalListDto.StatusText),
+                Sortable = false,
+                IsBadgeColumn = true,
+                BadgeMap = new Dictionary<string, (string Text, string CssClass)>
                 {
-                    Title           = "ویرایش",
-                    Controller      = "Arrival",
-                    Action          = "New",
-                    RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
-                    IconClass       = "fa fa-edit",
-                    DynamicTitle    = item => (item as ArrivalListDto)?.IsDrafted == true ? "ویرایش" : ""
-                },
-                new()
-                {
-                    Title           = "چاپ",
-                    Controller      = "Arrival",
-                    Action          = "Print",
-                    RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
-                    IconClass       = "fa fa-print",
-                    DynamicTitle    = item => (item as ArrivalListDto)?.IsConfirmed == true ? "چاپ" : ""
-                },
-                new()
-                {
-                    Title           = "حذف",
-                    Controller      = "Arrival",
-                    Action          = "Delete",
-                    RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
-                    IconClass       = "fa fa-trash",
-                    DynamicTitle    = item => (item as ArrivalListDto)?.IsDrafted == true ? "حذف" : ""
+                    ["حذف شده"]  = ("حذف شده",  "badge-danger"),
+                    ["تایید شده"] = ("تایید شده", "badge-success"),
+                    ["پیش‌نویس"]  = ("پیش‌نویس",  "badge-warning"),
+                    ["نامشخص"]    = ("نامشخص",    "badge-secondary")
                 }
+            },
+            new() { Header = "عملیات", IsActionColumn = true }
+        },
+            Actions = new List<GridAction>
+        {
+            new()
+            {
+                Title           = "ویرایش",
+                Controller      = "Arrival",
+                Action          = "New",
+                RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
+                IconClass       = "fa fa-edit",
+                DynamicTitle    = item => (item as ArrivalListDto)?.IsDrafted == true ? "ویرایش" : ""
+            },
+            new()
+            {
+                Title           = "چاپ",
+                Controller      = "Arrival",
+                Action          = "Print",
+                RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
+                IconClass       = "fa fa-print",
+                DynamicTitle    = item => (item as ArrivalListDto)?.IsConfirmed == true ? "چاپ" : ""
+            },
+            new()
+            {
+                Title           = "حذف",
+                Controller      = "Arrival",
+                Action          = "Delete",
+                RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
+                IconClass       = "fa fa-trash",
+                DynamicTitle    = item => (item as ArrivalListDto)?.IsDrafted == true ? "حذف" : ""
             }
+        }
         };
 
         return View(model);
     }
+
 
     public IActionResult Print(int id) =>
         View("~/Views/Shared/UnderConstruction.cshtml");
 
     public async Task<IActionResult> New(int? id, CancellationToken token)
     {
-        await LoadDropDowns(token);
+        await PopulateLookupViewBagsAsync(token);
 
         if (id is null or 0)
         {
@@ -143,7 +157,7 @@ public class ArrivalController(
     {
         try
         {
-            await LoadDropDowns(token);
+            await PopulateLookupViewBagsAsync(token);
 
             if (command is not null && (
                 command.StartsWith("deleteLine_", StringComparison.OrdinalIgnoreCase) ||
@@ -257,36 +271,38 @@ public class ArrivalController(
 
     private async Task<IActionResult> AddHalalLine(ArrivalViewModel model, CancellationToken token)
     {
+        // اعتبارسنجی‌ها با ترتیب مشخص‌شده در requirements
         if (!model.NewLine.ItemId.HasValue)
-            return ToastView("فیلد کالا اجباری است", model);
+            return ToastView("آیتم را انتخاب کنید", model);
 
-        if (!model.NewLine.DosePerVialId.HasValue)
-            return ToastView("فیلد دوز بر ویال اجباری است", model);
 
         if (!model.NewLine.DosePerVial.HasValue || model.NewLine.DosePerVial <= 0)
-            return ToastView("فیلد دوز بر ویال اجباری است", model);
+            return ToastView("مقدار دوز باید بیشتر از صفر باشد", model);
 
         if (!model.NewLine.Quantity.HasValue || model.NewLine.Quantity <= 0)
-            return ToastView("فیلد تعداد اجباری است", model);
+            return ToastView("تعداد باید بیشتر از صفر باشد", model);
 
         if (string.IsNullOrWhiteSpace(model.NewLine.ProductionDateShamsi))
-            return ToastView("تاریخ تولید اجباری است", model);
+            return ToastView("تاریخ تولید را وارد کنید", model);
 
         if (string.IsNullOrWhiteSpace(model.NewLine.ExpiryDateShamsi))
-            return ToastView("تاریخ انقضا اجباری است", model);
+            return ToastView("تاریخ انقضا را وارد کنید", model);
 
+        // تبدیل تاریخ‌های شمسی به DateTime
         model.NewLine.ProductionDate = DateTimeHelper.ToMiladi(model.NewLine.ProductionDateShamsi);
         model.NewLine.ExpiryDate = DateTimeHelper.ToMiladi(model.NewLine.ExpiryDateShamsi);
+
+        // محاسبه سمت سرور — safety net؛ حتی اگر JS قبلاً محاسبه کرده باشد
         model.NewLine.NumVials = model.NewLine.Quantity / model.NewLine.DosePerVial;
 
-        await EnsureArrivalCreated(model, token);
+        // BatchNum برای Halal استفاده نمی‌شود؛ مقدار null باقی می‌ماند
 
+        await EnsureArrivalCreated(model, token);
         var lineDto = MapNewLineToDto(model);
         await arrivalService.AddLine(model.ArrivalId!.Value, lineDto, token);
 
         return RedirectToAction("New", new { id = model.ArrivalId.Value });
     }
-
     private async Task<IActionResult> SaveDraft(ArrivalViewModel model, CancellationToken token)
     {
         if (!model.ArrivalId.HasValue || model.ArrivalId == 0 ||
@@ -367,7 +383,7 @@ public class ArrivalController(
         await uidInfoService.ClearArrivalFkByLineId(lineId, token);
         await arrivalService.CancelLine(lineId, token);
 
-        await LoadDropDowns(token);
+        await PopulateLookupViewBagsAsync(token);
 
         var updated = await arrivalService.GetById(model.ArrivalId.Value, token);
         model.Lines = await MapLinesToViewModelAsync(updated?.Lines ?? new List<ArrivalLineDto>(), token);
@@ -529,7 +545,7 @@ public class ArrivalController(
         var result = new List<ArrivalLineViewModel>();
         foreach (var l in lines)
         {
-            var doses = l.ItemId.HasValue
+            var doses = (l.ItemId.HasValue && !string.IsNullOrEmpty(l.BatchNum))
                 ? await itemService.GetItemDoesPerVialsAsync(l.ItemId.Value, token)
                 : Enumerable.Empty<dynamic>();
 
@@ -571,29 +587,65 @@ public class ArrivalController(
             VvmTypeId = l.VvmTypeId,
         };
 
-    /// <summary>
-    /// لود موازی همه dropdown ها
-    /// </summary>
-    private async Task LoadDropDowns(CancellationToken token)
+
+    private async Task PopulateLookupViewBagsAsync(CancellationToken ct)
     {
-        ViewBag.ItemList = (await itemService.GetActives(token))
-            .Select(x => new SelectListItem { Value = x.ItemId.ToString(), Text = x.FullName })
-            .ToList();
+        ViewBag.Items = (await itemService.GetActives(ct))
+            .ToSelectList(x => x.ItemId, x => x.FullName);
 
-        ViewBag.StoreList = (await storeService.GetAll(token))
+        ViewBag.Stores = (await storeService.GetAll(ct))
             .Where(z => z.RecipientId == CurrentUserRecipientId)
-            .Select(x => new SelectListItem { Value = x.StoreId.ToString(), Text = x.FullName })
-            .ToList();
+            .ToSelectList(x => x.StoreId, x => x.FullName);
 
-        ViewBag.DosePerVialList = new List<SelectListItem>();
-        ViewBag.VvmTypeList = ToSelectList(await baseInfoService.GetByParentIdAsync(22, token));
-        ViewBag.VvmstageList = ToSelectList(await baseInfoService.GetByParentIdAsync(30, token));
-        ViewBag.ManufacturerList = ToSelectList(await baseInfoService.GetByParentIdAsync(48, token));
-        ViewBag.CommercialNameList = ToSelectList(await baseInfoService.GetByParentIdAsync(35, token));
-        ViewBag.UseList = ToSelectList(await baseInfoService.GetByParentIdAsync(7, token));
-        ViewBag.itemClassList = (await itemClassService.GetActives(token))
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
-            .ToList();
+        ViewBag.DosePerVials =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.DosePerVial, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.VvmTypes =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.VvmTypes, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.VvmStages =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.VvmStages, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.Manufacturers =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.Manufacturers, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.BrandNames =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.BrandNames, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.Uses =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.Uses, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.ItemTypes =
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, ct))
+            .ToSelectList(x => x.Id, x => x.Title);
+
+        ViewBag.HalalItems = (await itemService.GetActives(ct))
+            .Where(x => x.FkClassId == BaseInfoIds.HalalItemClassId)
+            .ToSelectList(x => x.ItemId, x => x.FullName);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetHalalItems(CancellationToken token)
+    {
+        var list = (await itemService.GetActives(token))
+            .Where(x => x.FkClassId == BaseInfoIds.HalalItemClassId)
+            .Select(x => new { id = x.ItemId, text = x.FullName });
+        return Json(list);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetHalalDoses(int itemId, CancellationToken token)
+    {
+        var list = (await itemService.GetItemDoesPerVialsAsync(itemId, token))
+            .OrderBy(z => z.NumDosePerVial)
+            .Select(x => new { value = x.DosePerVialId, text = x.NumDosePerVial.ToString() });
+        return Json(list);
     }
 
     private static List<SelectListItem> ToSelectList(IEnumerable<dynamic> source) =>

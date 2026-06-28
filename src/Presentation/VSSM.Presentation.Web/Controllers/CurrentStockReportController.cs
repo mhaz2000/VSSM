@@ -386,7 +386,7 @@ namespace VSSM.Presentation.Web.Controllers
             else
                 storeList = await _storeService.GetStoreNamesAsync(storeIds);
 
-            ViewBag.StoreList = storeList;
+            ViewBag.Stores = storeList;
 
             var itemList = string.Empty;
             var items = await _itemService.GetActives(cancellationToken);
@@ -400,7 +400,7 @@ namespace VSSM.Presentation.Web.Controllers
             else
                 itemList = await _itemService.GetItemNamesAsync(itemIds);
 
-            ViewBag.ItemList = itemList;
+            ViewBag.Items = itemList;
         }
 
         #endregion

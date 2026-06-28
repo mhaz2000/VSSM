@@ -11,7 +11,6 @@ namespace VSSM.Application.Services.BaseEntities;
 public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> validator) : IItemService
 {
     private const int VaccineClassId = 54;
-    private const int DiluentClassId = 55;
 
     public async Task<int> Create(ItemCreateDto dto, CancellationToken cancellationToken)
     {
@@ -46,14 +45,21 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
 
     public async Task<IEnumerable<DosePerVialListDto>> GetItemDoesPerVialsAsync(int itemId, CancellationToken token)
     {
-        var query = dbContext.TblItemDoseAssignments.Include(t => t.Dose).Where(t => t.ItemId == itemId)
-            .Select(s => new DosePerVialListDto()
+        var raw = await dbContext.TblItemDoseAssignments
+            .Include(t => t.Dose)
+            .Where(t => t.ItemId == itemId)
+            .Select(s => new
             {
                 DosePerVialId = s.Dose.BaseInfoId,
-                NumDosePerVial = int.Parse(s.Dose.Title)
-            });
+                Title = s.Dose.Title
+            })
+            .ToListAsync(token);
 
-        return await query.ToListAsync();
+        return raw.Select(s => new DosePerVialListDto
+        {
+            DosePerVialId = s.DosePerVialId,
+            NumDosePerVial = int.TryParse(s.Title, out var n) ? n : 0
+        });
     }
 
     public async Task<List<ItemListDto>> GetActiveVaccines(CancellationToken cancellationToken)

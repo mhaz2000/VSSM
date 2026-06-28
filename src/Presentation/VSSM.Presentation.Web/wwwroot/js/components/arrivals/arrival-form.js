@@ -14,6 +14,10 @@ $(function () {
     var isSubmitting = false;
 
     $("#arrivalForm").on("submit", function () {
+        if ($("#ArrivalTypeHidden").val() === "halal") {
+            isSubmitting = true;
+            return true;
+        }
         isSubmitting = true;
         setTimeout(function () { isSubmitting = false; }, 500);
 

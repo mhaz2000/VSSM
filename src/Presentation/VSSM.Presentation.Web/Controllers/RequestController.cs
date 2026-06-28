@@ -290,7 +290,7 @@ public class RequestController(
 
     private async Task LoadDropDowns(CancellationToken token)
     {
-        ViewBag.ItemList = (await itemService.GetActives(token))
+        ViewBag.Items = (await itemService.GetActives(token))
             .Select(x => new SelectListItem { Value = x.ItemId.ToString(), Text = x.FullName })
             .ToList();
 

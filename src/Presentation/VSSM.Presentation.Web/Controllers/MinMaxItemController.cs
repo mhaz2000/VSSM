@@ -159,7 +159,7 @@ namespace VSSM.Presentation.Web.Controllers
 
         private async Task LoadDropDowns(CancellationToken token)
         {
-            ViewBag.ItemList = (await _itemService.GetActives(token))
+            ViewBag.Items = (await _itemService.GetActives(token))
                 .Select(x => new SelectListItem
                 {
                     Value = x.ItemId.ToString(),

@@ -1,154 +1,137 @@
 @using VSSM.Presentation.Web.Models.Arrival
+@using Microsoft.AspNetCore.Mvc.Rendering
 @model ArrivalViewModel
-
+@{
+    var isHalal = (bool)(ViewBag.IsHalal ?? false);
+}
 <div class="a-card">
-
     <div class="a-card-header">
         <h6>
             <i class="fa fa-info-circle" style="color:#1d6fb8;"></i>
             جزئیات کالا
         </h6>
     </div>
-
     <div class="a-card-body">
 
         <div class="fg-3" style="margin-bottom:14px;">
 
             <div class="f-group">
-                <label class="f-label">نوع کالا <span class="opt">(خودکار)</span></label>
+                <label class="f-label">نوع کالا <span class="opt" id="itemClassLabel">(خودکار)</span></label>
                 <input type="text" id="ItemClassDisplay" class="f-control"
-                       value="واکسن" disabled placeholder="بر اساس سری ساخت" />
+                       value="@(isHalal ? "حلال" : "واکسن")" disabled placeholder="نوع کالا" />
             </div>
 
             <div class="f-group">
-                <label class="f-label">کالا <span class="opt" id="itemAutoLabel">(خودکار)</span></label>
-                @* واکسن: فقط نمایش، حلال: dropdown *@
+                <label class="f-label">کالا <span class="opt" id="itemAutoLabel">@(isHalal ? "(انتخاب)" : "(خودکار)")</span></label>
+
                 <input type="text" id="ItemDisplay" class="f-control" disabled
-                       placeholder="بر اساس سری ساخت" />
+                       placeholder="خودکار"
+                       style="@(isHalal ? "display:none;" : "")" />
+
                 <select id="HalalItemSelect" name="NewLine.ItemId"
-                        class="f-control" style="display:none;" disabled>
+                        class="f-control"
+                        style="@(!isHalal ? "display:none;" : "")"
+                        @(!isHalal ? "disabled" : "")>
                     <option value="">انتخاب کنید...</option>
+                    @if (isHalal && ViewBag.HalalItems != null)
+                    {
+                        foreach (SelectListItem item in (IEnumerable<SelectListItem>)ViewBag.HalalItems)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(item.Value == Model?.NewLine?.ItemId?.ToString() ? "selected" : null)">
+                                @item.Text
+                            </option>
+                        }
+                    }
                 </select>
             </div>
 
             <div class="f-group">
                 <label class="f-label">دوز بر ویال <span class="opt" id="doseAutoLabel">(خودکار)</span></label>
-                @* واکسن: فقط نمایش، حلال: dropdown *@
                 <input type="text" id="DoseDisplay" class="f-control" disabled
                        placeholder="بر اساس سری ساخت" />
-                <select id="HalalDoseSelect" name="NewLine.DosePerVialId"
-                        class="f-control" style="display:none;" disabled>
-                    <option value="">انتخاب کنید...</option>
-                </select>
             </div>
-
         </div>
 
-        @* فیلدهای تعداد مخصوص حلال *@
-        <div class="fg-3" id="halalQtyFields" style="display:none; margin-bottom:14px;">
-
+        <div class="fg-3" id="halalQtyFields"
+             style="@(!isHalal ? "display:none;" : "") margin-bottom:14px;">
             <div class="f-group">
-                <label class="f-label">دوز بر ویال <span class="req-tag">اجباری</span></label>
+                <label class="f-label">دوز بر ویال<span class="req-tag">اجباری</span></label>
                 <input type="number" id="DosePerVialInput" name="NewLine.DosePerVial"
-                       class="f-control" placeholder="تعداد دوز در هر ویال" min="1"
+                       class="f-control" placeholder="مثال: 10" min="1"
                        value="@Model?.NewLine?.DosePerVial" />
             </div>
-
             <div class="f-group">
-                <label class="f-label">تعداد (quantity) <span class="req-tag">اجباری</span></label>
-                <input type="number" id="QuantityInput"
-                       class="f-control" placeholder="تعداد کل دوز" min="1"
+                <label class="f-label">تعداد <span class="req-tag">اجباری</span></label>
+                <input type="number" id="QuantityInput" name="NewLine.Quantity"
+                       class="f-control" placeholder="تعداد" min="1"
                        value="@Model?.NewLine?.Quantity" />
             </div>
-
             <div class="f-group">
-                <label class="f-label">تعداد ویال <span class="opt">(محاسبه‌ای)</span></label>
+                <label class="f-label">تعداد ویال <span class="opt">(محاسبه‌شده)</span></label>
                 <input type="number" id="NumVialsInput" name="NewLine.NumVials"
-                       class="f-control" placeholder="تعداد ÷ دوز بر ویال"
+                       class="f-control" placeholder="خودکار"
                        value="@Model?.NewLine?.NumVials" />
-                <span class="field-hint" style="font-size:11px; color:#9ca3af;">
-                    کاربر هم می‌تواند مستقیم وارد کند
-                </span>
             </div>
-
         </div>
 
         <input type="hidden" name="NewLine.Quantity" id="QuantityHidden"
-               value="@Model?.NewLine?.Quantity" />
+               value="@(isHalal ? null : Model?.NewLine?.Quantity?.ToString())" />
 
         <div class="fg-3" style="margin-bottom:14px;">
-
             <div class="f-group">
                 <label class="f-label">انبار <span class="req-tag">اجباری</span></label>
-                <select asp-for="NewLine.StoreId"
-                        asp-items="ViewBag.StoreList"
-                        class="f-control">
-                    <option value="">انتخاب کنید...</option>
+                <select asp-for="NewLine.StoreId" asp-items="ViewBag.Stores" class="f-control">
+                    <option value="">انتخاب...</option>
                 </select>
                 <span asp-validation-for="NewLine.StoreId" class="text-danger" style="font-size:11px;"></span>
             </div>
-
             <div class="f-group">
                 <label class="f-label">نوع VVM</label>
-                <select asp-for="NewLine.VvmTypeId"
-                        asp-items="ViewBag.VvmTypeList"
-                        class="f-control"
-                        id="VvmTypeId">
-                    <option value="">انتخاب کنید...</option>
+                <select asp-for="NewLine.VvmTypeId" asp-items="ViewBag.VvmTypes"
+                        class="f-control" id="VvmTypeId">
+                    <option value="">انتخاب...</option>
                 </select>
             </div>
-
             <div class="f-group">
                 <label class="f-label">مرحله VVM</label>
-                <select asp-for="NewLine.VvmStageId"
-                        asp-items="ViewBag.VvmstageList"
-                        class="f-control"
-                        id="VvmStageId"
-                        disabled>
+                <select asp-for="NewLine.VvmStageId" asp-items="ViewBag.VvmStages"
+                        class="f-control" id="VvmStageId" disabled>
                     <option value="">ابتدا نوع VVM را انتخاب کنید</option>
                 </select>
             </div>
-
         </div>
 
         <div class="fg-3" style="margin-bottom:14px;">
-
             <div class="f-group">
                 <label class="f-label">نام تجاری</label>
-                <select asp-for="NewLine.CommertialNameId"
-                        asp-items="ViewBag.CommercialNameList" class="f-control">
-                    <option value="">انتخاب کنید...</option>
+                <select asp-for="NewLine.CommertialNameId" asp-items="ViewBag.BrandNames" class="f-control">
+                    <option value="">انتخاب...</option>
                 </select>
             </div>
-
             <div class="f-group">
-                <label class="f-label">سازنده</label>
-                <select asp-for="NewLine.ManufacturerId"
-                        asp-items="ViewBag.ManufacturerList" class="f-control">
-                    <option value="">انتخاب کنید...</option>
+                <label class="f-label">تولیدکننده</label>
+                <select asp-for="NewLine.ManufacturerId" asp-items="ViewBag.Manufacturers" class="f-control">
+                    <option value="">انتخاب...</option>
                 </select>
             </div>
-
             <div class="f-group">
-                <label class="f-label">مورد استفاده</label>
-                <select asp-for="NewLine.UseId" asp-items="ViewBag.UseList" class="f-control">
-                    <option value="">انتخاب کنید...</option>
+                <label class="f-label">مصرف</label>
+                <select asp-for="NewLine.UseId" asp-items="ViewBag.Uses" class="f-control">
+                    <option value="">انتخاب...</option>
                 </select>
             </div>
-
         </div>
 
         <div class="section-divider"></div>
 
-        @* تاریخ واکسن: خودکار و disabled *@
-        <div id="vaccineDateSection">
+        <div id="vaccineDateSection" style="@(isHalal ? "display:none;" : "")">
             <div class="date-section">
-
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">تاریخ تولید <span class="opt">(خودکار)</span></div>
                         <button type="button" class="btn-date-toggle" data-target="prod"
-                                style="display:none;" title="نمایش میلادی">
+                                style="display:none;" title="تغییر فرمت">
                             <i class="fa fa-exchange"></i>
                         </button>
                     </div>
@@ -165,12 +148,11 @@
                     <input type="hidden" id="ProductionDate" value="@Model?.NewLine?.ProductionDateShamsi" />
                     <input type="hidden" asp-for="NewLine.ProductionDate" />
                 </div>
-
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">تاریخ انقضا <span class="opt">(خودکار)</span></div>
                         <button type="button" class="btn-date-toggle" data-target="exp"
-                                style="display:none;" title="نمایش میلادی">
+                                style="display:none;" title="تغییر فرمت">
                             <i class="fa fa-exchange"></i>
                         </button>
                     </div>
@@ -187,14 +169,11 @@
                     <input type="hidden" id="ExpiryDate" value="@Model?.NewLine?.ExpiryDateShamsi" />
                     <input type="hidden" asp-for="NewLine.ExpiryDate" />
                 </div>
-
             </div>
         </div>
 
-        @* تاریخ حلال: datepicker فعال و اجباری *@
-        <div id="halalDateSection" style="display:none;">
+        <div id="halalDateSection" style="@(!isHalal ? "display:none;" : "")">
             <div class="date-section">
-
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">تاریخ تولید <span class="req-tag">اجباری</span></div>
@@ -202,12 +181,11 @@
                     <div class="datepicker-wrap">
                         <input type="text" id="HalalProdDate" name="NewLine.ProductionDateShamsi"
                                class="f-control datepicker-input"
-                               placeholder="انتخاب تاریخ" autocomplete="off"
+                               placeholder="مثال: ۱۴۰۳/۰۱/۰۱" autocomplete="off"
                                value="@Model?.NewLine?.ProductionDateShamsi" />
                         <i class="fa fa-calendar datepicker-ico"></i>
                     </div>
                 </div>
-
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">تاریخ انقضا <span class="req-tag">اجباری</span></div>
@@ -215,34 +193,31 @@
                     <div class="datepicker-wrap">
                         <input type="text" id="HalalExpDate" name="NewLine.ExpiryDateShamsi"
                                class="f-control datepicker-input"
-                               placeholder="انتخاب تاریخ" autocomplete="off"
+                               placeholder="مثال: ۱۴۰۵/۰۱/۰۱" autocomplete="off"
                                value="@Model?.NewLine?.ExpiryDateShamsi" />
                         <i class="fa fa-calendar datepicker-ico"></i>
                     </div>
                 </div>
-
             </div>
         </div>
 
         <div class="f-group" style="margin-bottom:16px;">
-            <label class="f-label">ملاحظات</label>
-            <textarea asp-for="NewLine.Note" class="f-control"
-                      placeholder="ملاحظات کالا را وارد کنید"></textarea>
+            <label class="f-label">یادداشت</label>
+            <textarea asp-for="NewLine.Note" class="f-control" placeholder="یادداشت اختیاری"></textarea>
         </div>
 
         <div style="display:flex; justify-content:flex-end;">
             <button type="submit" name="command" value="addLine" class="btn-add-line js-submit-btn">
                 <span class="js-btn-content">
                     <i class="fa fa-plus"></i>
-                    افزودن کالا
+                    افزودن ردیف
                 </span>
                 <span class="js-btn-spinner" hidden>
                     <span class="submit-spinner"></span>
-                    در حال ارسال…
+                    در حال ثبت...
                 </span>
             </button>
         </div>
 
     </div>
-
 </div>

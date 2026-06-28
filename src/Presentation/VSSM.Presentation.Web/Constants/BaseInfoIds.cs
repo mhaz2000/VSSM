@@ -7,7 +7,7 @@ public static class BaseInfoIds
     public const int BrandNames = 35;
     public const int AdjustmentReasons = 37;
     public const int Manufacturers = 48;
-    public const int ItemClasses = 53;
+    public const int ItemClassesId = 53;
     public const int WarehouseTypes = 56;
     public const int JobTypes = 60;
     public const int EducationTypes = 61;
@@ -18,7 +18,8 @@ public static class BaseInfoIds
     public const int ClimateConditions = 78;
     public const int OwnershipTypes = 81;
     public const int DosePerVial = 84;
-
+    public const int HalalItemClassId = 55;
+    public const int Uses = 7;
 
 }
 

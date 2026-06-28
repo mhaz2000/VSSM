@@ -1,221 +1,155 @@
 ﻿/**
  * arrival-form-halal.js
- * مدیریت سوئیچ بین تب واکسن و حلال در فرم مدیریت ورودی
+ * وابستگی‌ها: jQuery، toast.js، arrival-form.js
+ * این فایل را در: wwwroot/js/components/arrivals/arrival-form-halal.js قرار دهید
  */
+$(function () {
 
-(function () {
+    // ── وضعیت اولیه از hidden field که سرور مقدارش را ست کرده ──
+    var currentTab = $("#ArrivalTypeHidden").val() || "vaccine";
+    _applyTab(currentTab);
 
-    var HALAL_CLASS_ID = 55;
+    // ── کلیک روی تب‌های اصلی پروژه (arrival-tab / data-tab) ──
+    $(document).on("click", ".arrival-tab[data-tab]", function () {
+        var tab = $(this).data("tab");
+        $("#ArrivalTypeHidden").val(tab);
+        _applyTab(tab);
+    });
 
-    var $tabVaccine = $('#tabVaccine');
-    var $tabHalal = $('#tabHalal');
-    var $arrivalTypeHidden = $('#ArrivalTypeHidden');
+    window.applyArrivalTab = function (tab) { _applyTab(tab); };
 
-    // فیلدهای سری ساخت
-    var $batchNumGroup = $('#batchNumGroup');
-    var $batchNumInput = $('#BatchNum');
-
-    // نمایش نوع کالا
-    var $itemClassDisplay = $('#ItemClassDisplay');
-
-    // کالا: واکسن=text، حلال=select
-    var $itemDisplay = $('#ItemDisplay');
-    var $halalItemSelect = $('#HalalItemSelect');
-
-    // دوز بر ویال: واکسن=text، حلال=select
-    var $doseDisplay = $('#DoseDisplay');
-    var $halalDoseSelect = $('#HalalDoseSelect');
-
-    // فیلدهای تعداد حلال
-    var $halalQtyFields = $('#halalQtyFields');
-    var $dosePerVialInput = $('#DosePerVialInput');
-    var $quantityInput = $('#QuantityInput');
-    var $numVialsInput = $('#NumVialsInput');
-    var $quantityHidden = $('#QuantityHidden');
-
-    // تاریخ
-    setTimeout(function () {
-        DatePicker.attach($('#HalalProdDate'));
-        DatePicker.attach($('#HalalExpDate'));
-    }, 50);
-
-    // ========================
-    // سوئیچ به واکسن
-    // ========================
-    function switchToVaccine() {
-        $tabVaccine.addClass('active');
-        $tabHalal.removeClass('active');
-        $arrivalTypeHidden.val('vaccine');
-
-        // سری ساخت: نمایش و اجباری
-        $batchNumGroup.show();
-        $batchNumInput.prop('required', true);
-
-        // نوع کالا
-        $itemClassDisplay.val('واکسن');
-
-        // کالا: text فعال، select مخفی
-        $itemDisplay.show();
-        $halalItemSelect.hide().prop('disabled', true).val('');
-        $('#itemAutoLabel').text('(خودکار)');
-
-        // دوز: text فعال، select مخفی
-        $doseDisplay.show();
-        $halalDoseSelect.hide().prop('disabled', true).val('');
-        $('#doseAutoLabel').text('(خودکار)');
-
-        // فیلدهای تعداد حلال: مخفی
-        $halalQtyFields.hide();
-        $dosePerVialInput.val('').prop('required', false);
-        $quantityInput.val('').prop('required', false);
-        $numVialsInput.val('');
-        $quantityHidden.val('');
-
-        // تاریخ
-        $vaccineDateSection.show();
-        $halalDateSection.hide();
+    function _setValidationIgnore(ignoreAll) {
+        var validator = $("#arrivalForm").data("validator");
+        if (validator) {
+            validator.settings.ignore = ignoreAll ? "*" : ":hidden";
+        }
     }
 
-    // ========================
-    // سوئیچ به حلال
-    // ========================
-    function switchToHalal() {
-        $tabHalal.addClass('active');
-        $tabVaccine.removeClass('active');
-        $arrivalTypeHidden.val('halal');
+    // ════════════════════════════════════════════════
+    //  _applyTab — نمایش/مخفی بخش‌ها
+    // ════════════════════════════════════════════════
+    function _applyTab(tab) {
+        currentTab = tab;
+        var isHalal = (tab === "halal");
 
-        // سری ساخت: مخفی و غیراجباری
-        $batchNumGroup.hide();
-        $batchNumInput.prop('required', false).val('');
+        // ── active روی تب درست ──
+        $(".arrival-tab").removeClass("active");
+        $(".arrival-tab[data-tab='" + tab + "']").addClass("active");
 
-        // نوع کالا
-        $itemClassDisplay.val('حلال');
+        if (isHalal) {
+            // validation رو غیرفعال کن تا فیلدهای واکسن بلاک نکنن
+            _setValidationIgnore(true);
 
-        // کالا: select فعال، text مخفی
-        $itemDisplay.hide();
-        $halalItemSelect.show().prop('disabled', false);
-        $('#itemAutoLabel').text('(اجباری)');
+            // نوع کالا
+            $("#ItemClassDisplay").val("حلال");
 
-        // دوز: select فعال، text مخفی
-        $doseDisplay.hide();
-        $halalDoseSelect.show().prop('disabled', false);
-        $('#doseAutoLabel').text('(اجباری)');
+            // سری ساخت: مخفی
+            $("#batchNumGroup").hide();
+            $("#BatchNum").val("").removeAttr("required");
 
-        // فیلدهای تعداد حلال: نمایش و اجباری
-        $halalQtyFields.show();
-        $dosePerVialInput.prop('required', true);
-        $quantityInput.prop('required', true);
+            // کالا: text مخفی، select نمایش
+            $("#ItemDisplay").hide().prop("disabled", true);
+            $("#HalalItemSelect").show().prop("disabled", false);
+            $("#itemAutoLabel").text("(انتخاب)");
 
-        // تاریخ
-        $vaccineDateSection.hide();
-        $halalDateSection.show();
-        DatePicker.attach($('#HalalProdDate'));
-        DatePicker.attach($('#HalalExpDate'));
+            // دوز: text مخفی
+            $("#DoseDisplay").hide();
+            $("#doseAutoLabel").text("(وارد کنید)");
 
-        // بارگذاری کالاهای حلال
-        loadHalalItems();
-    }
+            // فیلدهای تعداد حلال: نمایش
+            $("#halalQtyFields").show();
 
-    // ========================
-    // محاسبه تعداد ویال = تعداد ÷ دوز بر ویال
-    // و sync به hidden quantity
-    // ========================
-    function calcNumVials() {
-        var qty = parseInt($quantityInput.val()) || 0;
-        var dose = parseInt($dosePerVialInput.val()) || 0;
+            // تاریخ‌ها
+            $("#vaccineDateSection").hide();
+            $("#halalDateSection").show();
 
-        $quantityHidden.val(qty > 0 ? qty : '');
+            // reset hidden fields
+            $("#ItemIdHidden, #DosePerVialIdHidden, #ItemClassIdHidden").val("");
 
-        if (qty > 0 && dose > 0) {
-            $numVialsInput.val(Math.floor(qty / dose));
+            // بارگذاری آیتم‌های حلال (فقط اولین بار)
+            if (!_halalItemsLoaded) _loadHalalItems();
+
         } else {
-            $numVialsInput.val('');
+            // validation رو برگردون
+            _setValidationIgnore(false);
+
+            // نوع کالا
+            $("#ItemClassDisplay").val("واکسن");
+
+            // سری ساخت: نمایش
+            $("#batchNumGroup").show();
+
+            // کالا: text نمایش، select مخفی
+            $("#ItemDisplay").show().prop("disabled", true);
+            $("#HalalItemSelect").hide().prop("disabled", true).val("");
+            $("#itemAutoLabel").text("(خودکار)");
+
+            // دوز: text نمایش، select مخفی
+            $("#DoseDisplay").show().prop("disabled", true);
+            $("#doseAutoLabel").text("(خودکار)");
+
+            // فیلدهای تعداد حلال: مخفی
+            $("#halalQtyFields").hide();
+            $("#DosePerVialInput, #QuantityInput, #NumVialsInput").val("");
+
+            // تاریخ‌ها
+            $("#vaccineDateSection").show();
+            $("#halalDateSection").hide();
+            $("#HalalProdDate, #HalalExpDate").val("");
         }
     }
 
-    // وقتی کاربر مستقیم numVials رو عوض کنه → quantity رو محاسبه کن
-    function calcQuantityFromVials() {
-        var vials = parseInt($numVialsInput.val()) || 0;
-        var dose = parseInt($dosePerVialInput.val()) || 0;
-        if (vials > 0 && dose > 0) {
-            var qty = vials * dose;
-            $quantityInput.val(qty);
-            $quantityHidden.val(qty);
-        }
-    }
+    // ════════════════════════════════════════════════
+    //  Halal item cascade
+    // ════════════════════════════════════════════════
+    var _halalItemsLoaded = false;
 
-    // ========================
-    // بارگذاری کالاهای حلال
-    // ========================
-    function loadHalalItems() {
-        if (typeof arrivalGetHalalItemsUrl === 'undefined' || !arrivalGetHalalItemsUrl) return;
-
-        $halalItemSelect.html('<option value="">در حال بارگذاری...</option>').prop('disabled', true);
-
-        $.get(arrivalGetHalalItemsUrl, { classId: HALAL_CLASS_ID }, function (data) {
-            $halalItemSelect.html('<option value="">انتخاب کنید...</option>').prop('disabled', false);
-            if (data && data.items) {
-                $.each(data.items, function (_, item) {
-                    $halalItemSelect.append($('<option>').val(item.id).text(item.name));
-                });
-            }
+    function _loadHalalItems() {
+        $.getJSON(arrivalGetHalalItemsUrl, function (data) {
+            _halalItemsLoaded = true;
+            var $sel = $("#HalalItemSelect").empty()
+                .append('<option value="">انتخاب کنید...</option>');
+            $.each(data, function (_, item) {
+                $sel.append($("<option>").val(item.id).text(item.text));
+            });
+        }).fail(function () {
+            showToast("خطا در بارگذاری کالاها", "error");
         });
     }
 
-    // ========================
-    // بارگذاری دوزهای حلال بر اساس کالا
-    // ========================
-    function loadHalalDoses(itemId) {
-        if (!itemId || typeof arrivalGetHalalDosesUrl === 'undefined' || !arrivalGetHalalDosesUrl) return;
+    $("#HalalItemSelect").on("change", function () {
+        $("#ItemIdHidden").val($(this).val());
+        $("#DosePerVialInput, #QuantityInput, #NumVialsInput").val("");
+    });
 
-        $halalDoseSelect.html('<option value="">در حال بارگذاری...</option>').prop('disabled', true);
+    // ════════════════════════════════════════════════
+    //  Bidirectional calculation (Qty ↔ NumVials)
+    // ════════════════════════════════════════════════
+    var _calcLock = false;
 
-        $.get(arrivalGetHalalDosesUrl, { itemId: itemId }, function (data) {
-            $halalDoseSelect.html('<option value="">انتخاب کنید...</option>').prop('disabled', false);
-            if (data && data.doses) {
-                $.each(data.doses, function (_, dose) {
-                    $halalDoseSelect.append($('<option>').val(dose.id).text(dose.name));
-                });
-            }
-        });
+    function parsePos(val) {
+        var n = parseFloat(val);
+        return (!isNaN(n) && isFinite(n) && n > 0) ? n : null;
     }
 
-    // ========================
-    // Events
-    // ========================
-    $tabVaccine.on('click', function () {
-        if (!$(this).hasClass('active')) switchToVaccine();
+    function fmt(n) { return parseFloat(n.toFixed(2)).toString(); }
+
+    $("#QuantityInput").on("input", function () {
+        if (_calcLock) return;
+        var qty = parsePos($(this).val()), dose = parsePos($("#DosePerVialInput").val());
+        if (qty && dose) { _calcLock = true; $("#NumVialsInput").val(fmt(qty / dose)); _calcLock = false; }
     });
 
-    $tabHalal.on('click', function () {
-        if (!$(this).hasClass('active')) switchToHalal();
+    $("#NumVialsInput").on("input", function () {
+        if (_calcLock) return;
+        var vials = parsePos($(this).val()), dose = parsePos($("#DosePerVialInput").val());
+        if (vials && dose) { _calcLock = true; $("#QuantityInput").val(Math.round(vials * dose)); _calcLock = false; }
     });
 
-    // محاسبه numVials وقتی quantity یا dosePerVial تغییر کنه
-    $quantityInput.on('input', calcNumVials);
-    $dosePerVialInput.on('input', function () {
-        // اگه quantity پر بود، numVials رو محاسبه کن
-        if ($quantityInput.val()) {
-            calcNumVials();
-        } else if ($numVialsInput.val()) {
-            // اگه numVials پر بود، quantity رو محاسبه کن
-            calcQuantityFromVials();
-        }
+    $("#DosePerVialInput").on("input", function () {
+        if (_calcLock) return;
+        var qty = parsePos($("#QuantityInput").val()), dose = parsePos($(this).val());
+        if (qty && dose) { _calcLock = true; $("#NumVialsInput").val(fmt(qty / dose)); _calcLock = false; }
     });
 
-    // وقتی کاربر مستقیم numVials رو وارد کنه
-    $numVialsInput.on('input', calcQuantityFromVials);
-
-    // بارگذاری دوزها وقتی کالا انتخاب شد
-    $halalItemSelect.on('change', function () {
-        loadHalalDoses($(this).val());
-    });
-
-    // ========================
-    // init
-    // ========================
-    $(function () {
-        switchToVaccine();
-    });
-
-})();
+});

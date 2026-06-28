@@ -300,7 +300,7 @@ public class DispatchesController(
             .ToSelectList(x => x.Id, x => x.Title);
 
         ViewBag.ItemTypes =
-            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClasses, ct))
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, ct))
             .ToSelectList(x => x.Id, x => x.Title);
 
         ViewBag.VvmStages =

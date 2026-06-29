@@ -26,9 +26,8 @@ public class ArrivalListDto
 public class ArrivalGetDto
 {
     public int ArrivalId { get; set; }
-
     public DateTime? Date { get; set; }
-    public string ReportNumber { get; set; }
+    public string ReportNumber { get; set; } = "";
 
     public int? FiscalPeriodId { get; set; }
 
@@ -38,7 +37,7 @@ public class ArrivalGetDto
     public bool? IsCancelled { get; set; }
     public bool? IsDrafted { get; set; }
 
-    public string Note { get; set; }
+    public string Note { get; set; } = "";
     public List<ArrivalLineDto> Lines { get; set; } = new();
 }
 

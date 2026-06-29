@@ -1,0 +1,74 @@
+﻿.coming-soon-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f6f7fb;
+    padding: 20px;
+}
+
+.coming-soon-card {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    border: 1px solid #eee;
+}
+
+.icon-box {
+    margin-bottom: 25px;
+}
+
+    .icon-box img {
+        width: 120px;
+        height: auto;
+        animation: float 3s ease-in-out infinite;
+    }
+
+.title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #222;
+    margin-bottom: 10px;
+    position: relative;
+    display: inline-block;
+}
+
+    .title::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: -12px;
+        width: 220%; 
+        max-width: 420px; 
+        height: 1px; 
+
+        background: linear-gradient( 90deg, transparent, #ffb300, #ff6a00, transparent );
+        border-radius: 50px;
+        opacity: 0.9;
+    }
+
+.subtitle {
+    font-size: 14px;
+    line-height: 1.9;
+    color: #666;
+}
+
+/* subtle animation like modern UI */
+@@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}

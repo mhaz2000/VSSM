@@ -5,8 +5,8 @@
         public int? ArrivalLineId { get; set; }
         public int? ArrivalId { get; set; }
 
-        public string BatchNum { get; set; }
-        public int? CommertialNameId { get; set; }
+        public string BatchNum { get; set; } = "";
+        public int? CommercialNameId { get; set; }
         public int? DosePerVialId { get; set; }
 
         public DateTime? ExpiryDate { get; set; }
@@ -16,7 +16,7 @@
         public int? ItemId { get; set; }
         public int? ManufacturerId { get; set; }
 
-        public string Note { get; set; }
+        public string Note { get; set; } = "";
 
         public int? NumVials { get; set; }
         public int? OrderLineId { get; set; }

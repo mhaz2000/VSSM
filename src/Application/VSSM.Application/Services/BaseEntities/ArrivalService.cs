@@ -18,11 +18,10 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
         CancellationToken token)
     {
         var query = db.TblArrivals
-            .AsNoTracking()
-            .AsQueryable();
+            .AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(x => x.ReportNumber.Contains(search));
+            query = query.Where(x => x.ReportNumber.StartsWith(search));
 
         if (statusFilter == 1)
             query = query.Where(x => x.IsDrafted == true && x.IsCancelled != true);
@@ -119,7 +118,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
                     ArrivalId = l.ArrivalId,
                     ItemId = l.ItemId,
                     BatchNum = l.BatchNum,
-                    CommertialNameId = l.CommertialNameId,
+                    CommercialNameId = l.CommertialNameId,
                     DosePerVialId = l.DosePerVialId,
                     ExpiryDate = l.ExpiryDate,
                     ProductionDate = l.ProductionDate,
@@ -337,7 +336,7 @@ ADD LINE (INCREMENTAL)
             ArrivalId = arrivalId,
             ItemId = dto.ItemId,
             BatchNum = dto.BatchNum,
-            CommertialNameId = dto.CommertialNameId,
+            CommertialNameId = dto.CommercialNameId,
             DosePerVialId = dto.DosePerVialId,
             ExpiryDate = dto.ExpiryDate,
             ProductionDate = dto.ProductionDate,
@@ -387,7 +386,7 @@ ADD LINE (INCREMENTAL)
                 ArrivalId = l.ArrivalId,
                 ItemId = l.ItemId,
                 BatchNum = l.BatchNum,
-                CommertialNameId = l.CommertialNameId,
+                CommercialNameId = l.CommertialNameId,
                 DosePerVialId = l.DosePerVialId,
                 ExpiryDate = l.ExpiryDate,
                 ProductionDate = l.ProductionDate,
@@ -436,7 +435,7 @@ ADD LINE (INCREMENTAL)
             ArrivalId = line.ArrivalId,
             ItemId = line.ItemId,
             BatchNum = line.BatchNum,
-            CommertialNameId = line.CommertialNameId,
+            CommercialNameId = line.CommertialNameId,
             DosePerVialId = line.DosePerVialId,
             ExpiryDate = line.ExpiryDate,
             ProductionDate = line.ProductionDate,
@@ -464,7 +463,7 @@ ADD LINE (INCREMENTAL)
             ArrivalId = line.ArrivalId,
             ItemId = line.ItemId,
             BatchNum = line.BatchNum,
-            CommertialNameId = line.CommertialNameId,
+            CommercialNameId = line.CommertialNameId,
             DosePerVialId = line.DosePerVialId,
             ExpiryDate = line.ExpiryDate,
             ProductionDate = line.ProductionDate,

@@ -15,7 +15,7 @@ public class ArrivalLineViewModel
     public int? StoreId { get; set; }
     public string? StoreName { get; set; }
 
-    public int? CommertialNameId { get; set; }
+    public int? CommercialNameId { get; set; }
     public string? CommertialName { get; set; }
     public int? ArrivalId { get; set; }
 

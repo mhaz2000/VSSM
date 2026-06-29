@@ -72,3 +72,30 @@
     .btn-date-toggle:hover {
         background: #eff6ff;
     }
+
+.empty-row td {
+    padding: 45px 0;
+    border: none !important;
+    background: #fff;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-icon {
+    font-size: 30px;
+    display: block;
+    margin-bottom: 8px;
+    color: #d1d5db;
+}
+
+
+.empty-text {
+    font-size: 10px;
+    color: #9ca3af; 
+    font-weight: 400;
+}

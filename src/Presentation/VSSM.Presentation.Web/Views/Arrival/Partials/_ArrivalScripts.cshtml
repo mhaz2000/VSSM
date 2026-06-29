@@ -4,43 +4,31 @@
 <partial name="_ValidationScriptsPartial" />
 
 <script src="~/js/shared/datepicker.js"></script>
-
 <script src="~/js/shared/toast.js"></script>
 <script src="~/js/shared/shamsi-date.js"></script>
 <script src="~/js/shared/vvm-cascade.js"></script>
+<script src="~/js/shared/submit-btn.js"></script>
 
 <script>
-
-    var arrivalServerMsg = "@(TempData["ToastMessage"] as string ?? "")";
-
+    // â”€â”€ Ù¾ÛŒØ§Ù…â€ŒÙ‡Ø§ÛŒ Ø³Ø±ÙˆØ± â”€â”€
+    var arrivalServerMsg  = "@(TempData["ToastMessage"] as string ?? "")";
     var arrivalServerType = "@(TempData["ToastType"] as string ?? "info")";
 
-    var arrivalGetBatchInfoUrl = "@Url.Action("GetBatchInfo", "Arrival")";
-
-    // ÂÏÑÓåÇ? API ÈÑÇ? ÍáÇá
+    // â”€â”€ URL Ù‡Ø§ÛŒ API â”€â”€
+    var arrivalGetBatchInfoUrl  = "@Url.Action("GetBatchInfo", "Arrival")";
     var arrivalGetHalalItemsUrl = "@Url.Action("GetHalalItems", "Arrival")";
-
     var arrivalGetHalalDosesUrl = "@Url.Action("GetHalalDoses", "Arrival")";
 
+    // â”€â”€ Ù…Ù‚Ø§Ø¯ÛŒØ± Ø§ÙˆÙ„ÛŒÙ‡ Ø¨Ø±Ø§ÛŒ Ø­Ø§Ù„Øª ÙˆÛŒØ±Ø§ÛŒØ´ â”€â”€
+    var arrivalExistItemId   = @Html.Raw(Json.Serialize(Model?.NewLine?.ItemId?.ToString() ?? ""));
     var arrivalExistItemName = @Html.Raw(Json.Serialize(Model?.NewLine?.ItemName ?? ""));
-
+    var arrivalExistDoseId   = @Html.Raw(Json.Serialize(Model?.NewLine?.DosePerVialId?.ToString() ?? ""));
     var arrivalExistDoseName = @Html.Raw(Json.Serialize(Model?.NewLine?.DoseName ?? ""));
-
-    var arrivalExistItemId = @Html.Raw(Json.Serialize(Model?.NewLine?.ItemId?.ToString() ?? ""));
-
-    var arrivalExistDoseId = @Html.Raw(Json.Serialize(Model?.NewLine?.DosePerVialId?.ToString() ?? ""));
-
-    var arrivalItemName = @Html.Raw(Json.Serialize(Model?.NewLine?.ItemName ?? ""));
-
-    var arrivalDoseName = @Html.Raw(Json.Serialize(Model?.NewLine?.DoseName ?? ""));
 
     $(function () {
         DatePicker.attach($('#Date'));
     });
-
 </script>
 
-<script src="~/js/shared/submit-btn.js"></script>
-<script src="~/js/components/arrivals/arrival-form.js"></script>
-@* ÇÖÇİå: ãäØŞ ÓæÆ? æÇ˜Óä/ÍáÇá *@
-<script src="~/js/components/arrivals/arrival-form-halal.js"></script>
+<script src="~/js/components/arrival/arrival-form-vaccine.js?v=2"></script>
+<script src="~/js/components/arrival/arrival-form-halal.js?v=2"></script>

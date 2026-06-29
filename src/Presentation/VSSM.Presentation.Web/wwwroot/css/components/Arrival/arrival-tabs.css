@@ -47,3 +47,17 @@
     .arrival-tab i {
         font-size: 13px;
     }
+
+
+.fg-auto-row {
+    display: flex !important;
+    justify-content: flex-start;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+    .fg-auto-row .f-group {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 260px;
+    }

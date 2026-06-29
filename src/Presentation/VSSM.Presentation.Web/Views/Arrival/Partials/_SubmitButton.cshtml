@@ -1,16 +1,15 @@
-﻿
 @{
     var btnValue = ViewData["BtnValue"] as string ?? "confirm";
     var btnLabel = ViewData["BtnLabel"] as string ?? "ثبت";
-    var btnIcon = ViewData["BtnIcon"] as string ?? "fa-check";
+    var btnIcon  = ViewData["BtnIcon"]  as string ?? "fa-check";
     var btnClass = ViewData["BtnClass"] as string ?? "btn-confirm";
 }
 
-<button type="button"
+
+<button type="submit"
+        name="command"
         value="@btnValue"
-        class="@btnClass js-footer-btn js-submit-btn"
-        data-label="@btnLabel"
-        data-icon="@btnIcon">
+        class="@btnClass js-submit-btn">
 
     <span class="js-btn-content">
         <i class="fa @btnIcon"></i>

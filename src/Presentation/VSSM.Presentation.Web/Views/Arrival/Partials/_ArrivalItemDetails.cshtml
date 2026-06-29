@@ -2,8 +2,14 @@
 @using Microsoft.AspNetCore.Mvc.Rendering
 @model ArrivalViewModel
 @{
-    var isHalal = (bool)(ViewBag.IsHalal ?? false);
+    bool isHalal = false;
+
+    if (ViewBag.IsHalal != null)
+    {
+        bool.TryParse(ViewBag.IsHalal.ToString(), out isHalal);
+    }
 }
+
 <div class="a-card">
     <div class="a-card-header">
         <h6>
@@ -22,13 +28,18 @@
             </div>
 
             <div class="f-group">
-                <label class="f-label">کالا <span class="opt" id="itemAutoLabel">@(isHalal ? "(انتخاب)" : "(خودکار)")</span></label>
+                <label class="f-label">
+                    کالا
+                    <span class="opt" id="itemAutoLabel">@(isHalal ? "(انتخاب)" : "(خودکار)")</span>
+                </label>
 
                 <input type="text" id="ItemDisplay" class="f-control" disabled
-                       placeholder="خودکار"
+                       placeholder="بر اساس سری ساخت"
                        style="@(isHalal ? "display:none;" : "")" />
 
-                <select id="HalalItemSelect" name="NewLine.ItemId"
+
+                <select id="HalalItemSelect"
+                        name="NewLine.ItemId"
                         class="f-control"
                         style="@(!isHalal ? "display:none;" : "")"
                         @(!isHalal ? "disabled" : "")>
@@ -46,39 +57,53 @@
                 </select>
             </div>
 
-            <div class="f-group">
+
+            <div class="f-group" id="doseDisplayGroup"
+                 style="@(isHalal ? "display:none;" : "")">
                 <label class="f-label">دوز بر ویال <span class="opt" id="doseAutoLabel">(خودکار)</span></label>
                 <input type="text" id="DoseDisplay" class="f-control" disabled
                        placeholder="بر اساس سری ساخت" />
             </div>
+
+
+            <div class="f-group" id="halalDoseGroup"
+                 style="@(!isHalal ? "display:none;" : "")">
+                <label class="f-label">
+                    دوز بر ویال
+                    <span class="req-tag">اجباری</span>
+                </label>
+                <select id="HalalDoseSelect"
+                        name="NewLine.DosePerVialId"
+                        class="f-control"
+                        @(!isHalal ? "disabled" : "")>
+                    @if (isHalal && Model?.NewLine?.DosePerVialId != null && ViewBag.DosePerVials != null)
+                    {
+                        <option value="">انتخاب دوز...</option>
+                        foreach (SelectListItem dose in (IEnumerable<SelectListItem>)ViewBag.DosePerVials)
+                        {
+                            <option value="@dose.Value"
+                                    selected="@(dose.Value == Model.NewLine.DosePerVialId.ToString() ? "selected" : null)">
+                                @dose.Text
+                            </option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="">ابتدا کالا را انتخاب کنید</option>
+                    }
+                </select>
+            </div>
+
         </div>
 
-        <div class="fg-3" id="halalQtyFields"
-             style="@(!isHalal ? "display:none;" : "") margin-bottom:14px;">
-            <div class="f-group">
-                <label class="f-label">دوز بر ویال<span class="req-tag">اجباری</span></label>
-                <input type="number" id="DosePerVialInput" name="NewLine.DosePerVial"
-                       class="f-control" placeholder="مثال: 10" min="1"
-                       value="@Model?.NewLine?.DosePerVial" />
-            </div>
-            <div class="f-group">
-                <label class="f-label">تعداد <span class="req-tag">اجباری</span></label>
-                <input type="number" id="QuantityInput" name="NewLine.Quantity"
-                       class="f-control" placeholder="تعداد" min="1"
-                       value="@Model?.NewLine?.Quantity" />
-            </div>
-            <div class="f-group">
-                <label class="f-label">تعداد ویال <span class="opt">(محاسبه‌شده)</span></label>
-                <input type="number" id="NumVialsInput" name="NewLine.NumVials"
-                       class="f-control" placeholder="خودکار"
-                       value="@Model?.NewLine?.NumVials" />
-            </div>
-        </div>
-
-        <input type="hidden" name="NewLine.Quantity" id="QuantityHidden"
-               value="@(isHalal ? null : Model?.NewLine?.Quantity?.ToString())" />
+        <input type="hidden"
+               name="NewLine.Quantity"
+               id="QuantityHidden"
+               value="@(!isHalal ? Model?.NewLine?.Quantity?.ToString() : null)"
+               @(isHalal ? "disabled" : "") />
 
         <div class="fg-3" style="margin-bottom:14px;">
+
             <div class="f-group">
                 <label class="f-label">انبار <span class="req-tag">اجباری</span></label>
                 <select asp-for="NewLine.StoreId" asp-items="ViewBag.Stores" class="f-control">
@@ -86,6 +111,7 @@
                 </select>
                 <span asp-validation-for="NewLine.StoreId" class="text-danger" style="font-size:11px;"></span>
             </div>
+
             <div class="f-group">
                 <label class="f-label">نوع VVM</label>
                 <select asp-for="NewLine.VvmTypeId" asp-items="ViewBag.VvmTypes"
@@ -93,6 +119,7 @@
                     <option value="">انتخاب...</option>
                 </select>
             </div>
+
             <div class="f-group">
                 <label class="f-label">مرحله VVM</label>
                 <select asp-for="NewLine.VvmStageId" asp-items="ViewBag.VvmStages"
@@ -100,33 +127,58 @@
                     <option value="">ابتدا نوع VVM را انتخاب کنید</option>
                 </select>
             </div>
+
         </div>
 
         <div class="fg-3" style="margin-bottom:14px;">
+
             <div class="f-group">
                 <label class="f-label">نام تجاری</label>
                 <select asp-for="NewLine.CommercialNameId" asp-items="ViewBag.BrandNames" class="f-control">
                     <option value="">انتخاب...</option>
                 </select>
             </div>
+
             <div class="f-group">
                 <label class="f-label">تولیدکننده</label>
                 <select asp-for="NewLine.ManufacturerId" asp-items="ViewBag.Manufacturers" class="f-control">
                     <option value="">انتخاب...</option>
                 </select>
             </div>
+
             <div class="f-group">
                 <label class="f-label">مصرف</label>
                 <select asp-for="NewLine.UseId" asp-items="ViewBag.Uses" class="f-control">
                     <option value="">انتخاب...</option>
                 </select>
             </div>
+
+        </div>
+
+        @* ── تعداد دوز و ویال: فقط در تب حلال نمایش داده می‌شود ── *@
+        <div class="fg-3" id="halalQtyFields" style="display:none; margin-bottom:14px;">
+
+            <div class="f-group">
+                <label class="f-label">تعداد (دوز) <span class="req-tag">اجباری</span></label>
+                <input type="number" id="QuantityInput" name="NewLine.Quantity"
+                       class="f-control" placeholder="تعداد دوز" min="1"
+                       value="@(isHalal? Model?.NewLine?.Quantity?.ToString() : null)" />
+            </div>
+
+            <div class="f-group">
+                <label class="f-label">تعداد ویال <span class="opt">(محاسبه‌شده)</span></label>
+                <input type="number" id="NumVialsInput" name="NewLine.NumVials"
+                       class="f-control" placeholder="خودکار"
+                       value="@Model?.NewLine?.NumVials" />
+            </div>
+
         </div>
 
         <div class="section-divider"></div>
 
         <div id="vaccineDateSection" style="@(isHalal ? "display:none;" : "")">
             <div class="date-section">
+
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">تاریخ تولید <span class="opt">(خودکار)</span></div>
@@ -148,6 +200,7 @@
                     <input type="hidden" id="ProductionDate" value="@Model?.NewLine?.ProductionDateShamsi" />
                     <input type="hidden" asp-for="NewLine.ProductionDate" />
                 </div>
+
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">تاریخ انقضا <span class="opt">(خودکار)</span></div>
@@ -169,11 +222,13 @@
                     <input type="hidden" id="ExpiryDate" value="@Model?.NewLine?.ExpiryDateShamsi" />
                     <input type="hidden" asp-for="NewLine.ExpiryDate" />
                 </div>
+
             </div>
         </div>
 
         <div id="halalDateSection" style="@(!isHalal ? "display:none;" : "")">
             <div class="date-section">
+
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">تاریخ تولید <span class="req-tag">اجباری</span></div>
@@ -186,6 +241,7 @@
                         <i class="fa fa-calendar datepicker-ico"></i>
                     </div>
                 </div>
+
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">تاریخ انقضا <span class="req-tag">اجباری</span></div>
@@ -198,6 +254,7 @@
                         <i class="fa fa-calendar datepicker-ico"></i>
                     </div>
                 </div>
+
             </div>
         </div>
 

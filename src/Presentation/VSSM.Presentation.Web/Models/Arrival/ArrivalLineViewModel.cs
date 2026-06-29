@@ -16,7 +16,7 @@ public class ArrivalLineViewModel
     public string? StoreName { get; set; }
 
     public int? CommercialNameId { get; set; }
-    public string? CommertialName { get; set; }
+    public string? CommercialName { get; set; }
     public int? ArrivalId { get; set; }
 
     [Display(Name = "دوز بر ویال")]

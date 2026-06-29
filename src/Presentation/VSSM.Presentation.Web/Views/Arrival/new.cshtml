@@ -1,18 +1,26 @@
-﻿@using VSSM.Presentation.Web.Models.Arrival
+@using VSSM.Presentation.Web.Models.Arrival
 @model ArrivalViewModel
 @{
     ViewData["Title"] = Model.ArrivalId.HasValue ? "ویرایش ورودی" : "ثبت ورودی جدید";
     var isHalal = string.Equals(Model?.ArrivalType, "halal", StringComparison.OrdinalIgnoreCase);
     ViewBag.IsHalal = isHalal;
 }
+
 <partial name="Partials/_ArrivalStyles" />
+
 <div id="toastContainer"></div>
+
 <div class="arrival-wrap">
     <form asp-action="Create" method="post" id="arrivalForm" novalidate>
+
         <partial name="Partials/_ArrivalHiddenFields" model="Model" />
-        <partial name="Partials/_ArrivalMainInfo" model="Model" />
-        <partial name="Partials/_ArrivalItemDetails" model="Model" />
+        <partial name="Partials/_ArrivalMainInfo"     model="Model" />
+        <partial name="Partials/_ArrivalItemDetails"  model="Model" />
+        <partial name="Partials/_ArrivalFooter" model="Model" />
+
     </form>
+
     <partial name="Partials/_ArrivalLinesTable" model="Model" />
 </div>
+
 <partial name="Partials/_ArrivalScripts" model="Model" />

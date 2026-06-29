@@ -589,7 +589,7 @@ public class ArrivalController(
             ArrivalId = l.ArrivalId,
             BatchNum = l.BatchNum,
             CommercialNameId = l.CommercialNameId,  
-            CommertialName = commercialNames?.FirstOrDefault(z => z.Id == l.CommercialNameId)?.Title,
+            CommercialName = commercialNames?.FirstOrDefault(z => z.Id == l.CommercialNameId)?.Title,
             ItemName = allItems?.FirstOrDefault(z => z.ItemId == l.ItemId)?.FullName,
             DoseName = doses?.FirstOrDefault(z => z.DosePerVialId == l.DosePerVialId)?.NumDosePerVial.ToString(),
             DosePerVialId = l.DosePerVialId,

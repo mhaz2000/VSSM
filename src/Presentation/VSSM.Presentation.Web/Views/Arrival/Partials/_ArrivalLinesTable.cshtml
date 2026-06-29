@@ -4,12 +4,10 @@
 <div class="a-card">
 
     <div class="a-card-header">
-
         <h6>
             <i class="fa fa-list" style="color:#1d6fb8;"></i>
             لیست اقلام این ورود
         </h6>
-
     </div>
 
     <div class="lines-table-wrap inset">
@@ -17,7 +15,6 @@
         <table class="lines-table">
 
             <thead>
-
                 <tr>
                     <th>ردیف</th>
                     <th>کالا</th>
@@ -28,72 +25,52 @@
                     <th>انقضا</th>
                     <th>عملیات</th>
                 </tr>
-
             </thead>
 
             <tbody>
-
                 @if (Model?.Lines != null && Model.Lines.Any())
                 {
                     for (int i = 0; i < Model.Lines.Count; i++)
                     {
                         var line = Model.Lines[i];
-
                         <tr>
-
                             <td>@(i + 1)</td>
                             <td>@line.ItemName</td>
-                            <td>@line.CommertialName</td>
+                            <td>@line.CommercialName</td>
                             <td>@line.BatchNum</td>
                             <td>@line.Quantity</td>
                             <td>@line.StoreName</td>
                             <td>@line.ExpiryDate?.ToShamsi()</td>
-
                             <td style="white-space:nowrap;">
-
                                 <form asp-action="Create" method="post" style="display:inline;">
-
                                     @Html.AntiForgeryToken()
-
                                     <input type="hidden" name="ArrivalId" value="@Model?.ArrivalId" />
-
                                     <input type="hidden" name="command" value="deleteLine_@line.ArrivalLineId" />
-
                                     <button type="submit" class="btn-action btn-action-del" title="حذف">
-
                                         <i class="fa fa-trash"></i>
-
                                     </button>
-
                                 </form>
-
                             </td>
-
                         </tr>
-
                     }
                 }
                 else
                 {
-
-                    <tr>
-
-                        <td colspan="8" style="padding:24px; color:#9ca3af; text-align:center;">
-
-                            آیتمی ثبت نشده است.
-
+                    <tr class="empty-row">
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <i class="fa fa-inbox empty-icon"></i>
+                                <div class="empty-text">
+                                    اطلاعاتی وارد نشده است
+                                </div>
+                            </div>
                         </td>
-
                     </tr>
-
                 }
-
             </tbody>
 
         </table>
 
     </div>
-
-    <partial name="Partials/_ArrivalFooter" model="Model" />
 
 </div>

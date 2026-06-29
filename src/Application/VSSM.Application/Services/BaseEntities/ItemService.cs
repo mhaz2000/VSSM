@@ -47,7 +47,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
     {
         var raw = await dbContext.TblItemDoseAssignments
             .Include(t => t.Dose)
-            .Where(t => t.ItemId == itemId)
+            .Where(t => t.ItemId == itemId && t.DoseId != null)
             .Select(s => new
             {
                 DosePerVialId = s.Dose.BaseInfoId,

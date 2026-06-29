@@ -48,6 +48,7 @@ $(function () {
 
         var $active = $(document.activeElement);
         if ($active.hasClass("js-submit-btn")) {
+            $("#commandHidden").val($active.val());
             SubmitBtn.startLoading($active[0]);
         }
 
@@ -79,9 +80,9 @@ $(function () {
         combineDate("DateDay", "DateMonth", "DateYear", "Date");
     });
 
-    splitDate($("#Date").val(),           "DateDay",  "DateMonth",  "DateYear");
-    splitDate($("#ProductionDate").val(), "ProdDay",  "ProdMonth",  "ProdYear");
-    splitDate($("#ExpiryDate").val(),     "ExpDay",   "ExpMonth",   "ExpYear");
+    splitDate($("#Date").val(), "DateDay", "DateMonth", "DateYear");
+    splitDate($("#ProductionDate").val(), "ProdDay", "ProdMonth", "ProdYear");
+    splitDate($("#ExpiryDate").val(), "ExpDay", "ExpMonth", "ExpYear");
 
     // ════════════════════════════════════════
     //  مقداردهی اولیه فیلدهای auto (ویرایش)
@@ -89,7 +90,7 @@ $(function () {
 
     if (typeof arrivalExistItemId !== "undefined" && arrivalExistItemId) {
         _setAutoFields(arrivalExistItemName, arrivalExistItemId,
-                       arrivalExistDoseName, arrivalExistDoseId);
+            arrivalExistDoseName, arrivalExistDoseId);
     } else {
         $("#ItemClassDisplay").val("واکسن");
     }
@@ -134,7 +135,7 @@ $(function () {
     // ════════════════════════════════════════
 
     function _applyDateDisplay(target, hasShamsi, hasMiladi) {
-        var $toggle     = $(".btn-date-toggle[data-target='" + target + "']");
+        var $toggle = $(".btn-date-toggle[data-target='" + target + "']");
         var $shamsiWrap = $("#" + target + "-shamsi-wrap");
         var $miladiWrap = $("#" + target + "-miladi-wrap");
 
@@ -170,7 +171,10 @@ $(function () {
         _batchTimer = setTimeout(function () {
             if (_submitting) return;
 
-            var batchNum  = $input.val().trim();
+            // اگه تب حلال است fetch نکن
+            if ($("#ArrivalTypeHidden").val() === "halal") return;
+
+            var batchNum = $input.val().trim();
             if (!batchNum) {
                 _clearBatchFields();
                 _clearAutoFields();
@@ -180,7 +184,7 @@ $(function () {
             var arrivalId = $("#ArrivalId").val() || 0;
 
             $.ajax({
-                url:  arrivalGetBatchInfoUrl,
+                url: arrivalGetBatchInfoUrl,
                 type: "GET",
                 data: { batchNum: batchNum, arrivalId: arrivalId },
 
@@ -246,10 +250,10 @@ $(function () {
     // ════════════════════════════════════════
 
     $(document).on("click", ".btn-date-toggle", function () {
-        var target      = $(this).data("target");
+        var target = $(this).data("target");
         var $shamsiWrap = $("#" + target + "-shamsi-wrap");
         var $miladiWrap = $("#" + target + "-miladi-wrap");
-        var showingS    = $shamsiWrap.is(":visible");
+        var showingS = $shamsiWrap.is(":visible");
 
         $shamsiWrap.toggle(!showingS);
         $miladiWrap.toggle(showingS);

@@ -117,7 +117,7 @@ $(function () {
 
     function _disableVaccineValidation() {
         var v = $("#arrivalForm").data("validator");
-        if (v) v.settings.ignore = "*";
+        if (v) v.settings.ignore = ":hidden";
     }
 
     function _enableVaccineValidation() {
@@ -196,6 +196,8 @@ $(function () {
             // اگه فقط یک دوز هست auto-select کن
             if (data.length === 1) {
                 $sel.val(data[0].value);
+                $("#HalalDoseValue").val(data[0].text); 
+
             }
 
             if (callback) callback();
@@ -247,6 +249,8 @@ $(function () {
 
     // وقتی دوز تغییر کرد NumVials را recalculate کن
     $("#HalalDoseSelect").on("change", function () {
+         var dose = _getDoseValue();
+    $("#HalalDoseValue").val(dose || "");
         if (_calcLock) return;
         var qty = _parsePos($("#QuantityInput").val());
         var dose = _getDoseValue();

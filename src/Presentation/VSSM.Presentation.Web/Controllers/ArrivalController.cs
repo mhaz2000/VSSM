@@ -299,7 +299,7 @@ public class ArrivalController(
 
         model.NewLine.NumVials = model.NewLine.Quantity / model.NewLine.DosePerVial;
 
-        model.NewLine.DosePerVialId = null;
+        model.NewLine.DosePerVialId = model.NewLine.DosePerVialId;
 
         await EnsureArrivalCreatedAsync(model, token);
         var lineDto = MapNewLineToDto(model);
@@ -554,7 +554,6 @@ public class ArrivalController(
         UseId = model.NewLine.UseId,
         VvmStageId = model.NewLine.VvmStageId,
         VvmTypeId = model.NewLine.VvmTypeId,
-        //DosePerVial = model.NewLine.DosePerVial,
     };
 
     private async Task<List<ArrivalLineViewModel>> MapLinesToViewModelAsync(

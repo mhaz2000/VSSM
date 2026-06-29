@@ -417,13 +417,9 @@ ADD LINE (INCREMENTAL)
 
     public async Task<bool> DoesHaveArrivalLineByArrivalId(int id)
     {
-
         if (await db.TblArrivalLines.AnyAsync(c => c.ArrivalId == id))
             return true;
         return false;
-
-
-
     }
     public async Task<ArrivalLineDto> GetArrivalLineById(int id)
     {

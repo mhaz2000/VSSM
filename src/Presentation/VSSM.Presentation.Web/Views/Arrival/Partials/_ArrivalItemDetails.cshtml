@@ -37,7 +37,6 @@
                        placeholder="بر اساس سری ساخت"
                        style="@(isHalal ? "display:none;" : "")" />
 
-
                 <select id="HalalItemSelect"
                         name="NewLine.ItemId"
                         class="f-control"
@@ -57,14 +56,12 @@
                 </select>
             </div>
 
-
             <div class="f-group" id="doseDisplayGroup"
                  style="@(isHalal ? "display:none;" : "")">
                 <label class="f-label">دوز بر ویال <span class="opt" id="doseAutoLabel">(خودکار)</span></label>
                 <input type="text" id="DoseDisplay" class="f-control" disabled
                        placeholder="بر اساس سری ساخت" />
             </div>
-
 
             <div class="f-group" id="halalDoseGroup"
                  style="@(!isHalal ? "display:none;" : "")">
@@ -92,6 +89,9 @@
                         <option value="">ابتدا کالا را انتخاب کنید</option>
                     }
                 </select>
+
+                <input type="hidden" id="HalalDoseValue" name="NewLine.DosePerVial"
+                       value="@(isHalal? Model?.NewLine?.DosePerVial?.ToString() : null)" />
             </div>
 
         </div>

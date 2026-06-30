@@ -30,14 +30,14 @@ public partial class TblOrderInfo
 
     public int CreatedBy { get; set; }
 
-    public string Status { get; set; }
+    public string Status { get; set; } = "";
 
     public string FileName { get; set; } = null!;
 
 
     public virtual TblItem Item { get; set; }
     public virtual TblArrival Arrival { get; set; }
-    public virtual TblBaseInfo DosePerVial  { get; set; }
+    public virtual TblBaseInfo DosePerVial { get; set; }
 
     public virtual ICollection<TblUidInfo> TblUidInfos { get; set; }
         = new List<TblUidInfo>();

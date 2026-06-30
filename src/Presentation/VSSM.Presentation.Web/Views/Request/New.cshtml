@@ -1,9 +1,11 @@
 ﻿@using VSSM.Presentation.Web.Models.Request
+@using VSSM.Domain.Enums
 @model RequestViewModel
 
 @{
     bool isEdit = Model?.Id > 0;
     bool hasLines = Model?.RequestLines != null && Model.RequestLines.Any();
+    bool isConfirmed = Model?.RequestStatus == (int)RequestStatusEnum.Confirmed;
 }
 
 @section Styles {
@@ -25,98 +27,91 @@
                 <i class="fa fa-file-text-o" style="color:#1d6fb8; font-size:16px;"></i>
                 <h6 style="font-size:16px;">ثبت درخواست</h6>
             </div>
-            <div class="a-card-body">
 
-                @* ردیف ۱: نوع کالا | کالا | مقدار مجاز *@
-                <div class="fg-3">
-                    <div class="f-group">
-                        <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
-                        <select id="ItemClassId"
-                                asp-for="NewLine.ItemClassId"
-                                asp-items="ViewBag.ItemClassList"
-                                class="f-control">
-                            <option value="">انتخاب کنید...</option>
-                        </select>
+            <fieldset class="rq-fieldset" disabled="@isConfirmed">
+                <div class="a-card-body">
+
+                    @if (isEdit)
+                    {
+                        <div class="fg-3">
+                            <div class="f-group">
+                                <label class="f-label">شماره درخواست</label>
+                                <input type="text" class="f-control" asp-for="RequestNumber" disabled />
+                            </div>
+                        </div>
+                    }
+
+                    @* ردیف ۱: نوع کالا | کالا | تعداد درخواستی *@
+                    <div class="fg-3">
+                        <div class="f-group">
+                            <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
+                            <select id="ItemClassId"
+                                    asp-for="NewLine.ItemClassId"
+                                    asp-items="ViewBag.ItemClassList"
+                                    class="f-control">
+                                <option value="">انتخاب کنید...</option>
+                            </select>
+                        </div>
+                        <div class="f-group">
+                            <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
+                            <select id="ItemId"
+                                    asp-for="NewLine.ItemId"
+                                    class="f-control"
+                                    disabled>
+                                <option value="">ابتدا نوع کالا را انتخاب کنید</option>
+                            </select>
+                        </div>
+                        <div class="f-group rq-needs-item">
+                            <label class="f-label">تعداد درخواستی <span class="req-tag">اجباری</span></label>
+                            <input type="text" class="f-control" asp-for="NewLine.Reqcount" id="reqcount" />
+                        </div>
                     </div>
-                    <div class="f-group">
-                        <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
-                        <select id="ItemId"
-                                asp-for="NewLine.ItemId"
-                                class="f-control"
-                                disabled>
-                            <option value="">ابتدا نوع کالا را انتخاب کنید</option>
-                        </select>
+
+                    @* ردیف ۲: تعداد ورودی | تعداد مصرف شده | تعداد موجودی انبار *@
+                    <div class="fg-3">
+                        <div class="f-group">
+                            <label class="f-label">تعداد ورودی</label>
+                            <input type="text" class="f-control" asp-for="NewLine.Arivcount" id="arivcount" readonly />
+                        </div>
+                        <div class="f-group">
+                            <label class="f-label">تعداد مصرف شده</label>
+                            <input type="text" class="f-control" asp-for="NewLine.Usedcount" id="usedcount" readonly />
+                        </div>
+                        <div class="f-group">
+                            <label class="f-label">تعداد موجودی انبار</label>
+                            <input type="text" class="f-control" asp-for="NewLine.Currentcount" id="currentcount" readonly />
+                        </div>
                     </div>
-                    <div class="f-group">
-                        <label class="f-label">مقدار مجاز</label>
-                        <input type="text" class="f-control" asp-for="NewLine.Anncount" id="anncount" readonly />
+
+                    @* ردیف ۳: ذخیره ایمن | زمان بین درخواست و ورود | ملاحظات (سطر) *@
+                    <div class="fg-3">
+                        <div class="f-group">
+                            <label class="f-label">ذخیره ایمن (ماه)</label>
+                            <input type="text" class="f-control" asp-for="NewLine.InventoryHealth" id="inventoryHealth" readonly />
+                        </div>
+                        <div class="f-group">
+                            <label class="f-label">زمان بین درخواست و ورود محموله (روز)</label>
+                            <input type="text" class="f-control" asp-for="NewLine.TimeBetweenRequestAndArrival" id="timeBetweenRequestAndArrival" readonly />
+                        </div>
+                        <div class="f-group">
+                            <label class="f-label">ملاحظات <span class="opt">(اختیاری)</span></label>
+                            <input type="text" class="f-control" asp-for="NewLine.Note" id="note" placeholder="ملاحظات..." />
+                        </div>
                     </div>
+
+                    @* دکمه افزودن ردیف *@
+                    <div class="rq-add-line-footer">
+                        <button type="submit"
+                                name="command"
+                                value="addLine"
+                                class="btn-add-line rq-needs-item">
+                            <i class="fa fa-plus"></i>
+                            افزودن
+                        </button>
+                    </div>
+
                 </div>
-
-                @* ردیف ۲: تعداد موجودی انبار | مقدار ورودی | تعداد مصرف شده *@
-                <div class="fg-3">
-                    <div class="f-group">
-                        <label class="f-label">تعداد موجودی انبار</label>
-                        <input type="text" class="f-control" asp-for="NewLine.Currentcount" id="currentcount" readonly />
-                    </div>
-                    <div class="f-group">
-                        <label class="f-label">مقدار ورودی</label>
-                        <input type="text" class="f-control" asp-for="NewLine.Arivcount" id="arivcount" readonly />
-                    </div>
-                    <div class="f-group">
-                        <label class="f-label">تعداد مصرف شده</label>
-                        <input type="text" class="f-control" asp-for="NewLine.Usedcount" id="usedcount" readonly />
-                    </div>
-                </div>
-
-                @* ردیف ۳: ذخیره ایمن | زمان بین درخواست و ورود | جهت دوره *@
-                <div class="fg-3">
-                    <div class="f-group">
-                        <label class="f-label">ذخیره ایمن (ماه)</label>
-                        <input type="text" class="f-control" asp-for="NewLine.InventoryHealth" id="inventoryHealth" readonly />
-                    </div>
-                    <div class="f-group">
-                        <label class="f-label">زمان بین درخواست و ورود محموله (روز)</label>
-                        <input type="text" class="f-control" asp-for="NewLine.TimeBetweenRequestAndArrival" id="timeBetweenRequestAndArrival" readonly />
-                    </div>
-                    <div class="f-group">
-                        <label class="f-label">جهت دوره</label>
-                        <select asp-items="ViewBag.ForPeriodList"
-                                asp-for="NewLine.Forperiod"
-                                id="forperiod"
-                                class="f-control">
-                        </select>
-                    </div>
-                </div>
-
-                @* ردیف ۴: تعداد پیشنهادی | تعداد درخواستی | ملاحظات *@
-                <div class="fg-3">
-                    <div class="f-group">
-                        <label class="f-label">تعداد پیشنهادی</label>
-                        <input type="text" class="f-control" asp-for="NewLine.Offercount" id="offercount" readonly />
-                    </div>
-                    <div class="f-group">
-                        <label class="f-label">تعداد درخواستی <span class="req-tag">اجباری</span></label>
-                        <input type="text" class="f-control" asp-for="NewLine.Reqcount" id="reqcount" />
-                    </div>
-                    <div class="f-group">
-                        <label class="f-label">ملاحظات <span class="opt">(اختیاری)</span></label>
-                        <input type="text" class="f-control" asp-for="Note" id="note" placeholder="ملاحظات..." />
-                    </div>
-                </div>
-
-                @* دکمه افزودن ردیف *@
-                <div class="rq-add-line-footer">
-                    <button type="submit"
-                            name="command"
-                            value="addLine"
-                            class="btn-add-line rq-needs-item">
-                        <i class="fa fa-plus"></i>
-                        افزودن
-                    </button>
-                </div>
-
-            </div>
+            </fieldset>
         </div>
 
         @* ═══ کارت دوم: اقلام درخواست ═══ *@
@@ -131,13 +126,11 @@
                         <thead>
                             <tr>
                                 <th>کالا</th>
-                                <th>مقدار مجاز</th>
                                 <th>تعداد ورودی</th>
                                 <th>تعداد مصرف شده</th>
                                 <th>موجودی انبار</th>
-                                <th>جهت دوره</th>
-                                <th>تعداد پیشنهادی</th>
                                 <th>تعداد درخواستی</th>
+                                <th>ملاحظات</th>
                                 <th>عملیات</th>
                             </tr>
                         </thead>
@@ -149,19 +142,18 @@
                                     var line = Model.RequestLines[i];
                                     <tr>
                                         <td>@line.ItemName</td>
-                                        <td>@line.Anncount</td>
                                         <td>@line.Arivcount</td>
                                         <td>@line.Usedcount</td>
                                         <td>@line.Currentcount</td>
-                                        <td>@line.Forperiod</td>
-                                        <td>@line.Offercount</td>
                                         <td>@line.Reqcount</td>
+                                        <td>@line.Note</td>
                                         <td>
                                             <button type="submit"
                                                     name="command"
                                                     value="deleteLine_@line.Id"
                                                     class="btn-action btn-action-del js-submit-btn"
-                                                    title="حذف">
+                                                    title="حذف"
+                                                    disabled="@isConfirmed">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         </td>
@@ -171,7 +163,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="9" class="rq-empty-row">
+                                    <td colspan="7" class="rq-empty-row">
                                         <i class="fa fa-inbox"></i>
                                         آیتمی ثبت نشده است
                                     </td>
@@ -194,7 +186,8 @@
                     name="command"
                     value="StatusDelete"
                     class="btn-action btn-action-del rq-btn-del rq-needs-record"
-                    title="حذف درخواست">
+                    title="حذف درخواست"
+                    disabled="@isConfirmed">
                 <i class="fa fa-trash"></i>
                 حذف
             </button>
@@ -202,7 +195,8 @@
             <button type="submit"
                     name="command"
                     value="StatusDraft"
-                    class="btn-draft rq-needs-record">
+                    class="btn-draft rq-needs-record"
+                    disabled="@isConfirmed">
                 <i class="fa fa-floppy-o"></i>
                 پیش‌نویس
             </button>
@@ -210,9 +204,10 @@
             <button type="submit"
                     name="command"
                     value="StatusSent"
-                    class="btn-confirm rq-needs-record">
+                    class="btn-confirm rq-needs-record"
+                    disabled="@isConfirmed">
                 <i class="fa fa-paper-plane"></i>
-                ثبت
+                ارسال
             </button>
         </div>
 

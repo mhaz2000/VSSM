@@ -9,21 +9,31 @@
         $form.attr('data-has-item', val ? 'true' : 'false');
     }
 
+    function resetItemDropdown(placeholder) {
+        $item.prop('disabled', true).empty().append(`<option value="">${placeholder}</option>`);
+    }
+
+    function clearComputedFields() {
+        $('#arivcount, #currentcount, #usedcount, #inventoryHealth, #timeBetweenRequestAndArrival').val('');
+    }
+
     /* ── تغییر نوع کالا → بارگذاری کالاها ── */
     $itemClass.on('change', function () {
         const classId = $(this).val();
 
         setHasItem(false);
-        $item.prop('disabled', true).empty();
+        clearComputedFields();
 
         if (!classId) {
-            $item.append('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
+            resetItemDropdown('ابتدا نوع کالا را انتخاب کنید');
             return;
         }
 
+        resetItemDropdown('در حال بارگذاری...');
+
         $.getJSON('/Request/GetItemsByClass', { classId })
             .done(function (data) {
-                $item.append('<option value="">انتخاب کنید...</option>');
+                $item.empty().append('<option value="">انتخاب کنید...</option>');
                 data.forEach(x => {
                     $item.append(`<option value="${x.id}">${x.text}</option>`);
                 });
@@ -31,20 +41,21 @@
             });
     });
 
-    /* ── تغییر کالا → بارگذاری جزئیات ── */
+    /* ── تغییر کالا → بارگذاری جزئیات (تعداد ورودی / مصرف‌شده / موجودی انبار) ── */
     $item.on('change', function () {
-        setHasItem(!!$(this).val());
-
         const itemId = $(this).val();
-        if (!itemId) return;
+        setHasItem(!!itemId);
+
+        if (!itemId) {
+            clearComputedFields();
+            return;
+        }
 
         $.getJSON('/Request/GetItemDetailsByItem', { itemId })
             .done(function (data) {
-                $('#anncount').val(data.anncount);
                 $('#currentcount').val(data.currentcount);
                 $('#arivcount').val(data.arivcount);
                 $('#usedcount').val(data.usedcount);
-                $('#offercount').val(data.offercount);
                 $('#inventoryHealth').val(0);
                 $('#timeBetweenRequestAndArrival').val(0);
             });

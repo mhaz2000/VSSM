@@ -19,7 +19,7 @@
     margin-top: 6px;
 }
 
-/* ── دکمه حذف در فوتر (پهن‌تر از آیکون ۲۸px) ── */
+/* ── دکمه حذف در فوتر ── */
 .rq-btn-del {
     width: auto !important;
     padding: 0 16px !important;
@@ -45,7 +45,7 @@
         color: #d1d5db;
     }
 
-/* ── fieldset بدون استایل پیش‌فرض مرورگر، برای غیرفعال‌سازی گروهی کارت اول وقتی وضعیت تایید شده است ── */
+/* ── fieldset بدون استایل پیش‌فرض مرورگر ── */
 .rq-fieldset {
     border: 0;
     padding: 0;
@@ -53,14 +53,18 @@
     min-width: 0;
 }
 
-/* غیرفعال تا کالا انتخاب نشده */
+/* ═══════════════════════════════════════════
+   دیزیبل کردن المنت‌ها (مثل dispatch-form)
+   ═══════════════════════════════════════════ */
+
+/* دیزیبل تا کالا انتخاب نشده */
 #requestForm:not([data-has-item="true"]) .rq-needs-item {
     opacity: .45;
     pointer-events: none;
     cursor: not-allowed;
 }
 
-/* غیرفعال تا ردیفی اضافه نشده */
+/* دیزیبل تا ردیفی اضافه نشده */
 #requestForm:not([data-has-record="true"]) .rq-needs-record {
     opacity: .45;
     pointer-events: none;
@@ -70,4 +74,127 @@
 .is-invalid {
     border: 1px solid red !important;
     background-color: #fff5f5;
+}
+
+/* ═══════════════════════════════════════════
+   دیزیبل کردن کل فرم هنگام لودینگ
+   ═══════════════════════════════════════════ */
+
+#requestForm.form-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+    #requestForm.form-loading #computedLoading {
+        pointer-events: none;
+    }
+
+    #requestForm.form-loading .btn-add-line {
+        opacity: 0.45 !important;
+        pointer-events: none !important;
+        cursor: not-allowed !important;
+    }
+
+/* ═══════════════════════════════════════════
+   لودینگ بسیار سبک - فقط اسپینر وسط‌چین
+   ═══════════════════════════════════════════ */
+
+#computedFieldsWrap {
+    position: relative;
+    min-height: 80px;
+}
+
+#computedLoading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none; /* پیش‌فرض مخفی */
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    background: transparent;
+    /* وقتی با JS display:flex شود، وسط‌چین می‌شود */
+}
+
+/* اسپینر به تنهایی، بدون کادر و بدون متن */
+.loader {
+    --color-1: #1d6fb8;
+    --color-2: rgba(29, 111, 184, 0.58);
+    --color-3: rgba(29, 111, 184, 0.37);
+    --color-4: rgba(29, 111, 184, 0.09);
+    --size: 1px;
+    font-size: calc(10 * var(--size));
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    position: relative;
+    text-indent: -9999em;
+    animation: mulShdSpin 1.1s infinite ease;
+    transform: translateZ(0);
+}
+
+@keyframes mulShdSpin {
+    0%, 100% {
+        box-shadow: 0em -2.6em 0em 0em var(--color-1), 1.8em -1.8em 0 0em var(--color-2), 2.5em 0em 0 0em var(--color-2), 1.75em 1.75em 0 0em var(--color-2), 0em 2.5em 0 0em var(--color-2), -1.8em 1.8em 0 0em var(--color-2), -2.6em 0em 0 0em var(--color-3), -1.8em -1.8em 0 0em var(--color-4);
+    }
+
+    12.5% {
+        box-shadow: 0em -2.6em 0em 0em var(--color-4), 1.8em -1.8em 0 0em var(--color-1), 2.5em 0em 0 0em var(--color-2), 1.75em 1.75em 0 0em var(--color-2), 0em 2.5em 0 0em var(--color-2), -1.8em 1.8em 0 0em var(--color-2), -2.6em 0em 0 0em var(--color-2), -1.8em -1.8em 0 0em var(--color-3);
+    }
+
+    25% {
+        box-shadow: 0em -2.6em 0em 0em var(--color-3), 1.8em -1.8em 0 0em var(--color-4), 2.5em 0em 0 0em var(--color-1), 1.75em 1.75em 0 0em var(--color-2), 0em 2.5em 0 0em var(--color-2), -1.8em 1.8em 0 0em var(--color-2), -2.6em 0em 0 0em var(--color-2), -1.8em -1.8em 0 0em var(--color-2);
+    }
+
+    37.5% {
+        box-shadow: 0em -2.6em 0em 0em var(--color-2), 1.8em -1.8em 0 0em var(--color-3), 2.5em 0em 0 0em var(--color-4), 1.75em 1.75em 0 0em var(--color-1), 0em 2.5em 0 0em var(--color-2), -1.8em 1.8em 0 0em var(--color-2), -2.6em 0em 0 0em var(--color-2), -1.8em -1.8em 0 0em var(--color-2);
+    }
+
+    50% {
+        box-shadow: 0em -2.6em 0em 0em var(--color-2), 1.8em -1.8em 0 0em var(--color-2), 2.5em 0em 0 0em var(--color-3), 1.75em 1.75em 0 0em var(--color-4), 0em 2.5em 0 0em var(--color-1), -1.8em 1.8em 0 0em var(--color-2), -2.6em 0em 0 0em var(--color-2), -1.8em -1.8em 0 0em var(--color-2);
+    }
+
+    62.5% {
+        box-shadow: 0em -2.6em 0em 0em var(--color-2), 1.8em -1.8em 0 0em var(--color-2), 2.5em 0em 0 0em var(--color-2), 1.75em 1.75em 0 0em var(--color-3), 0em 2.5em 0 0em var(--color-4), -1.8em 1.8em 0 0em var(--color-1), -2.6em 0em 0 0em var(--color-2), -1.8em -1.8em 0 0em var(--color-2);
+    }
+
+    75% {
+        box-shadow: 0em -2.6em 0em 0em var(--color-2), 1.8em -1.8em 0 0em var(--color-2), 2.5em 0em 0 0em var(--color-2), 1.75em 1.75em 0 0em var(--color-2), 0em 2.5em 0 0em var(--color-3), -1.8em 1.8em 0 0em var(--color-4), -2.6em 0em 0 0em var(--color-1), -1.8em -1.8em 0 0em var(--color-2);
+    }
+
+    87.5% {
+        box-shadow: 0em -2.6em 0em 0em var(--color-2), 1.8em -1.8em 0 0em var(--color-2), 2.5em 0em 0 0em var(--color-2), 1.75em 1.75em 0 0em var(--color-2), 0em 2.5em 0 0em var(--color-2), -1.8em 1.8em 0 0em var(--color-3), -2.6em 0em 0 0em var(--color-4), -1.8em -1.8em 0 0em var(--color-1);
+    }
+}
+
+/* ── فیلدها در حالت لودینگ بدون تغییر ── */
+#computedFieldsWrap.is-loading .f-control {
+    /* هیچ تغییری در opacity یا رنگ اعمال نمیشه */
+}
+
+/* ═══════════════════════════════════════════
+   حالت disabled دکمه افزودن (مثل dispatch-form)
+   ═══════════════════════════════════════════ */
+.btn-add-line:disabled {
+    opacity: .45;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════
+   ریسپانسیو
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .loader {
+        --size: 0.8px;
+        font-size: calc(10 * var(--size));
+    }
+
+    #computedFieldsWrap {
+        min-height: 60px;
+    }
 }

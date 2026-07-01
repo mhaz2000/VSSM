@@ -16,7 +16,6 @@
     }
 }
 
-/* ── گرید دو‌ستونه (اختصاصی این فرم) ── */
 .fg-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -46,7 +45,7 @@
         color: #1d4ed8;
     }
 
-/* ── دکمه uid در جدول عملیات ── */
+
 .btn-action-uid {
     border-color: #a7f3d0;
     color: #059669;

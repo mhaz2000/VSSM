@@ -68,18 +68,28 @@
                     </div>
 
                     @* ردیف ۲: تعداد ورودی | تعداد مصرف شده | تعداد موجودی انبار *@
-                    <div class="fg-3">
+                    <div class="fg-3" id="computedFieldsWrap">
+                        <div id="computedLoading" style="display:none;">
+                            <div class="loader"></div>
+                        </div>
+
                         <div class="f-group">
                             <label class="f-label">تعداد ورودی</label>
-                            <input type="text" class="f-control" asp-for="NewLine.ArivCount" id="arivcount" readonly />
+                            <div class="computed-field-wrapper">
+                                <input type="text" class="f-control" asp-for="NewLine.ArivCount" id="arivcount" readonly />
+                            </div>
                         </div>
                         <div class="f-group">
                             <label class="f-label">تعداد مصرف شده</label>
-                            <input type="text" class="f-control" asp-for="NewLine.UsedCount" id="usedcount" readonly />
+                            <div class="computed-field-wrapper">
+                                <input type="text" class="f-control" asp-for="NewLine.UsedCount" id="usedcount" readonly />
+                            </div>
                         </div>
                         <div class="f-group">
                             <label class="f-label">تعداد موجودی انبار</label>
-                            <input type="text" class="f-control" asp-for="NewLine.CurrentCount" id="currentcount" readonly />
+                            <div class="computed-field-wrapper">
+                                <input type="text" class="f-control" asp-for="NewLine.CurrentCount" id="currentcount" readonly />
+                            </div>
                         </div>
                     </div>
 
@@ -104,7 +114,9 @@
                         <button type="submit"
                                 name="command"
                                 value="addLine"
-                                class="btn-add-line rq-needs-item">
+                                id="btnAddLine"
+                                class="btn-add-line rq-needs-item"
+                                disabled>
                             <i class="fa fa-plus"></i>
                             افزودن
                         </button>
@@ -125,6 +137,7 @@
                     <table class="lines-table">
                         <thead>
                             <tr>
+                                <th>ردیف</th>
                                 <th>کالا</th>
                                 <th>تعداد ورودی</th>
                                 <th>تعداد مصرف شده</th>
@@ -141,6 +154,7 @@
                                 {
                                     var line = Model.RequestLines[i];
                                     <tr>
+                                        <td>@(i + 1)</td>
                                         <td>@line.ItemName</td>
                                         <td>@line.ArivCount</td>
                                         <td>@line.UsedCount</td>
@@ -163,7 +177,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="7" class="rq-empty-row">
+                                    <td colspan="8" class="rq-empty-row">
                                         <i class="fa fa-inbox"></i>
                                         آیتمی ثبت نشده است
                                     </td>
@@ -196,6 +210,7 @@
                     name="command"
                     value="StatusDraft"
                     class="btn-draft rq-needs-record"
+                    formnovalidate
                     disabled="@isConfirmed">
                 <i class="fa fa-floppy-o"></i>
                 پیش‌نویس
@@ -205,6 +220,7 @@
                     name="command"
                     value="StatusSent"
                     class="btn-confirm rq-needs-record"
+                    formnovalidate
                     disabled="@isConfirmed">
                 <i class="fa fa-paper-plane"></i>
                 ارسال

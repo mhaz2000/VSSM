@@ -14,7 +14,7 @@ public class TblRequestLine
 
     public int? ReqCount { get; set; }
 
-    public string Note { get; set; } = string.Empty;
+    public string? Note { get; set; }
 
     public int? ConfirmCount { get; set; }
 
@@ -22,6 +22,6 @@ public class TblRequestLine
 
     public virtual TblBaseInfo DosePerVial { get; set; } = default!;
     public virtual TblBaseInfo ItemClass { get; set; } = default!;
-    public virtual TblItem Item { get; set; }= default!;
+    public virtual TblItem Item { get; set; } = default!;
     public virtual TblRequest Request { get; set; } = default!;
 }

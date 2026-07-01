@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.RequestEntities;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces.RequestEntities;
-using VSSM.Application.Services.BaseEntities;
 using VSSM.Domain.Enums;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
@@ -308,13 +306,20 @@ public class RequestController(
         var availability = await requestService.GetItemAvailabilityAsync(
             itemId, CurrentUserRecipientId.GetValueOrDefault(), token);
 
+        if (availability.CurrentCount <= 0)
+        {
+            TempData["ToastMessage"] = "موجودی این کالا صفر است و امکان ثبت درخواست برای آن وجود ندارد.";
+            TempData["ToastType"] = "error";
+        }
         return Json(new
         {
             arivCount = availability.ArivCount,
             currentCount = availability.CurrentCount,
             usedCount = availability.UsedCount
         });
+
     }
+
     public async Task<IActionResult> ReceivedRequests(
         CancellationToken cancellationToken,
         string? search = null,

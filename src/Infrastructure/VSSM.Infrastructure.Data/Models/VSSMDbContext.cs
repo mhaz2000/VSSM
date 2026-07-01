@@ -180,7 +180,7 @@ public partial class VSSMDbContext : DbContext
 
         modelBuilder.Entity<TblRequestLine>(entity =>
         {
-            entity.ToTable("tblRequestLine");
+            entity.ToTable("tblRequestLines");
 
             entity.Property(e => e.Id)
                 .HasColumnName("PK_REQUEST_LINE_ID");

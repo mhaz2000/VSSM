@@ -1,8 +1,8 @@
 ﻿@model ItemDoseAssignmentViewModel
 
 @{
-    string formName = Model.ItemDoseAssignmentId > 0 ? "ویرایش اختصاص دوز به کالا" : "ثبت اختصاص دوز به کالا";
-    var isEdit = Model.ItemDoseAssignmentId > 0;
+    string formName = Model is not null && Model.ItemDoseAssignmentId > 0 ? "ویرایش اختصاص دوز به کالا" : "ثبت اختصاص دوز به کالا";
+    var isEdit = Model is not null && Model.ItemDoseAssignmentId > 0;
 }
 
 @section Styles {
@@ -66,7 +66,7 @@
         </div>
 
         <!-- فوتر -->
-        <div class="form-footer">
+        <div class="form-footer a-card">
             <a asp-action="Index" class="btn-back">
                 <i class="fa fa-arrow-right"></i> بازگشت
             </a>
@@ -105,7 +105,7 @@
                         $item.prop("disabled", false);
 
                         // If editing, pre-select the ItemId after loading items
-                        var selectedItemId = '@Model.ItemId';
+                        var selectedItemId = '@(Model?.ItemId)';
                         if (selectedItemId) {
                             $item.val(selectedItemId);
                         }
@@ -113,7 +113,7 @@
             });
 
             // If editing, pre-select ItemClass and trigger load
-            var initialClassId = '@Model.ItemClassId';
+            var initialClassId = '@(Model?.ItemClassId)';
             if (initialClassId) {
                 $itemClass.val(initialClassId).trigger("change");
             }

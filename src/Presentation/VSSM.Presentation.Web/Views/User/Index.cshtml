@@ -4,6 +4,9 @@
 @section Styles {
     <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
     <link href="~/css/components/shared/grid-header.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/uid-modal.css" rel="stylesheet" />
 
 }
 
@@ -49,7 +52,7 @@
 
             <a asp-action="New" class="btn-add">
                 <span class="plus-circle">+</span>
-                افزودن کاربر
+                افزودن
             </a>
 
         </div>
@@ -59,10 +62,8 @@
         @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
 
-    <div class="modal fade" id="changePasswordModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content" id="changePasswordModalContent">
-            </div>
+    <div class="uid-modal-overlay" id="changePasswordModal">
+        <div class="uid-modal" id="changePasswordModalContent">
         </div>
     </div>
 
@@ -97,8 +98,14 @@
                 e.preventDefault();
                 const url = $(this).data("url");
                 $("#changePasswordModalContent").load(url, function () {
-                    $('#changePasswordModal').modal('show');
+                    $('#changePasswordModal').addClass('open');
                 });
+            });
+
+            $(document).on("click", "#changePasswordModal", function (e) {
+                if ($(e.target).is("#changePasswordModal")) {
+                    $('#changePasswordModal').removeClass('open');
+                }
             });
 
             $(document).on("click", ".delete-user", function (e) {
@@ -106,6 +113,10 @@
                 pendingDeleteForm = $(this).closest("form");
                 $("#deleteConfirmModal").modal("show");
             });
+
+            window.closeChangePasswordModal = function () {
+                $('#changePasswordModal').removeClass('open');
+            };
 
             $("#deleteConfirmSubmit").on("click", function () {
                 if (pendingDeleteForm) {

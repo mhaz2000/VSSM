@@ -143,7 +143,11 @@ namespace VSSM.Presentation.Web.Controllers
             await LoadDropDowns(token);
 
             if (!ModelState.IsValid)
+            {
+                TempData["ToastMessage"] = "تمام فیلدهای اجباری باید پر شوند";
+                TempData["ToastType"] = "error";
                 return View("New", model);
+            }
 
 
 

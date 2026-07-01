@@ -2,22 +2,26 @@
 
 @{
     string formName = Model.UserId > 0 ? "ویرایش کاربر" : "ثبت کاربر جدید";
+    var serverMsg = TempData["ToastMessage"]?.ToString();
+    var serverType = TempData["ToastType"]?.ToString();
+    TempData.Remove("ToastMessage");
+    TempData.Remove("ToastType");
 }
 
 @section Styles {
     <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
     <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
     <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
     <link href="~/css/components/user/user-form.css" rel="stylesheet" />
 }
 
 <div class="user-form-wrap">
+    <div id="toastContainer"></div>
     <strong class="user-form-title">@formName</strong>
 
-    <form asp-action="Create" method="post" style="margin-top: 1rem;">
+    <form asp-action="Create" method="post" style="margin-top: 1rem;" novalidate>
         <input type="hidden" asp-for="UserId" />
-
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <!-- اطلاعات کاربری -->
         <div class="a-card">
@@ -30,22 +34,18 @@
                     <div class="f-group">
                         <label class="f-label">نام کاربری <span class="req-tag">اجباری</span></label>
                         <input asp-for="UserName" class="f-control" />
-                        <span class="text-danger" asp-validation-for="UserName"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">کلمه عبور <span class="req-tag">اجباری</span></label>
                         <input asp-for="Password" class="f-control" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">نام <span class="req-tag">اجباری</span></label>
                         <input asp-for="FirstName" class="f-control" />
-                        <span asp-validation-for="FirstName" class="text-danger"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">نام خانوادگی <span class="req-tag">اجباری</span></label>
                         <input asp-for="LastName" class="f-control" />
-                        <span asp-validation-for="LastName" class="text-danger"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">ایمیل</label>
@@ -110,14 +110,12 @@
                         <select asp-for="PermissionLevel" class="f-control" asp-items="ViewBag.PermissionList">
                             <option value="">انتخاب کنید...</option>
                         </select>
-                        <span asp-validation-for="PermissionLevel" class="text-danger"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">نقش <span class="req-tag">اجباری</span></label>
                         <select asp-for="RoleId" class="f-control" asp-items="ViewBag.Roles">
                             <option value="">انتخاب کنید...</option>
                         </select>
-                        <span asp-validation-for="RoleId" class="text-danger"></span>
                     </div>
                 </div>
             </div>
@@ -147,7 +145,6 @@
                     <div class="f-group">
                         <label class="f-label">تاریخ ثبت (روز/ماه/سال)</label>
                         <input asp-for="CourseDate" class="f-control" placeholder="مثال: 03/01/24" />
-                        <span asp-validation-for="CourseDate" class="text-danger"></span>
                     </div>
                 </div>
             </div>
@@ -166,5 +163,15 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/shared/toast.js"></script>
+    <script>
+        var serverMsg  = "@(serverMsg ?? "")";
+        var serverType = "@(serverType ?? "info")";
+
+        $(function () {
+            if (serverMsg) {
+                showToast(serverMsg, serverType);
+            }
+        });
+    </script>
 }

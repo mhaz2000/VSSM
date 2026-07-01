@@ -96,7 +96,10 @@ namespace VSSM.Presentation.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return Redirect("New");
+                TempData["ToastMessage"] = "تمام فیلدهای اجباری باید پر شوند";
+                TempData["ToastType"] = "error";
+                await PrepareDropdown(cancellationTOken);
+                return View("New", model);
             }
 
             var dto = new ItemDoseAssignmentCreateDto

@@ -123,11 +123,7 @@ public partial class VSSMDbContext : DbContext
 
     public virtual DbSet<TblRequest> TblRequests { get; set; }
 
-    public virtual DbSet<TblRequest1> TblRequests1 { get; set; }
-
     public virtual DbSet<TblRequestLine> TblRequestLines { get; set; }
-
-    public virtual DbSet<TblRequestLine1> TblRequestLines1 { get; set; }
 
     public virtual DbSet<TblRequestsNew> TblRequestsNews { get; set; }
 
@@ -176,8 +172,73 @@ public partial class VSSMDbContext : DbContext
     public DbSet<TblReceiveDispatches> TblReceiveDispatches { get; set; }
 
 
+
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<TblRequestLine>(entity =>
+        {
+            entity.ToTable("tblRequestLine");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("PK_REQUEST_LINE_ID");
+
+            entity.Property(e => e.RequestId)
+                .HasColumnName("FK_REQUEST_ID");
+
+            entity.Property(e => e.ItemId)
+                .HasColumnName("FK_ITEM_ID");
+
+            entity.Property(e => e.ItemClassId)
+                .HasColumnName("FK_ITEM_CLASS_ID");
+
+            entity.Property(e => e.DosePerVialId)
+                .HasColumnName("FK_DOSE_PER_VIAL_ID");
+
+            entity.Property(e => e.ReqCount)
+                .HasColumnName("REQ_COUNT");
+
+            entity.Property(e => e.ArriveCount)
+                .HasColumnName("ARRIVE_COUNT");
+
+            entity.Property(e => e.UsedCount)
+                .HasColumnName("USED_COUNT");
+
+            entity.Property(e => e.CurrentCount)
+                .HasColumnName("CURRENT_COUNT");
+
+            entity.Property(e => e.ConfirmCount)
+                .HasColumnName("CONFIRM_COUNT");
+
+            entity.Property(e => e.Note)
+                .HasColumnName("NOTE")
+                .HasMaxLength(500);
+
+
+            entity.HasOne(d => d.Request)
+                .WithMany(p => p.TblRequestLines)
+                .HasForeignKey(d => d.RequestId)
+                .HasConstraintName("FK_REQUESTLINE_REQUEST");
+
+            entity.HasOne(d => d.Item)
+                .WithMany(p => p.TblRequestLines)
+                .HasForeignKey(d => d.ItemId)
+                .HasConstraintName("FK_REQUESTLINE_ITEM");
+
+            entity.HasOne(d => d.ItemClass)
+                .WithMany()
+                .HasForeignKey(d => d.ItemClassId)
+                .HasConstraintName("FK_REQUESTLINE_ITEM_CLASS");
+
+            entity.HasOne(d => d.DosePerVial)
+                .WithMany()
+                .HasForeignKey(d => d.DosePerVialId)
+                .HasConstraintName("FK_REQUESTLINE_DOSE_PER_VIAL");
+        });
+
+
         modelBuilder.Entity<TblDestroyUid>(entity =>
         {
             entity.ToTable("tblDestroyUid");
@@ -1461,91 +1522,60 @@ public partial class VSSMDbContext : DbContext
 
         modelBuilder.Entity<TblRequest>(entity =>
         {
-            entity.ToTable("tblRequest");
+            entity.ToTable("tblRequests");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.FiscalPeriodId).HasColumnName("FiscalPeriodID");
-            entity.Property(e => e.ReceiverId).HasColumnName("ReceiverID");
-            entity.Property(e => e.RequestNumber).HasMaxLength(100);
-            entity.Property(e => e.SenderId).HasColumnName("SenderID");
-            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.Id)
+                .HasColumnName("PK_REQUEST_ID");
 
-            entity.HasOne(d => d.EnteredByNavigation).WithMany(p => p.TblRequests)
+            entity.Property(e => e.SenderId)
+                .HasColumnName("FK_SENDER_ID");
+
+            entity.Property(e => e.ReceiverId)
+                .HasColumnName("FK_RECEIVER_ID");
+
+            entity.Property(e => e.EnteredBy)
+                .HasColumnName("FK_ENTERED_BY");
+
+            entity.Property(e => e.FiscalPeriodId)
+                .HasColumnName("FK_FISCAL_PERIOD_ID");
+
+
+            entity.Property(e => e.Status)
+                .HasColumnName("STATUS");
+
+            entity.Property(e => e.SendDate)
+                .HasColumnName("SEND_DATE");
+
+            entity.Property(e => e.ConfirmDate)
+                .HasColumnName("CONFIRM_DATE");
+
+            entity.Property(e => e.RequestNumber)
+                .HasColumnName("REQUEST_NUMBER")
+                .HasMaxLength(100);
+
+
+            entity.HasOne(d => d.EnteredByNavigation)
+                .WithMany(p => p.TblRequests)
                 .HasForeignKey(d => d.EnteredBy)
                 .HasConstraintName("FK_tblRequest_tblUsers");
 
-            entity.HasOne(d => d.FiscalPeriod).WithMany(p => p.TblRequests)
+            entity.HasOne(d => d.FiscalPeriod)
+                .WithMany(p => p.TblRequests)
                 .HasForeignKey(d => d.FiscalPeriodId)
                 .HasConstraintName("FK_tblRequest_tblFiscalPeriods");
 
-            entity.HasOne(d => d.Receiver).WithMany(p => p.TblRequestReceivers)
+            entity.HasOne(d => d.Receiver)
+                .WithMany(p => p.TblRequestReceivers)
                 .HasForeignKey(d => d.ReceiverId)
                 .HasConstraintName("FK_tblRequest_tblRecipients2");
 
-            entity.HasOne(d => d.Sender).WithMany(p => p.TblRequestSenders)
+            entity.HasOne(d => d.Sender)
+                .WithMany(p => p.TblRequestSenders)
                 .HasForeignKey(d => d.SenderId)
                 .HasConstraintName("FK_tblRequest_tblRecipients");
         });
 
-        modelBuilder.Entity<TblRequest1>(entity =>
-        {
-            entity.HasKey(e => e.RequestId);
 
-            entity.ToTable("tblRequests");
-
-            entity.Property(e => e.RequestId).HasColumnName("RequestID");
-            entity.Property(e => e.FiscalPeriodId).HasColumnName("FiscalPeriodID");
-            entity.Property(e => e.ReceiverId).HasColumnName("ReceiverID");
-            entity.Property(e => e.SenderId).HasColumnName("SenderID");
-        });
-
-        modelBuilder.Entity<TblRequestLine>(entity =>
-        {
-            entity.ToTable("tblRequestLine");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Anncount).HasColumnName("anncount");
-            entity.Property(e => e.Arivcount).HasColumnName("arivcount");
-            entity.Property(e => e.Confirmcount).HasColumnName("confirmcount");
-            entity.Property(e => e.Currentcount).HasColumnName("currentcount");
-            entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
-            entity.Property(e => e.Forperiod).HasColumnName("forperiod");
-            entity.Property(e => e.ItemClassId).HasColumnName("ItemClassID");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.Offercount).HasColumnName("offercount");
-            entity.Property(e => e.Reqcount).HasColumnName("reqcount");
-            entity.Property(e => e.RequestId).HasColumnName("RequestID");
-            entity.Property(e => e.Usedcount).HasColumnName("usedcount");
-
-            entity.HasOne(d => d.DosePerVial).WithMany()
-                .HasForeignKey(d => d.DosePerVialId)
-                .HasConstraintName("FK_tblRequestLine_tblBaseInfo_dosePerVials");
-
-            entity.HasOne(d => d.Item).WithMany(p => p.TblRequestLines)
-                .HasForeignKey(d => d.ItemId)
-                .HasConstraintName("FK_tblRequestLine_tblItems");
-
-            entity.HasOne(d => d.Request).WithMany(p => p.TblRequestLines)
-                .HasForeignKey(d => d.RequestId)
-                .HasConstraintName("FK_tblRequestLine_tblRequest");
-        });
-
-        modelBuilder.Entity<TblRequestLine1>(entity =>
-        {
-            entity.HasKey(e => e.RequestLineId);
-
-            entity.ToTable("tblRequestLines");
-
-            entity.Property(e => e.RequestLineId).HasColumnName("RequestLineID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.RequestId).HasColumnName("RequestID");
-
-            entity.HasOne(d => d.Request).WithMany(p => p.TblRequestLine1s)
-                .HasForeignKey(d => d.RequestId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_tblRequestLines_tblRequests");
-        });
 
         modelBuilder.Entity<TblRequestsNew>(entity =>
         {

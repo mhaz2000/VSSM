@@ -23,6 +23,6 @@ public interface IRequestService
 
     Task<int> GetRequestCountByShamsiYearAsync(int shamsiYear, CancellationToken token);
 
-    Task<ItemAvailabilityDto> GetItemAvailability(int itemId, int recipientId, CancellationToken token);
+    Task<ItemAvailabilityDto> GetItemAvailabilityAsync(int itemId, int recipientId, CancellationToken token);
 
 }

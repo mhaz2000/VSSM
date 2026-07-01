@@ -956,7 +956,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             try
             {
-                var items = await _itemService.GetItemsByClassId(classItemId);
+                var items = await _itemService.GetItemsByClassAsync(classItemId);
 
                 apiResult.Success = true;
                 apiResult.Message = string.Empty;

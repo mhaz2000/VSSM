@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.RequestEntities;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces.RequestEntities;
+using VSSM.Application.Services.BaseEntities;
 using VSSM.Domain.Enums;
+using VSSM.Presentation.Web.Const;
+using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Base;
 using VSSM.Presentation.Web.Models.Request;
 
@@ -11,7 +14,7 @@ namespace VSSM.Presentation.Web.Controllers;
 
 public class RequestController(
     IRequestService requestService,
-    IItemClassService itemClassService,
+    IBaseInfoService baseInfoService,
     IItemService itemService,
     IFiscalPeriodService fiscalPeriodService) : BaseController
 {
@@ -106,13 +109,13 @@ public class RequestController(
                 RequestLines = new List<RequestLinesViewModel>(),
                 NewLine = new RequestLinesViewModel()
             };
-            await LoadDropDowns(token);
+            await PopulateLookupViewBagsAsync(token);
             return View(vm);
         }
 
         var dto = await requestService.GetById(id.Value, token);
         if (dto == null) return NotFound();
-        await LoadDropDowns(token);
+        await PopulateLookupViewBagsAsync(token);
         var model = new RequestViewModel
         {
             ConfirmDate = dto.ConfirmDate,
@@ -125,16 +128,16 @@ public class RequestController(
             {
                 Id = r.Id,
                 RequestId = r.RequestId,
-                Arivcount = r.Arivcount,
-                Confirmcount = r.Confirmcount,
-                Currentcount = r.Currentcount,
+                ArivCount = r.ArriveCount,
+                ConfirmCount = r.ConfirmCount,
+                CurrentCount = r.CurrentCount,
                 DosePerVialId = r.DosePerVialId,
                 ItemClassId = r.ItemClassId,
                 ItemId = r.ItemId,
                 ItemName = r.ItemName,
                 Note = r.Note,
-                Reqcount = r.Reqcount,
-                Usedcount = r.Usedcount
+                ReqCount = r.ReqCount,
+                UsedCount = r.UsedCount
             }).ToList(),
 
             NewLine = new RequestLinesViewModel()
@@ -145,7 +148,7 @@ public class RequestController(
 
     public async Task<IActionResult> Create(RequestViewModel model, string command, CancellationToken token)
     {
-        await LoadDropDowns(token);
+        await PopulateLookupViewBagsAsync(token);
 
         if (model.Id.HasValue)
         {
@@ -222,7 +225,6 @@ public class RequestController(
                 ReceiverId = CurrentUserRecipientParentId,
                 SendDate = DateOnly.FromDateTime(DateTime.Now),
                 FiscalPeriodId = activeFiscalPeriod?.FiscalPeriodId,
-                Note = "",
                 Lines = new List<RequestLineDto>()
             };
 
@@ -232,13 +234,13 @@ public class RequestController(
 
         var lineDto = new RequestLineDto
         {
-            Arivcount = model.NewLine.Arivcount,
-            Reqcount = model.NewLine.Reqcount,
-            Currentcount = model.NewLine.Currentcount,
-            Usedcount = model.NewLine.Usedcount,
+            ArriveCount = model.NewLine.ArivCount,
+            ReqCount = model.NewLine.ReqCount,
+            CurrentCount = model.NewLine.CurrentCount,
+            UsedCount = model.NewLine.UsedCount,
             ItemClassId = model.NewLine.ItemClassId,
             ItemId = model.NewLine.ItemId,
-            Confirmcount = null,
+            ConfirmCount = null,
             DosePerVialId = model.NewLine.DosePerVialId,
             Note = model.NewLine.Note,
             RequestId = model.Id,
@@ -282,17 +284,16 @@ public class RequestController(
         return RedirectToAction("New", new { id = requestId });
     }
 
-    private async Task LoadDropDowns(CancellationToken token)
+    private async Task PopulateLookupViewBagsAsync(CancellationToken token)
     {
-        ViewBag.ItemClassList = (await itemClassService.GetActives(token))
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
-            .ToList();
+        ViewBag.ItemClassList = (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, token))
+           .ToSelectList(x => x.Id, x => x.Title);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetItemsByClass(int classId, CancellationToken token)
+    public async Task<IActionResult> GetItemsByClassAsync(int classId, CancellationToken token)
     {
-        var list = (await itemService.GetActives(token)).Where(z => z.FkClassId == classId);
+        var list = (await itemService.GetItemsByClassAsync(classId));
 
         return Json(list.Select(x => new
         {
@@ -304,14 +305,14 @@ public class RequestController(
     [HttpGet]
     public async Task<IActionResult> GetItemDetailsByItem(int itemId, CancellationToken token)
     {
-        var availability = await requestService.GetItemAvailability(
+        var availability = await requestService.GetItemAvailabilityAsync(
             itemId, CurrentUserRecipientId.GetValueOrDefault(), token);
 
         return Json(new
         {
-            arivcount = availability.Arivcount,
-            currentcount = availability.Currentcount,
-            usedcount = availability.Usedcount
+            arivCount = availability.ArivCount,
+            currentCount = availability.CurrentCount,
+            usedCount = availability.UsedCount
         });
     }
     public async Task<IActionResult> ReceivedRequests(
@@ -389,16 +390,16 @@ public class RequestController(
             {
                 Id = r.Id,
                 RequestId = r.RequestId,
-                Arivcount = r.Arivcount,
-                Confirmcount = r.Confirmcount,
-                Currentcount = r.Currentcount,
+                ArivCount = r.ArriveCount,
+                ConfirmCount = r.ConfirmCount,
+                CurrentCount = r.CurrentCount,
                 DosePerVialId = r.DosePerVialId,
                 ItemClassId = r.ItemClassId,
                 ItemId = r.ItemId,
                 ItemName = r.ItemName,
                 Note = r.Note,
-                Reqcount = r.Reqcount,
-                Usedcount = r.Usedcount
+                ReqCount = r.ReqCount,
+                UsedCount = r.UsedCount
             }).ToList(),
 
             NewLine = new RequestLinesViewModel()

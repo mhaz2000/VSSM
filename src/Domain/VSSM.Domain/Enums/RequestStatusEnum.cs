@@ -14,5 +14,8 @@ public enum RequestStatusEnum
     Sent = 2,
 
     [Display(Name = "تایید شده")]
-    Confirmed = 3
+    Confirmed = 3,
+
+    [Display(Name = "رد شده")]
+    Rejected = 4
 }

@@ -2,7 +2,7 @@
 
 public class ItemAvailabilityDto
 {
-    public int Arivcount { get; set; }
-    public int Usedcount { get; set; }
-    public int Currentcount { get; set; }
+    public int ArivCount { get; set; }
+    public int UsedCount { get; set; }
+    public int CurrentCount { get; set; }
 }

@@ -11,17 +11,17 @@ public class RequestLinesViewModel
 
     public int? ItemClassId { get; set; }
 
-    public int? Arivcount { get; set; }
+    public int? ArivCount { get; set; }
 
-    public int? Usedcount { get; set; }
+    public int? UsedCount { get; set; }
 
-    public int? Currentcount { get; set; }
+    public int? CurrentCount { get; set; }
 
-    public int? Reqcount { get; set; }
+    public int? ReqCount { get; set; }
 
     public string Note { get; set; } = "";
 
-    public int? Confirmcount { get; set; }
+    public int? ConfirmCount { get; set; }
 
     public int? DosePerVialId { get; set; }
 

@@ -63,7 +63,7 @@
                         </div>
                         <div class="f-group rq-needs-item">
                             <label class="f-label">تعداد درخواستی <span class="req-tag">اجباری</span></label>
-                            <input type="text" class="f-control" asp-for="NewLine.Reqcount" id="reqcount" />
+                            <input type="text" class="f-control" asp-for="NewLine.ReqCount" id="reqcount" />
                         </div>
                     </div>
 
@@ -71,15 +71,15 @@
                     <div class="fg-3">
                         <div class="f-group">
                             <label class="f-label">تعداد ورودی</label>
-                            <input type="text" class="f-control" asp-for="NewLine.Arivcount" id="arivcount" readonly />
+                            <input type="text" class="f-control" asp-for="NewLine.ArivCount" id="arivcount" readonly />
                         </div>
                         <div class="f-group">
                             <label class="f-label">تعداد مصرف شده</label>
-                            <input type="text" class="f-control" asp-for="NewLine.Usedcount" id="usedcount" readonly />
+                            <input type="text" class="f-control" asp-for="NewLine.UsedCount" id="usedcount" readonly />
                         </div>
                         <div class="f-group">
                             <label class="f-label">تعداد موجودی انبار</label>
-                            <input type="text" class="f-control" asp-for="NewLine.Currentcount" id="currentcount" readonly />
+                            <input type="text" class="f-control" asp-for="NewLine.CurrentCount" id="currentcount" readonly />
                         </div>
                     </div>
 
@@ -142,10 +142,10 @@
                                     var line = Model.RequestLines[i];
                                     <tr>
                                         <td>@line.ItemName</td>
-                                        <td>@line.Arivcount</td>
-                                        <td>@line.Usedcount</td>
-                                        <td>@line.Currentcount</td>
-                                        <td>@line.Reqcount</td>
+                                        <td>@line.ArivCount</td>
+                                        <td>@line.UsedCount</td>
+                                        <td>@line.CurrentCount</td>
+                                        <td>@line.ReqCount</td>
                                         <td>@line.Note</td>
                                         <td>
                                             <button type="submit"

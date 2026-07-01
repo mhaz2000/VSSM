@@ -129,7 +129,7 @@ public class ItemController(
     [HttpGet("GetItems/{classItemId:required:int}")]
     public async Task<IActionResult> GetItems(int classItemId)
     {
-        var items = await itemService.GetItemsByClassId(classItemId);
+        var items = await itemService.GetItemsByClassAsync(classItemId);
         return Json(new ApiResult<List<ItemListDto>>
         {
             Success = true,
@@ -157,7 +157,7 @@ public class ItemController(
 
         ViewBag.ItemClass = await baseInfoService.GetByParentIdAsync(ItemClassId);
 
-        ViewBag.DiluentDropDown = await itemService.GetItemsByClassId(DiluentClassId);
+        ViewBag.DiluentDropDown = await itemService.GetItemsByClassAsync(DiluentClassId);
     }
 
     private static ItemCreateDto MapToDto(ItemViewModel model) => new()

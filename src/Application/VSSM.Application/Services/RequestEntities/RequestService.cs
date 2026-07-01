@@ -20,12 +20,12 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
             RequestId = requestId,
             Note = dto.Note,
             DosePerVialId = dto.DosePerVialId,
-            Arivcount = dto.Arivcount,
-            Usedcount = dto.Usedcount,
+            ArriveCount = dto.ArriveCount,
+            UsedCount = dto.UsedCount,
             ItemId = dto.ItemId,
-            Currentcount = dto.Currentcount,
-            Confirmcount = dto.Confirmcount,
-            Reqcount = dto.Reqcount,
+            CurrentCount = dto.CurrentCount,
+            ConfirmCount = dto.ConfirmCount,
+            ReqCount = dto.ReqCount,
             ItemClassId = dto.ItemClassId,
         };
 
@@ -40,7 +40,7 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
 
         if (request == null) return false;
 
-        request.Status = (int)status;
+        request.Status = status;
         await dbContext.SaveChangesAsync(token);
         return true;
     }
@@ -63,12 +63,11 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
             ConfirmDate = dto.ConfirmDate,
             EnteredBy = dto.EnteredBy,
             FiscalPeriodId = dto.FiscalPeriodId,
-            Note = dto.Note,
             ReceiverId = dto.ReceiverId,
             RequestNumber = requestNumber,
             SendDate = dto.SendDate,
             SenderId = dto.SenderId,
-            Status = (int)dto.Status,
+            Status = dto.Status,
         };
 
         dbContext.TblRequests.Add(req);
@@ -124,39 +123,43 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
             EnteredBy = request.EnteredBy,
             Id = request.Id,
             RequestNumber = request.RequestNumber,
-            RequestStatus = request.Status,
+            RequestStatus = (int)request.Status!,
             SendDate = request.SendDate,
             RequestLines = reqLines.Select(r => new RequestLineDto
             {
                 Id = r.Id,
                 RequestId = r.RequestId,
-                Arivcount = r.Arivcount,
-                Confirmcount = r.Confirmcount,
-                Currentcount = r.Currentcount,
+                ArriveCount = r.ArriveCount,
+                ConfirmCount = r.ConfirmCount,
+                CurrentCount = r.CurrentCount,
                 DosePerVialId = r.DosePerVialId,
                 ItemClassId = r.ItemClassId,
                 ItemId = r.ItemId,
                 ItemName = r.Item.FullName,
                 Note = r.Note,
-                Reqcount = r.Reqcount,
-                Usedcount = r.Usedcount
+                ReqCount = r.ReqCount,
+                UsedCount = r.UsedCount
             }).ToList()
         };
     }
 
-    public async Task<PagingSearchOrderDto<RequestListDto>> GetPagedList(string? search, int page, int pageSize,
-        string sortField, string sortOrder,
+    public async Task<PagingSearchOrderDto<RequestListDto>> GetPagedList(
+        string? search, 
+        int page,
+        int pageSize,
+        string sortField, 
+        string sortOrder,
         int currentRecipientId, CancellationToken cancellationToken)
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
         IQueryable<TblRequest> query = dbContext.TblRequests;
 
-        query = query.Where(q => q.SenderId == currentRecipientId || (q.ReceiverId == currentRecipientId && q.Status.Value == (int)RequestStatusEnum.Draft));
+        query = query.Where(q => q.SenderId == currentRecipientId || (q.ReceiverId == currentRecipientId && q.Status!.Value == RequestStatusEnum.Draft));
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(x => x.RequestNumber.Contains(search) || x.SendDate.ToString().Contains(search));
+            query = query.Where(x => x.RequestNumber.Contains(search) || x.SendDate.HasValue && x.SendDate.Value.ToString().Contains(search));
         }
 
         query = sortField switch
@@ -178,7 +181,7 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
                 ConfirmDate = x.ConfirmDate,
                 EnteredBy = x.EnteredBy,
                 EnteredByName = x.EnteredByNavigation.FirstName + " " + x.EnteredByNavigation.LastName,
-                RequestStatus = x.Status,
+                RequestStatus = (int)x.Status,
                 Status = (RequestStatusEnum)x.Status.Value
             })
             .OrderByDescending(r => r.Id)
@@ -228,7 +231,7 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
                 ConfirmDate = x.ConfirmDate,
                 EnteredBy = x.EnteredBy,
                 EnteredByName = x.EnteredByNavigation.FirstName + " " + x.EnteredByNavigation.LastName,
-                RequestStatus = x.Status,
+                RequestStatus = (int)x.Status!,
                 Status = (RequestStatusEnum)x.Status.Value
             })
             .OrderByDescending(r => r.Id)
@@ -243,24 +246,30 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
             SortOrder = sortOrder
         };
     }
-
-    // بند ۲ جدول tblRequestLine: arivcount/usedcount/currentcount از tbluidinfo محاسبه می‌شوند
-    // ⚠️ فرض: TblUidInfo.CurrentStore برابر RecipientId کاربر است. اگر مپینگ واقعی پیچیده‌تر است
-    // (یک Recipient → چند Store)، این کوئری را با متد واقعی validStoreIds جایگزین کن.
-    public async Task<ItemAvailabilityDto> GetItemAvailability(int itemId, int recipientId, CancellationToken token)
+    public async Task<ItemAvailabilityDto> GetItemAvailabilityAsync(
+    int itemId,
+    int recipientId,
+    CancellationToken token)
     {
-        var baseQuery = dbContext.TblUidInfo
-            .Where(u => u.OrderInfo.FkItemId == itemId && u.CurrentStore == recipientId);
+        var storeIds = await dbContext.TblStores
+            .Where(s => s.RecipientId == recipientId)
+            .Select(s => s.StoreId)
+            .ToListAsync(token);
 
-        var arivcount = await baseQuery.CountAsync(token);
-        var usedcount = await baseQuery.CountAsync(u => u.Used, token);
-        var currentcount = await baseQuery.CountAsync(u => !u.Used, token);
+        var baseQuery = dbContext.TblUidInfo
+            .Where(u =>
+                u.OrderInfo.FkItemId == itemId &&
+                storeIds.Contains(u.CurrentStore ?? 0));
+
+        var arivCount = await baseQuery.CountAsync(token);
+        var usedCount = await baseQuery.CountAsync(u => u.Used, token);
+        var currentCount = await baseQuery.CountAsync(u => !u.Used, token);
 
         return new ItemAvailabilityDto
         {
-            Arivcount = arivcount,
-            Usedcount = usedcount,
-            Currentcount = currentcount
+            ArivCount = arivCount,
+            UsedCount = usedCount,
+            CurrentCount = currentCount
         };
     }
 

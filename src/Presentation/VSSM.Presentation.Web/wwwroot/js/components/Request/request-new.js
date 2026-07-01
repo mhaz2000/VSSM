@@ -53,19 +53,67 @@
 
         $.getJSON('/Request/GetItemDetailsByItem', { itemId })
             .done(function (data) {
-                $('#currentcount').val(data.currentcount);
-                $('#arivcount').val(data.arivcount);
-                $('#usedcount').val(data.usedcount);
+                arivCount = data?.arivCount ?? 0;
+                $('#currentcount').val(data.currentCount);
+                $('#arivcount').val(data.arivCount);
+                $('#usedcount').val(data.usedCount);
                 $('#inventoryHealth').val(0);
                 $('#timeBetweenRequestAndArrival').val(0);
             });
     });
 
-    /* ── submit overlay ── */
-    $form.on('submit', function () {
+    let arivCount = 0;
+
+    function validateRequestCount() {
+        const reqCount = parseInt($('#reqcount').val() || 0);
+        const max = parseInt(arivCount || 0);
+
+        if (reqCount > max) {
+            $('#reqcount').addClass('is-invalid');
+
+            if (!$('#reqcount').next('.error-msg').length) {
+                $('#reqcount').after(
+                    `<small class="text-danger error-msg">
+                    تعداد درخواستی نمی‌تواند بیشتر از موجودی (${max}) باشد
+                </small>`
+                );
+            }
+
+            return false;
+        } else {
+            $('#reqcount').removeClass('is-invalid');
+            $('#reqcount').next('.error-msg').remove();
+            return true;
+        }
+    }
+
+    $('#reqcount').on('input', function () {
+        validateRequestCount();
+    });
+
+
+
+    $form.on('submit', function (e) {
+
+        if (!validateRequestCount()) {
+            e.preventDefault();
+            return false;
+        }
+
+        // اگر jQuery Unobtrusive Validation روی فرم فعاله، اول خودمون
+        // اعتبارسنجی رو چک می‌کنیم؛ اگر نامعتبره اسپینر رو نشون نمی‌دیم
+        // چون submit در ادامه توسط validate() کنسل خواهد شد.
+        if (typeof $form.valid === 'function' && !$form.valid()) {
+            return; // اجازه بده پیام‌های خطای validate نمایش داده بشن
+        }
+
         const overlay = document.createElement('div');
         overlay.className = 'page-overlay';
         document.body.appendChild(overlay);
+
+        // ایمنی: اگر به هر دلیلی ناوبری انجام نشد (خطای شبکه و ...)
+        // بعد از چند ثانیه اسپینر رو حذف کن تا صفحه گیر نکنه.
+        setTimeout(() => overlay.remove(), 8000);
     });
 
 })();

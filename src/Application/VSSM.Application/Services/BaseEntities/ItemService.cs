@@ -224,7 +224,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
         return true;
     }
 
-    public async Task<List<ItemListDto>> GetItemsByClassId(int classItemId)
+    public async Task<List<ItemListDto>> GetItemsByClassAsync(int classItemId)
     {
         return await dbContext.TblItems
             .AsNoTracking()

@@ -8,7 +8,7 @@
     <link href="~/css/simple-line-icons.css" rel="stylesheet">
     <!-- Main styles for this application -->
     <link href="~/dest/style.css" rel="stylesheet">
-    <link href="~/toastify/toast.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
     <link href="~/css/site-select.css" rel="stylesheet" />
     <link href="~/css/multi-select.css" rel="stylesheet" />
     <link href="~/css/components/shared/dynamic-grid-style.css" rel="stylesheet" />
@@ -390,7 +390,7 @@
 
 </head>
 <script src="~/js/libs/jquery.min.js"></script>
-<script src="~/toastify/toast.js"></script>
+<script src="~/js/shared/toast.js"></script>
 
 <body class="navbar-fixed sidebar-nav fixed-nav">
     <header class="navbar">
@@ -449,6 +449,7 @@
     <div>
         <main class="main">
             @RenderBody()
+            <div id="toastContainer"></div>
         </main>
     </div>
 @* 

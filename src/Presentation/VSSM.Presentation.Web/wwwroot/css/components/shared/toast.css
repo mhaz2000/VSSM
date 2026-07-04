@@ -1,6 +1,6 @@
 ﻿/* ═══════════════════════════════════════════
-   toast.css  —  سیستم نوتیفیکیشن (shared)
-   قابل استفاده در تمام صفحات پروژه
+   toast.css — Professional / Government UI
+   Clean + Minimal + Time Indicator
    ═══════════════════════════════════════════ */
 
 #toastContainer {
@@ -15,117 +15,158 @@
     pointer-events: none;
 }
 
+/* =========================
+   MAIN TOAST
+========================= */
 .toast-msg {
     width: 340px;
-    padding: 18px 20px;
-    border-radius: 16px;
+    padding: 16px 18px;
+    border-radius: 14px;
     direction: rtl;
     display: flex;
     align-items: flex-start;
-    gap: 14px;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, .13);
-    animation: toastIn .25s ease;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+    animation: toastIn 0.22s ease;
     pointer-events: all;
+    border-left: 4px solid transparent;
 }
 
-    /* ── انواع toast ── */
-    .toast-msg.error {
-        background: #ffd5d5;
-        border: 1.5px solid #f5b7b7;
-    }
+    /* =========================
+   TYPES (Clean + Soft)
+========================= */
 
     .toast-msg.success {
-        background: #d4f5d4;
-        border: 1.5px solid #a8e6a8;
+        background: #f3f9f3;
+        border-left-color: #2e7d32;
+    }
+
+    .toast-msg.error {
+        background: #fdf3f3;
+        border-left-color: #c62828;
     }
 
     .toast-msg.info {
-        background: #dbeafe;
-        border: 1.5px solid #bfdbfe;
+        background: #f3f7fd;
+        border-left-color: #1565c0;
     }
 
-/* ── دکمه بستن ── */
+/* =========================
+   CLOSE BUTTON
+========================= */
 .toast-close-btn {
     flex-shrink: 0;
-    margin-top: 2px;
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    border: 1.5px solid;
+    border: 1.5px solid currentColor;
     background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
     font-size: 14px;
     line-height: 1;
-}
-
-.toast-msg.error .toast-close-btn {
-    border-color: #dc2626;
-    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .toast-msg.success .toast-close-btn {
-    border-color: #16a34a;
-    color: #16a34a;
+    color: #2e7d32;
+}
+
+.toast-msg.error .toast-close-btn {
+    color: #c62828;
 }
 
 .toast-msg.info .toast-close-btn {
-    border-color: #1d4ed8;
-    color: #1d4ed8;
+    color: #1565c0;
 }
 
-/* ── محتوا ── */
+.toast-close-btn:hover {
+    transform: scale(1.08);
+}
+
+/* =========================
+   CONTENT
+========================= */
 .toast-body {
     flex: 1;
     text-align: right;
 }
 
 .toast-title {
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 4px;
-}
-
-.toast-msg.error .toast-title {
-    color: #dc2626;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 3px;
 }
 
 .toast-msg.success .toast-title {
-    color: #15803d;
+    color: #2e7d32;
+}
+
+.toast-msg.error .toast-title {
+    color: #c62828;
 }
 
 .toast-msg.info .toast-title {
-    color: #1d4ed8;
+    color: #1565c0;
 }
 
 .toast-text {
     font-size: 13px;
     font-weight: 500;
+    opacity: 0.9;
 }
 
-.toast-msg.error .toast-text {
-    color: #7f1d1d;
+/* =========================
+   TIME PROGRESS BAR (SUBTLE)
+========================= */
+.toast-msg::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    transform-origin: left;
+    background: rgba(0, 0, 0, 0.18);
+    animation: toastProgress 5s linear forwards;
 }
 
-.toast-msg.success .toast-text {
-    color: #14532d;
+/* background track (soft base line) */
+.toast-msg::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.06);
 }
 
-.toast-msg.info .toast-text {
-    color: #1e3a8a;
-}
-
-/* ── انیمیشن ورود ── */
+/* =========================
+   ANIMATIONS
+========================= */
 @keyframes toastIn {
     from {
         opacity: 0;
-        transform: translateY(16px);
+        transform: translateY(10px) scale(0.98);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes toastProgress {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
     }
 }

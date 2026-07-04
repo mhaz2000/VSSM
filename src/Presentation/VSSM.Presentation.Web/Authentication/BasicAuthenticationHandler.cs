@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using VSSM.Application.Helpers;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Presentation.Web.Authentication
@@ -49,11 +50,31 @@ namespace VSSM.Presentation.Web.Authentication
                 var username = credentials[0];
                 var password = credentials[1];
 
+                // Passwords are stored hashed (PBKDF2), so we cannot filter by password in SQL.
+                // Fetch the user by username only, then verify the hash in code.
                 var user = await _db.TblUsers
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.UserName == username && u.Password == password && u.IsDeleted != true);
+                    .FirstOrDefaultAsync(u => u.UserName == username && u.IsDeleted != true);
 
                 if (user == null)
+                    return AuthenticateResult.Fail("Invalid username or password");
+
+                bool passwordOk;
+                if (PasswordHasher.LooksHashed(user.Password))
+                {
+                    passwordOk = PasswordHasher.Verify(password, user.Password);
+                }
+                else
+                {
+                    // Legacy plaintext value: accept on exact match, then upgrade to a hash.
+                    passwordOk = user.Password == password;
+                    if (passwordOk)
+                    {
+                        user.Password = PasswordHasher.Hash(password);
+                        await _db.SaveChangesAsync();
+                    }
+                }
+
+                if (!passwordOk)
                     return AuthenticateResult.Fail("Invalid username or password");
 
                 var claims = new List<Claim>

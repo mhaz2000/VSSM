@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using System.Linq;
 using VSSM.Presentation.Web.Models.Account;
@@ -62,10 +63,27 @@ namespace VSSM.Presentation.Web.Controllers
                 return View(model);
             }
 
-            // TODO [SECURITY - افتا - اولویت بالا]: رمز عبور باید با الگوریتم امن
-            // (bcrypt / Argon2 / PBKDF2) هش شده در پایگاه داده ذخیره شود.
-            // مقایسه plain-text فعلی کاملاً ناامن است و باید در اسرع وقت برطرف شود.
-            if (user.Password != model.Password.Trim())
+            // [SECURITY]: رمز عبور به صورت هش (PBKDF2) ذخیره و مقایسه می‌شود.
+            // کاربرانی که هنوز رمزشان plain-text است، در اولین ورود موفق به‌صورت
+            // شفاف (transparent) به هش ارتقا می‌یابند.
+            var supplied = model.Password.Trim();
+            bool passwordOk;
+
+            if (PasswordHasher.LooksHashed(user.Password))
+            {
+                passwordOk = PasswordHasher.Verify(supplied, user.Password);
+            }
+            else
+            {
+                // Legacy plaintext value: accept on exact match, then upgrade to a hash.
+                passwordOk = user.Password == supplied;
+                if (passwordOk)
+                {
+                    await _userService.UpgradePasswordToHash(user.UserId, supplied, CancellationToken.None);
+                }
+            }
+
+            if (!passwordOk)
             {
                 await Task.Delay(300);
                 ViewBag.Error = genericError;

@@ -23,8 +23,6 @@ public partial class TblUser
 
     public bool? IsDeleted { get; set; }
 
-    public int? PermissionLevel { get; set; }
-
     public DateTime? EntryDate { get; set; }
 
     public int? EnteredById { get; set; }

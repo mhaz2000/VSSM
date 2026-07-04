@@ -1,4 +1,5 @@
-﻿@model UserViewModel
+﻿@using VSSM.Presentation.Web.Models.Base
+@model UserViewModel
 
 @{
     string formName = Model.UserId > 0 ? "ویرایش کاربر" : "ثبت کاربر جدید";
@@ -6,6 +7,8 @@
     var serverType = TempData["ToastType"]?.ToString();
     TempData.Remove("ToastMessage");
     TempData.Remove("ToastType");
+    var recipients = ViewBag.RecipientList as List<SelectListItem>;
+
 }
 
 @section Styles {
@@ -14,7 +17,19 @@
     <link href="~/css/components/shared/btn.css" rel="stylesheet" />
     <link href="~/css/components/shared/toast.css" rel="stylesheet" />
     <link href="~/css/components/user/user-form.css" rel="stylesheet" />
+
+    <style>
+        .admin-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            margin: 2.2rem 0px;
+            gap: 1rem;
+        }
+
+    </style>
 }
+
+
 
 <div class="user-form-wrap">
     <div id="toastContainer"></div>
@@ -34,10 +49,6 @@
                     <div class="f-group">
                         <label class="f-label">نام کاربری <span class="req-tag">اجباری</span></label>
                         <input asp-for="UserName" class="f-control" />
-                    </div>
-                    <div class="f-group">
-                        <label class="f-label">کلمه عبور <span class="req-tag">اجباری</span></label>
-                        <input asp-for="Password" class="f-control" />
                     </div>
                     <div class="f-group">
                         <label class="f-label">نام <span class="req-tag">اجباری</span></label>
@@ -89,9 +100,23 @@
                 <div class="fg-3">
                     <div class="f-group">
                         <label class="f-label">گیرنده</label>
-                        <select asp-for="RecipientId" class="f-control" asp-items="ViewBag.RecipientList">
-                            <option value="">انتخاب کنید...</option>
-                        </select>
+
+                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
+                        {
+                            Id = "RecipientId",
+                            Name = "RecipientId",
+                            DefaultText = "جستجوی گیرنده...",
+                            Label = "",
+                            IsRequired = true,
+                            SelectedValue = Model?.RecipientId?.ToString(),
+                            ValidationMessage = "گیرنده نمی‌تواند خالی باشد.",
+                            Options = recipients.Select(r => new SelectOption
+                            {
+                                Value = r.Value.ToString(),
+                                Text = r.Text
+                            }).ToList()
+                        })
+
                     </div>
                     <div class="f-group">
                         <label class="f-label">تحصیلات</label>
@@ -106,52 +131,30 @@
                         </select>
                     </div>
                     <div class="f-group">
-                        <label class="f-label">سطح دسترسی <span class="req-tag">اجباری</span></label>
-                        <select asp-for="PermissionLevel" class="f-control" asp-items="ViewBag.PermissionList">
-                            <option value="">انتخاب کنید...</option>
-                        </select>
-                    </div>
-                    <div class="f-group">
                         <label class="f-label">نقش <span class="req-tag">اجباری</span></label>
                         <select asp-for="RoleId" class="f-control" asp-items="ViewBag.Roles">
                             <option value="">انتخاب کنید...</option>
                         </select>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- سایر تنظیمات -->
-        <div class="a-card">
-            <div class="a-card-header">
-                <i class="fa fa-cog" style="color:#f59e0b;"></i>
-                <h6>سایر تنظیمات</h6>
-            </div>
-            <div class="a-card-body">
-                <div class="fg-3">
                     <div class="f-group">
+                        <label class="f-label">دوره آموزشی</label>
+                        <input asp-for="Course" class="f-control" />
+                    </div>
+                    <div class="admin-checkbox-wrapper">
                         <label class="f-label">مدیر سیستم</label>
-                        <div class="checkbox-group">
+                        <div>
                             <label class="checkbox-label">
                                 <input type="checkbox" asp-for="IsAdmin" />
                                 فعال
                             </label>
                         </div>
                     </div>
-                    <div class="f-group">
-                        <label class="f-label">دوره آموزشی</label>
-                        <input asp-for="Course" class="f-control" />
-                    </div>
-                    <div class="f-group">
-                        <label class="f-label">تاریخ ثبت (روز/ماه/سال)</label>
-                        <input asp-for="CourseDate" class="f-control" placeholder="مثال: 03/01/24" />
-                    </div>
                 </div>
             </div>
         </div>
 
         <!-- فوتر -->
-        <div class="form-footer">
+        <div class="form-footer a-card">
             <a asp-action="Index" class="btn-back">
                 <i class="fa fa-arrow-right"></i> بازگشت
             </a>
@@ -169,9 +172,9 @@
         var serverType = "@(serverType ?? "info")";
 
         $(function () {
-            if (serverMsg) {
-                showToast(serverMsg, serverType);
-            }
+        if (serverMsg) {
+        showToast(serverMsg, serverType);
+        }
         });
     </script>
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.User;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 using System.Text.RegularExpressions;
@@ -26,7 +27,7 @@ public class UserService : IUserService
         {
             UserId = x.UserId,
             UserName = x.UserName,
-            Password = x.Password,
+            Password = null, // Never surface the stored hash to the UI; edit form is blank-by-design.
             FirstName = x.FirstName,
             LastName = x.LastName,
             Email = x.Email,
@@ -34,7 +35,6 @@ public class UserService : IUserService
             Phone1 = x.Phone1,
             Phone2 = x.Phone2,
             RecipientId = x.RecipientId,
-            PermissionLevel = x.PermissionLevel,
             CodeEdu = x.EduId,
             CodeJob = x.JobId,
             IsAdmin = x.IsAdmin ?? false,
@@ -47,12 +47,15 @@ public class UserService : IUserService
     // ---------------- CREATE ----------------
     public async Task<int> Create(UserCreateDto dto, CancellationToken token)
     {
+        if (string.IsNullOrWhiteSpace(dto.Password))
+            throw new Exception("کلمه عبور الزامی است.");
+
         ValidatePasswordPolicy(dto.Password, "کلمه عبور");
 
         var model = new TblUser
         {
             UserName = dto.UserName,
-            Password = dto.Password,
+            Password = PasswordHasher.Hash(dto.Password),
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             Email = dto.Email,
@@ -60,7 +63,6 @@ public class UserService : IUserService
             Phone2 = dto.Phone2,
             Idnumber = dto.Idnumber,
             RecipientId = dto.RecipientId,
-            PermissionLevel = dto.PermissionLevel,
             EduId = dto.CodeEdu,
             JobId = dto.CodeJob,
             IsAdmin = dto.IsAdmin,
@@ -81,14 +83,15 @@ public class UserService : IUserService
         var x = await _db.TblUsers.FirstOrDefaultAsync(u => u.UserId == dto.UserId, token);
         if (x == null) throw new Exception("User not found");
 
-        // Only validate password if it's provided (empty update case should be handled by UserController)
+        // Only validate/hash password if it's provided — a blank password on edit
+        // means "keep current", so we leave the stored hash untouched in that case.
         if (!string.IsNullOrEmpty(dto.Password))
         {
             ValidatePasswordPolicy(dto.Password, "کلمه عبور");
+            x.Password = PasswordHasher.Hash(dto.Password);
         }
 
         x.UserName = dto.UserName;
-        x.Password = dto.Password;
         x.FirstName = dto.FirstName;
         x.LastName = dto.LastName;
         x.Email = dto.Email;
@@ -96,7 +99,6 @@ public class UserService : IUserService
         x.Phone2 = dto.Phone2;
         x.Idnumber = dto.Idnumber;
         x.RecipientId = dto.RecipientId;
-        x.PermissionLevel = dto.PermissionLevel;
         x.RoleId = dto.RoleId;
         x.EduId = dto.CodeEdu;
         x.JobId = dto.CodeJob;
@@ -128,21 +130,21 @@ public class UserService : IUserService
         var x = await _db.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);
         if (x == null) throw new Exception("User not found");
 
-        x.Password = newPassword;
+        x.Password = PasswordHasher.Hash(newPassword);
         await _db.SaveChangesAsync(token);
         return true;
     }
 
     // ---------------- SOFT DELETE ----------------
-    public async Task<bool> Delete(int id, CancellationToken token)
+    public async Task<bool> ToggleActiveness(int id, CancellationToken token)
     {
         var x = await _db.TblUsers.FirstOrDefaultAsync(u => u.UserId == id, token);
         if (x == null) throw new Exception("User not found");
 
-        x.IsDeleted = true;
+        x.IsDeleted = !x.IsDeleted;
         await _db.SaveChangesAsync(token);
 
-        return true;
+        return x.IsDeleted.Value;
     }
 
     // ---------------- PAGED LIST ----------------
@@ -161,7 +163,6 @@ public class UserService : IUserService
             from u in _db.TblUsers
             join r in _db.TblRecipients on u.RecipientId equals r.RecipientId into gj
             from r in gj.DefaultIfEmpty()   // LEFT JOIN
-            where u.IsDeleted != true
             select new { User = u, Recipient = r };
 
         // ============= SEARCH =============
@@ -209,6 +210,7 @@ public class UserService : IUserService
                 LastName = x.User.LastName,
                 Phone1 = x.User.Phone1,
                 Phone2 = x.User.Phone2,
+                IsActive = x.User.IsDeleted ?? false,
                 JobName = x.User.CodeJobNavigation.Title,
                 RecipientName = x.Recipient != null ? x.Recipient.FullName : ""
             })
@@ -233,6 +235,9 @@ public class UserService : IUserService
         {
             UserId = x.UserId,
             UserName = x.UserName,
+            // The stored hash is returned here for the login path to verify against and to
+            // detect legacy plaintext values for transparent upgrade. This is an internal
+            // DTO — it never reaches the browser (the edit form uses GetById, which omits it).
             Password = x.Password,
             FirstName = x.FirstName,
             LastName = x.LastName,
@@ -241,7 +246,6 @@ public class UserService : IUserService
             Phone1 = x.Phone1,
             Phone2 = x.Phone2,
             RecipientId = x.RecipientId,
-            PermissionLevel = x.PermissionLevel,
             RoleId = x.RoleId,
             CodeEdu = x.EduId,
             CodeJob = x.JobId,
@@ -249,5 +253,29 @@ public class UserService : IUserService
             Course = x.Course,
             CourseDate = x.CourseDate
         };
+    }
+
+    // ---------------- VERIFY PASSWORD ----------------
+    // True when the plaintext password matches the stored PBKDF2 hash.
+    // False for a stored plaintext value (handled by the caller's upgrade path).
+    public async Task<bool> VerifyPassword(int userId, string password, CancellationToken token)
+    {
+        var x = await _db.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);
+        if (x == null) return false;
+
+        return PasswordHasher.Verify(password, x.Password);
+    }
+
+    // ---------------- UPGRADE PLAINTEXT TO HASH ----------------
+    // Re-hashes and persists a password that was stored as plaintext. Used by the login
+    // path to migrate legacy users transparently on their first successful login.
+    public async Task<bool> UpgradePasswordToHash(int userId, string plaintextPassword, CancellationToken token)
+    {
+        var x = await _db.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);
+        if (x == null) return false;
+
+        x.Password = PasswordHasher.Hash(plaintextPassword);
+        await _db.SaveChangesAsync(token);
+        return true;
     }
 }

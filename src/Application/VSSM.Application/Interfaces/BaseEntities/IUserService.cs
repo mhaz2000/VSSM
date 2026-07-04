@@ -19,10 +19,16 @@ namespace VSSM.Application.Interfaces.BaseEntities
         
          Task<bool> Update(UserEditDto dto, CancellationToken token);
         
-         Task<bool> Delete(int id, CancellationToken token);
+         Task<bool> ToggleActiveness(int id, CancellationToken token);
 
          Task<UserEditDto> GetByUsername(string username, CancellationToken token);
 
          Task<bool> ChangePassword(int userId, string newPassword, CancellationToken token);
+
+         /// <summary>True when the plaintext password matches the stored PBKDF2 hash.</summary>
+         Task<bool> VerifyPassword(int userId, string password, CancellationToken token);
+
+         /// <summary>Re-hashes a legacy plaintext password on first successful login.</summary>
+         Task<bool> UpgradePasswordToHash(int userId, string plaintextPassword, CancellationToken token);
     }
 }

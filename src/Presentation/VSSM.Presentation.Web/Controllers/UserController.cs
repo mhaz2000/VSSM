@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.Base;
@@ -29,14 +30,14 @@ namespace VSSM.Presentation.Web.Controllers
         // ====================== INDEX ============================
         public async Task<IActionResult> Index(
             string? search,
-            int page = 1,
+            int pageNumber = 1,
             int pageSize = 10,
             string sortField = "UserName",
             string sortOrder = "asc",
             CancellationToken token = default)
         {
             var list = await _userService.GetPagedList(
-                search, page, pageSize, sortField, sortOrder, token);
+                search, pageNumber, pageSize, sortField, sortOrder, token);
 
 
             var model = new GridViewModel
@@ -47,7 +48,7 @@ namespace VSSM.Presentation.Web.Controllers
                 Data = new PagedResult<object>
                 {
                     Items = list.Items.Cast<object>().ToList(),
-                    PageNumber = page,
+                    PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalCount = list.Paging.TotalPages
                 },
@@ -59,6 +60,7 @@ namespace VSSM.Presentation.Web.Controllers
                 new() { Header = "تلفن", PropertyName = nameof(UserGetDto.Phone1),  Sortable = false },
                 new() { Header = "گیرنده", PropertyName = nameof(UserGetDto.RecipientName),  Sortable = false },
                 new() { Header = "شغل", PropertyName = nameof(UserGetDto.JobName),  Sortable = false },
+                new() { Header = "فعال بودن", PropertyName = nameof(UserGetDto.IsActiveText),  Sortable = false },
                 new() { Header = "عملیات", IsActionColumn = true}
             },
                 Actions = new List<GridAction>
@@ -86,11 +88,33 @@ namespace VSSM.Presentation.Web.Controllers
                 {
                     Title = "حذف",
                     Controller = "User",
-                    Action = "Delete",
+                    Action = "ToggleActiveness",
                     RouteIdProperty = nameof(UserGetDto.UserId),
                     LinkClass = "delete-user",
                     IconClass = "fa fa-trash",
                     Method = "Post",
+                    DynamicSkip = item =>
+                    {
+                         var row = (UserGetDto)item;
+
+                        return (!row.IsActive).ToString();
+                    }
+                },
+                new()
+                {
+                    Title = "فعال کردن",
+                    Controller = "User",
+                    Action = "ToggleActiveness",
+                    RouteIdProperty = nameof(UserGetDto.UserId),
+                    LinkClass = "delete-user",
+                    IconClass = "fa fa-check",
+                    Method = "Post",
+                    DynamicSkip = item =>
+                    {
+                         var row = (UserGetDto)item;
+
+                        return row.IsActive.ToString();
+                    }
                 }
             }
             };
@@ -118,18 +142,15 @@ namespace VSSM.Presentation.Web.Controllers
                 UserName = dto.UserName,
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
-                Password = dto.Password,
                 Email = dto.Email,
                 Phone1 = dto.Phone1,
                 Phone2 = dto.Phone2,
                 RecipientId = dto.RecipientId,
-                PermissionLevel = dto.PermissionLevel,
                 Idnumber = dto.Idnumber,
                 CodeEdu = dto.CodeEdu,
                 CodeJob = dto.CodeJob,
                 IsAdmin = dto.IsAdmin,
                 Course = dto.Course,
-                CourseDate = PersianDateHelper.ToStringDate(dto.CourseDate),
                 RoleId = dto.RoleId
             };
 
@@ -150,19 +171,16 @@ namespace VSSM.Presentation.Web.Controllers
             }
 
 
-
             if (model.UserId == null || model.UserId == 0)
             {
-                // ======= CREATE =======
+
                 var dto = new UserCreateDto
                 {
                     UserName = model.UserName,
-                    Password = model.Password,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     Email = model.Email,
                     RecipientId = model.RecipientId,
-                    PermissionLevel = model.PermissionLevel.Value,
                     Phone1 = model.Phone1,
                     Phone2 = model.Phone2,
                     Idnumber = model.Idnumber,
@@ -170,7 +188,6 @@ namespace VSSM.Presentation.Web.Controllers
                     CodeJob = model.CodeJob,
                     IsAdmin = model.IsAdmin,
                     Course = model.Course,
-                    CourseDate = PersianDateHelper.ToDateTime(model.CourseDate),
                     RoleId = model.RoleId
                 };
 
@@ -185,12 +202,10 @@ namespace VSSM.Presentation.Web.Controllers
                 {
                     UserId = model.UserId.Value,
                     UserName = model.UserName,
-                    Password = model.Password,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     Email = model.Email,
                     RecipientId = model.RecipientId,
-                    PermissionLevel = model.PermissionLevel,
                     Phone1 = model.Phone1,
                     Phone2 = model.Phone2,
                     Idnumber = model.Idnumber,
@@ -198,7 +213,6 @@ namespace VSSM.Presentation.Web.Controllers
                     CodeJob = model.CodeJob,
                     IsAdmin = model.IsAdmin,
                     Course = model.Course,
-                    CourseDate = PersianDateHelper.ToDateTime(model.CourseDate),
                     RoleId = model.RoleId
                 };
 
@@ -213,11 +227,11 @@ namespace VSSM.Presentation.Web.Controllers
 
         // ====================== DELETE ============================
         [HttpPost]
-        public async Task<IActionResult> Delete(int id, CancellationToken token)
+        public async Task<IActionResult> ToggleActiveness(int id, CancellationToken token)
         {
-            await _userService.Delete(id, token);
+            var active = await _userService.ToggleActiveness(id, token);
 
-            TempData["ToastMessage"] = "با موفقیت حذف شد";
+            TempData["ToastMessage"] = active ? "با موفقیت فعال شد." : "با موفقیت حذف شد.";
             TempData["ToastType"] = "success";
 
             return RedirectToAction("Index");
@@ -268,7 +282,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             var jobList = await _baseInfoService.GetByParentIdAsync(60, cancellationToken);
 
-            ViewBag.JobList = jobList is null ? [] : (await _baseInfoService.GetByParentIdAsync(60 ,cancellationToken))
+            ViewBag.JobList = jobList is null ? [] : (await _baseInfoService.GetByParentIdAsync(60, cancellationToken))
                 .Select(x => new SelectListItem
                 {
                     Value = x.Id.ToString(),

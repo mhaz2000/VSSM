@@ -67,22 +67,28 @@
         </div>
     </div>
 
-    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">تایید حذف</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning" style="font-size:14px; line-height:1.6;">
-                        <i class="fa fa-exclamation-triangle" style="margin-left:6px;"></i>
-                        آیا از حذف این کاربر اطمینان دارید؟
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">انصراف</button>
-                    <button type="button" class="btn btn-danger" id="deleteConfirmSubmit">حذف</button>
-                </div>
+    <div class="uid-modal-overlay" id="toggleActivationModal">
+        <div class="uid-modal">
+            <div class="uid-modal-header">
+                <h6>
+                    <i class="fa fa-exclamation-triangle" id="toggleModalIcon" style="color:#dc2626;"></i>
+                    <span id="toggleModalTitle">تایید حذف</span>
+                </h6>
+                <button type="button" class="uid-modal-close" onclick="closeToggleModal()">✕</button>
+            </div>
+            <div class="uid-modal-body">
+                <p id="toggleModalMessage" style="font-size:14px; line-height:1.6; margin:0;">
+                    آیا از حذف این کاربر اطمینان دارید؟
+                </p>
+            </div>
+            <div class="uid-modal-header" style="justify-content:flex-end;gap:8px;border-top:1px solid #e5e7eb;border-bottom:none;">
+                <button type="button" class="btn-back" onclick="closeToggleModal()" style="padding:6px 16px;font-size:13px;">
+                    انصراف
+                </button>
+                <button type="button" class="btn-confirm" id="toggleConfirmSubmit" style="padding:6px 16px;font-size:13px;">
+                    <i class="fa fa-trash" id="toggleConfirmIcon"></i>
+                    <span id="toggleConfirmText">حذف</span>
+                </button>
             </div>
         </div>
     </div>
@@ -111,18 +117,58 @@
             $(document).on("click", ".delete-user", function (e) {
                 e.preventDefault();
                 pendingDeleteForm = $(this).closest("form");
-                $("#deleteConfirmModal").modal("show");
+
+                var isActivation = $(this).find(".fa-check").length > 0;
+
+                var $icon = $("#toggleModalIcon");
+                var $title = $("#toggleModalTitle");
+                var $message = $("#toggleModalMessage");
+                var $confirmBtn = $("#toggleConfirmSubmit");
+                var $confirmIcon = $("#toggleConfirmIcon");
+                var $confirmText = $("#toggleConfirmText");
+
+                if (isActivation) {
+                    $icon.attr("class", "fa fa-check-circle").css("color", "#16a34a");
+                    $title.text("تایید فعالسازی");
+                    $message.text("آیا از فعال کردن این کاربر اطمینان دارید؟");
+                    $confirmIcon.attr("class", "fa fa-check");
+                    $confirmText.text("فعال کردن");
+                    $confirmBtn.css({ background: "", border: "", color: "" });
+                } else {
+                    $icon.attr("class", "fa fa-exclamation-triangle").css("color", "#dc2626");
+                    $title.text("تایید حذف");
+                    $message.text("آیا از حذف این کاربر اطمینان دارید؟");
+                    $confirmIcon.attr("class", "fa fa-trash");
+                    $confirmText.text("حذف");
+                    $confirmBtn.css({
+                        background: "#dc2626",
+                        border: "2px solid #b91c1c",
+                        color: "#fff"
+                    });
+                }
+
+                $("#toggleActivationModal").addClass("open");
+            });
+
+            $(document).on("click", "#toggleActivationModal", function (e) {
+                if ($(e.target).is("#toggleActivationModal")) {
+                    $("#toggleActivationModal").removeClass("open");
+                }
             });
 
             window.closeChangePasswordModal = function () {
                 $('#changePasswordModal').removeClass('open');
             };
 
-            $("#deleteConfirmSubmit").on("click", function () {
+            window.closeToggleModal = function () {
+                $("#toggleActivationModal").removeClass("open");
+            };
+
+            $("#toggleConfirmSubmit").on("click", function () {
                 if (pendingDeleteForm) {
                     pendingDeleteForm.submit();
                 }
-                $("#deleteConfirmModal").modal("hide");
+                $("#toggleActivationModal").removeClass("open");
             });
         });
     </script>

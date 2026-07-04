@@ -8,10 +8,6 @@ public class UserViewModel
     [Required(ErrorMessage = "نام کاربری نمی‌تواند خالی باشد.")]
     public string UserName { get; set; }
 
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$",
-        ErrorMessage = "کلمه عبور باید حداقل ۸ کاراکتر و شامل حروف بزرگ، حروف کوچک، عدد و کاراکتر ویژه باشد.")]
-    public string Password { get; set; }
-
     [Required(ErrorMessage = "نام نمی‌تواند خالی باشد.")]
     public string FirstName { get; set; }
 
@@ -22,9 +18,6 @@ public class UserViewModel
 
  
     public int? RecipientId { get; set; }
-
-    [Required(ErrorMessage = "سطح دسترسی نمی‌تواند خالی باشد.")]
-    public int? PermissionLevel { get; set; }
 
     public int? RoleId { get; set; }
 
@@ -43,8 +36,4 @@ public class UserViewModel
 
     public string? Course { get; set; }
 
-    [Display(Name = "تاریخ ثبت")]
-    [RegularExpression(@"^\d{2}/\d{2}/\d{2}$",
-        ErrorMessage = "فرمت تاریخ باید به صورت yy/MM/dd باشد (مثال: 03/01/24).")]
-    public string? CourseDate { get; set; }
 }

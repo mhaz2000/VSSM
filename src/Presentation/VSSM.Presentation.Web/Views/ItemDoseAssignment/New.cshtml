@@ -1,24 +1,28 @@
 ﻿@model ItemDoseAssignmentViewModel
 
 @{
-    string formName = Model.ItemDoseAssignmentId > 0 ? "ویرایش اختصاص دوز به کالا" : "ثبت اختصاص دوز به کالا";
-    var isEdit = Model.ItemDoseAssignmentId > 0;
+    string formName = Model is not null && Model.ItemDoseAssignmentId > 0 ? "ویرایش اختصاص دوز به کالا" : "ثبت اختصاص دوز به کالا";
+    var isEdit = Model is not null && Model.ItemDoseAssignmentId > 0;
+    var serverMsg = TempData["ToastMessage"]?.ToString();
+    var serverType = TempData["ToastType"]?.ToString();
+    TempData.Remove("ToastMessage");
+    TempData.Remove("ToastType");
 }
 
 @section Styles {
     <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
     <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
     <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
     <link href="~/css/components/user/user-form.css" rel="stylesheet" />
 }
 
 <div class="user-form-wrap">
+    <div id="toastContainer"></div>
     <strong class="user-form-title">@formName</strong>
 
-    <form asp-action="Create" method="post" style="margin-top: 1rem;">
+    <form asp-action="Create" method="post" style="margin-top: 1rem;" novalidate>
         <input type="hidden" asp-for="ItemDoseAssignmentId" />
-
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <!-- اختصاص دوز به کالا -->
         <div class="a-card">
@@ -43,7 +47,6 @@
                                 class="f-control" required disabled>
                             <option value="">ابتدا نوع کالا را انتخاب کنید</option>
                         </select>
-                        <span asp-validation-for="ItemId" class="text-danger"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">دوز بر ویال <span class="req-tag">اجباری</span></label>
@@ -54,19 +57,17 @@
                                 <option value="@itemType.Id">@itemType.Title</option>
                             }
                         </select>
-                        <span asp-validation-for="DoseId" class="text-danger"></span>
                     </div>
                     <div class="f-group">
-                        <label class="f-label">حجم بر دوز (cm3) <span class="req-tag">اجباری</span></label>
+                        <label class="f-label">حجم بر دوز (cm3) </label>
                         <input type="number" asp-for="VialPerDoseCm3" class="f-control" min="0" />
-                        <span asp-validation-for="VialPerDoseCm3" class="text-danger"></span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- فوتر -->
-        <div class="form-footer">
+        <div class="form-footer a-card">
             <a asp-action="Index" class="btn-back">
                 <i class="fa fa-arrow-right"></i> بازگشت
             </a>
@@ -78,8 +79,16 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/shared/toast.js"></script>
     <script>
+        var serverMsg  = "@(serverMsg ?? "")";
+        var serverType = "@(serverType ?? "info")";
+
         $(function () {
+            if (serverMsg) {
+                showToast(serverMsg, serverType);
+            }
+
             const $itemClass = $("#ItemClassId");
             const $item = $("#ItemId");
 
@@ -105,7 +114,7 @@
                         $item.prop("disabled", false);
 
                         // If editing, pre-select the ItemId after loading items
-                        var selectedItemId = '@Model.ItemId';
+                        var selectedItemId = '@(Model?.ItemId)';
                         if (selectedItemId) {
                             $item.val(selectedItemId);
                         }
@@ -113,7 +122,7 @@
             });
 
             // If editing, pre-select ItemClass and trigger load
-            var initialClassId = '@Model.ItemClassId';
+            var initialClassId = '@(Model?.ItemClassId)';
             if (initialClassId) {
                 $itemClass.val(initialClassId).trigger("change");
             }

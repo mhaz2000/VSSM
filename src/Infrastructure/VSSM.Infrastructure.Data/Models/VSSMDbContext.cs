@@ -1718,7 +1718,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.Lastlogin)
                 .HasColumnType("datetime")
                 .HasColumnName("lastlogin");
-            entity.Property(e => e.PermissionLevel).HasComment("Permission Levels are:\r\n0= Nothing permited\r\n1= Reports\r\n2= 1 + Arrivals\r\n3 = 2 + Dispatches\r\n4= 3 + Basic Data\r\n5= 4 + Adjustment (Admin)");
             entity.Property(e => e.Phone1)
                 .HasMaxLength(50)
                 .HasColumnName("phone1");

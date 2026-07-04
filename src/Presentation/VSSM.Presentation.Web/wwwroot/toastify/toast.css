@@ -1,9 +1,9 @@
 ﻿.toast-box {
     position: fixed;
-    top: 30px;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    bottom: 30px;
+    left: 30px;
     min-width: 260px;
+    max-width: 400px;
     padding: 15px 20px;
     border-radius: 10px;
     color: #fff;

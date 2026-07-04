@@ -9,7 +9,6 @@ public class UserCreateDto
 
     public string Email { get; set; }
     public int? RecipientId { get; set; }
-    public int? PermissionLevel { get; set; }
     public int? RoleId { get; set; }
 
     public string Phone1 { get; set; }

@@ -11,4 +11,6 @@
 
     public string RecipientName { get; set; }
     public string JobName { get; set; }
+    public bool IsActive { get; internal set; }
+    public string IsActiveText => IsActive ? "فعال" : "غیر فعال";
 }

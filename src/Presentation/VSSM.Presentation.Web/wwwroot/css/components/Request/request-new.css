@@ -54,17 +54,17 @@
 }
 
 /* ═══════════════════════════════════════════
-   دیزیبل کردن المنت‌ها (مثل dispatch-form)
+   Disable states - disable until item selected
    ═══════════════════════════════════════════ */
 
-/* دیزیبل تا کالا انتخاب نشده */
+/* Disable until item selected */
 #requestForm:not([data-has-item="true"]) .rq-needs-item {
     opacity: .45;
     pointer-events: none;
     cursor: not-allowed;
 }
 
-/* دیزیبل تا ردیفی اضافه نشده */
+/* Disable until at least one line added */
 #requestForm:not([data-has-record="true"]) .rq-needs-record {
     opacity: .45;
     pointer-events: none;
@@ -77,7 +77,7 @@
 }
 
 /* ═══════════════════════════════════════════
-   دیزیبل کردن کل فرم هنگام لودینگ
+   Form loading state - disables entire form
    ═══════════════════════════════════════════ */
 
 #requestForm.form-loading {
@@ -98,7 +98,7 @@
     }
 
 /* ═══════════════════════════════════════════
-   لودینگ بسیار سبک - فقط اسپینر وسط‌چین
+   Loading spinner - centered in computed fields
    ═══════════════════════════════════════════ */
 
 #computedFieldsWrap {
@@ -112,15 +112,14 @@
     left: 0;
     width: 100%;
     height: 100%;
-    display: none; /* پیش‌فرض مخفی */
+    display: none; /* hidden by default */
     justify-content: center;
     align-items: center;
     z-index: 10;
     background: transparent;
-    /* وقتی با JS display:flex شود، وسط‌چین می‌شود */
 }
 
-/* اسپینر به تنهایی، بدون کادر و بدون متن */
+/* Pure CSS spinner - no box, no text */
 .loader {
     --color-1: #1d6fb8;
     --color-2: rgba(29, 111, 184, 0.58);
@@ -171,13 +170,13 @@
     }
 }
 
-/* ── فیلدها در حالت لودینگ بدون تغییر ── */
+/* ── Fields remain unchanged during loading ── */
 #computedFieldsWrap.is-loading .f-control {
-    /* هیچ تغییری در opacity یا رنگ اعمال نمیشه */
+    /* No visual changes - keeps UI stable */
 }
 
 /* ═══════════════════════════════════════════
-   حالت disabled دکمه افزودن (مثل dispatch-form)
+   Add button disabled state
    ═══════════════════════════════════════════ */
 .btn-add-line:disabled {
     opacity: .45;
@@ -186,7 +185,146 @@
 }
 
 /* ═══════════════════════════════════════════
-   ریسپانسیو
+   Table scroll with fixed height - shows 5 rows
+   ═══════════════════════════════════════════ */
+.lines-table-wrap {
+    max-height: 400px; /* shows ~5 rows */
+    overflow-y: auto;
+    position: relative;
+}
+
+    .lines-table-wrap.has-scroll {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    /* ── Custom scrollbar - professional look ── */
+    .lines-table-wrap::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .lines-table-wrap::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .lines-table-wrap::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+
+        .lines-table-wrap::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+/* ── "Show All" button row - appears at bottom of table ── */
+.more-lines-trigger {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+    .more-lines-trigger td {
+        text-align: center;
+        padding: 8px !important;
+    }
+
+.btn-show-all-lines {
+    background: transparent;
+    border: none;
+    color: #1d6fb8;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 16px;
+    transition: all 0.2s;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+    .btn-show-all-lines:hover {
+        background: #e7f3ff;
+        border-radius: 4px;
+    }
+
+.btn-show-all-lines {
+    background: linear-gradient(180deg, #ffffff, #f7f9fc);
+    border: 1px solid #d9eaff;
+    color: #1d6fb8;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 10px 14px;
+    border-radius: 8px;
+    transition: all 0.18s ease;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+}
+
+    .btn-show-all-lines:focus,
+    .btn-show-all-lines:active {
+        outline: none;
+        box-shadow: none;
+    }
+    .btn-show-all-lines:hover {
+        background: #eef6ff;
+        border-color: #cfe3ff;
+        transform: translateY(-1px);
+    }
+/*
+    .btn-show-all-lines:active {
+        transform: translateY(0px);
+        background: #e3f0ff;
+    }
+*/
+    .btn-show-all-lines i {
+        font-size: 14px;
+        margin-left: 6px;
+        transition: transform 0.25s ease;
+    }
+
+    .btn-show-all-lines[data-expanded="true"] i {
+        transform: rotate(180deg);
+    }
+
+    .btn-show-all-lines::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0%;
+        height: 2px;
+        background: #1d6fb8;
+        transition: width 0.3s ease;
+        opacity: 0.6;
+    }
+
+    .btn-show-all-lines:hover::after {
+        width: 100%;
+    }
+
+.badge-count {
+    background: #eef6ff;
+    color: #1d6fb8;
+    padding: 5px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-right: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid #d9eaff;
+}
+
+/* ═══════════════════════════════════════════
+   Responsive
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
     .loader {
@@ -196,5 +334,9 @@
 
     #computedFieldsWrap {
         min-height: 60px;
+    }
+
+    .lines-table-wrap {
+        max-height: 300px; /* smaller on mobile */
     }
 }

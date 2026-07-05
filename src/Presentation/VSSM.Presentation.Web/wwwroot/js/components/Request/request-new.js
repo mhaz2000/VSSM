@@ -12,6 +12,7 @@
     let maxAllowed = 0;
     let hasStock = false;
 
+    // ── توابع کمکی ──
     function setHasItem(val) {
         $form.attr('data-has-item', val ? 'true' : 'false');
     }
@@ -31,10 +32,9 @@
         const reqFilled = $reqCount.val() !== '' && !isNaN(reqVal) && reqVal > 0;
 
         const canEnable = classSelected && itemSelected && reqFilled;
-
         $addBtn.prop('disabled', !canEnable);
     }
-    
+
     function removeNoteValidation() {
         var $note = $('#note');
         $note.removeAttr('data-val-required');
@@ -45,16 +45,13 @@
         if (typeof $.fn.rules === 'function') {
             try {
                 $note.rules('remove', 'required');
-            } catch (e) {
-    
-            }
+            } catch (e) { }
         }
 
         $note.removeClass('input-validation-error');
         $note.siblings('.field-validation-valid, .field-validation-error').remove();
     }
 
-    
     function disableFormValidation() {
         if ($form.data('validator')) {
             $form.removeData('validator');
@@ -70,7 +67,75 @@
         $('button[formnovalidate]').prop('formnovalidate', true);
     }
 
-    
+    // ── راه‌اندازی دکمه «مشاهده همه» با Event Delegation ──
+    // به‌جای بستن رویداد مستقیم روی خودِ دکمه (که اگر جای‌گزین/ری‌رندر بشه
+    // رویدادش از بین می‌ره)، رویداد کلیک رو روی document می‌بندیم و با
+    // event.target.closest(...) تشخیص می‌دیم کلیک روی دکمه خورده یا نه.
+    // این‌طوری فرقی نمی‌کنه دکمه یا سطرها چند بار در DOM جای‌گزین بشن،
+    // رویداد همیشه کار می‌کنه چون هیچ رفرنس کش‌شده‌ای نداریم.
+    function initToggleButton() {
+
+        if (document.body.dataset.toggleDelegated === 'true') return;
+        document.body.dataset.toggleDelegated = 'true';
+
+        // نشانه‌گذاری یک‌بارِ ردیف‌های «اضافه» با یک کلاس ثابت که هیچ‌وقت پاک نمی‌شه.
+        // این کلاس فقط برای شناسایی همیشگیه؛ کلاس hidden-line جداگانه برای
+        // نمایش/مخفی‌کردن toggle می‌شه. اگه فقط از hidden-line برای شناسایی
+        // استفاده کنیم، بعد از اولین "نمایش بیشتر" که این کلاس پاک می‌شه،
+        // دفعه‌ی بعد دیگه هیچ ردیفی پیدا نمی‌شه و شمارش/toggle خراب می‌شه.
+        document.querySelectorAll('.hidden-line').forEach(line => {
+            line.classList.add('rq-extra-line');
+        });
+
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-show-all-lines');
+            if (!btn) return;
+
+            e.preventDefault();
+
+            // همیشه از نشانه‌ی ثابت می‌خونیم، نه از hidden-line که خودش toggle می‌شه
+            const extraLines = document.querySelectorAll('.rq-extra-line');
+            const wrap = document.querySelector('.lines-table-wrap');
+            const icon = btn.querySelector('i');
+            const text = btn.querySelector('.btn-text');
+
+            const isExpanded = btn.dataset.expanded === 'true';
+            const total = extraLines.length + 5;
+
+            if (isExpanded) {
+
+                extraLines.forEach(line => {
+                    line.classList.add('hidden-line');
+                    line.style.display = 'none';
+                });
+
+                btn.dataset.expanded = 'false';
+
+                if (icon) icon.className = 'fa fa-chevron-down';
+                if (text) text.textContent = `مشاهده همه اقلام (${total} قلم)`;
+
+                if (wrap) wrap.scrollTop = 0;
+
+            } else {
+
+                extraLines.forEach(line => {
+                    line.classList.remove('hidden-line');
+                    line.style.removeProperty('display');
+                });
+
+                btn.dataset.expanded = 'true';
+
+                if (icon) icon.className = 'fa fa-chevron-up';
+                if (text) text.textContent = 'مشاهده کمتر';
+
+                setTimeout(() => {
+                    if (wrap) wrap.scrollTop = wrap.scrollHeight;
+                }, 100);
+            }
+        });
+    }
+
+    /* ── رویدادهای فرم ── */
     $itemClass.on('change', function () {
         const classId = $(this).val();
 
@@ -86,7 +151,6 @@
         }
 
         resetItemDropdown('در حال بارگذاری...');
-
         $form.addClass('form-loading');
 
         $.getJSON('/Request/GetItemsByClass', { classId })
@@ -102,7 +166,6 @@
             });
     });
 
-    
     $item.on('change', function () {
         const itemId = $(this).val();
         setHasItem(!!itemId);
@@ -122,19 +185,18 @@
 
         $.getJSON('/Request/GetItemDetailsByItem', { itemId })
             .done(function (data) {
-                
                 maxAllowed = parseInt(data?.arivCount ?? 0, 10);
-
                 $('#currentcount').val(data.currentCount);
                 $('#arivcount').val(data.arivCount);
                 $('#usedcount').val(data.usedCount);
                 $('#inventoryHealth').val(0);
                 $('#timeBetweenRequestAndArrival').val(0);
-                
                 $reqCount.prop('disabled', false);
             })
             .fail(function () {
-                showToast('خطا در دریافت اطلاعات کالا. لطفاً دوباره تلاش کنید.', 'error');
+                if (typeof showToast === 'function') {
+                    showToast('خطا در دریافت اطلاعات کالا. لطفاً دوباره تلاش کنید.', 'error');
+                }
             })
             .always(function () {
                 $computedWrap.removeClass('is-loading');
@@ -144,20 +206,12 @@
             });
     });
 
-    /* ── فقط اعداد مجاز هستند، بدون محدودیت عددی ── */
     $reqCount.on('input', function () {
-        // فقط کاراکترهای غیرعددی را حذف میکنیم
         const val = this.value.replace(/[^\d]/g, '');
         if (this.value !== val) {
             this.value = val;
         }
         updateAddButtonState();
-    });
-
-    /* ── اجرا در زمان مناسب ── */
-    $(document).ready(function () {
-        removeNoteValidation();
-        disableFormValidation();
     });
 
     /* ── رویداد submit ── */
@@ -197,5 +251,20 @@
         return true;
     });
 
-    updateAddButtonState();
+    /* ═══════════════════════════════════════════
+       اجرای اولیه
+       ═══════════════════════════════════════════ */
+    function initialize() {
+        removeNoteValidation();
+        disableFormValidation();
+        updateAddButtonState();
+        initToggleButton(); // راه‌اندازی دکمه «مشاهده همه» (delegated، نیازی به retry نداره)
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+        initialize();
+    }
+
 })();

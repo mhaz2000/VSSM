@@ -2,10 +2,22 @@
 @using VSSM.Domain.Enums
 @model RequestViewModel
 
+
 @{
     bool isEdit = Model?.Id > 0;
     bool hasLines = Model?.RequestLines != null && Model.RequestLines.Any();
-    bool isConfirmed = Model?.RequestStatus == (int)RequestStatusEnum.Confirmed;
+    int totalLines = Model?.RequestLines?.Count ?? 0;
+    bool hasManyLines = totalLines > 5;
+
+    bool isViewMode = ViewBag.IsViewMode ?? false;
+
+    var status = (RequestStatusEnum)(Model?.RequestStatus ?? (int)RequestStatusEnum.Draft);
+
+    bool isFinalStatus = status == RequestStatusEnum.Confirmed || status == RequestStatusEnum.Rejected;
+
+    bool isDraftLike = status == RequestStatusEnum.Draft || status == RequestStatusEnum.Label;
+
+    bool showActionButtons = !isViewMode && !isFinalStatus;
 }
 
 @section Styles {
@@ -22,118 +34,129 @@
         <input type="hidden" asp-for="Id" />
 
         @* ═══ کارت اول: ثبت درخواست ═══ *@
-        <div class="a-card">
-            <div class="a-card-header">
-                <i class="fa fa-file-text-o" style="color:#1d6fb8; font-size:16px;"></i>
-                <h6 style="font-size:16px;">ثبت درخواست</h6>
-            </div>
+        @* فقط وقتی در حالت مشاهده (mode=view) نیستیم نمایش داده می‌شه *@
+        @if (!isViewMode)
+        {
+            <div class="a-card">
+                <div class="a-card-header">
+                    <i class="fa fa-file-text-o" style="color:#1d6fb8; font-size:16px;"></i>
+                    <h6 style="font-size:16px;">ثبت درخواست</h6>
+                </div>
 
-            <fieldset class="rq-fieldset" disabled="@isConfirmed">
-                <div class="a-card-body">
+                <fieldset class="rq-fieldset" disabled="@isFinalStatus">
+                    <div class="a-card-body">
 
-                    @if (isEdit)
-                    {
+                        @if (isEdit)
+                        {
+                            <div class="fg-3">
+                                <div class="f-group">
+                                    <label class="f-label">شماره درخواست</label>
+                                    <input type="text" class="f-control" asp-for="RequestNumber" disabled />
+                                </div>
+                            </div>
+                        }
+
+                        @* ردیف ۱: نوع کالا | کالا | تعداد درخواستی *@
                         <div class="fg-3">
                             <div class="f-group">
-                                <label class="f-label">شماره درخواست</label>
-                                <input type="text" class="f-control" asp-for="RequestNumber" disabled />
+                                <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
+                                <select id="ItemClassId"
+                                        asp-for="NewLine.ItemClassId"
+                                        asp-items="ViewBag.ItemClassList"
+                                        class="f-control">
+                                    <option value="">انتخاب کنید...</option>
+                                </select>
+                            </div>
+                            <div class="f-group">
+                                <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
+                                <select id="ItemId"
+                                        asp-for="NewLine.ItemId"
+                                        class="f-control"
+                                        disabled>
+                                    <option value="">ابتدا نوع کالا را انتخاب کنید</option>
+                                </select>
+                            </div>
+                            <div class="f-group rq-needs-item">
+                                <label class="f-label">تعداد درخواستی <span class="req-tag">اجباری</span></label>
+                                <input type="text" class="f-control" asp-for="NewLine.ReqCount" id="reqcount" />
                             </div>
                         </div>
-                    }
 
-                    @* ردیف ۱: نوع کالا | کالا | تعداد درخواستی *@
-                    <div class="fg-3">
-                        <div class="f-group">
-                            <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
-                            <select id="ItemClassId"
-                                    asp-for="NewLine.ItemClassId"
-                                    asp-items="ViewBag.ItemClassList"
-                                    class="f-control">
-                                <option value="">انتخاب کنید...</option>
-                            </select>
+                        @* ردیف ۲: تعداد ورودی | تعداد مصرف شده | تعداد موجودی انبار *@
+                        <div class="fg-3" id="computedFieldsWrap">
+                            <div id="computedLoading" style="display:none;">
+                                <div class="loader"></div>
+                            </div>
+
+                            <div class="f-group">
+                                <label class="f-label">تعداد ورودی</label>
+                                <div class="computed-field-wrapper">
+                                    <input type="text" class="f-control" asp-for="NewLine.ArivCount" id="arivcount" readonly />
+                                </div>
+                            </div>
+                            <div class="f-group">
+                                <label class="f-label">تعداد مصرف شده</label>
+                                <div class="computed-field-wrapper">
+                                    <input type="text" class="f-control" asp-for="NewLine.UsedCount" id="usedcount" readonly />
+                                </div>
+                            </div>
+                            <div class="f-group">
+                                <label class="f-label">تعداد موجودی انبار</label>
+                                <div class="computed-field-wrapper">
+                                    <input type="text" class="f-control" asp-for="NewLine.CurrentCount" id="currentcount" readonly />
+                                </div>
+                            </div>
                         </div>
-                        <div class="f-group">
-                            <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
-                            <select id="ItemId"
-                                    asp-for="NewLine.ItemId"
-                                    class="f-control"
+
+                        @* ردیف ۳: ذخیره ایمن | زمان بین درخواست و ورود | ملاحظات (سطر) *@
+                        <div class="fg-3">
+                            <div class="f-group">
+                                <label class="f-label">ذخیره ایمن (ماه)</label>
+                                <input type="text" class="f-control" asp-for="NewLine.InventoryHealth" id="inventoryHealth" readonly />
+                            </div>
+                            <div class="f-group">
+                                <label class="f-label">زمان بین درخواست و ورود محموله (روز)</label>
+                                <input type="text" class="f-control" asp-for="NewLine.TimeBetweenRequestAndArrival" id="timeBetweenRequestAndArrival" readonly />
+                            </div>
+                            <div class="f-group">
+                                <label class="f-label">ملاحظات <span class="opt">(اختیاری)</span></label>
+                                <input type="text" class="f-control" asp-for="NewLine.Note" id="note" placeholder="ملاحظات..." />
+                            </div>
+                        </div>
+
+                        @* دکمه افزودن ردیف *@
+                        <div class="rq-add-line-footer">
+                            <button type="submit"
+                                    name="command"
+                                    value="addLine"
+                                    id="btnAddLine"
+                                    class="btn-add-line rq-needs-item"
                                     disabled>
-                                <option value="">ابتدا نوع کالا را انتخاب کنید</option>
-                            </select>
+                                <i class="fa fa-plus"></i>
+                                افزودن
+                            </button>
                         </div>
-                        <div class="f-group rq-needs-item">
-                            <label class="f-label">تعداد درخواستی <span class="req-tag">اجباری</span></label>
-                            <input type="text" class="f-control" asp-for="NewLine.ReqCount" id="reqcount" />
-                        </div>
+
                     </div>
-
-                    @* ردیف ۲: تعداد ورودی | تعداد مصرف شده | تعداد موجودی انبار *@
-                    <div class="fg-3" id="computedFieldsWrap">
-                        <div id="computedLoading" style="display:none;">
-                            <div class="loader"></div>
-                        </div>
-
-                        <div class="f-group">
-                            <label class="f-label">تعداد ورودی</label>
-                            <div class="computed-field-wrapper">
-                                <input type="text" class="f-control" asp-for="NewLine.ArivCount" id="arivcount" readonly />
-                            </div>
-                        </div>
-                        <div class="f-group">
-                            <label class="f-label">تعداد مصرف شده</label>
-                            <div class="computed-field-wrapper">
-                                <input type="text" class="f-control" asp-for="NewLine.UsedCount" id="usedcount" readonly />
-                            </div>
-                        </div>
-                        <div class="f-group">
-                            <label class="f-label">تعداد موجودی انبار</label>
-                            <div class="computed-field-wrapper">
-                                <input type="text" class="f-control" asp-for="NewLine.CurrentCount" id="currentcount" readonly />
-                            </div>
-                        </div>
-                    </div>
-
-                    @* ردیف ۳: ذخیره ایمن | زمان بین درخواست و ورود | ملاحظات (سطر) *@
-                    <div class="fg-3">
-                        <div class="f-group">
-                            <label class="f-label">ذخیره ایمن (ماه)</label>
-                            <input type="text" class="f-control" asp-for="NewLine.InventoryHealth" id="inventoryHealth" readonly />
-                        </div>
-                        <div class="f-group">
-                            <label class="f-label">زمان بین درخواست و ورود محموله (روز)</label>
-                            <input type="text" class="f-control" asp-for="NewLine.TimeBetweenRequestAndArrival" id="timeBetweenRequestAndArrival" readonly />
-                        </div>
-                        <div class="f-group">
-                            <label class="f-label">ملاحظات <span class="opt">(اختیاری)</span></label>
-                            <input type="text" class="f-control" asp-for="NewLine.Note" id="note" placeholder="ملاحظات..." />
-                        </div>
-                    </div>
-
-                    @* دکمه افزودن ردیف *@
-                    <div class="rq-add-line-footer">
-                        <button type="submit"
-                                name="command"
-                                value="addLine"
-                                id="btnAddLine"
-                                class="btn-add-line rq-needs-item"
-                                disabled>
-                            <i class="fa fa-plus"></i>
-                            افزودن
-                        </button>
-                    </div>
-
-                </div>
-            </fieldset>
-        </div>
+                </fieldset>
+            </div>
+        }
 
         @* ═══ کارت دوم: اقلام درخواست ═══ *@
+        @* همیشه نمایش داده می‌شه، چه در حالت عادی چه در حالت مشاهده *@
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-list" style="color:#1d6fb8;"></i>
                 <h6>اقلام درخواست</h6>
+                @if (hasManyLines)
+                {
+                    <span class="badge-count">
+                        <i class="fa fa-file-text-o"></i> @totalLines قلم
+                    </span>
+                }
             </div>
             <div class="a-card-body">
-                <div class="lines-table-wrap">
+                <div class="lines-table-wrap @(hasManyLines ? "has-scroll" : "")">
                     <table class="lines-table">
                         <thead>
                             <tr>
@@ -150,11 +173,15 @@
                         <tbody>
                             @if (Model.RequestLines != null && Model.RequestLines.Any())
                             {
-                                for (int i = 0; i < Model.RequestLines.Count; i++)
+                                int index = 0;
+                                var linesToShow = hasManyLines ? Model.RequestLines.Take(5) : Model.RequestLines;
+
+                                @* نمایش ۵ آیتم اول *@
+                                @foreach (var line in linesToShow)
                                 {
-                                    var line = Model.RequestLines[i];
+                                    index++;
                                     <tr>
-                                        <td>@(i + 1)</td>
+                                        <td>@index</td>
                                         <td>@line.ItemName</td>
                                         <td>@line.ArivCount</td>
                                         <td>@line.UsedCount</td>
@@ -167,8 +194,46 @@
                                                     value="deleteLine_@line.Id"
                                                     class="btn-action btn-action-del js-submit-btn"
                                                     title="حذف"
-                                                    disabled="@isConfirmed">
+                                                    disabled="@(isFinalStatus || isViewMode)">
                                                 <i class="fa fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+
+                                @* آیتم‌های بیشتر از ۵ - مخفی *@
+                                @if (hasManyLines)
+                                {
+                                    foreach (var line in Model.RequestLines.Skip(5))
+                                    {
+                                        index++;
+                                        <tr class="hidden-line" style="display: none;">
+                                            <td>@index</td>
+                                            <td>@line.ItemName</td>
+                                            <td>@line.ArivCount</td>
+                                            <td>@line.UsedCount</td>
+                                            <td>@line.CurrentCount</td>
+                                            <td>@line.ReqCount</td>
+                                            <td>@line.Note</td>
+                                            <td>
+                                                <button type="submit"
+                                                        name="command"
+                                                        value="deleteLine_@line.Id"
+                                                        class="btn-action btn-action-del js-submit-btn"
+                                                        title="حذف"
+                                                        disabled="@(isFinalStatus || isViewMode)">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+
+                                    @* دکمه نمایش همه - آخرین سطر جدول *@
+                                    <tr class="more-lines-trigger" id="toggleRow">
+                                        <td colspan="8">
+                                            <button type="button" class="btn-show-all-lines">
+                                                <i class="fa fa-chevron-down"></i>
+                                                <span class="btn-text">مشاهده همه اقلام (@totalLines قلم)</span>
                                             </button>
                                         </td>
                                     </tr>
@@ -196,41 +261,46 @@
                 بازگشت
             </a>
 
-            <button type="submit"
-                    name="command"
-                    value="StatusDelete"
-                    class="btn-action btn-action-del rq-btn-del rq-needs-record"
-                    title="حذف درخواست"
-                    disabled="@isConfirmed">
-                <i class="fa fa-trash"></i>
-                حذف
-            </button>
+            @if (showActionButtons)
+            {
+                <button type="submit"
+                        name="command"
+                        value="StatusDelete"
+                        class="btn-action btn-action-del rq-btn-del rq-needs-record"
+                        title="حذف درخواست">
+                    <i class="fa fa-trash"></i>
+                    حذف
+                </button>
 
-            <button type="submit"
-                    name="command"
-                    value="StatusDraft"
-                    class="btn-draft rq-needs-record"
-                    formnovalidate
-                    disabled="@isConfirmed">
-                <i class="fa fa-floppy-o"></i>
-                پیش‌نویس
-            </button>
+                @if (isDraftLike)
+                {
+                    <button type="submit"
+                            name="command"
+                            value="StatusDraft"
+                            class="btn-draft rq-needs-record"
+                            formnovalidate>
+                        <i class="fa fa-floppy-o"></i>
+                        پیش‌نویس
+                    </button>
 
-            <button type="submit"
-                    name="command"
-                    value="StatusSent"
-                    class="btn-confirm rq-needs-record"
-                    formnovalidate
-                    disabled="@isConfirmed">
-                <i class="fa fa-paper-plane"></i>
-                ارسال
-            </button>
+                    <button type="submit"
+                            name="command"
+                            value="StatusSent"
+                            class="btn-confirm rq-needs-record"
+                            formnovalidate>
+                        <i class="fa fa-paper-plane"></i>
+                        ارسال
+                    </button>
+                }
+            }
         </div>
 
     </form>
 </div>
 
-@section Scripts {
+}
+
+                    @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/components/request/request-new.js" asp-append-version="true"></script>
 }

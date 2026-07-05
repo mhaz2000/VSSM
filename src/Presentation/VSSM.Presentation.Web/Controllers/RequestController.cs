@@ -91,8 +91,10 @@ public class RequestController(
         return View(model);
     }
 
-    public async Task<IActionResult> New(int? id, CancellationToken token)
+    public async Task<IActionResult> New(int? id, string mode, CancellationToken token)
     {
+        ViewBag.IsViewMode = id is not null;
+
         if (id == null || id == 0)
         {
             if (CurrentUserLevel == 1)
@@ -101,7 +103,6 @@ public class RequestController(
                 TempData["ToastType"] = "warning";
                 return RedirectToAction("Index");
             }
-
             var vm = new RequestViewModel
             {
                 RequestLines = new List<RequestLinesViewModel>(),
@@ -110,7 +111,6 @@ public class RequestController(
             await PopulateLookupViewBagsAsync(token);
             return View(vm);
         }
-
         var dto = await requestService.GetById(id.Value, token);
         if (dto == null) return NotFound();
         await PopulateLookupViewBagsAsync(token);
@@ -137,10 +137,8 @@ public class RequestController(
                 ReqCount = r.ReqCount,
                 UsedCount = r.UsedCount
             }).ToList(),
-
             NewLine = new RequestLinesViewModel()
         };
-
         return View(model);
     }
 

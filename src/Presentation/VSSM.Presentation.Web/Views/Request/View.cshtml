@@ -1,0 +1,163 @@
+@using VSSM.Presentation.Web.Models.Request
+@using VSSM.Domain.Enums
+@model RequestViewModel
+
+@{
+    int totalLines = Model?.RequestLines?.Count ?? 0;
+    bool hasManyLines = totalLines > 5;
+
+    var status = (RequestStatusEnum)(Model?.RequestStatus ?? (int)RequestStatusEnum.Draft);
+
+    // در این دو وضعیت، کل بخش دکمه‌های اکشن (حذف/پیش‌نویس/ارسال) اصلاً نمایش داده نمی‌شه
+    bool isFinalStatus = status == RequestStatusEnum.Confirmed || status == RequestStatusEnum.Rejected;
+
+    // پیش‌نویس (و برچسب/تازه‌ساز که هنوز رسماً ثبت نشده) → ارسال و پیش‌نویس هم فعالن
+    bool isDraftLike = status == RequestStatusEnum.Draft || status == RequestStatusEnum.Label;
+
+    // نمایش دکمه‌های اکشن فقط وقتی وضعیت نهایی (تایید/رد) نیست
+    bool showActionButtons = !isFinalStatus;
+}
+
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/lines-table.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/submit-btn.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/request/request-new.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="rq-page" dir="rtl">
+    <form asp-action="Create" method="post" id="requestForm">
+        <input type="hidden" asp-for="Id" />
+
+        @* ═══ کارت: اقلام درخواست (فقط‌خواندنی) ═══ *@
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-list" style="color:#1d6fb8;"></i>
+                <h6>اقلام درخواست @(Model?.RequestNumber != null ? "- " : "")<bdi>@Model?.RequestNumber</bdi></h6>
+                @if (hasManyLines)
+                {
+                    <span class="badge-count">
+                        <i class="fa fa-file-text-o"></i> @totalLines قلم
+                    </span>
+                }
+            </div>
+            <div class="a-card-body">
+                <div class="lines-table-wrap @(hasManyLines ? "has-scroll" : "")">
+                    <table class="lines-table">
+                        <thead>
+                            <tr>
+                                <th>ردیف</th>
+                                <th>کالا</th>
+                                <th>تعداد ورودی</th>
+                                <th>تعداد مصرف شده</th>
+                                <th>موجودی انبار</th>
+                                <th>تعداد درخواستی</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model?.RequestLines != null && Model.RequestLines.Any())
+                            {
+                                int index = 0;
+                                var linesToShow = hasManyLines ? Model.RequestLines.Take(5) : Model.RequestLines;
+
+                                @* نمایش ۵ آیتم اول *@
+                                @foreach (var line in linesToShow)
+                                {
+                                    index++;
+                                    <tr>
+                                        <td>@index</td>
+                                        <td>@line.ItemName</td>
+                                        <td>@line.ArivCount</td>
+                                        <td>@line.UsedCount</td>
+                                        <td>@line.CurrentCount</td>
+                                        <td>@line.ReqCount</td>
+                                        <td>@line.Note</td>
+                                    </tr>
+                                }
+
+                                @* آیتم‌های بیشتر از ۵ - مخفی *@
+                                @if (hasManyLines)
+                                {
+                                    foreach (var line in Model.RequestLines.Skip(5))
+                                    {
+                                        index++;
+                                        <tr class="hidden-line" style="display: none;">
+                                            <td>@index</td>
+                                            <td>@line.ItemName</td>
+                                            <td>@line.ArivCount</td>
+                                            <td>@line.UsedCount</td>
+                                            <td>@line.CurrentCount</td>
+                                            <td>@line.ReqCount</td>
+                                            <td>@line.Note</td>
+                                        </tr>
+                                    }
+
+                                    @* دکمه نمایش همه - آخرین سطر جدول *@
+                                    <tr class="more-lines-trigger" id="toggleRow">
+                                        <td colspan="7">
+                                            <button type="button" class="btn-show-all-lines">
+                                                <i class="fa fa-chevron-down"></i>
+                                                <span class="btn-text">مشاهده همه اقلام (@totalLines قلم)</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="rq-empty-row">
+                                        <i class="fa fa-inbox"></i>
+                                        آیتمی ثبت نشده است
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* ═══ فوتر: دکمه‌ها (بر اساس وضعیت درخواست) ═══ *@
+        <div class="form-footer">
+            <a class="btn-back" asp-action="Index">
+                <i class="fa fa-arrow-right"></i>
+                بازگشت
+            </a>
+
+            @if (showActionButtons)
+            {
+                <button type="submit"
+                        name="command"
+                        value="StatusDelete"
+                        class="btn-action btn-action-del rq-btn-del"
+                        title="حذف درخواست">
+                    <i class="fa fa-trash"></i>
+                    حذف
+                </button>
+
+                @if (isDraftLike)
+                {
+                    <button type="submit"
+                            name="command"
+                            value="StatusSent"
+                            class="btn-confirm"
+                            formnovalidate>
+                        <i class="fa fa-paper-plane"></i>
+                        ارسال
+                    </button>
+                }
+            }
+        </div>
+
+    </form>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/components/request/request-new.js" asp-append-version="true"></script>
+}

@@ -197,15 +197,20 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
         };
     }
 
-    public async Task<PagingSearchOrderDto<RequestListDto>> GetReceivedRequestsPagedList(string? search, int page, int pageSize,
-            string sortField, string sortOrder,
-            int currentRecipientId, CancellationToken cancellationToken)
+    public async Task<PagingSearchOrderDto<RequestListDto>> GetReceivedRequestsPagedList(
+        string? search,
+        int page, 
+        int pageSize,
+        string sortField,
+        string sortOrder,
+        int currentRecipientId,
+        CancellationToken cancellationToken)
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
         IQueryable<TblRequest> query = dbContext.TblRequests;
 
-        query = query.Where(q => q.ReceiverId == currentRecipientId);
+        query = query.Where(q => q.ReceiverId == currentRecipientId && q.Status == RequestStatusEnum.Sent);
 
         if (!string.IsNullOrWhiteSpace(search))
         {

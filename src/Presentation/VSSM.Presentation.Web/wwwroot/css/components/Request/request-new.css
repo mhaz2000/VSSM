@@ -33,7 +33,7 @@
 /* ── ردیف خالی جدول ── */
 .rq-empty-row {
     text-align: center;
-    color: #9ca3af;
+    color: #9ca3af !important;
     padding: 32px 0 !important;
     font-size: 13px;
 }
@@ -42,7 +42,7 @@
         display: block;
         font-size: 26px;
         margin-bottom: 8px;
-        color: #d1d5db;
+        color: #d1d5db !important;
     }
 
 /* ── fieldset بدون استایل پیش‌فرض مرورگر ── */
@@ -230,26 +230,6 @@
     }
 
 .btn-show-all-lines {
-    background: transparent;
-    border: none;
-    color: #1d6fb8;
-    font-size: 13px;
-    cursor: pointer;
-    padding: 8px 16px;
-    transition: all 0.2s;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-
-    .btn-show-all-lines:hover {
-        background: #e7f3ff;
-        border-radius: 4px;
-    }
-
-.btn-show-all-lines {
     background: linear-gradient(180deg, #ffffff, #f7f9fc);
     border: 1px solid #d9eaff;
     color: #1d6fb8;
@@ -271,17 +251,13 @@
         outline: none;
         box-shadow: none;
     }
+
     .btn-show-all-lines:hover {
         background: #eef6ff;
         border-color: #cfe3ff;
         transform: translateY(-1px);
     }
-/*
-    .btn-show-all-lines:active {
-        transform: translateY(0px);
-        background: #e3f0ff;
-    }
-*/
+
     .btn-show-all-lines i {
         font-size: 14px;
         margin-left: 6px;

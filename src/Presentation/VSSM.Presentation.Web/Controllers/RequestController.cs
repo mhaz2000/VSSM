@@ -54,6 +54,8 @@ public class RequestController(
                         ["Draft"]     = ("پیش‌نویس",    "badge-secondary"),
                         ["Sent"]      = ("ارسال شده",   "badge-info"),
                         ["Confirmed"] = ("تایید شده",   "badge-success"),
+                        ["Rejected"]  = ("رد شده",      "badge-danger"),
+
                     }},
                 new() { Header = "ثبت شده توسط",  PropertyName = nameof(RequestListDto.EnteredByName), Sortable = false },
                 new() { Header = "تاریخ تایید", PropertyName = nameof(RequestListDto.ConfirmDateShamsi), Sortable = true },
@@ -65,7 +67,7 @@ public class RequestController(
                 {
                     Title           = "مشاهده",
                     Controller      = "Request",
-                    Action          = "New",
+                    Action          = "View",
                     RouteIdProperty = nameof(RequestListDto.Id),
                     IconClass       = "fa fa-eye",
                     LinkClass       = "btn-outline-primary",
@@ -91,10 +93,8 @@ public class RequestController(
         return View(model);
     }
 
-    public async Task<IActionResult> New(int? id, string mode, CancellationToken token)
+    public async Task<IActionResult> New(int? id, CancellationToken token)
     {
-        ViewBag.IsViewMode = id is not null;
-
         if (id == null || id == 0)
         {
             if (CurrentUserLevel == 1)
@@ -139,6 +139,40 @@ public class RequestController(
             }).ToList(),
             NewLine = new RequestLinesViewModel()
         };
+        return View(model);
+    }
+
+    public async Task<IActionResult> View(int id, CancellationToken token)
+    {
+        var dto = await requestService.GetById(id, token);
+        if (dto == null) return NotFound();
+
+        var model = new RequestViewModel
+        {
+            ConfirmDate = dto.ConfirmDate,
+            EnteredBy = dto.EnteredBy,
+            Id = dto.Id,
+            RequestNumber = dto.RequestNumber,
+            RequestStatus = dto.RequestStatus,
+            SendDate = dto.SendDate,
+            RequestLines = dto.RequestLines.Select(r => new RequestLinesViewModel
+            {
+                Id = r.Id,
+                RequestId = r.RequestId,
+                ArivCount = r.ArriveCount,
+                ConfirmCount = r.ConfirmCount,
+                CurrentCount = r.CurrentCount,
+                DosePerVialId = r.DosePerVialId,
+                ItemClassId = r.ItemClassId,
+                ItemId = r.ItemId,
+                ItemName = r.ItemName,
+                Note = r.Note,
+                ReqCount = r.ReqCount,
+                UsedCount = r.UsedCount
+            }).ToList(),
+            NewLine = new RequestLinesViewModel()
+        };
+
         return View(model);
     }
 
@@ -218,7 +252,7 @@ public class RequestController(
                 EnteredBy = CurrentUserId,
                 ConfirmDate = null,
                 RequestNumber = "", // شماره واقعی داخل RequestService.Create ساخته می‌شود (سال-سکوئنس)
-                ReceiverId = CurrentUserRecipientParentId,
+                ReceiverId = CurrentUserRecipientId,
                 SendDate = DateOnly.FromDateTime(DateTime.Now),
                 FiscalPeriodId = activeFiscalPeriod?.FiscalPeriodId,
                 Lines = new List<RequestLineDto>()
@@ -327,8 +361,13 @@ public class RequestController(
         string direction = "desc")
     {
         var paged = await requestService.GetReceivedRequestsPagedList(
-            search, page, pageSize, sort, direction,
-            CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
+            search, 
+            page, 
+            pageSize,
+            sort, 
+            direction,
+            CurrentUserRecipientParentId.GetValueOrDefault(),
+            cancellationToken);
 
         var model = new GridViewModel
         {
@@ -354,6 +393,8 @@ public class RequestController(
                         ["Draft"]     = ("پیش‌نویس",    "badge-secondary"),
                         ["Sent"]      = ("ارسال شده",   "badge-info"),
                         ["Confirmed"] = ("تایید شده",   "badge-success"),
+                        ["Rejected"]  = ("رد شده",      "badge-danger"),
+
                     }},
                 new() { Header = "ثبت شده توسط",  PropertyName = nameof(RequestListDto.EnteredByName),   Sortable = true },
                 new() { Header = "تاریخ تایید",    PropertyName = nameof(RequestListDto.ConfirmDateShamsi), Sortable = true },
@@ -409,5 +450,49 @@ public class RequestController(
         };
 
         return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmReceivedRequest(int id, CancellationToken token)
+    {
+        var existing = await requestService.GetById(id, token);
+        if (existing == null) return NotFound();
+
+        // فقط درخواست‌های ارسال‌شده قابل تاییدن (دفاع سمت سرور، مستقل از UI)
+        if (existing.RequestStatus != (int)RequestStatusEnum.Sent)
+        {
+            TempData["ToastMessage"] = "فقط درخواست‌های ارسال‌شده قابل تایید هستند";
+            TempData["ToastType"] = "error";
+            return RedirectToAction("ReceivedRequestLines", new { id });
+        }
+
+        await requestService.ChangeStatus(id, RequestStatusEnum.Confirmed, "", token);
+
+        TempData["ToastMessage"] = "درخواست تایید شد";
+        TempData["ToastType"] = "success";
+        return RedirectToAction("ReceivedRequests");
+    }
+
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RejectReceivedRequest(int id, CancellationToken token)
+    {
+        var existing = await requestService.GetById(id, token);
+        if (existing == null) return NotFound();
+
+        if (existing.RequestStatus != (int)RequestStatusEnum.Sent)
+        {
+            TempData["ToastMessage"] = "فقط درخواست‌های ارسال‌شده قابل رد هستند";
+            TempData["ToastType"] = "error";
+            return RedirectToAction("ReceivedRequestLines", new { id });
+        }
+
+        await requestService.ChangeStatus(id, RequestStatusEnum.Rejected, "", token);
+
+        TempData["ToastMessage"] = "درخواست رد شد";
+        TempData["ToastType"] = "success";
+        return RedirectToAction("ReceivedRequests");
     }
 }

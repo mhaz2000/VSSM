@@ -1,4 +1,5 @@
 ﻿@using VSSM.Presentation.Web.Models.Request
+@using VSSM.Domain.Enums
 @model RequestViewModel
 
 @section Styles {
@@ -6,6 +7,16 @@
     <link href="~/css/components/shared/f-control.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/components/shared/btn.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/components/shared/lines-table.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/submit-btn.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/modal.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/request/request-new.css" rel="stylesheet" asp-append-version="true" />
+
+}
+
+@{
+    bool canDecide = Model?.RequestStatus == (int)RequestStatusEnum.Sent;
+    int totalLines = Model?.RequestLines?.Count ?? 0;
+    bool hasManyLines = totalLines > 5;
 }
 
 <div style="margin:1.5rem; direction:rtl;">
@@ -15,12 +26,19 @@
         <div class="a-card-header">
             <i class="fa fa-list" style="color:#1d6fb8;"></i>
             <h6>جزئیات درخواست</h6>
+            @if (hasManyLines)
+            {
+                <span class="badge-count">
+                    <i class="fa fa-file-text-o"></i> @totalLines قلم
+                </span>
+            }
         </div>
         <div class="a-card-body">
-            <div class="lines-table-wrap">
+            <div class="lines-table-wrap @(hasManyLines ? "has-scroll" : "")">
                 <table class="lines-table">
                     <thead>
                         <tr>
+                            <th>ردیف</th>
                             <th>کالا</th>
                             <th>تعداد ورودی</th>
                             <th>تعداد مصرف شده</th>
@@ -31,22 +49,52 @@
                     <tbody>
                         @if (Model.RequestLines != null && Model.RequestLines.Any())
                         {
-                            foreach (var line in Model.RequestLines)
+                            int index = 0;
+                            var linesToShow = hasManyLines ? Model.RequestLines.Take(5) : Model.RequestLines;
+
+                            @foreach (var line in linesToShow)
                             {
+                                index++;
                                 <tr>
+                                    <td>@index</td>
                                     <td>@line.ItemName</td>
                                     <td>@line.ArivCount</td>
                                     <td>@line.UsedCount</td>
-                                    <td>@line.CurrentCount</td>           
+                                    <td>@line.CurrentCount</td>
                                     <td>@line.ReqCount</td>
+                                </tr>
+                            }
+
+                            @if (hasManyLines)
+                            {
+                                @foreach (var line in Model.RequestLines.Skip(5))
+                                {
+                                    index++;
+                                    <tr class="hidden-line rq-extra-line" style="display: none;">
+                                        <td>@index</td>
+                                        <td>@line.ItemName</td>
+                                        <td>@line.ArivCount</td>
+                                        <td>@line.UsedCount</td>
+                                        <td>@line.CurrentCount</td>
+                                        <td>@line.ReqCount</td>
+                                    </tr>
+                                }
+
+                                <tr class="more-lines-trigger">
+                                    <td colspan="6">
+                                        <button type="button" class="btn-show-all-lines">
+                                            <i class="fa fa-chevron-down"></i>
+                                            <span class="btn-text">مشاهده همه اقلام (@totalLines قلم)</span>
+                                        </button>
+                                    </td>
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="8" style="text-align:center; color:#9ca3af; padding:32px 0; font-size:13px;">
-                                    <i class="fa fa-inbox" style="display:block; font-size:26px; margin-bottom:8px; color:#d1d5db;"></i>
+                                <td colspan="6" class="rq-empty-row">
+                                    <i class="fa fa-inbox"></i>
                                     آیتمی ثبت نشده است
                                 </td>
                             </tr>
@@ -79,10 +127,35 @@
             <i class="fa fa-arrow-right"></i>
             بازگشت به لیست
         </a>
+
+        @if (canDecide)
+        {
+            <button type="button" id="btnReject" class="btn-action btn-action-del rq-btn-del">
+                <i class="fa fa-times"></i>
+                رد
+            </button>
+
+            <button type="button" id="btnConfirm" class="btn-confirm">
+                <i class="fa fa-check"></i>
+                تایید
+            </button>
+        }
     </div>
+
+    @if (canDecide)
+    {
+        <form id="confirmForm" asp-action="ConfirmReceivedRequest" asp-controller="Request" method="post" style="display:none;">
+            <input type="hidden" name="id" value="@Model.Id" />
+        </form>
+        <form id="rejectForm" asp-action="RejectReceivedRequest" asp-controller="Request" method="post" style="display:none;">
+            <input type="hidden" name="id" value="@Model.Id" />
+        </form>
+    }
 
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/shared/modal.js" asp-append-version="true"></script>
+    <script src="~/js/components/request/request-new.js" asp-append-version="true"></script>
 }

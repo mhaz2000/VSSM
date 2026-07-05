@@ -1,0 +1,212 @@
+﻿/* ═══════════════════════════════════════════════════════════════════
+   modal.css  —  Enterprise Modal Component
+   Designed for government & enterprise systems
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Overlay ── */
+.vssm-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    animation: modalFadeIn 0.2s ease;
+}
+
+    .vssm-modal-overlay.active {
+        display: flex;
+    }
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ── Modal Box ── */
+.vssm-modal-box {
+    background: #ffffff;
+    border-radius: 12px;
+    max-width: 480px;
+    width: 92%;
+    padding: 24px 28px 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    direction: rtl;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+    /* ── Scrollbar Styling (Optional, for consistency) ── */
+    .vssm-modal-box::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .vssm-modal-box::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .vssm-modal-box::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 2px;
+    }
+
+        .vssm-modal-box::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+/* ── Header ── */
+.vssm-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+    .vssm-modal-header i {
+        font-size: 26px;
+        color: #1d6fb8;
+        flex-shrink: 0;
+    }
+
+    .vssm-modal-header h5 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        color: #1e293b;
+        line-height: 1.4;
+    }
+
+/* ── Body ── */
+.vssm-modal-body {
+    font-size: 15px;
+    color: #334155;
+    line-height: 1.7;
+    padding: 8px 0 16px;
+    white-space: pre-line;
+    text-align: center;
+}
+
+/* ── Footer ── */
+.vssm-modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+    /* ── Buttons Base ── */
+    .vssm-modal-footer .btn {
+        min-width: 100px;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: background-color 0.15s ease, box-shadow 0.15s ease;
+        text-decoration: none;
+        line-height: 1.4;
+        user-select: none;
+    }
+
+    /* ── Confirm Button (Primary) ── */
+    .vssm-modal-footer .btn-confirm-modal {
+        background: #1d6fb8;
+        color: #ffffff;
+    }
+
+        .vssm-modal-footer .btn-confirm-modal:hover {
+            background: #155a9c;
+        }
+
+        .vssm-modal-footer .btn-confirm-modal:focus-visible {
+            outline: 2px solid #1d6fb8;
+            outline-offset: 2px;
+        }
+
+    /* ── Cancel Button (Secondary) ── */
+    .vssm-modal-footer .btn-cancel-modal {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+        .vssm-modal-footer .btn-cancel-modal:hover {
+            background: #e2e8f0;
+        }
+
+        .vssm-modal-footer .btn-cancel-modal:focus-visible {
+            outline: 2px solid #94a3b8;
+            outline-offset: 2px;
+        }
+
+    /* ── Danger Button (Destructive) ── */
+    .vssm-modal-footer .btn-danger-modal {
+        background: #dc2626;
+        color: #ffffff;
+    }
+
+        .vssm-modal-footer .btn-danger-modal:hover {
+            background: #b91c1c;
+        }
+
+        .vssm-modal-footer .btn-danger-modal:focus-visible {
+            outline: 2px solid #dc2626;
+            outline-offset: 2px;
+        }
+
+/* ── Responsive: Mobile ── */
+@media (max-width: 576px) {
+    .vssm-modal-box {
+        padding: 20px 16px 18px;
+        width: 96%;
+        border-radius: 10px;
+    }
+
+    .vssm-modal-header i {
+        font-size: 22px;
+    }
+
+    .vssm-modal-header h5 {
+        font-size: 16px;
+    }
+
+    .vssm-modal-body {
+        font-size: 14px;
+        padding: 6px 0 12px;
+    }
+
+    .vssm-modal-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+        .vssm-modal-footer .btn {
+            min-width: unset;
+            width: 100%;
+            padding: 12px 16px;
+            justify-content: center;
+        }
+}

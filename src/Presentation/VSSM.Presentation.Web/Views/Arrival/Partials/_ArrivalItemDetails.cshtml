@@ -3,7 +3,6 @@
 @model ArrivalViewModel
 @{
     bool isHalal = false;
-
     if (ViewBag.IsHalal != null)
     {
         bool.TryParse(ViewBag.IsHalal.ToString(), out isHalal);
@@ -31,6 +30,10 @@
                 <label class="f-label">
                     کالا
                     <span class="opt" id="itemAutoLabel">@(isHalal ? "(انتخاب)" : "(خودکار)")</span>
+                    @if (isHalal)
+                    {
+                        <span class="req-tag">اجباری</span>
+                    }
                 </label>
 
                 <input type="text" id="ItemDisplay" class="f-control" disabled
@@ -39,7 +42,7 @@
 
                 <select id="HalalItemSelect"
                         name="NewLine.ItemId"
-                        class="f-control"
+                        class="f-control halal-required"
                         style="@(!isHalal ? "display:none;" : "")"
                         @(!isHalal ? "disabled" : "")>
                     <option value="">انتخاب کنید...</option>
@@ -54,6 +57,8 @@
                         }
                     }
                 </select>
+
+                <input type="hidden" id="ItemIdHidden" name="NewLine.ItemId" value="@Model?.NewLine?.ItemId" data-val="false" />
             </div>
 
             <div class="f-group" id="doseDisplayGroup"
@@ -71,7 +76,7 @@
                 </label>
                 <select id="HalalDoseSelect"
                         name="NewLine.DosePerVialId"
-                        class="f-control"
+                        class="f-control halal-required"
                         @(!isHalal ? "disabled" : "")>
                     @if (isHalal && Model?.NewLine?.DosePerVialId != null && ViewBag.DosePerVials != null)
                     {
@@ -106,7 +111,7 @@
 
             <div class="f-group">
                 <label class="f-label">انبار <span class="req-tag">اجباری</span></label>
-                <select asp-for="NewLine.StoreId" asp-items="ViewBag.Stores" class="f-control">
+                <select asp-for="NewLine.StoreId" asp-items="ViewBag.Stores" class="f-control required-select" id="NewLine_StoreId">
                     <option value="">انتخاب...</option>
                 </select>
                 <span asp-validation-for="NewLine.StoreId" class="text-danger" style="font-size:11px;"></span>
@@ -161,14 +166,14 @@
             <div class="f-group">
                 <label class="f-label">تعداد (دوز) <span class="req-tag">اجباری</span></label>
                 <input type="number" id="QuantityInput" name="NewLine.Quantity"
-                       class="f-control" placeholder="تعداد دوز" min="1"
+                       class="f-control halal-required" placeholder="تعداد دوز" min="1"
                        value="@(isHalal? Model?.NewLine?.Quantity?.ToString() : null)" />
             </div>
 
             <div class="f-group">
-                <label class="f-label">تعداد ویال <span class="opt">(محاسبه‌شده)</span></label>
+                <label class="f-label">تعداد ویال <span class="req-tag">اجباری</span></label>
                 <input type="number" id="NumVialsInput" name="NewLine.NumVials"
-                       class="f-control" placeholder="خودکار"
+                       class="f-control halal-required" placeholder="خودکار"
                        value="@Model?.NewLine?.NumVials" />
             </div>
 
@@ -181,7 +186,11 @@
 
                 <div class="date-block">
                     <div class="date-block-header">
-                        <div class="date-group-label">تاریخ تولید <span class="opt">(خودکار)</span></div>
+                        <div class="date-group-label">
+                            تاریخ تولید
+                            <span class="req-tag">اجباری</span>
+                            <span class="opt">(خودکار)</span>
+                        </div>
                         <button type="button" class="btn-date-toggle" data-target="prod"
                                 style="display:none;" title="تغییر فرمت">
                             <i class="fa fa-exchange"></i>
@@ -203,7 +212,11 @@
 
                 <div class="date-block">
                     <div class="date-block-header">
-                        <div class="date-group-label">تاریخ انقضا <span class="opt">(خودکار)</span></div>
+                        <div class="date-group-label">
+                            تاریخ انقضا
+                            <span class="req-tag">اجباری</span>
+                            <span class="opt">(خودکار)</span>
+                        </div>
                         <button type="button" class="btn-date-toggle" data-target="exp"
                                 style="display:none;" title="تغییر فرمت">
                             <i class="fa fa-exchange"></i>
@@ -235,7 +248,7 @@
                     </div>
                     <div class="datepicker-wrap">
                         <input type="text" id="HalalProdDate" name="NewLine.ProductionDateShamsi"
-                               class="f-control datepicker-input"
+                               class="f-control datepicker-input halal-required"
                                placeholder="مثال: ۱۴۰۳/۰۱/۰۱" autocomplete="off"
                                value="@Model?.NewLine?.ProductionDateShamsi" />
                         <i class="fa fa-calendar datepicker-ico"></i>
@@ -248,7 +261,7 @@
                     </div>
                     <div class="datepicker-wrap">
                         <input type="text" id="HalalExpDate" name="NewLine.ExpiryDateShamsi"
-                               class="f-control datepicker-input"
+                               class="f-control datepicker-input halal-required"
                                placeholder="مثال: ۱۴۰۵/۰۱/۰۱" autocomplete="off"
                                value="@Model?.NewLine?.ExpiryDateShamsi" />
                         <i class="fa fa-calendar datepicker-ico"></i>
@@ -264,7 +277,7 @@
         </div>
 
         <div style="display:flex; justify-content:flex-end;">
-            <button type="submit" name="command" value="addLine" class="btn-add-line js-submit-btn">
+            <button type="submit" name="command" value="addLine" id="addLineBtn" class="btn-add-line js-submit-btn" disabled>
                 <span class="js-btn-content">
                     <i class="fa fa-plus"></i>
                     افزودن ردیف

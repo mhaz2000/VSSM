@@ -1,24 +1,21 @@
 @{
     var btnValue = ViewData["BtnValue"] as string ?? "confirm";
     var btnLabel = ViewData["BtnLabel"] as string ?? "ثبت";
-    var btnIcon  = ViewData["BtnIcon"]  as string ?? "fa-check";
+    var btnIcon = ViewData["BtnIcon"] as string ?? "fa-check";
     var btnClass = ViewData["BtnClass"] as string ?? "btn-confirm";
 }
-
 
 <button type="submit"
         name="command"
         value="@btnValue"
-        class="@btnClass js-submit-btn">
-
+        class="@btnClass js-submit-btn"
+        data-command="@btnValue">
     <span class="js-btn-content">
         <i class="fa @btnIcon"></i>
         @btnLabel
     </span>
-
     <span class="js-btn-spinner" hidden>
         <span class="submit-spinner"></span>
         در حال ارسال…
     </span>
-
 </button>

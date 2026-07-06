@@ -1,36 +1,19 @@
 /**
  * arrival-form-vaccine.js  —  منطق اختصاصی فرم ورودی واکسن
- * ═══════════════════════════════════════════════════════════
- * وابستگی‌ها (باید قبل از این فایل لود شده باشند):
- *   - jQuery
- *   - toast.js        (showToast)
- *   - shamsi-date.js  (splitDate, combineDate, initDateAutoAdvance, initDateValidation)
- *   - vvm-cascade.js  (initVvmCascade)
- *   - submit-btn.js   (SubmitBtn)
- *
- * نکته: این فایل فقط منطق واکسن و submit مشترک را دارد.
- *       منطق تب‌بندی و حلال در arrival-form-halal.js است.
- * ═══════════════════════════════════════════════════════════
  */
 
 $(function () {
 
-    // ════════════════════════════════════════
-    //  Submit handler — مشترک بین واکسن و حلال
-    // ════════════════════════════════════════
-
     var _submitting = false;
 
     $("#arrivalForm").on("submit", function () {
-        if (_submitting) return false;  // جلوگیری از double-submit
+        if (_submitting) return false;
         _submitting = true;
 
         var isHalal = ($("#ArrivalTypeHidden").val() === "halal");
 
         if (!isHalal) {
-            // واکسن: hidden date fields را پیش از submit پر کن
             combineDate("DateDay", "DateMonth", "DateYear", "Date");
-
             if ($("#ProdYear").val()) {
                 $("#ProductionDate").val(
                     $("#ProdYear").val() + "/" + $("#ProdMonth").val() + "/" + $("#ProdDay").val()
@@ -43,7 +26,6 @@ $(function () {
             }
         }
 
-        // reset پس از submit (مهم: برای هر دو حالت)
         setTimeout(function () { _submitting = false; }, 1500);
 
         var $active = $(document.activeElement);
@@ -55,24 +37,40 @@ $(function () {
         return true;
     });
 
-    // ════════════════════════════════════════
-    //  Toast سرور
-    // ════════════════════════════════════════
+    // توابع کمکی برای پاک‌سازی کامل (برای استفاده در حلال)
+    window.clearVaccineFields = function () {
+        // پاک کردن فیلدهای خودکار واکسن
+        $("#ItemDisplay").val("");
+        $("#DoseDisplay").val("");
+        $("#ItemIdHidden").val("");
+        $("#DosePerVialIdHidden").val("");
+        $("#QuantityHidden").val("");
+        // پاک کردن تاریخ‌ها
+        $("#ProdDay, #ProdMonth, #ProdYear").val("");
+        $("#ProdDayM, #ProdMonthM, #ProdYearM").val("");
+        $("#ExpDay, #ExpMonth, #ExpYear").val("");
+        $("#ExpDayM, #ExpMonthM, #ExpYearM").val("");
+        $("#ProductionDate").val("");
+        $("#ExpiryDate").val("");
+        // مخفی کردن دکمه‌های تغییر فرمت
+        $(".btn-date-toggle").hide();
+        // نمایش شمسی و مخفی میلادی
+        $("#prod-shamsi-wrap, #exp-shamsi-wrap").show();
+        $("#prod-miladi-wrap, #exp-miladi-wrap").hide();
+        // پاک کردن سری ساخت (اختیاری)
+        $("#BatchNum").val("");
+    };
 
-    if (typeof arrivalServerMsg !== "undefined" && arrivalServerMsg) {
-        showToast(arrivalServerMsg, arrivalServerType || "info");
-    }
+    window.clearHalalFields = function () {
+        $("#HalalItemSelect").val("").trigger("change");
+        $("#HalalDoseSelect").empty().append('<option value="">انتخاب کنید...</option>').prop("disabled", true);
+        $("#QuantityInput, #NumVialsInput").val("");
+        $("#HalalProdDate, #HalalExpDate").val("");
+        $("#HalalDoseValue").val("");
+    };
 
-    // ════════════════════════════════════════
-    //  VVM cascade
-    // ════════════════════════════════════════
-
+    // بقیه کدهای قبلی (VVM, تاریخ ورود, GetBatchInfo, و ...) بدون تغییر
     initVvmCascade("VvmTypeId", "VvmStageId");
-
-    // ════════════════════════════════════════
-    //  تاریخ ورود (واکسن + حلال مشترک)
-    // ════════════════════════════════════════
-
     initDateAutoAdvance("DateDay", "DateMonth", "DateYear");
     initDateValidation("DateDay", "DateMonth", "DateYear");
 
@@ -84,20 +82,12 @@ $(function () {
     splitDate($("#ProductionDate").val(), "ProdDay", "ProdMonth", "ProdYear");
     splitDate($("#ExpiryDate").val(), "ExpDay", "ExpMonth", "ExpYear");
 
-    // ════════════════════════════════════════
-    //  مقداردهی اولیه فیلدهای auto (ویرایش)
-    // ════════════════════════════════════════
-
     if (typeof arrivalExistItemId !== "undefined" && arrivalExistItemId) {
         _setAutoFields(arrivalExistItemName, arrivalExistItemId,
             arrivalExistDoseName, arrivalExistDoseId);
     } else {
         $("#ItemClassDisplay").val("واکسن");
     }
-
-    // ════════════════════════════════════════
-    //  helpers فیلدهای auto
-    // ════════════════════════════════════════
 
     function _setAutoFields(itemName, itemId, doseName, dosePerVialId) {
         $("#ItemClassDisplay").val("واکسن");
@@ -106,6 +96,7 @@ $(function () {
         $("#ItemClassIdHidden").val("");
         $("#ItemIdHidden").val(itemId || "");
         $("#DosePerVialIdHidden").val(dosePerVialId || "");
+        if (window.updateAddButtonState) window.updateAddButtonState();
     }
 
     function _clearAutoFields() {
@@ -115,6 +106,7 @@ $(function () {
         $("#ItemClassIdHidden").val("");
         $("#ItemIdHidden").val("");
         $("#DosePerVialIdHidden").val("");
+        if (window.updateAddButtonState) window.updateAddButtonState();
     }
 
     function _clearBatchFields() {
@@ -128,11 +120,8 @@ $(function () {
         $("#prod-shamsi-wrap, #exp-shamsi-wrap").show();
         $("#prod-miladi-wrap, #exp-miladi-wrap").hide();
         $(".btn-date-toggle").hide();
+        if (window.updateAddButtonState) window.updateAddButtonState();
     }
-
-    // ════════════════════════════════════════
-    //  helper نمایش تاریخ (شمسی/میلادی)
-    // ════════════════════════════════════════
 
     function _applyDateDisplay(target, hasShamsi, hasMiladi) {
         var $toggle = $(".btn-date-toggle[data-target='" + target + "']");
@@ -156,11 +145,8 @@ $(function () {
             $shamsiWrap.hide();
             $miladiWrap.hide();
         }
+        if (window.updateAddButtonState) window.updateAddButtonState();
     }
-
-    // ════════════════════════════════════════
-    //  GetBatchInfo — جستجوی سری ساخت
-    // ════════════════════════════════════════
 
     var _batchTimer = null;
 
@@ -170,8 +156,6 @@ $(function () {
 
         _batchTimer = setTimeout(function () {
             if (_submitting) return;
-
-            // اگه تب حلال است fetch نکن
             if ($("#ArrivalTypeHidden").val() === "halal") return;
 
             var batchNum = $input.val().trim();
@@ -244,10 +228,6 @@ $(function () {
             });
         }, 600);
     });
-
-    // ════════════════════════════════════════
-    //  Toggle شمسی / میلادی
-    // ════════════════════════════════════════
 
     $(document).on("click", ".btn-date-toggle", function () {
         var target = $(this).data("target");

@@ -3,7 +3,7 @@
 
 @{
     string formTitle = Model?.ArrivalId > 0 ? "ویرایش ورودی" : "ثبت ورودی جدید";
-    var currentTab   = string.Equals(Model?.ArrivalType, "halal", StringComparison.OrdinalIgnoreCase)
+    var currentTab = string.Equals(Model?.ArrivalType, "halal", StringComparison.OrdinalIgnoreCase)
                        ? "halal" : "vaccine";
 }
 
@@ -20,7 +20,7 @@
 
         <input type="hidden" id="ArrivalTypeHidden" name="ArrivalType"
                value="@(ViewBag.IsHalal == true ? "halal" : "vaccine")" />
-        @* تب انتخاب نوع ورودی *@
+
         <div class="arrival-tabs" style="margin-bottom:20px;">
             <button type="button"
                     class="arrival-tab @(currentTab == "vaccine" ? "active" : "")"
@@ -41,9 +41,8 @@
         <div class="fg-3" style="margin-bottom:14px;">
 
             <div class="f-group">
-                <label class="f-label">شماره گزارش</label>
-                <input asp-for="ReportNumber" class="f-control" placeholder="شماره گزارش را وارد کنید" />
-                <span asp-validation-for="ReportNumber" class="text-danger" style="font-size:11px;"></span>
+                <label class="f-label">شماره ورودی</label>
+                <input asp-for="ReportNumber" class="f-control" disabled placeholder="به‌طور خودکار تولید می‌شود" />
             </div>
 
             <div class="f-group">
@@ -56,10 +55,10 @@
                 <span asp-validation-for="Date" class="text-danger" style="font-size:11px;"></span>
             </div>
 
-            @* سری ساخت: فقط برای واکسن — visibility از JS کنترل می‌شود *@
             <div class="f-group" id="batchNumGroup"
                  style="@(currentTab == "halal" ? "display:none;" : "")">
-                <label class="f-label">سری ساخت <span class="req-tag">اجباری</span></label>
+                <label class="f-label" id="batchNumLabel">سری ساخت <span class="req-tag">اجباری</span></label>
+                <span class="opt" id="batchNumOpt">(اجباری)</span>
                 <input asp-for="NewLine.BatchNum"
                        class="f-control"
                        id="BatchNum"

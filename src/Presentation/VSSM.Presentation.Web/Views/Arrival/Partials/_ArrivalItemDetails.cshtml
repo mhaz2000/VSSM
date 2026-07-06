@@ -20,19 +20,27 @@
 
         <div class="fg-3" style="margin-bottom:14px;">
 
+            @* ── نوع کالا خودکار ── *@
             <div class="f-group">
-                <label class="f-label">نوع کالا <span class="opt" id="itemClassLabel">(خودکار)</span></label>
+                <label class="f-label">
+                    نوع کالا
+                    <span class="opt auto-tag">خودکار</span>
+                </label>
                 <input type="text" id="ItemClassDisplay" class="f-control"
                        value="@(isHalal ? "حلال" : "واکسن")" disabled placeholder="نوع کالا" />
             </div>
 
+            @* ── کالا ── *@
             <div class="f-group">
                 <label class="f-label">
                     کالا
-                    <span class="opt" id="itemAutoLabel">@(isHalal ? "(انتخاب)" : "(خودکار)")</span>
                     @if (isHalal)
                     {
                         <span class="req-tag">اجباری</span>
+                    }
+                    else
+                    {
+                        <span class="opt auto-tag">خودکار</span>
                     }
                 </label>
 
@@ -61,9 +69,13 @@
                 <input type="hidden" id="ItemIdHidden" name="NewLine.ItemId" value="@Model?.NewLine?.ItemId" data-val="false" />
             </div>
 
+            @* ── دوز بر ویال ── *@
             <div class="f-group" id="doseDisplayGroup"
                  style="@(isHalal ? "display:none;" : "")">
-                <label class="f-label">دوز بر ویال <span class="opt" id="doseAutoLabel">(خودکار)</span></label>
+                <label class="f-label">
+                    دوز بر ویال
+                    <span class="opt auto-tag">خودکار</span>
+                </label>
                 <input type="text" id="DoseDisplay" class="f-control" disabled
                        placeholder="بر اساس سری ساخت" />
             </div>
@@ -109,6 +121,7 @@
 
         <div class="fg-3" style="margin-bottom:14px;">
 
+            @* ── انبار ── *@
             <div class="f-group">
                 <label class="f-label">انبار <span class="req-tag">اجباری</span></label>
                 <select asp-for="NewLine.StoreId" asp-items="ViewBag.Stores" class="f-control required-select" id="NewLine_StoreId">
@@ -117,6 +130,7 @@
                 <span asp-validation-for="NewLine.StoreId" class="text-danger" style="font-size:11px;"></span>
             </div>
 
+            @* ── نوع VVM ── *@
             <div class="f-group">
                 <label class="f-label">نوع VVM</label>
                 <select asp-for="NewLine.VvmTypeId" asp-items="ViewBag.VvmTypes"
@@ -125,6 +139,7 @@
                 </select>
             </div>
 
+            @* ── مرحله VVM ── *@
             <div class="f-group">
                 <label class="f-label">مرحله VVM</label>
                 <select asp-for="NewLine.VvmStageId" asp-items="ViewBag.VvmStages"
@@ -137,6 +152,7 @@
 
         <div class="fg-3" style="margin-bottom:14px;">
 
+            @* ── نام تجاری ── *@
             <div class="f-group">
                 <label class="f-label">نام تجاری</label>
                 <select asp-for="NewLine.CommercialNameId" asp-items="ViewBag.BrandNames" class="f-control">
@@ -144,6 +160,7 @@
                 </select>
             </div>
 
+            @* ── تولیدکننده ── *@
             <div class="f-group">
                 <label class="f-label">تولیدکننده</label>
                 <select asp-for="NewLine.ManufacturerId" asp-items="ViewBag.Manufacturers" class="f-control">
@@ -151,6 +168,7 @@
                 </select>
             </div>
 
+            @* ── مصرف ── *@
             <div class="f-group">
                 <label class="f-label">مصرف</label>
                 <select asp-for="NewLine.UseId" asp-items="ViewBag.Uses" class="f-control">
@@ -160,7 +178,7 @@
 
         </div>
 
-        @* ── تعداد دوز و ویال: فقط در تب حلال نمایش داده می‌شود ── *@
+        @* ── تعداد دوز و ویال (فقط حلال) ── *@
         <div class="fg-3" id="halalQtyFields" style="display:none; margin-bottom:14px;">
 
             <div class="f-group">
@@ -181,15 +199,17 @@
 
         <div class="section-divider"></div>
 
+        @* ── بخش واکسن: فقط برچسب خودکار ── *@
         <div id="vaccineDateSection" style="@(isHalal ? "display:none;" : "")">
             <div class="date-section">
 
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">
-                            تاریخ تولید
-                            <span class="req-tag">اجباری</span>
-                            <span class="opt">(خودکار)</span>
+                            <label class="f-label">
+                                تاریخ تولید
+                                <span class="opt auto-tag">خودکار</span>
+                            </label>
                         </div>
                         <button type="button" class="btn-date-toggle" data-target="prod"
                                 style="display:none;" title="تغییر فرمت">
@@ -213,9 +233,10 @@
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">
-                            تاریخ انقضا
-                            <span class="req-tag">اجباری</span>
-                            <span class="opt">(خودکار)</span>
+                            <label class="f-label">
+                                تاریخ انقضا
+                                <span class="opt auto-tag">خودکار</span>
+                            </label>
                         </div>
                         <button type="button" class="btn-date-toggle" data-target="exp"
                                 style="display:none;" title="تغییر فرمت">
@@ -239,17 +260,22 @@
             </div>
         </div>
 
+        @* ── بخش حلال: فقط برچسب (اجباری) ── *@
         <div id="halalDateSection" style="@(!isHalal ? "display:none;" : "")">
             <div class="date-section">
 
                 <div class="date-block">
                     <div class="date-block-header">
-                        <div class="date-group-label">تاریخ تولید <span class="req-tag">اجباری</span></div>
+                        <div class="date-group-label">
+                            <label class="f-label">تاریخ تولید <span class="req-tag">اجباری</span></label>
+                        </div>
                     </div>
                     <div class="datepicker-wrap">
-                        <input type="text" id="HalalProdDate" name="NewLine.ProductionDateShamsi"
+                        <input type="text" id="HalalProdDate"
+                               name="NewLine.ProductionDateShamsi"
                                class="f-control datepicker-input halal-required"
-                               placeholder="مثال: ۱۴۰۳/۰۱/۰۱" autocomplete="off"
+                               placeholder="انتخاب تاریخ"
+                               autocomplete="off"
                                value="@Model?.NewLine?.ProductionDateShamsi" />
                         <i class="fa fa-calendar datepicker-ico"></i>
                     </div>
@@ -257,12 +283,16 @@
 
                 <div class="date-block">
                     <div class="date-block-header">
-                        <div class="date-group-label">تاریخ انقضا <span class="req-tag">اجباری</span></div>
+                        <div class="date-group-label">
+                            <label class="f-label">تاریخ انقضا <span class="req-tag">اجباری</span></label>
+                        </div>
                     </div>
                     <div class="datepicker-wrap">
-                        <input type="text" id="HalalExpDate" name="NewLine.ExpiryDateShamsi"
+                        <input type="text" id="HalalExpDate"
+                               name="NewLine.ExpiryDateShamsi"
                                class="f-control datepicker-input halal-required"
-                               placeholder="مثال: ۱۴۰۵/۰۱/۰۱" autocomplete="off"
+                               placeholder="انتخاب تاریخ"
+                               autocomplete="off"
                                value="@Model?.NewLine?.ExpiryDateShamsi" />
                         <i class="fa fa-calendar datepicker-ico"></i>
                     </div>
@@ -270,12 +300,13 @@
 
             </div>
         </div>
-
+        @* ── یادداشت ── *@
         <div class="f-group" style="margin-bottom:16px;">
             <label class="f-label">یادداشت</label>
             <textarea asp-for="NewLine.Note" class="f-control" placeholder="یادداشت اختیاری"></textarea>
         </div>
 
+        @* ── دکمه افزودن ── *@
         <div style="display:flex; justify-content:flex-end;">
             <button type="submit" name="command" value="addLine" id="addLineBtn" class="btn-add-line js-submit-btn" disabled>
                 <span class="js-btn-content">

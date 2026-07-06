@@ -36,7 +36,7 @@
     gap: 5px;
 }
 
-/* ── لیبل ── */
+/* ── Label ── */
 .f-label {
     font-size: 12px;
     font-weight: 600;
@@ -44,20 +44,42 @@
     text-align: right;
 }
 
-    .f-label .req-tag {
-        font-size: 10px;
-        font-weight: 500;
-        color: #ef4444;
-        background: #fef2f2;
-        border-radius: 4px;
-        padding: 1px 5px;
-        margin-right: 4px;
+
+    /* ── Small pill tags ── */
+    .f-label .req-tag,
+    .f-label .auto-tag {
+        display: inline-flex;
+        align-items: center;
+        font-size: 9px;
+        line-height: 16px;
+        font-weight: 600;
+        padding: 0 7px;
+        border-radius: 999px;
+        margin-right: 5px;
+        white-space: nowrap;
     }
 
+
+    /* اجباری */
+    .f-label .req-tag {
+        color: #dc2626;
+        background: #fff1f2;
+    }
+
+
+    /* خودکار */
+    .f-label .auto-tag {
+        color: #0369a1;
+        background: #eff6ff;
+    }
+
+
+    /* اختیاری */
     .f-label .opt {
-        font-size: 11px;
+        font-size: 10px;
         color: #9ca3af;
         font-weight: 400;
+        margin-right: 5px;
     }
 
 /* ── کنترل ورودی ── */

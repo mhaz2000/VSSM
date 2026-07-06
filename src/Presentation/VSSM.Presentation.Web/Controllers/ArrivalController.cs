@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Helpers;
@@ -98,7 +97,7 @@ public class ArrivalController(
 
         return View(model);
     }
-    
+
     public IActionResult Print(int id) =>
         View("~/Views/Shared/UnderConstruction.cshtml");
 
@@ -106,14 +105,18 @@ public class ArrivalController(
     {
         await PopulateLookupViewBagsAsync(token);
 
+
         if (id is null or 0)
         {
+            var reportNumber = await arrivalService.Generate();
+
             return View(new ArrivalViewModel
             {
                 Date = DateTime.Now.ToShamsi(),
                 IsDrafted = true,
                 Lines = new List<ArrivalLineViewModel>(),
-                NewLine = new ArrivalLineViewModel()
+                NewLine = new ArrivalLineViewModel(),
+                ReportNumber = reportNumber
             });
         }
 
@@ -222,7 +225,7 @@ public class ArrivalController(
         if (string.IsNullOrWhiteSpace(model.NewLine?.BatchNum))
             return ToastView("فیلد سری ساخت اجباری است", model);
 
-       
+
         if (!model.NewLine.ItemId.HasValue && model.NewLine.ItemId.HasValue)
             model.NewLine.ItemId = model.NewLine.ItemId;
 
@@ -540,7 +543,7 @@ public class ArrivalController(
     {
         ArrivalId = model.ArrivalId!.Value,
         BatchNum = model.NewLine.BatchNum ?? "",
-        CommercialNameId = model.NewLine.CommercialNameId,   
+        CommercialNameId = model.NewLine.CommercialNameId,
         DosePerVialId = model.NewLine.DosePerVialId,
         ExpiryDate = model.NewLine.ExpiryDate,
         ProductionDate = model.NewLine.ProductionDate,
@@ -587,7 +590,7 @@ public class ArrivalController(
             ArrivalLineId = l.ArrivalLineId,
             ArrivalId = l.ArrivalId,
             BatchNum = l.BatchNum,
-            CommercialNameId = l.CommercialNameId,  
+            CommercialNameId = l.CommercialNameId,
             CommercialName = commercialNames?.FirstOrDefault(z => z.Id == l.CommercialNameId)?.Title,
             ItemName = allItems?.FirstOrDefault(z => z.ItemId == l.ItemId)?.FullName,
             DoseName = doses?.FirstOrDefault(z => z.DosePerVialId == l.DosePerVialId)?.NumDosePerVial.ToString(),

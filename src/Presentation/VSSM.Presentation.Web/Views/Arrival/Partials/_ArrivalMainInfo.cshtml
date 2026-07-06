@@ -42,7 +42,7 @@
 
             <div class="f-group">
                 <label class="f-label">شماره ورودی</label>
-                <input asp-for="ReportNumber" class="f-control" disabled placeholder="به‌طور خودکار تولید می‌شود" />
+                <input type="text" class="f-control" asp-for="ReportNumber" readonly />
             </div>
 
             <div class="f-group">
@@ -57,8 +57,7 @@
 
             <div class="f-group" id="batchNumGroup"
                  style="@(currentTab == "halal" ? "display:none;" : "")">
-                <label class="f-label" id="batchNumLabel">سری ساخت <span class="req-tag">اجباری</span></label>
-                <span class="opt" id="batchNumOpt">(اجباری)</span>
+                <label class="f-label">سری ساخت <span class="req-tag">اجباری</span></label>
                 <input asp-for="NewLine.BatchNum"
                        class="f-control"
                        id="BatchNum"

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Helpers;
@@ -486,4 +487,58 @@ ADD LINE (INCREMENTAL)
     {
         throw new NotImplementedException();
     }
+
+
+    public async Task<string> Generate()
+    {
+        var fiscalPeriod = await db.TblFiscalPeriods
+            .FirstOrDefaultAsync(x => x.IsActive == true);
+
+        var year = ExtractYear(fiscalPeriod?.FullName);
+
+
+        var lastReportNumber = await db.TblArrivals
+            .OrderByDescending(x => x.ReportNumber)
+            .Select(x => x.ReportNumber)
+            .FirstOrDefaultAsync();
+
+
+        var nextNumber = GetNextNumber(lastReportNumber);
+
+
+        return $"{year}-{nextNumber:D3}";
+    }
+
+
+    private static string ExtractYear(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return "UNKNOWN";
+
+
+        var match = Regex.Match(fullName, @"\d{4}");
+
+
+        return match.Success
+            ? match.Value
+            : "UNKNOWN";
+    }
+
+
+    private static int GetNextNumber(string? lastReportNumber)
+    {
+        if (string.IsNullOrWhiteSpace(lastReportNumber))
+            return 1;
+
+
+        var numberPart = lastReportNumber
+            .Split('-')
+            .FirstOrDefault();
+
+
+        return int.TryParse(numberPart, out var number)
+            ? number + 1
+            : 1;
+    }
+
 }

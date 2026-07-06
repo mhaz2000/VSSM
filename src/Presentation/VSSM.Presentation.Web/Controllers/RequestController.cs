@@ -252,7 +252,7 @@ public class RequestController(
                 EnteredBy = CurrentUserId,
                 ConfirmDate = null,
                 RequestNumber = "", // شماره واقعی داخل RequestService.Create ساخته می‌شود (سال-سکوئنس)
-                ReceiverId = CurrentUserRecipientId,
+                ReceiverId = CurrentUserRecipientParentId,
                 SendDate = DateOnly.FromDateTime(DateTime.Now),
                 FiscalPeriodId = activeFiscalPeriod?.FiscalPeriodId,
                 Lines = new List<RequestLineDto>()

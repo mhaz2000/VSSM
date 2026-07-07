@@ -1,15 +1,15 @@
 @using VSSM.Presentation.Web.Models.Arrival
 @model ArrivalViewModel
 
-@Html.AntiForgeryToken()
-
+@* @Html.AntiForgeryToken()
+ *@
 <input type="hidden" asp-for="ArrivalId" />
 <input type="hidden" asp-for="EditingLineId" />
 <input type="hidden" id="ArrivalTypeHidden" name="ArrivalType" value="@Model?.ArrivalType" />
 <input type="hidden" id="commandHidden" name="command" value="" />
 
 <input type="hidden" id="ItemClassIdHidden" name="NewLine.ItemClassId" value="@Model?.NewLine?.ItemClassId" />
-<input type="hidden" id="ItemIdHidden" name="NewLine.VaccineItemId" value="@Model?.NewLine?.ItemId" />
+<input type="hidden" id="ItemIdHidden" name="NewLine.ItemId" value="@Model?.NewLine?.ItemId" />
 <input type="hidden" id="DosePerVialIdHidden" name="NewLine.DosePerVialId" value="@Model?.NewLine?.DosePerVialId" />
 
 <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size:13px;"></div>

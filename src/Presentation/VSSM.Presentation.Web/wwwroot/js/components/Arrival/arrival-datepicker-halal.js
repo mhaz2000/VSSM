@@ -1,8 +1,11 @@
 ﻿/**
  * arrival-datepicker-halal.js  —  دیت‌پیکر برای تاریخ‌های حلال با قابلیت تغییر حالت
+ * (ریفکتور شده: بدون تغییر در بیزینس لاجیک، فقط تمیزکاری و افزودن گارد خطا)
  */
 
 $(function () {
+
+    "use strict";
 
     // ── وضعیت فعلی هر فیلد ──
     var halalDateModes = {
@@ -10,9 +13,36 @@ $(function () {
         exp: 'gregorian'
     };
 
+    function _safe(fn, label) {
+        try {
+            fn();
+        } catch (err) {
+            if (window.console && console.error) {
+                console.error("[arrival-datepicker-halal] خطا در " + (label || "اجرا") + ":", err);
+            }
+        }
+    }
+
+    function _isDatePickerAvailable() {
+        return (typeof DatePicker !== 'undefined' && typeof DatePicker.attach === 'function');
+    }
+
+    function _attachOne($input, mode) {
+        if (!$input.length) return;
+
+        if ($input.data('datepicker-attached')) {
+            $input.off('click.picker focus.picker');
+            $input.removeData('datepicker-attached');
+        }
+
+        $input.prop('readonly', true).prop('disabled', false);
+        DatePicker.attach($input, mode);
+        $input.data('datepicker-attached', true);
+    }
+
     // ── تابع مقداردهی اولیه یا مجدد ──
     function initHalalDatepickers(forceMode) {
-        if (typeof DatePicker === 'undefined' || typeof DatePicker.attach !== 'function') {
+        if (!_isDatePickerAvailable()) {
             console.warn('DatePicker not available');
             return;
         }
@@ -20,34 +50,17 @@ $(function () {
         // تاریخ تولید
         var $prod = $('#HalalProdDate');
         if ($prod.length) {
-            var mode = forceMode || halalDateModes.prod || 'gregorian';
-            if ($prod.data('datepicker-attached')) {
-                $prod.off('click.picker focus.picker');
-                $prod.removeData('datepicker-attached');
-            }
-            $prod.prop('readonly', true).prop('disabled', false);
-            DatePicker.attach($prod, mode);
-            $prod.data('datepicker-attached', true);
-
-      
-            if ($prod.val() && !forceMode) {
-
-            }
-
-            updateModeLabel('prod', mode);
+            var prodMode = forceMode || halalDateModes.prod || 'gregorian';
+            _attachOne($prod, prodMode);
+            updateModeLabel('prod', prodMode);
         }
 
+        // تاریخ انقضا
         var $exp = $('#HalalExpDate');
         if ($exp.length) {
-            var mode = forceMode || halalDateModes.exp || 'gregorian';
-            if ($exp.data('datepicker-attached')) {
-                $exp.off('click.picker focus.picker');
-                $exp.removeData('datepicker-attached');
-            }
-            $exp.prop('readonly', true).prop('disabled', false);
-            DatePicker.attach($exp, mode);
-            $exp.data('datepicker-attached', true);
-            updateModeLabel('exp', mode);
+            var expMode = forceMode || halalDateModes.exp || 'gregorian';
+            _attachOne($exp, expMode);
+            updateModeLabel('exp', expMode);
         }
     }
 
@@ -61,28 +74,29 @@ $(function () {
     }
 
     $(document).on('click', '.btn-toggle-date-mode', function () {
-        var target = $(this).data('target');
-        var currentMode = halalDateModes[target];
-        var newMode = (currentMode === 'gregorian') ? 'jalali' : 'gregorian';
-        halalDateModes[target] = newMode;
+        _safe(function () {
+            var target = $(this).data('target');
+            var currentMode = halalDateModes[target];
+            var newMode = (currentMode === 'gregorian') ? 'jalali' : 'gregorian';
+            halalDateModes[target] = newMode;
 
-        var $input = (target === 'prod') ? $('#HalalProdDate') : $('#HalalExpDate');
+            var $input = (target === 'prod') ? $('#HalalProdDate') : $('#HalalExpDate');
 
-        $input.val('');
-        $input.removeClass('has-value');
+            $input.val('').removeClass('has-value');
 
-        initHalalDatepickers(newMode);
+            initHalalDatepickers(newMode);
+        }.bind(this), "تغییر حالت تاریخ");
     });
 
     $(document).on('click', '.arrival-tab[data-tab="halal"]', function () {
         setTimeout(function () {
-            initHalalDatepickers();
+            _safe(initHalalDatepickers, "initHalalDatepickers بعد از کلیک تب");
         }, 400);
     });
 
     if ($('#ArrivalTypeHidden').val() === 'halal') {
         setTimeout(function () {
-            initHalalDatepickers();
+            _safe(initHalalDatepickers, "initHalalDatepickers اولیه");
         }, 500);
     }
 

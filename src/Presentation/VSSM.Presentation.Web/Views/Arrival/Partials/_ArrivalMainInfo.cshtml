@@ -15,8 +15,9 @@
     </div>
 
     <div class="a-card-body">
-        <input type="hidden" id="ArrivalTypeHidden" name="ArrivalType"
-               value="@activeTab" />
+        @* توجه: ArrivalTypeHidden از اینجا حذف شد چون همین فیلد در _ArrivalHiddenFields.cshtml
+           تعریف شده. وجود دو input با id/name یکسان باعث می‌شد موقع پست فرم، دو مقدار
+           برای ArrivalType ارسال شود (مثلاً "halal,vaccine") و بایندینگ سمت سرور خراب شود. *@
 
         <div class="arrival-tabs" style="margin-bottom:20px;">
             <button type="button"

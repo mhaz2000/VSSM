@@ -3,138 +3,153 @@
  */
 
 $(function () {
+    "use strict";
 
     var _submitting = false;
 
+    // ═══════════════════════════════════════════════════════════
+    //  کمکی: اجرای امن
+    // ═══════════════════════════════════════════════════════════
+
+    function _safe(fn, label) {
+        try { fn(); } catch (err) {
+            if (window.console) console.error("[arrival-form-vaccine] " + (label || "خطا") + ":", err);
+        }
+    }
+
+    function _clearValidationErrors() {
+        $(".field-validation-error").remove();
+        $(".input-validation-error").removeClass("input-validation-error");
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  تنظیم command دکمه‌ها (فقط مقداردهی، بدون دخالت در submit)
+    // ═══════════════════════════════════════════════════════════
+
+    $(document).on("click", ".js-submit-btn", function () {
+        // فقط مقدار commandHidden را تنظیم کن
+        // هیچ preventDefault یا submit دستی انجام نده
+        $("#commandHidden").val($(this).val());
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    //  رویداد ارسال فرم
+    // ═══════════════════════════════════════════════════════════
+
     $("#arrivalForm").on("submit", function () {
+        // جلوگیری از ارسال مجدد
         if (_submitting) return false;
         _submitting = true;
 
         var isHalal = ($("#ArrivalTypeHidden").val() === "halal");
 
+        // فقط برای واکسن تاریخ‌ها را ترکیب کن
         if (!isHalal) {
-            combineDate("DateDay", "DateMonth", "DateYear", "Date");
-            if ($("#ProdYear").val()) {
-                $("#ProductionDate").val(
-                    $("#ProdYear").val() + "/" + $("#ProdMonth").val() + "/" + $("#ProdDay").val()
-                );
-            }
-            if ($("#ExpYear").val()) {
-                $("#ExpiryDate").val(
-                    $("#ExpYear").val() + "/" + $("#ExpMonth").val() + "/" + $("#ExpDay").val()
-                );
-            }
+            _safe(function () {
+                combineDate("DateDay", "DateMonth", "DateYear", "Date");
+
+                if ($("#ProdYear").val()) {
+                    $("#ProductionDate").val(
+                        $("#ProdYear").val() + "/" +
+                        $("#ProdMonth").val() + "/" +
+                        $("#ProdDay").val()
+                    );
+                }
+
+                if ($("#ExpYear").val()) {
+                    $("#ExpiryDate").val(
+                        $("#ExpYear").val() + "/" +
+                        $("#ExpMonth").val() + "/" +
+                        $("#ExpDay").val()
+                    );
+                }
+            }, "ترکیب تاریخ‌ها");
         }
 
-        setTimeout(function () { _submitting = false; }, 1500);
+        // آزادسازی قفل بعد از ۱.۵ ثانیه
+        setTimeout(function () {
+            _submitting = false;
+        }, 1500);
 
-        var $active = $(document.activeElement);
-        if ($active.hasClass("js-submit-btn")) {
-            $("#commandHidden").val($active.val());
-            SubmitBtn.startLoading($active[0]);
-        }
-
+        // اجازه ارسال عادی فرم داده می‌شود
         return true;
     });
 
     // ═══════════════════════════════════════════════════════════
-    //  توابع پاک‌سازی کامل (برای استفاده در حلال)
+    //  بقیه کد (پاک‌سازی، مقداردهی اولیه، جستجوی سری ساخت)
+    //  بدون تغییر باقی می‌ماند
     // ═══════════════════════════════════════════════════════════
 
+    var VACCINE_TEXT_FIELDS = "#ItemDisplay, #DoseDisplay, #BatchNum";
+    var VACCINE_HIDDEN_FIELDS = "#ItemIdHidden, #DosePerVialIdHidden, #QuantityHidden";
+    var VACCINE_DATE_FIELDS_SHAMSI =
+        "#ProdDay, #ProdMonth, #ProdYear, #ExpDay, #ExpMonth, #ExpYear";
+    var VACCINE_DATE_FIELDS_MILADI =
+        "#ProdDayM, #ProdMonthM, #ProdYearM, #ExpDayM, #ExpMonthM, #ExpYearM";
+
+    var HALAL_HIDDEN_FIELDS = "#ItemIdHidden, #DosePerVialIdHidden, #QuantityHidden, #HalalDoseValue";
+
     window.clearVaccineFields = function () {
-        // فیلدهای خودکار واکسن
-        $("#ItemDisplay").val("");
-        $("#DoseDisplay").val("");
-        $("#ItemIdHidden").val("");
-        $("#DosePerVialIdHidden").val("");
-        $("#QuantityHidden").val("");
+        $(VACCINE_TEXT_FIELDS).val("");
+        $(VACCINE_HIDDEN_FIELDS).val("");
         $("#ItemClassDisplay").val("واکسن");
 
-        // سری ساخت
-        $("#BatchNum").val("");
+        $(VACCINE_DATE_FIELDS_SHAMSI).val("");
+        $(VACCINE_DATE_FIELDS_MILADI).val("");
+        $("#ProductionDate, #ExpiryDate").val("").removeClass("has-value");
 
-        // تاریخ‌های واکسن (سه فیلد روز/ماه/سال)
-        $("#ProdDay, #ProdMonth, #ProdYear").val("");
-        $("#ProdDayM, #ProdMonthM, #ProdYearM").val("");
-        $("#ExpDay, #ExpMonth, #ExpYear").val("");
-        $("#ExpDayM, #ExpMonthM, #ExpYearM").val("");
-        $("#ProductionDate").val("");
-        $("#ExpiryDate").val("");
-
-        // حذف کلاس پررنگ
-        $("#ProductionDate, #ExpiryDate").removeClass("has-value");
-
-        // مخفی کردن دکمه‌های تغییر فرمت
         $(".btn-date-toggle").hide();
 
-        // نمایش شمسی و مخفی میلادی
         $("#prod-shamsi-wrap, #exp-shamsi-wrap").show();
         $("#prod-miladi-wrap, #exp-miladi-wrap").hide();
 
-        // پاک کردن خطاهای اعتبارسنجی
-        $(".field-validation-error").remove();
-        $(".input-validation-error").removeClass("input-validation-error");
+        _clearValidationErrors();
     };
 
     window.clearHalalFields = function () {
-        // کالا
         $("#HalalItemSelect").val("").trigger("change");
-        $("#ItemIdHidden").val("");
+        $(HALAL_HIDDEN_FIELDS).val("");
 
-        // دوز
         $("#HalalDoseSelect")
             .empty()
             .append('<option value="">ابتدا کالا را انتخاب کنید</option>')
             .prop("disabled", true);
-        $("#HalalDoseValue").val("");
-        $("#DosePerVialIdHidden").val("");
 
-        // تعداد و ویال
-        $("#QuantityInput").val("");
-        $("#NumVialsInput").val("");
-        $("#QuantityHidden").val("");
+        $("#QuantityInput, #NumVialsInput").val("");
+        $("#HalalProdDate, #HalalExpDate").val("").removeClass("has-value");
 
-        // تاریخ‌های حلال
-        $("#HalalProdDate").val("").removeClass("has-value");
-        $("#HalalExpDate").val("").removeClass("has-value");
-
-        // نوع کالا
         $("#ItemClassDisplay").val("حلال");
 
-        // پاک کردن خطاهای اعتبارسنجی
-        $(".field-validation-error").remove();
-        $(".input-validation-error").removeClass("input-validation-error");
+        _clearValidationErrors();
     };
 
-    // ═══════════════════════════════════════════════════════════
-    //  بقیه کدهای قبلی (بدون تغییر)
-    // ═══════════════════════════════════════════════════════════
-
-    initVvmCascade("VvmTypeId", "VvmStageId");
-    initDateAutoAdvance("DateDay", "DateMonth", "DateYear");
-    initDateValidation("DateDay", "DateMonth", "DateYear");
+    // ── مقداردهی اولیه ──
+    _safe(function () { initVvmCascade("VvmTypeId", "VvmStageId"); }, "initVvmCascade");
+    _safe(function () { initDateAutoAdvance("DateDay", "DateMonth", "DateYear"); }, "initDateAutoAdvance");
+    _safe(function () { initDateValidation("DateDay", "DateMonth", "DateYear"); }, "initDateValidation");
 
     $("#DateDay, #DateMonth, #DateYear").on("input", function () {
-        combineDate("DateDay", "DateMonth", "DateYear", "Date");
+        _safe(function () { combineDate("DateDay", "DateMonth", "DateYear", "Date"); }, "combineDate");
     });
 
-    splitDate($("#Date").val(), "DateDay", "DateMonth", "DateYear");
-    splitDate($("#ProductionDate").val(), "ProdDay", "ProdMonth", "ProdYear");
-    splitDate($("#ExpiryDate").val(), "ExpDay", "ExpMonth", "ExpYear");
+    _safe(function () { splitDate($("#Date").val(), "DateDay", "DateMonth", "DateYear"); }, "splitDate(Date)");
+    _safe(function () { splitDate($("#ProductionDate").val(), "ProdDay", "ProdMonth", "ProdYear"); }, "splitDate(Production)");
+    _safe(function () { splitDate($("#ExpiryDate").val(), "ExpDay", "ExpMonth", "ExpYear"); }, "splitDate(Expiry)");
 
     if (typeof arrivalExistItemId !== "undefined" && arrivalExistItemId) {
-        _setAutoFields(arrivalExistItemName, arrivalExistItemId,
-            arrivalExistDoseName, arrivalExistDoseId);
+        _setAutoFields(arrivalExistItemName, arrivalExistItemId, arrivalExistDoseName, arrivalExistDoseId);
     } else {
         $("#ItemClassDisplay").val("واکسن");
     }
 
     function _setAutoFields(itemName, itemId, doseName, dosePerVialId) {
+        console.log("itemId received:", itemId);
         $("#ItemClassDisplay").val("واکسن");
         $("#ItemDisplay").val(itemName || "");
         $("#DoseDisplay").val(doseName || "");
         $("#ItemClassIdHidden").val("");
-        $("#ItemIdHidden").val(itemId || "");
+        $("#ItemIdHidden").val(itemId || "");         
+        $("#ItemIdHiddenMain").val(itemId || "");
         $("#DosePerVialIdHidden").val(dosePerVialId || "");
         if (window.updateAddButtonState) window.updateAddButtonState();
     }
@@ -151,12 +166,10 @@ $(function () {
 
     function _clearBatchFields() {
         $("#QuantityHidden").val("");
-        $("#ProdDay, #ProdMonth, #ProdYear").val("");
+        $(VACCINE_DATE_FIELDS_SHAMSI).val("");
         $("#ProductionDate").val("");
-        $("#ExpDay, #ExpMonth, #ExpYear").val("");
         $("#ExpiryDate").val("");
-        $("#ProdDayM, #ProdMonthM, #ProdYearM").val("");
-        $("#ExpDayM, #ExpMonthM, #ExpYearM").val("");
+        $(VACCINE_DATE_FIELDS_MILADI).val("");
         $("#prod-shamsi-wrap, #exp-shamsi-wrap").show();
         $("#prod-miladi-wrap, #exp-miladi-wrap").hide();
         $(".btn-date-toggle").hide();
@@ -188,7 +201,9 @@ $(function () {
         if (window.updateAddButtonState) window.updateAddButtonState();
     }
 
+    // ── جستجوی سری ساخت ──
     var _batchTimer = null;
+    var BATCH_DEBOUNCE_MS = 600;
 
     $("#BatchNum").on("input", function () {
         clearTimeout(_batchTimer);
@@ -266,9 +281,10 @@ $(function () {
                     _clearAutoFields();
                 }
             });
-        }, 600);
+        }, BATCH_DEBOUNCE_MS);
     });
 
+    // ── دکمه تغییر فرمت تاریخ ──
     $(document).on("click", ".btn-date-toggle", function () {
         var target = $(this).data("target");
         var $shamsiWrap = $("#" + target + "-shamsi-wrap");

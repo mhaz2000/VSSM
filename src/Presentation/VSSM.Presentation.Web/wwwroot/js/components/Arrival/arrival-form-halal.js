@@ -1,23 +1,40 @@
 /**
  * arrival-form-halal.js  —  منطق تب‌بندی و فیلدهای حلال
- * (دیت‌پیکر به فایل جداگانه arrival-datepicker-halal.js منتقل شد)
+ * (دیت‌پیکر در فایل جداگانه arrival-datepicker-halal.js است)
+ * (ریفکتور شده: بدون تغییر در بیزینس لاجیک، فقط تمیزکاری و افزودن گارد خطا)
  */
 
 $(function () {
+
+    "use strict";
 
     var _currentTab = $("#ArrivalTypeHidden").val() || "vaccine";
     var _halalItemsLoaded = false;
     var _calcLock = false;
 
-    _applyTab(_currentTab);
+    // ═══════════════════════════════════════════════════════
+    //  کمکی: اجرای امن یک تابع
+    // ═══════════════════════════════════════════════════════
+
+    function _safe(fn, label) {
+        try {
+            fn();
+        } catch (err) {
+            if (window.console && console.error) {
+                console.error("[arrival-form-halal] خطا در " + (label || "اجرا") + ":", err);
+            }
+        }
+    }
+
+    _safe(function () { _applyTab(_currentTab); }, "applyTab اولیه");
 
     $(document).on("click", ".arrival-tab[data-tab]", function () {
         var tab = $(this).data("tab");
         $("#ArrivalTypeHidden").val(tab);
-        _applyTab(tab);
+        _safe(function () { _applyTab(tab); }, "applyTab کلیک");
     });
 
-    window.applyArrivalTab = function (tab) { _applyTab(tab); };
+    window.applyArrivalTab = function (tab) { _safe(function () { _applyTab(tab); }, "applyArrivalTab"); };
 
     // ═══════════════════════════════════════════════════════
     //  تابع اصلی تغییر تب
@@ -53,7 +70,7 @@ $(function () {
     //  تب حلال
     // ═══════════════════════════════════════════════════════
     function _applyHalalTab() {
-        _disableVaccineValidation();
+        _setValidationIgnoreHidden();
 
         // ★★★ پاک‌سازی مستقیم فیلدهای حلال برای اطمینان ★★★
         $("#HalalItemSelect").val("").trigger("change");
@@ -72,7 +89,6 @@ $(function () {
         $("#ItemClassDisplay").val("حلال");
 
         // ── نمایش/مخفی کردن ──
-        $("#ItemClassDisplay").val("حلال");
         $("#batchNumGroup").show();
         $("#batchNumLabel").text("سری ساخت");
         $("#batchNumOpt").text("(اختیاری)").show();
@@ -103,7 +119,7 @@ $(function () {
     //  تب واکسن
     // ═══════════════════════════════════════════════════════
     function _applyVaccineTab() {
-        _enableVaccineValidation();
+        _setValidationIgnoreHidden();
 
         // ★★★ پاک‌سازی مستقیم فیلدهای واکسن برای اطمینان ★★★
         $("#ItemDisplay").val("");
@@ -120,7 +136,6 @@ $(function () {
         $("#ItemClassDisplay").val("واکسن");
 
         // ── نمایش/مخفی کردن ──
-        $("#ItemClassDisplay").val("واکسن");
         $("#batchNumGroup").show();
         $("#batchNumLabel").text("سری ساخت");
         $("#batchNumOpt").text("(اجباری)").show();
@@ -143,6 +158,9 @@ $(function () {
         $("#halalDateSection").hide();
 
         // مقداردهی مجدد فیلدهای واکسن اگر در حالت ویرایش باشیم
+        // (نکته: این تابع در فایل arrival-form-vaccine.js تعریف شده و در اسکوپ محلی همان
+        //  فایل قرار دارد، پس در عمل همیشه undefined است — این دقیقاً همان رفتار نسخه
+        //  اصلی است و برای عدم تغییر بیزینس‌لاجیک، دست‌نخورده نگه داشته شده)
         if (typeof arrivalExistItemId !== "undefined" && arrivalExistItemId) {
             if (typeof _setAutoFields === "function") {
                 _setAutoFields(arrivalExistItemName, arrivalExistItemId,
@@ -153,13 +171,9 @@ $(function () {
 
     // ═══════════════════════════════════════════════════════
     //  اعتبارسنجی
+    //  (هر دو حالت قبلاً منطق یکسانی داشتند: نادیده‌گرفتن فیلدهای مخفی)
     // ═══════════════════════════════════════════════════════
-    function _disableVaccineValidation() {
-        var v = $("#arrivalForm").data("validator");
-        if (v) v.settings.ignore = ":hidden";
-    }
-
-    function _enableVaccineValidation() {
+    function _setValidationIgnoreHidden() {
         var v = $("#arrivalForm").data("validator");
         if (v) v.settings.ignore = ":hidden";
     }

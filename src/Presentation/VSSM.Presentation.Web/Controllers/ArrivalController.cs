@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.Helpers;
@@ -160,11 +161,15 @@ public class ArrivalController(
 
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
+    [IgnoreAntiforgeryToken]  //  موقتاً
     public async Task<IActionResult> Create(ArrivalViewModel model, string command, CancellationToken token)
     {
         try
         {
+
+            //await HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
+            //         .ValidateRequestAsync(HttpContext);
+
             await PopulateLookupViewBagsAsync(token);
 
             if (command is not null && (

@@ -1,5 +1,5 @@
 ﻿/* ═══════════════════════════════════════════
-   datepicker.css  —  تقویم شمسی (کامپوننت مستقل)
+   datepicker.css  —  تقویم شمسی (طراحی مدرن)
    ═══════════════════════════════════════════ */
 
 /* ── wrapper و input ── */
@@ -11,61 +11,79 @@
 
 .datepicker-input {
     width: 100%;
-    height: 32px;
-    border: 1px solid #d1d5db;
-    border-radius: 7px;
-    padding: 0 34px 0 10px;
-    font-size: 12px;
+    height: 38px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 0 38px 0 12px;
+    font-size: 13px;
+    font-weight: 500;
     color: #111827;
     background: #fff;
     cursor: pointer;
     outline: none;
-    transition: border-color .15s, box-shadow .15s;
+    transition: border-color .2s, box-shadow .2s, background .2s;
     box-sizing: border-box;
     text-align: center;
-    letter-spacing: .5px;
+    letter-spacing: .3px;
+    font-family: inherit;
 }
 
+    .datepicker-input:hover {
+        border-color: #9ca3af;
+    }
+
     .datepicker-input:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, .12);
     }
 
     .datepicker-input:disabled {
-        background: #f9fafb;
-        opacity: .6;
+        background: #f3f4f6;
+        opacity: .7;
         cursor: not-allowed;
+        border-color: #e5e7eb;
+    }
+
+    .datepicker-input:not(:placeholder-shown) {
+        color: #1f2937;
     }
 
 .datepicker-ico {
     position: absolute;
-    left: 9px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
     color: #9ca3af;
-    font-size: 13px;
+    font-size: 15px;
     pointer-events: none;
+    transition: color .2s;
+}
+
+.datepicker-input:hover + .datepicker-ico,
+.datepicker-input:focus + .datepicker-ico {
+    color: #4f46e5;
 }
 
 /* ── Popup ── */
 .cal-popup {
     position: fixed;
     z-index: 9999;
-    background: #fff;
+    background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    box-shadow: 0 12px 32px rgba(0,0,0,.13), 0 2px 8px rgba(0,0,0,.06);
-    width: 272px;
-    padding: 14px 14px 12px;
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .12), 0 4px 12px rgba(0, 0, 0, .05);
+    width: 280px;
+    padding: 16px 16px 14px;
     direction: rtl;
     font-family: inherit;
-    animation: cal-in .14s ease;
+    animation: cal-in .18s cubic-bezier(.22, .68, 0, 1.0);
+    backdrop-filter: blur(2px);
 }
 
 @keyframes cal-in {
     from {
         opacity: 0;
-        transform: translateY(6px) scale(.97);
+        transform: translateY(10px) scale(.96);
     }
 
     to {
@@ -74,101 +92,149 @@
     }
 }
 
+@keyframes cal-out {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(.96);
+    }
+}
+
 /* ── Header ── */
 .cal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
+    padding: 0 2px;
 }
 
 .cal-nav {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border: none;
-    background: #f3f4f6;
-    border-radius: 7px;
+    background: #f1f5f9;
+    border-radius: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #374151;
-    font-size: 13px;
-    transition: background .12s;
+    color: #334155;
+    font-size: 14px;
+    transition: background .15s, color .15s, transform .1s;
 }
 
     .cal-nav:hover {
-        background: #e5e7eb;
+        background: #e2e8f0;
+        color: #0f172a;
+        transform: scale(1.05);
+    }
+
+    .cal-nav:active {
+        transform: scale(.92);
     }
 
 .cal-title {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
-    color: #111827;
+    color: #0f172a;
     cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 7px;
-    transition: background .12s;
+    padding: 4px 12px;
+    border-radius: 8px;
+    transition: background .15s, color .15s;
     user-select: none;
 }
 
     .cal-title:hover {
-        background: #f3f4f6;
+        background: #f1f5f9;
+        color: #4f46e5;
     }
 
 /* ── Days header ── */
 .cal-days-head {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
     .cal-days-head span {
         text-align: center;
         font-size: 11px;
-        font-weight: 600;
-        color: #9ca3af;
+        font-weight: 700;
+        color: #94a3b8;
         padding: 4px 0;
+        letter-spacing: .5px;
     }
 
 /* ── Days grid ── */
 .cal-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    gap: 3px;
 }
 
 .cal-day {
     text-align: center;
-    padding: 6px 2px;
-    font-size: 12px;
-    color: #374151;
-    border-radius: 8px;
+    padding: 7px 2px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e293b;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background .1s, color .1s;
-    line-height: 1;
+    transition: background .12s, color .12s, transform .1s, box-shadow .12s;
+    line-height: 1.2;
     border: none;
     background: transparent;
+    position: relative;
 }
 
     .cal-day:hover:not(.empty):not(.selected) {
         background: #eef2ff;
         color: #4f46e5;
+        transform: scale(1.04);
     }
 
+    /* امروز (نه انتخاب‌شده) */
     .cal-day.today:not(.selected) {
-        color: #6366f1;
+        color: #4f46e5;
         font-weight: 700;
+        background: #f8fafc;
+        border: 1.5px dashed #c7d2fe;
     }
 
+    /* روز انتخاب‌شده */
     .cal-day.selected {
-        background: #6366f1;
-        color: #fff;
-        font-weight: 600;
+        background: #4f46e5;
+        color: #ffffff;
+        font-weight: 700;
+        box-shadow: 0 4px 8px rgba(79, 70, 229, .25);
+        transform: scale(1.02);
+        border: none;
     }
 
+        .cal-day.selected:hover {
+            background: #4338ca;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, .35);
+            transform: scale(1.04);
+        }
+
+    /* روزهای خالی */
     .cal-day.empty {
         cursor: default;
+        background: transparent !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    /* روزهای غیرقابل انتخاب (مثلاً خارج از ماه) */
+    .cal-day.other-month {
+        color: #cbd5e1;
+        cursor: not-allowed;
     }
 
 /* ── Month picker view ── */
@@ -176,28 +242,145 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 6px;
-    padding: 4px 0;
+    padding: 4px 0 2px;
 }
 
 .cal-month-btn {
-    padding: 8px 4px;
-    font-size: 12px;
-    border: none;
-    border-radius: 8px;
-    background: #f9fafb;
-    color: #374151;
+    padding: 10px 4px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #1e293b;
     cursor: pointer;
-    transition: background .12s, color .12s;
+    transition: background .15s, color .15s, border-color .15s, transform .1s;
     text-align: center;
 }
 
     .cal-month-btn:hover {
         background: #eef2ff;
         color: #4f46e5;
+        border-color: #c7d2fe;
+        transform: scale(1.02);
     }
 
     .cal-month-btn.selected {
-        background: #6366f1;
+        background: #4f46e5;
         color: #fff;
         font-weight: 600;
+        border-color: #4f46e5;
+        box-shadow: 0 4px 8px rgba(79, 70, 229, .2);
+        transform: scale(1.03);
+    }
+
+        .cal-month-btn.selected:hover {
+            background: #4338ca;
+        }
+
+    .cal-month-btn:active {
+        transform: scale(.95);
+    }
+
+/* ── بهبود انتخاب سال/ماه در حالت title ── */
+.cal-title[data-mode="month"] {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+/* ── واکنش‌گرایی (موبایل) ── */
+@media (max-width: 480px) {
+    .cal-popup {
+        width: 260px;
+        padding: 12px 12px 10px;
+    }
+
+    .cal-day {
+        padding: 5px 2px;
+        font-size: 12px;
+    }
+
+    .cal-title {
+        font-size: 13px;
+    }
+
+    .cal-nav {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+    }
+
+    .datepicker-input {
+        height: 34px;
+        font-size: 12px;
+        padding: 0 32px 0 10px;
+    }
+}
+
+/* ── حالت انتخاب‌شده با علامت (اختیاری) ── */
+.cal-day.selected::after {
+    content: "✓";
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 8px;
+    color: #fff;
+    background: #4f46e5;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+/* ── حالت امروز با دایره ── */
+.cal-day.today:not(.selected)::before {
+    content: "";
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #4f46e5;
+}
+
+/* ── غیرفعال کردن علامت برای روزهای خالی ── */
+.cal-day.empty::before,
+.cal-day.empty::after {
+    display: none !important;
+}
+
+
+/* ── دکمه تغییر حالت ── */
+.btn-toggle-date-mode {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: #334155;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all .15s;
+    margin-right: 8px;
+}
+
+    .btn-toggle-date-mode:hover {
+        background: #e2e8f0;
+        border-color: #94a3b8;
+    }
+
+    .btn-toggle-date-mode i {
+        font-size: 12px;
+    }
+
+    .btn-toggle-date-mode .mode-label {
+        font-weight: 500;
     }

@@ -37,39 +37,79 @@ $(function () {
         return true;
     });
 
-    // توابع کمکی برای پاک‌سازی کامل (برای استفاده در حلال)
+    // ═══════════════════════════════════════════════════════════
+    //  توابع پاک‌سازی کامل (برای استفاده در حلال)
+    // ═══════════════════════════════════════════════════════════
+
     window.clearVaccineFields = function () {
-        // پاک کردن فیلدهای خودکار واکسن
+        // فیلدهای خودکار واکسن
         $("#ItemDisplay").val("");
         $("#DoseDisplay").val("");
         $("#ItemIdHidden").val("");
         $("#DosePerVialIdHidden").val("");
         $("#QuantityHidden").val("");
-        // پاک کردن تاریخ‌ها
+        $("#ItemClassDisplay").val("واکسن");
+
+        // سری ساخت
+        $("#BatchNum").val("");
+
+        // تاریخ‌های واکسن (سه فیلد روز/ماه/سال)
         $("#ProdDay, #ProdMonth, #ProdYear").val("");
         $("#ProdDayM, #ProdMonthM, #ProdYearM").val("");
         $("#ExpDay, #ExpMonth, #ExpYear").val("");
         $("#ExpDayM, #ExpMonthM, #ExpYearM").val("");
         $("#ProductionDate").val("");
         $("#ExpiryDate").val("");
+
+        // حذف کلاس پررنگ
+        $("#ProductionDate, #ExpiryDate").removeClass("has-value");
+
         // مخفی کردن دکمه‌های تغییر فرمت
         $(".btn-date-toggle").hide();
+
         // نمایش شمسی و مخفی میلادی
         $("#prod-shamsi-wrap, #exp-shamsi-wrap").show();
         $("#prod-miladi-wrap, #exp-miladi-wrap").hide();
-        // پاک کردن سری ساخت (اختیاری)
-        $("#BatchNum").val("");
+
+        // پاک کردن خطاهای اعتبارسنجی
+        $(".field-validation-error").remove();
+        $(".input-validation-error").removeClass("input-validation-error");
     };
 
     window.clearHalalFields = function () {
+        // کالا
         $("#HalalItemSelect").val("").trigger("change");
-        $("#HalalDoseSelect").empty().append('<option value="">انتخاب کنید...</option>').prop("disabled", true);
-        $("#QuantityInput, #NumVialsInput").val("");
-        $("#HalalProdDate, #HalalExpDate").val("");
+        $("#ItemIdHidden").val("");
+
+        // دوز
+        $("#HalalDoseSelect")
+            .empty()
+            .append('<option value="">ابتدا کالا را انتخاب کنید</option>')
+            .prop("disabled", true);
         $("#HalalDoseValue").val("");
+        $("#DosePerVialIdHidden").val("");
+
+        // تعداد و ویال
+        $("#QuantityInput").val("");
+        $("#NumVialsInput").val("");
+        $("#QuantityHidden").val("");
+
+        // تاریخ‌های حلال
+        $("#HalalProdDate").val("").removeClass("has-value");
+        $("#HalalExpDate").val("").removeClass("has-value");
+
+        // نوع کالا
+        $("#ItemClassDisplay").val("حلال");
+
+        // پاک کردن خطاهای اعتبارسنجی
+        $(".field-validation-error").remove();
+        $(".input-validation-error").removeClass("input-validation-error");
     };
 
-    // بقیه کدهای قبلی (VVM, تاریخ ورود, GetBatchInfo, و ...) بدون تغییر
+    // ═══════════════════════════════════════════════════════════
+    //  بقیه کدهای قبلی (بدون تغییر)
+    // ═══════════════════════════════════════════════════════════
+
     initVvmCascade("VvmTypeId", "VvmStageId");
     initDateAutoAdvance("DateDay", "DateMonth", "DateYear");
     initDateValidation("DateDay", "DateMonth", "DateYear");

@@ -39,5 +39,8 @@ public class ArrivalGetDto
 
     public string Note { get; set; } = "";
     public List<ArrivalLineDto> Lines { get; set; } = new();
+
+    public string ArrivalType { get; set; } = "vaccine";
+
 }
 

@@ -50,5 +50,8 @@ public class ArrivalLineViewModel
 
 
     // فیلدهای مخصوص حلال
-    public int? DosePerVial { get; set; }      
+    public int? DosePerVial { get; set; }
+
+    public string ProductionDateMode { get; set; } = "jalali"; 
+    public string ExpiryDateMode { get; set; } = "jalali";
 }

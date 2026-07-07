@@ -1,22 +1,38 @@
 <div class="form-footer">
 
-    @{
-        ViewData["BtnValue"] = "confirm";
-        ViewData["BtnLabel"] = "ثبت";
-        ViewData["BtnIcon"] = "fa-check";
-        ViewData["BtnClass"] = "btn-confirm";
-    }
-    <partial name="Partials/_SubmitButton" />
+    <button type="submit"
+            name="command"
+            value="confirm"
+            class="btn-confirm js-submit-btn"
+            data-command="confirm"
+            formnovalidate>
+        <span class="js-btn-content">
+            <i class="fa fa-check"></i>
+            ثبت
+        </span>
+        <span class="js-btn-spinner" hidden>
+            <span class="submit-spinner"></span>
+            در حال ارسال…
+        </span>
+    </button>
 
-    @{
-        ViewData["BtnValue"] = "draft";
-        ViewData["BtnLabel"] = "پیش‌نویس";
-        ViewData["BtnIcon"] = "fa-save";
-        ViewData["BtnClass"] = "btn-draft";
-    }
-    <partial name="Partials/_SubmitButton" />
+    <button type="submit"
+            name="command"
+            value="draft"
+            class="btn-draft js-submit-btn"
+            data-command="draft"
+            formnovalidate>
+        <span class="js-btn-content">
+            <i class="fa fa-save"></i>
+            پیش‌نویس
+        </span>
+        <span class="js-btn-spinner" hidden>
+            <span class="submit-spinner"></span>
+            در حال ارسال…
+        </span>
+    </button>
 
-    <a asp-action="Index" class="btn-back">
+    <a class="btn-back" href="/Arrival">
         <i class="fa fa-arrow-right"></i>
         بازگشت
     </a>

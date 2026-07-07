@@ -3,12 +3,10 @@
 
 @{
     string formTitle = Model?.ArrivalId > 0 ? "ویرایش ورودی" : "ثبت ورودی جدید";
-    var currentTab = string.Equals(Model?.ArrivalType, "halal", StringComparison.OrdinalIgnoreCase)
-                       ? "halal" : "vaccine";
+    var activeTab = Model?.ArrivalType ?? "vaccine";
 }
 
 <div class="a-card">
-
     <div class="a-card-header">
         <h6>
             <i class="fa fa-plus-circle" style="color:#1d6fb8;"></i>
@@ -17,20 +15,19 @@
     </div>
 
     <div class="a-card-body">
-
         <input type="hidden" id="ArrivalTypeHidden" name="ArrivalType"
-               value="@(ViewBag.IsHalal == true ? "halal" : "vaccine")" />
+               value="@activeTab" />
 
         <div class="arrival-tabs" style="margin-bottom:20px;">
             <button type="button"
-                    class="arrival-tab @(currentTab == "vaccine" ? "active" : "")"
+                    class="arrival-tab @(activeTab == "vaccine" ? "active" : "")"
                     id="tabVaccine"
                     data-tab="vaccine">
                 <i class="fa fa-medkit"></i>
                 ورود واکسن
             </button>
             <button type="button"
-                    class="arrival-tab @(currentTab == "halal" ? "active" : "")"
+                    class="arrival-tab @(activeTab == "halal" ? "active" : "")"
                     id="tabHalal"
                     data-tab="halal">
                 <i class="fa fa-tint"></i>
@@ -39,7 +36,7 @@
         </div>
 
         <div class="fg-3" style="margin-bottom:14px;">
-
+            <!-- شماره ورودی، تاریخ ورود، سری ساخت -->
             <div class="f-group">
                 <label class="f-label">شماره ورودی</label>
                 <input type="text" class="f-control" asp-for="ReportNumber" readonly />
@@ -56,7 +53,7 @@
             </div>
 
             <div class="f-group" id="batchNumGroup"
-                 style="@(currentTab == "halal" ? "display:none;" : "")">
+                 style="@(activeTab == "halal" ? "display:none;" : "")">
                 <label class="f-label">سری ساخت <span class="req-tag">اجباری</span></label>
                 <input asp-for="NewLine.BatchNum"
                        class="f-control"
@@ -65,14 +62,11 @@
                        autocomplete="off" />
                 <span asp-validation-for="NewLine.BatchNum" class="text-danger" style="font-size:11px;"></span>
             </div>
-
         </div>
 
         <div class="f-group">
             <label class="f-label">ملاحظات</label>
             <textarea asp-for="Note" class="f-control" placeholder="ملاحظات را وارد کنید"></textarea>
         </div>
-
     </div>
-
 </div>

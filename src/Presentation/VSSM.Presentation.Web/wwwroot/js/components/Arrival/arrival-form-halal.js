@@ -1,5 +1,6 @@
 /**
  * arrival-form-halal.js  —  منطق تب‌بندی و فیلدهای حلال
+ * (دیت‌پیکر به فایل جداگانه arrival-datepicker-halal.js منتقل شد)
  */
 
 $(function () {
@@ -8,10 +9,8 @@ $(function () {
     var _halalItemsLoaded = false;
     var _calcLock = false;
 
-    // ── اجرای تب اولیه ──
     _applyTab(_currentTab);
 
-    // ── رویداد کلیک روی تب‌ها ──
     $(document).on("click", ".arrival-tab[data-tab]", function () {
         var tab = $(this).data("tab");
         $("#ArrivalTypeHidden").val(tab);
@@ -27,7 +26,7 @@ $(function () {
         _currentTab = tab;
         var isHalal = (tab === "halal");
 
-        // ── پاک‌سازی فیلدها ──
+        // ★★★ پاک‌سازی کامل قبل از هر تغییر ★★★
         if (typeof window.clearVaccineFields === "function") {
             window.clearVaccineFields();
         }
@@ -56,6 +55,23 @@ $(function () {
     function _applyHalalTab() {
         _disableVaccineValidation();
 
+        // ★★★ پاک‌سازی مستقیم فیلدهای حلال برای اطمینان ★★★
+        $("#HalalItemSelect").val("").trigger("change");
+        $("#ItemIdHidden").val("");
+        $("#HalalDoseSelect")
+            .empty()
+            .append('<option value="">ابتدا کالا را انتخاب کنید</option>')
+            .prop("disabled", true);
+        $("#HalalDoseValue").val("");
+        $("#DosePerVialIdHidden").val("");
+        $("#QuantityInput").val("");
+        $("#NumVialsInput").val("");
+        $("#QuantityHidden").val("");
+        $("#HalalProdDate").val("").removeClass("has-value");
+        $("#HalalExpDate").val("").removeClass("has-value");
+        $("#ItemClassDisplay").val("حلال");
+
+        // ── نمایش/مخفی کردن ──
         $("#ItemClassDisplay").val("حلال");
         $("#batchNumGroup").show();
         $("#batchNumLabel").text("سری ساخت");
@@ -80,10 +96,7 @@ $(function () {
 
         if (!_halalItemsLoaded) _loadHalalItems();
 
-        // ★★★ مقداردهی مجدد دیت‌پیکر ★★★
-        setTimeout(function () {
-            _initDatepickers();
-        }, 200);
+        // دیت‌پیکر در فایل جداگانه مقداردهی می‌شود
     }
 
     // ═══════════════════════════════════════════════════════
@@ -92,6 +105,21 @@ $(function () {
     function _applyVaccineTab() {
         _enableVaccineValidation();
 
+        // ★★★ پاک‌سازی مستقیم فیلدهای واکسن برای اطمینان ★★★
+        $("#ItemDisplay").val("");
+        $("#DoseDisplay").val("");
+        $("#ItemIdHidden").val("");
+        $("#DosePerVialIdHidden").val("");
+        $("#QuantityHidden").val("");
+        $("#BatchNum").val("");
+        $("#ProdDay, #ProdMonth, #ProdYear").val("");
+        $("#ExpDay, #ExpMonth, #ExpYear").val("");
+        $("#ProductionDate").val("");
+        $("#ExpiryDate").val("");
+        $("#ProductionDate, #ExpiryDate").removeClass("has-value");
+        $("#ItemClassDisplay").val("واکسن");
+
+        // ── نمایش/مخفی کردن ──
         $("#ItemClassDisplay").val("واکسن");
         $("#batchNumGroup").show();
         $("#batchNumLabel").text("سری ساخت");
@@ -114,6 +142,7 @@ $(function () {
         $("#vaccineDateSection").show();
         $("#halalDateSection").hide();
 
+        // مقداردهی مجدد فیلدهای واکسن اگر در حالت ویرایش باشیم
         if (typeof arrivalExistItemId !== "undefined" && arrivalExistItemId) {
             if (typeof _setAutoFields === "function") {
                 _setAutoFields(arrivalExistItemName, arrivalExistItemId,
@@ -269,52 +298,6 @@ $(function () {
             _calcLock = false;
         }
         if (window.updateAddButtonState) window.updateAddButtonState();
-    });
-
-    // ═══════════════════════════════════════════════════════
-    //  دیت‌پیکر شمسی برای تاریخ‌های حلال + تاریخ ورودی
-    // ═══════════════════════════════════════════════════════
-    function _initDatepickers() {
-        var $inputs = $("#HalalProdDate, #HalalExpDate, #Date");
-
-        if ($inputs.length === 0) return;
-
-        // حذف نمونه‌های قبلی
-        $inputs.each(function () {
-            if (this._flatpickr) {
-                this._flatpickr.destroy();
-            }
-        });
-
-        // مقداردهی جدید
-        flatpickr($inputs, {
-            locale: 'fa',
-            dateFormat: 'Y/m/d',
-            altInput: true,
-            altFormat: 'Y/m/d',
-            allowInput: true,
-            onChange: function (selectedDates, dateStr, instance) {
-                $(instance.input).css('color', '#000000');
-            },
-            onOpen: function (selectedDates, dateStr, instance) {
-                if (instance.input.value) {
-                    $(instance.input).css('color', '#000000');
-                }
-            }
-        });
-
-        // اگر مقدار دارند، رنگ مشکی شود
-        $inputs.each(function () {
-            if ($(this).val()) {
-                $(this).css('color', '#000000');
-            }
-        });
-    }
-
-    // ── اجرای دیت‌پیکر در بارگذاری صفحه ──
-    setTimeout(_initDatepickers, 100);
-    $(document).ready(function () {
-        _initDatepickers();
     });
 
 });

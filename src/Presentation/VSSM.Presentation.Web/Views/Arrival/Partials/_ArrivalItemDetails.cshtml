@@ -40,7 +40,7 @@
                     }
                     else
                     {
-                        <span class="opt auto-tag">خودکار</span>
+                        <span class="req-tag">اجباری</span>
                     }
                 </label>
 
@@ -74,7 +74,7 @@
                  style="@(isHalal ? "display:none;" : "")">
                 <label class="f-label">
                     دوز بر ویال
-                    <span class="opt auto-tag">خودکار</span>
+                    <span class="req-tag">اجباری</span>
                 </label>
                 <input type="text" id="DoseDisplay" class="f-control" disabled
                        placeholder="بر اساس سری ساخت" />
@@ -260,15 +260,23 @@
             </div>
         </div>
 
-        @* ── بخش حلال: فقط برچسب (اجباری) ── *@
+        @* ── بخش حلال: با دکمه‌های تغییر حالت ── *@
         <div id="halalDateSection" style="@(!isHalal ? "display:none;" : "")">
             <div class="date-section">
 
+                <input type="hidden" id="HalalProdDateMode" name="NewLine.ProductionDateMode" value="gregorian" />
+                <input type="hidden" id="HalalExpDateMode" name="NewLine.ExpiryDateMode" value="gregorian" />
+
+                @* تاریخ تولید ── *@
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">
                             <label class="f-label">تاریخ تولید <span class="req-tag">اجباری</span></label>
                         </div>
+                        <button type="button" class="btn-toggle-date-mode" data-target="prod" title="تغییر به میلادی">
+                            <i class="fa fa-exchange"></i>
+                            <span class="mode-label">میلادی</span>
+                        </button>
                     </div>
                     <div class="datepicker-wrap">
                         <input type="text" id="HalalProdDate"
@@ -276,16 +284,22 @@
                                class="f-control datepicker-input halal-required"
                                placeholder="انتخاب تاریخ"
                                autocomplete="off"
+                               readonly
                                value="@Model?.NewLine?.ProductionDateShamsi" />
                         <i class="fa fa-calendar datepicker-ico"></i>
                     </div>
                 </div>
 
+                @* تاریخ انقضا ── *@
                 <div class="date-block">
                     <div class="date-block-header">
                         <div class="date-group-label">
                             <label class="f-label">تاریخ انقضا <span class="req-tag">اجباری</span></label>
                         </div>
+                        <button type="button" class="btn-toggle-date-mode" data-target="exp" title="تغییر به میلادی">
+                            <i class="fa fa-exchange"></i>
+                            <span class="mode-label">میلادی</span>
+                        </button>
                     </div>
                     <div class="datepicker-wrap">
                         <input type="text" id="HalalExpDate"
@@ -293,6 +307,7 @@
                                class="f-control datepicker-input halal-required"
                                placeholder="انتخاب تاریخ"
                                autocomplete="off"
+                               readonly
                                value="@Model?.NewLine?.ExpiryDateShamsi" />
                         <i class="fa fa-calendar datepicker-ico"></i>
                     </div>
@@ -300,6 +315,7 @@
 
             </div>
         </div>
+
         @* ── یادداشت ── *@
         <div class="f-group" style="margin-bottom:16px;">
             <label class="f-label">یادداشت</label>

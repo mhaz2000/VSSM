@@ -488,24 +488,27 @@ ADD LINE (INCREMENTAL)
         throw new NotImplementedException();
     }
 
-
     public async Task<string> Generate()
     {
         var fiscalPeriod = await db.TblFiscalPeriods
-            .FirstOrDefaultAsync(x => x.IsActive == true);
+            .FirstOrDefaultAsync(x => x.IsActive==true);
 
         var year = ExtractYear(fiscalPeriod?.FullName);
+        var prefix = $"{year}-";
 
-
-        var lastReportNumber = await db.TblArrivals
-            .OrderByDescending(x => x.ReportNumber)
+        var numbers = await db.TblArrivals
+            .Where(x => x.ReportNumber.StartsWith(prefix))
             .Select(x => x.ReportNumber)
-            .FirstOrDefaultAsync();
+            .ToListAsync();
 
+        int maxNumber = numbers
+            .Select(rn => rn.Split('-'))
+            .Where(parts => parts.Length == 2)
+            .Select(parts => int.TryParse(parts[1], out int num) ? num : 0)
+            .DefaultIfEmpty(0)
+            .Max();
 
-        var nextNumber = GetNextNumber(lastReportNumber);
-
-
+        int nextNumber = maxNumber + 1;
         return $"{year}-{nextNumber:D3}";
     }
 

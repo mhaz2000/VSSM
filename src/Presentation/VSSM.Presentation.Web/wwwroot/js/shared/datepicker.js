@@ -1,18 +1,11 @@
-﻿/**
- * datepicker.js  —  تقویم شمسی (کامپوننت مستقل)
- * ═══════════════════════════════════════════════════
- * پیش‌نیاز: jQuery
- * ═══════════════════════════════════════════════════
- */
+﻿var DatePicker = (function () {
 
-var DatePicker = (function () {
-
-    /* ── داده‌های ثابت ── */
-    var MONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+    var MONTHS_JALALI = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
         'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+    var MONTHS_GREGORIAN = ['ژانویه', 'فوریه', 'مارس', 'آوریل', 'مه', 'ژوئن',
+        'ژوئیه', 'اوت', 'سپتامبر', 'اکتبر', 'نوامبر', 'دسامبر'];
     var DAYS = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
 
-    /* ── تبدیل میلادی → شمسی ── */
     function toJalali(gy, gm, gd) {
         var g_d_no, j_d_no, j_np, i, j_y, j_m, j_d;
         var g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -32,7 +25,6 @@ var DatePicker = (function () {
         return [j_y, j_m, j_d];
     }
 
-    /* ── تبدیل شمسی → میلادی ── */
     function toGregorian(jy, jm, jd) {
         var j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
         jy -= 979; jm -= 1; jd -= 1;
@@ -51,22 +43,37 @@ var DatePicker = (function () {
         return [gy, gm + 1, g_day_no + 1];
     }
 
-    /* ── روز هفته اول ماه شمسی (0=شنبه) ── */
-    function firstWeekday(jy, jm) {
-        var g = toGregorian(jy, jm, 1);
-        var dow = new Date(g[0], g[1] - 1, g[2]).getDay();
-        return (dow + 1) % 7;
+    function firstWeekday(jy, jm, mode) {
+        if (mode === 'gregorian') {
+            var d = new Date(jy, jm - 1, 1);
+            var dow = d.getDay(); // 0=یک‌شنبه
+            return (dow + 1) % 7;  // تبدیل به شنبه=0
+        } else {
+            var g = toGregorian(jy, jm, 1);
+            var dow = new Date(g[0], g[1] - 1, g[2]).getDay();
+            return (dow + 1) % 7;
+        }
     }
 
-    /* ── امروز شمسی ── */
-    function todayJalali() {
+    function today(mode) {
         var n = new Date();
-        return toJalali(n.getFullYear(), n.getMonth() + 1, n.getDate());
+        if (mode === 'gregorian') {
+            return [n.getFullYear(), n.getMonth() + 1, n.getDate()];
+        } else {
+            return toJalali(n.getFullYear(), n.getMonth() + 1, n.getDate());
+        }
+    }
+
+    function daysInMonth(year, month, mode) {
+        if (mode === 'gregorian') {
+            return new Date(year, month, 0).getDate();
+        } else {
+            return (month <= 6) ? 31 : (month <= 11) ? 30 : 29;
+        }
     }
 
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
-    /* ── وضعیت picker فعال ── */
     var _activePicker = null;
 
     function closePicker() {
@@ -76,39 +83,38 @@ var DatePicker = (function () {
         }
     }
 
-    /* ── بستن با کلیک بیرون ── */
     $(document).on('mousedown.picker', function (e) {
         if (_activePicker && !$(e.target).closest('.cal-popup, .datepicker-input').length) {
             closePicker();
         }
     });
 
-    /* ── ساخت popup ── */
-    function buildPopup($input) {
-        var today = todayJalali();
+    function buildPopup($input, mode) {
+        var todayArr = today(mode);
         var parts = ($input.val() || '').split('/');
-        var cy = parts[0] ? parseInt(parts[0]) : today[0];
-        var cm = parts[1] ? parseInt(parts[1]) : today[1];
+        var cy = parts[0] ? parseInt(parts[0]) : todayArr[0];
+        var cm = parts[1] ? parseInt(parts[1]) : todayArr[1];
+        var months = (mode === 'gregorian') ? MONTHS_GREGORIAN : MONTHS_JALALI;
 
         var $popup = $('<div class="cal-popup"></div>');
 
         function renderDays() {
-            var daysInMonth = (cm <= 6) ? 31 : (cm <= 11) ? 30 : 29;
-            var firstWd = firstWeekday(cy, cm);
+            var daysCount = daysInMonth(cy, cm, mode);
+            var firstWd = firstWeekday(cy, cm, mode);
             var selParts = ($input.val() || '').split('/');
-            var selD = selParts[0] == cy && selParts[1] == pad(cm) ? parseInt(selParts[2]) : 0;
-            var todayStr = today[0] + '/' + pad(today[1]) + '/' + pad(today[2]);
+            var selD = (selParts[0] == cy && selParts[1] == pad(cm)) ? parseInt(selParts[2]) : 0;
+            var todayStr = todayArr[0] + '/' + pad(todayArr[1]) + '/' + pad(todayArr[2]);
 
             var html = '<div class="cal-header">' +
                 '<button class="cal-nav" id="calNext"><i class="fa fa-chevron-right"></i></button>' +
-                '<span class="cal-title" id="calTitleBtn">' + MONTHS[cm - 1] + ' ' + cy + '</span>' +
+                '<span class="cal-title" id="calTitleBtn">' + months[cm - 1] + ' ' + cy + '</span>' +
                 '<button class="cal-nav" id="calPrev"><i class="fa fa-chevron-left"></i></button>' +
                 '</div>';
             html += '<div class="cal-days-head">';
             DAYS.forEach(function (d) { html += '<span>' + d + '</span>'; });
             html += '</div><div class="cal-days">';
             for (var e = 0; e < firstWd; e++) html += '<button class="cal-day empty"></button>';
-            for (var d = 1; d <= daysInMonth; d++) {
+            for (var d = 1; d <= daysCount; d++) {
                 var ds = cy + '/' + pad(cm) + '/' + pad(d);
                 var cls = 'cal-day';
                 if (d === selD) cls += ' selected';
@@ -126,7 +132,7 @@ var DatePicker = (function () {
                 '<span class="cal-title" id="calTitleBtn">' + cy + '</span>' +
                 '<button class="cal-nav" id="calPrev"><i class="fa fa-chevron-left"></i></button>' +
                 '</div><div class="cal-months">';
-            MONTHS.forEach(function (mn, i) {
+            months.forEach(function (mn, i) {
                 var cls = 'cal-month-btn' + (i + 1 === cm ? ' selected' : '');
                 html += '<button class="' + cls + '" data-m="' + (i + 1) + '">' + mn + '</button>';
             });
@@ -136,12 +142,14 @@ var DatePicker = (function () {
         }
 
         function bindDayEvents() {
-            $popup.find('#calPrev').on('click', function () { cm--; if (cm < 1) { cm = 12; cy--; } renderDays(); });
+            $popup.find('#calPrev').on('click', function () { cm--; if (cm < 1) { cm = (mode === 'gregorian' ? 12 : 12); cy--; } renderDays(); });
             $popup.find('#calNext').on('click', function () { cm++; if (cm > 12) { cm = 1; cy++; } renderDays(); });
             $popup.find('#calTitleBtn').on('click', function () { renderMonths(); });
             $popup.find('.cal-day:not(.empty)').on('click', function () {
                 var d = $(this).data('d');
-                $input.val(cy + '/' + pad(cm) + '/' + pad(d)).trigger('change');
+                var val = cy + '/' + pad(cm) + '/' + pad(d);
+                $input.val(val).trigger('change');
+                $input.addClass('has-value');
                 closePicker();
             });
         }
@@ -158,12 +166,20 @@ var DatePicker = (function () {
 
         renderDays();
 
-        // موقعیت‌دهی
-        var r = $input[0].getBoundingClientRect();
-        var top = r.bottom + window.scrollY + 4;
-        var left = r.left + window.scrollX;
-        if (left + 272 > window.innerWidth - 8) left = window.innerWidth - 280;
-        $popup.css({ top: top + 'px', left: left + 'px' });
+        var offset = $input.offset();
+        var top = offset.top + $input.outerHeight() + 4;
+        var left = offset.left;
+        var popupWidth = 280;
+        var docWidth = $(window).width();
+        if (left + popupWidth > docWidth - 8) left = docWidth - popupWidth - 8;
+        if (left < 4) left = 4;
+
+        $popup.css({
+            position: 'absolute',
+            top: top + 'px',
+            left: left + 'px',
+            zIndex: 9999
+        });
 
         $('body').append($popup);
         _activePicker = { $popup: $popup, $input: $input };
@@ -171,16 +187,22 @@ var DatePicker = (function () {
 
     /* ── API عمومی ── */
     return {
-        /** وصل‌کردن datepicker به یک input */
-        attach: function ($input) {
-            $input.on('click focus', function (e) {
+        attach: function ($input, mode) {
+            mode = mode || 'jalali'; // پیش‌فرض شمسی
+            if ($input.prop('disabled')) $input.prop('disabled', false);
+            $input.attr('readonly', true);
+
+            if ($input.val() && $input.val().trim() !== '') {
+                $input.addClass('has-value');
+            }
+
+            $input.off('click.picker focus.picker').on('click.picker focus.picker', function (e) {
                 e.stopPropagation();
                 if ($input.prop('disabled')) return;
                 if (_activePicker && _activePicker.$input[0] === $input[0]) return;
                 closePicker();
-                buildPopup($input);
+                buildPopup($input, mode);
             });
-            $input.attr('readonly', true);
         },
         close: closePicker
     };

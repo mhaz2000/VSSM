@@ -101,22 +101,23 @@ public class ArrivalController(
     public IActionResult Print(int id) =>
         View("~/Views/Shared/UnderConstruction.cshtml");
 
-    public async Task<IActionResult> New(int? id, CancellationToken token)
+    public async Task<IActionResult> New(int? id, string? tab, CancellationToken token)
     {
         await PopulateLookupViewBagsAsync(token);
 
+        string activeTab = tab ?? "vaccine";
 
         if (id is null or 0)
         {
             var reportNumber = await arrivalService.Generate();
-
             return View(new ArrivalViewModel
             {
                 Date = DateTime.Now.ToShamsi(),
                 IsDrafted = true,
                 Lines = new List<ArrivalLineViewModel>(),
                 NewLine = new ArrivalLineViewModel(),
-                ReportNumber = reportNumber
+                ReportNumber = reportNumber,
+                ArrivalType = activeTab
             });
         }
 
@@ -124,6 +125,8 @@ public class ArrivalController(
         if (dto == null) return NotFound();
 
         var lineViewModels = await MapLinesToViewModelAsync(dto.Lines, token);
+
+         var arrivalType = !string.IsNullOrEmpty(tab) ? tab : dto.ArrivalType;
 
         var model = new ArrivalViewModel
         {
@@ -136,7 +139,7 @@ public class ArrivalController(
             IsDrafted = dto.IsDrafted ?? false,
             IsCancelled = dto.IsCancelled ?? false,
             Note = dto.Note,
-            //ArrivalType = dto.ArrivalType,   // ← نوع ورودی از DB بارگذاری می‌شود
+            ArrivalType = arrivalType,  
             Lines = lineViewModels,
             NewLine = new ArrivalLineViewModel()
         };
@@ -297,8 +300,31 @@ public class ArrivalController(
         if (string.IsNullOrWhiteSpace(model.NewLine.ExpiryDateShamsi))
             return ToastView("تاریخ انقضا را وارد کنید", model);
 
-        model.NewLine.ProductionDate = DateTimeHelper.ToMiladi(model.NewLine.ProductionDateShamsi);
-        model.NewLine.ExpiryDate = DateTimeHelper.ToMiladi(model.NewLine.ExpiryDateShamsi);
+
+        if (model.NewLine.ProductionDateMode == "jalali")
+        {
+            model.NewLine.ProductionDate = DateTimeHelper.ToMiladi(model.NewLine.ProductionDateShamsi);
+        }
+        else
+        {
+            model.NewLine.ProductionDate = DateTime.ParseExact(
+                model.NewLine.ProductionDateShamsi,
+                "yyyy/MM/dd",
+                CultureInfo.InvariantCulture
+            );
+        }
+        if (model.NewLine.ExpiryDateMode == "jalali")
+        {
+            model.NewLine.ExpiryDate = DateTimeHelper.ToMiladi(model.NewLine.ExpiryDateShamsi);
+        }
+        else
+        {
+            model.NewLine.ExpiryDate = DateTime.ParseExact(
+                model.NewLine.ExpiryDateShamsi,
+                "yyyy/MM/dd",
+                CultureInfo.InvariantCulture
+            );
+        }
 
         model.NewLine.NumVials = model.NewLine.Quantity / model.NewLine.DosePerVial;
 
@@ -308,7 +334,7 @@ public class ArrivalController(
         var lineDto = MapNewLineToDto(model);
         await arrivalService.AddLine(model.ArrivalId!.Value, lineDto, token);
 
-        return RedirectToAction("New", new { id = model.ArrivalId.Value });
+        return RedirectToAction("New", new { id = model.ArrivalId.Value, tab = "halal" });
     }
 
 

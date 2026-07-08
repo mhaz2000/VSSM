@@ -19,23 +19,23 @@
  * ═══════════════════════════════════════════
  */
 
-/* آرایه آیتم‌ها — در scope بیرونی تا uid-modal.js دسترسی داشته باشد */
+// Holds every item row currently shown in the "added items" table.
+// Kept in outer scope so uid-modal.js can read/update it too.
 var addedItems = [];
 
 $(function () {
 
-    // ════════════════════════════════════════
-    //  ۱. مقداردهی اولیه
-    // ════════════════════════════════════════
-
+    // Show a leftover toast message from the previous server round-trip (e.g. after redirect).
     if (typeof dispatchServerMsg !== 'undefined' && dispatchServerMsg) {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
+    // Init the Persian date picker on the Date field, if the plugin is loaded.
     if ($.fn.pDatepicker) {
         $('#Date').pDatepicker({ format: 'YYYY/MM/DD', autoClose: true });
     }
 
+    // Init the paginated batch-selection table (shared component).
     initBatchTable({
         tbodyId: 'itemDetailsTbody',
         showMoreWrap: 'showMoreWrap',
@@ -44,10 +44,8 @@ $(function () {
         colCount: 8,
     });
 
-    // ════════════════════════════════════════
-    //  ۲. pre-populate: لود آیتم‌های موجود
-    // ════════════════════════════════════════
 
+    // Fetch existing dispatch lines for this dispatch and render them into the table.
     if (dispatchId) {
         $.ajax({
             url: dispatchEditGetLinesUrl,
@@ -55,6 +53,8 @@ $(function () {
             success: function (lines) {
                 if (!lines || !lines.length) return;
 
+                // Map each server line into the in-memory item shape used by
+                // renderAddedItems() / rebuildHiddenInputs().
                 $.each(lines, function (_, line) {
                     addedItems.push({
                         idx: addedItems.length,
@@ -87,10 +87,8 @@ $(function () {
         });
     }
 
-    // ════════════════════════════════════════
-    //  ۳. cascade: نوع کالا ← کالا ← سری ساخت
-    // ════════════════════════════════════════
 
+    // Item class changed -> reload the item dropdown, reset the batch table.
     $('#itemClassSelect').on('change', function () {
         var classId = $(this).val();
         $('#itemSelect').html('<option value="">در حال بارگذاری...</option>');
@@ -114,6 +112,7 @@ $(function () {
         });
     });
 
+    // Item changed -> reload the batch/lot table for that item.
     $('#itemSelect').on('change', function () {
         var itemId = $(this).val();
         loadBatchRows([]);
@@ -126,11 +125,10 @@ $(function () {
         });
     });
 
-    // ════════════════════════════════════════
-    //  ۴. افزودن آیتم جدید
-    // ════════════════════════════════════════
 
+    // Add the currently-checked batch row (plus its auto diluent, if any) to addedItems.
     window.addSelectedItem = function () {
+        // Locked once the dispatch is confirmed.
         if (dispatchIsConfirmed) {
             showToast('ارسال تایید شده — امکان ویرایش وجود ندارد', 'error');
             return;
@@ -148,6 +146,7 @@ $(function () {
             return;
         }
 
+        // Row data is stashed as a JSON string in data-row (HTML-entity-encoded quotes).
         var row = JSON.parse($checked.first().attr('data-row').replace(/&#39;/g, "'"));
         var vvmStageId = $('#vvmStagesSelect').val();
         var vvmStageName = $('#vvmStagesSelect option:selected').text();
@@ -180,6 +179,7 @@ $(function () {
         renderAddedItems();
 
         // حلال خودکار
+        // If the item requires a diluent, auto-add a second line for it with the same dose count.
         if (row.requiresDiluent && row.diluentItemDetailStoreId) {
             addedItems.push({
                 idx: addedItems.length,
@@ -209,10 +209,8 @@ $(function () {
         $('#doseCountInput').val('');
     };
 
-    // ════════════════════════════════════════
-    //  ۵. حذف آیتم
-    // ════════════════════════════════════════
 
+    // Remove a line from addedItems and give its dose count back to the on-screen stock display.
     window.removeItem = function (idx) {
         if (dispatchIsConfirmed) {
             showToast('ارسال تایید شده — امکان ویرایش وجود ندارد', 'error');
@@ -226,14 +224,13 @@ $(function () {
         }
 
         addedItems.splice(idx, 1);
+        // Re-index remaining items so idx always matches array position.
         $.each(addedItems, function (i, it) { it.idx = i; });
         renderAddedItems();
     };
 
-    // ════════════════════════════════════════
-    //  ۶. رندر جدول کالاهای افزوده‌شده
-    // ════════════════════════════════════════
 
+    // Re-draw the "added items" table body from the addedItems array, then rebuild hidden inputs.
     function renderAddedItems() {
         var tbody = $('#addedItemsTbody');
 
@@ -248,7 +245,7 @@ $(function () {
 
         var html = '';
         $.each(addedItems, function (i, item) {
-            // اگر ارسال تایید شده باشد عملیات نمایش داده نمی‌شود
+            // No action buttons once confirmed — everything is read-only.
             var actions = dispatchIsConfirmed
                 ? '<span style="color:#9ca3af;font-size:11px;">تایید شده</span>'
                 : '<button type="button" class="btn-action btn-action-uid" title="افزودن UID" ' +
@@ -277,10 +274,8 @@ $(function () {
         rebuildHiddenInputs();
     }
 
-    // ════════════════════════════════════════
-    //  ۷. ساخت hidden inputs برای submit
-    // ════════════════════════════════════════
 
+    // Build the Items[i].* hidden inputs (model-binding format) posted with the form.
     function rebuildHiddenInputs() {
         var $container = $('#hiddenInputsContainer').empty();
 
@@ -301,6 +296,7 @@ $(function () {
             add('ExpiryDate', item.expiryDate);
             add('Note', item.note);
 
+            // Uids[] needs its own indexed inputs, one per scanned UID.
             $.each(item.uids, function (j, uid) {
                 $container.append(
                     '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uid + '">'
@@ -309,10 +305,8 @@ $(function () {
         });
     }
 
-    // ════════════════════════════════════════
-    //  ۸. دکمه‌های footer
-    // ════════════════════════════════════════
 
+    // Final submit / draft submit buttons — validate, tag submitType, then post the form.
     $('.js-footer-btn').on('click', function () {
         var submitType = $(this).data('submit');
 
@@ -331,12 +325,14 @@ $(function () {
         }
 
         $('#toastContainer').empty();
+        // Replace any previous submitType hidden field with the one for this click.
         $('#dispatchForm').find('input[name="submitType"]').remove();
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
             .appendTo('#dispatchForm');
         $('#dispatchForm').submit();
     });
 
+    // Delete button — confirm, then submit the form with submitType=delete.
     window.confirmDelete = function () {
         if (confirm('آیا از حذف این ارسال اطمینان دارید؟')) {
             $('#dispatchForm').find('input[name="submitType"]').remove();

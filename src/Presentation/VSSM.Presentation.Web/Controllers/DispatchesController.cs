@@ -8,7 +8,6 @@ using VSSM.Presentation.Web.Models.Base;
 namespace VSSM.Presentation.Web.Controllers;
 
 public class DispatchesController(
-    IBaseInfoService vvmstageService,
     IStoreService storeService,
     IRecipientService recipientService,
     IDispatchService dispatchService,
@@ -21,6 +20,14 @@ public class DispatchesController(
         var items = await dispatchService.GetItemsByClassAsync(classId, ct);
         return Json(items.Select(i => new { i.ItemId, i.FullName }));
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDispatchLines(int id, CancellationToken ct)
+    {
+        var lines = await dispatchService.GetDispatchLinesForEditAsync(id, ct);
+        return Json(lines);
+    }
+
 
     [HttpGet]
     public async Task<IActionResult> GetBatchesByItem(int itemId, CancellationToken ct)

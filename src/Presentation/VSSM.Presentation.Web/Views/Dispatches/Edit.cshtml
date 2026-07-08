@@ -5,10 +5,11 @@
 @model UpdateDispatchDto
 
 @{
-    var transportModes = ViewBag.TransportModes as List<EnumListDto>;
+    var transportModes = ViewBag.TransportModes as List<SelectListItem>;
     var recipients = ViewBag.Recipients as List<RecipientGetDto>;
-    var receivingModes = ViewBag.ReceivingModes as List<EnumListDto>;
-    var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
+    var receivingModes = ViewBag.ReceivingMethods as List<SelectListItem>;
+    var itemTypes = ViewBag.ItemTypes as List<SelectListItem>;
+    var vvmStages = ViewBag.VvmStages as List<SelectListItem>;
     bool isConfirmed = Model?.IsConfirmed ?? false;
 
     @* مقدار فعلی گیرنده برای pre-select در SearchableSelect *@
@@ -81,8 +82,8 @@
                     @if (isConfirmed)
                     {
                         <span style="font-size:11px; font-weight:500; color:#15803d;
-                                         background:#f0fdf4; border:1px solid #bbf7d0;
-                                         border-radius:6px; padding:2px 10px; margin-right:8px;">
+                                             background:#f0fdf4; border:1px solid #bbf7d0;
+                                             border-radius:6px; padding:2px 10px; margin-right:8px;">
                             <i class="fa fa-check"></i> تایید شده
                         </span>
                     }
@@ -104,9 +105,9 @@
                         <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
                         <select id="itemClassSelect" class="f-control" disabled="@isConfirmed">
                             <option value="">انتخاب کنید...</option>
-                            @foreach (var ic in itemClasses)
+                            @foreach (var ic in itemTypes)
                             {
-                                <option value="@ic.Id">@ic.Name</option>
+                                <option value="@ic.Value">@ic.Text</option>
                             }
                         </select>
                     </div>
@@ -188,7 +189,7 @@
                             <option value="">انتخاب کنید...</option>
                             @foreach (var m in receivingModes)
                             {
-                                <option value="@m.Name">@m.Description</option>
+                                <option value="@m.Value">@m.Text</option>
                             }
                         </select>
                     </div>
@@ -199,7 +200,7 @@
                             <option value="">انتخاب کنید...</option>
                             @foreach (var m in transportModes)
                             {
-                                <option value="@m.Name">@m.Description</option>
+                                <option value="@m.Value">@m.Text</option>
                             }
                         </select>
                     </div>
@@ -212,9 +213,9 @@
                         <label class="f-label">مرحله VVM</label>
                         <select id="vvmStagesSelect" class="f-control" disabled="@isConfirmed">
                             <option value="">انتخاب کنید</option>
-                            @foreach (var s in ViewBag.VVMStages)
+                            @foreach (var s in vvmStages)
                             {
-                                <option value="@s.Id">@s.Title</option>
+                                <option value="@s.Value">@s.Text</option>
                             }
                         </select>
                     </div>

@@ -41,4 +41,7 @@ public interface IDispatchService
     /// بند ۹: لینک کردن UIDها به ردیف‌های حواله در جدول اطلاعات UID
     /// </summary>
     Task LinkUidsToDispatchUidAsync(int dispatchId, CancellationToken ct = default);
+
+    Task<List<DispatchEditLineDto>> GetDispatchLinesForEditAsync(int dispatchId, CancellationToken ct = default);
+
 }

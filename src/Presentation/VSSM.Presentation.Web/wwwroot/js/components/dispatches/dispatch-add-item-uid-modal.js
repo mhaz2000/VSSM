@@ -1,4 +1,9 @@
-﻿$(document).on('click', '.add-item-uid', function () {
+﻿/**
+ * dispatch-add-item-uid-modal.js  —  مودال افزودن UID (Bootstrap modal #addItemUidModal)
+ */
+
+// Open the modal for a specific line, remembering which item it's for.
+$(document).on('click', '.add-item-uid', function () {
 
     let itemId = $(this).data('item-id');
 
@@ -11,10 +16,12 @@
 
 });
 
+// Focus the UID input as soon as the modal is fully shown.
 $('#addItemUidModal').on('shown.bs.modal', function () {
     $('#uidInput').trigger('focus');
 });
 
+// Enter key acts like clicking the save button.
 $('#uidInput').on('keydown', function (e) {
 
     if (e.key === 'Enter') {
@@ -24,6 +31,7 @@ $('#uidInput').on('keydown', function (e) {
 
 });
 
+// Digits-only input, capped at 20 chars; auto-submit once 20 digits are reached (barcode scanner flow).
 $('#uidInput').on('input', function () {
 
     $('#uidError').hide().empty();
@@ -45,8 +53,10 @@ $('#uidInput').on('input', function () {
 
 });
 
+// Guard against double-submit while a save request is in flight.
 let isSaving = false;
 
+// Show a validation/server error inside the modal and scroll it into view.
 function showModalError(message) {
     $('#uidError')
         .text(message)
@@ -65,6 +75,7 @@ function clearModalError() {
     $('#uidError').hide().empty();
 }
 
+// Validate, POST the UID to /SetUid, then update the row's dose count on success.
 $('#saveUidBtn').on('click', function () {
 
     if (isSaving)
@@ -83,6 +94,7 @@ $('#saveUidBtn').on('click', function () {
     isSaving = true;
     clearModalError();
 
+    // Disable all modal controls while the request is in flight.
     $('#addItemUidModal')
         .find('input, button')
         .prop('disabled', true);
@@ -102,6 +114,7 @@ $('#saveUidBtn').on('click', function () {
                 $('#uidInput').val('');
                 clearModalError();
 
+                // Update the matching row's dose display/hidden input with the new count from the server.
                 let $targetRow = $(`tr[data-id="${res.rowId}"]`);
 
                 if ($targetRow.length) {
@@ -161,7 +174,7 @@ $('#saveUidBtn').on('click', function () {
         });
 });
 
-// Clear error when modal is hidden
+// Clear error state whenever the modal is closed.
 $('#addItemUidModal').on('hidden.bs.modal', function () {
     clearModalError();
     $('#uidInput').val('');

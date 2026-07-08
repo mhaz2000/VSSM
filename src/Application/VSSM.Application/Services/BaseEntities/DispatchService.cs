@@ -12,6 +12,88 @@ namespace VSSM.Application.Services.BaseEntities;
 
 public class DispatchService(VSSMDbContext context) : IDispatchService
 {
+    public async Task<List<DispatchEditLineDto>> GetDispatchLinesForEditAsync(int dispatchId, CancellationToken ct = default)
+    {
+        var rawLines = await (
+            from line in context.TblDispatchLines.Where(l => l.DispatchId == dispatchId).AsNoTracking()
+
+            join item in context.TblItems on line.ItemId equals item.ItemId
+
+            join ids in context.TblItemDetailStores
+                on line.ItemDetailStoreId equals ids.PKItemDetailStoreId
+                into idsJoin
+            from ids in idsJoin.DefaultIfEmpty()
+
+            join store in context.TblStores on line.StoreId equals store.StoreId
+                into storeJoin
+            from store in storeJoin.DefaultIfEmpty()
+
+            join manufacturer in context.TblBaseInfo on line.ManufacturerId equals manufacturer.BaseInfoId
+                into mfrJoin
+            from manufacturer in mfrJoin.DefaultIfEmpty()
+
+            join vvmStage in context.TblBaseInfo on line.FkVvmStageBaseInfo equals vvmStage.BaseInfoId
+                into vvmJoin
+            from vvmStage in vvmJoin.DefaultIfEmpty()
+
+            select new
+            {
+                line.DispatchLineId,
+                ItemDetailStoreId = line.ItemDetailStoreId ?? 0,
+                ItemId = line.ItemId ?? 0,
+                ItemName = item.FullName,
+                line.BatchNumber,
+                line.ExpiryDate,
+                StoreId = line.StoreId ?? 0,
+                StoreName = store != null ? store.Name : "-",
+                ManufacturerName = manufacturer != null ? manufacturer.Title : "-",
+                DoseCount = line.Quantity ?? 0,
+                NumVial = line.NumVial ?? 0,
+                VvmStageId = line.FkVvmStageBaseInfo ?? 0,
+                VvmStageName = vvmStage != null ? vvmStage.Title : "-",
+                line.Note,
+                CurrentStock = ids != null ? (ids.CurrentStock ?? 0) : 0,
+            }
+        ).ToListAsync(ct);
+
+        if (rawLines.Count == 0) return new List<DispatchEditLineDto>();
+
+        var scannedUids = await context.TblDispatchUids
+            .AsNoTracking()
+            .Where(du => du.FKDispatchId == dispatchId)
+            .Select(du => new
+            {
+                ItemId = du.UidInfo.OrderInfo.FkItemId,
+                du.UidInfo.OrderInfo.BatchNumber,
+                Uid = du.UidInfo.FirstLevelUid 
+            })
+            .ToListAsync(ct);
+
+        var uidLookup = scannedUids
+            .GroupBy(u => (u.ItemId, u.BatchNumber))
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Uid).ToList());
+
+        return rawLines.Select(r => new DispatchEditLineDto
+        {
+            DispatchLineId = r.DispatchLineId,
+            ItemDetailStoreId = r.ItemDetailStoreId,
+            ItemId = r.ItemId,
+            ItemName = r.ItemName,
+            BatchNumber = r.BatchNumber,
+            ExpiryDateShamsi = r.ExpiryDate.HasValue ? r.ExpiryDate.Value.ToShamsi() : null,
+            ExpiryDate = r.ExpiryDate,
+            StoreId = r.StoreId,
+            StoreName = r.StoreName,
+            ManufacturerName = r.ManufacturerName,
+            DoseCount = r.DoseCount,
+            NumVial = r.NumVial,
+            VvmStageId = r.VvmStageId,
+            VvmStageName = r.VvmStageName,
+            Note = r.Note,
+            CurrentStock = r.CurrentStock,
+            Uids = uidLookup.TryGetValue((r.ItemId, r.BatchNumber), out var uids) ? uids : new List<string>()
+        }).ToList();
+    }
     public async Task<List<ItemLookupDto>> GetItemsByClassAsync(int classId, CancellationToken ct = default)
     {
         return await context.TblItems

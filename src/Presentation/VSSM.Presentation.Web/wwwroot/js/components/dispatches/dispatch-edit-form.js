@@ -31,10 +31,14 @@ $(function () {
     }
 
     // Init the Persian date picker on the Date field, if the plugin is loaded.
-    if ($.fn.pDatepicker) {
-        $('#Date').pDatepicker({ format: 'YYYY/MM/DD', autoClose: true });
+    var $dateInput = $('#Date');
+    if (typeof DatePicker !== 'undefined' && DatePicker.attach) {
+        DatePicker.attach($dateInput);
+        if ($dateInput.val()) $dateInput.addClass('has-value');
+        $dateInput.on('change', function () {
+            $(this).toggleClass('has-value', !!$(this).val());
+        });
     }
-
     // Init the paginated batch-selection table (shared component).
     initBatchTable({
         tbodyId: 'itemDetailsTbody',

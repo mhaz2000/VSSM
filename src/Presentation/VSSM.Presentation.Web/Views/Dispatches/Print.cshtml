@@ -1,0 +1,87 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
+@model DispatchPrintDto
+
+
+@section Styles {
+    <link href="~/css/components/dispatches/print-dispatch.css" rel="stylesheet" />
+}
+
+@{
+    Layout = "~/Views/Shared/_ReportLayout.cshtml";
+}
+
+@{
+    ViewData["Title"] = "پیش فاکتور ارسال";
+}
+
+<div class="dprint-container">
+
+    <div class="dprint-header">
+
+        <div>
+            <div><span class="dprint-label">شماره حواله:</span> <span class="dprint-value">@Model.DispatchVoucherNumber</span></div>
+            @if (Model.IsCopied)
+            {
+                <span class="dprint-copy-badge">کپی</span>
+            }
+        </div>
+
+        <div class="dprint-brand">
+            <div class="dprint-title">وزارت بهداشت درمان و آموزش پزشکی</div>
+            <div class="dprint-sub">معاونت بهداشت</div>
+            <div class="dprint-recipient">@Model.Recipient</div>
+            <div class="dprint-sub">لیست واکسن‌ها و سرم‌های تحویلی به @Model.DeliveryPlace</div>
+        </div>
+
+        <div>
+            <div><span class="dprint-label">وارد کننده اطلاعات:</span> <span class="dprint-value">@Model.InputPerson</span></div>
+            <div><span class="dprint-label">طریقه حمل و نقل:</span> <span class="dprint-value">@Model.TransportMode</span></div>
+            <div><span class="dprint-label">شماره درخواست:</span> <span class="dprint-value">@Model.RequestNumber</span></div>
+        </div>
+    </div>
+
+    <div class="dprint-dates">
+        <div><span class="dprint-label">تاریخ میلادی:</span> <span class="dprint-value">@Model.DateText</span></div>
+        <div><span class="dprint-label">تاریخ شمسی:</span> <span class="dprint-value">@Model.FaDateText</span></div>
+        <div><span class="dprint-label">ملاحظات:</span> <span class="dprint-value">@Model.Note</span></div>
+    </div>
+
+    <div class="dprint-table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ردیف</th>
+                    <th>کالا</th>
+                    <th>شماره سری ساخت</th>
+                    <th>تاریخ انقضا</th>
+                    <th>تعداد دوز</th>
+                    <th>تعداد ویال</th>
+                    <th>حجم ویال</th>
+                    <th>شماره انبار سردخانه</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var line in Model.Items)
+                {
+                    <tr>
+                        <td>@line.Row</td>
+                        <td>@line.Item</td>
+                        <td>@line.BatchNumber</td>
+                        <td>@line.ExpiryDateText</td>
+                        <td>@line.DoseCount</td>
+                        <td>@line.VialNumber</td>
+                        <td>@line.VialSize</td>
+                        <td>@line.ColdStorageNumber</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="dprint-footer">
+        <a class="dprint-back-btn" href="@Url.Action("Index", "Dispatches")">
+            <i class="fa fa-arrow-right"></i> بازگشت به لیست حواله‌ها
+        </a>
+    </div>
+
+</div>

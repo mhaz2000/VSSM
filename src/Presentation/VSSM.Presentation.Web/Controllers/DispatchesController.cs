@@ -155,9 +155,11 @@ public class DispatchesController(
     }
 
 
-    public IActionResult Print(int id)
+    public async Task<IActionResult> Print(int id)
     {
-        return View("~/Views/Shared/UnderConstruction.cshtml");
+        var dispatch = await dispatchService.GetDispatchPrintDataAsync(id);
+
+        return View(dispatch);
     }
     public async Task<IActionResult> ToBeArrivedIndex(CancellationToken cancellationToken, string? search,
                                     int pageNumber = 1,

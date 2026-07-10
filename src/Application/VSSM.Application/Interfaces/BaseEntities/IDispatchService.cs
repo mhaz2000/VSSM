@@ -44,4 +44,5 @@ public interface IDispatchService
 
     Task<List<DispatchEditLineDto>> GetDispatchLinesForEditAsync(int dispatchId, CancellationToken ct = default);
 
+    Task<DispatchPrintDto?> GetDispatchPrintDataAsync(int id);
 }

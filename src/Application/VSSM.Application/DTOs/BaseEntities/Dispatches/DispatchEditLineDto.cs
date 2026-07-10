@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Microsoft.Identity.Client.Extensions.Msal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace VSSM.Application.DTOs.BaseEntities.Dispatches;
+
 public class DispatchEditLineDto
 {
     public int DispatchLineId { get; set; }

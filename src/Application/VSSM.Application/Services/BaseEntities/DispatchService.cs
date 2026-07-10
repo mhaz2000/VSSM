@@ -65,7 +65,7 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
             {
                 ItemId = du.UidInfo.OrderInfo.FkItemId,
                 du.UidInfo.OrderInfo.BatchNumber,
-                Uid = du.UidInfo.FirstLevelUid 
+                Uid = du.UidInfo.FirstLevelUid
             })
             .ToListAsync(ct);
 
@@ -330,9 +330,9 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
         context.TblDispatchLines.RemoveRange(dispatchLines);
 
         var removedItems = dispatchLines.Select(s => s.ItemId!.Value).ToList().Except(updateDispatcheDto.Items.Select(s => s.ItemId));
-        
+
         var dispatchUids = context.TblDispatchUids.Where(t => removedItems.Contains(t.UidInfo.OrderInfo.FkItemId) && t.FKDispatchId == updateDispatcheDto.Id)
-            .Include(t => t.UidInfo).ThenInclude(t=> t.OrderInfo);
+            .Include(t => t.UidInfo).ThenInclude(t => t.OrderInfo);
 
         context.TblDispatchUids.RemoveRange(dispatchUids);
 
@@ -345,10 +345,10 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
             var itemInfo = await context.TblItems.FindAsync(item.ItemId);
             var itemDetailStore = await context.TblItemDetailStores.FindAsync(item.ItemDetailStoreId);
             var itemDetail = await context.TblItemDetails.Include(t => t.DosePerVial)
-                .FirstOrDefaultAsync(t=> t.ItemDetailId == itemDetailStore.ItemDetailId);
+                .FirstOrDefaultAsync(t => t.ItemDetailId == itemDetailStore.ItemDetailId);
 
             int numvial = 0;
-            if(itemDetail is not null && itemDetail.DosePerVial is not null)
+            if (itemDetail is not null && itemDetail.DosePerVial is not null)
                 numvial = item.DoseCount / int.Parse(itemDetail.DosePerVial.Title);
 
             var line = new TblDispatchLine
@@ -778,13 +778,13 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
         var dispatch = await context.TblDispatches.FindAsync(id);
 
         if (!uidInfoList.Any())
-            return (false, "برای بارکد اسکن شده، ویالی یافت نشد.", 0, 0 );
+            return (false, "برای بارکد اسکن شده، ویالی یافت نشد.", 0, 0);
 
         var dispatchItem = await context.TblDispatchLines.FindAsync(dispatchLineId);
-        if(dispatchItem is null || dispatchItem.ItemId != uidInfoList.FirstOrDefault()!.FkItemId)
+        if (dispatchItem is null || dispatchItem.ItemId != uidInfoList.FirstOrDefault()!.FkItemId)
             return (false, "بارکد اسکن شده متعلق به این کالا نمی‌باشد.", 0, 0);
 
-        if(dispatchItem.BatchNumber != uidInfoList.FirstOrDefault()!.BatchNumber)
+        if (dispatchItem.BatchNumber != uidInfoList.FirstOrDefault()!.BatchNumber)
             return (false, "بارکد اسکن شده متعلق به این سری ساخت نمی‌باشد.", 0, 0);
 
         var alreadyScanned = await context.TblDispatchUids
@@ -809,5 +809,42 @@ public class DispatchService(VSSMDbContext context) : IDispatchService
 
         await context.SaveChangesAsync();
         return (true, string.Empty, uidInfoList.Count(), dispatchItem.ItemId.Value);
+    }
+
+    public async Task<DispatchPrintDto?> GetDispatchPrintDataAsync(int id)
+    {
+        return await context.TblDispatches
+            .Include(t => t.TblDispatchLines).ThenInclude(t => t.DosePerVial)
+            .Include(t => t.TblDispatchLines).ThenInclude(t => t.Item)
+            .Include(t => t.TblDispatchLines).ThenInclude(t => t.Store)
+            .Include(t => t.TblDispatchLines).ThenInclude(t => t.Manufacturer)
+            .Include(t => t.TblDispatchLines).ThenInclude(t => t.ItemDetailStore).ThenInclude(t => t.ItemDetail)
+            .Include(t => t.Sender)
+            .Include(t => t.Receiver)
+            .Select(s => new DispatchPrintDto
+            {
+                Id = s.DispatchId,
+                Note = s.Note,
+                DispatchVoucherNumber = s.SeqPreview.ToString(),
+                RequestNumber = s.RequestNum,
+                TransportMode = s.TransportMode,
+                Date = s.Date,
+                InputPerson = s.EnteredBy.FirstName + " " + s.EnteredBy.LastName,
+                DeliveryPlace = s.Receiver.FullName,
+                Recipient = s.Sender.FullName,
+                Items = s.TblDispatchLines.Select(t => new DispatchLinePrintDto()
+                {
+                    BatchNumber = t.BatchNumber,
+                    ColdStorageNumber = t.Store.Name,
+                    DoseCount = t.Quantity,
+                    ExpiryDate = t.ExpiryDate,
+                    Item = t.Item.FullName,
+                    VialSize = t.DosePerVial.Title,
+                    VialNumber = t.NumVial
+                })
+
+            })
+            .FirstOrDefaultAsync(t => t.Id == id);
+
     }
 }

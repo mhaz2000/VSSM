@@ -1,7 +1,6 @@
 ﻿/**
- * uid-modal.js — مودال افزودن UID (shared)
- * در حالت New: validate سمت سرور، ذخیره فقط در RAM
- * در حالت Edit: اگر dispatchLineId > 0 باشد به سرور POST می‌کند
+ * uid-modal.js — مودال افزودن UID (نسخه جدید با Session موقت)
+ * وابستگی‌ها: scanSessionId (در View تعریف شده)
  */
 
 var _uidCurrentLineIndex = null;
@@ -26,73 +25,47 @@ function closeUidModal() {
 function submitUid() {
     if (_uidCurrentLineIndex === null) return;
 
-    var uid = $('#uidInput').val().trim();
-
-    // اعتبارسنجی — باید دقیقاً ۲۰ رقم باشد
-    if (!/^\d{20}$/.test(uid)) {
-        showToast('UID باید دقیقاً ۲۰ رقم و فقط شامل اعداد باشد', 'error');
+    var barcode = $('#uidInput').val().trim();
+    if (!barcode) {
+        showToast('لطفاً بارکد را وارد کنید', 'error');
         $('#uidInput').val('').focus();
         return;
     }
 
     var item = addedItems[_uidCurrentLineIndex];
+    var dispatchLineId = item.dispatchLineId || 0;      // برای آیتم‌های جدید ۰ است
+    var itemDetailStoreId = item.itemDetailStoreId;     // همیشه موجود است
 
-    // چک موجودی RAM
-    if (item.stockInRam <= 0) {
-        showToast('موجودی این سری ساخت به اتمام رسیده است', 'error');
-        $('#uidInput').val('').focus();
-        return;
-    }
-
-    // چک تکراری بودن
-    if (item.uids.indexOf(uid) > -1) {
-        showToast('این UID قبلاً اضافه شده است', 'error');
-        $('#uidInput').val('').focus();
-        return;
-    }
-
-    var dispatchLineId = item.dispatchLineId || 0;
-    var dispatchId = typeof window.dispatchId !== 'undefined' ? window.dispatchId : 0;
-
-    if (dispatchLineId > 0 && dispatchId > 0) {
-        // ══ حالت Edit — ثبت در DB ══
-        $.ajax({
-            url: setUidUrl,
-            type: 'POST',
-            data: { dispatchLineId: dispatchLineId, id: dispatchId, uid: uid },
-            success: function (res) {
-                if (!res.success) {
-                    showToast(res.message || 'خطا در ثبت UID', 'error');
-                    $('#uidInput').val('').focus();
-                    return;
-                }
-                _addUidToRam(item, uid);
-            },
-            error: function () {
-                showToast('خطا در ارتباط با سرور', 'error');
+    // ═══════════════════════════════════════════════════════
+    //  ارسال درخواست به سرور برای افزودن UID به سشن
+    // ═══════════════════════════════════════════════════════
+    $.ajax({
+        url: '/Dispatches/AddUidToSession',
+        type: 'POST',
+        data: {
+            sessionId: scanSessionId,
+            dispatchLineId: dispatchLineId,
+            itemDetailStoreId: itemDetailStoreId,
+            barcode: barcode
+        },
+        success: function (res) {
+            if (!res.success) {
+                showToast(res.message || 'خطا در اعتبارسنجی', 'error');
                 $('#uidInput').val('').focus();
+                return;
             }
-        });
-    } else {
-        // ══ حالت New — validate سمت سرور، ذخیره فقط در RAM ══
-        $.ajax({
-            url: validateUidUrl,
-            type: 'POST',
-            data: { itemDetailStoreId: item.itemDetailStoreId, uid: uid },
-            success: function (res) {
-                if (!res.isSuccess) {
-                    showToast(res.message, 'error');
-                    $('#uidInput').val('').focus();
-                    return;
-                }
-                _addUidToRam(item, uid);
-            },
-            error: function () {
-                showToast('خطا در ارتباط با سرور', 'error');
-                $('#uidInput').val('').focus();
+            // ✅ موفق: UID را به لیست کلاینت اضافه کن
+            _addUidToRam(item, barcode);
+        },
+        error: function (xhr) {
+            var message = 'خطا در ارتباط با سرور';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                message = xhr.responseJSON.message;
             }
-        });
-    }
+            showToast(message, 'error');
+            $('#uidInput').val('').focus();
+        }
+    });
 }
 
 function _addUidToRam(item, uid) {
@@ -103,20 +76,42 @@ function _addUidToRam(item, uid) {
     $('#uidModalCount').text(item.uids.length);
     renderUidList(item);
 
-    // مودال بسته نمی‌شود — کاربر خودش می‌بندد (بند ۱۰e)
+    // مودال بسته نمی‌شود — کاربر خودش می‌بندد
     $('#uidInput').val('').focus();
 }
 
 function removeUid(itemIdx, uidIdx) {
     var item = addedItems[itemIdx];
-    item.uids.splice(uidIdx, 1);
-    item.stockInRam += 1;
+    var uid = item.uids[uidIdx];
 
-    $('#uidModalStock').text(item.stockInRam);
-    $('#uidModalCount').text(item.uids.length);
-    renderUidList(item);
+    // ── ارسال درخواست حذف به سرور ──
+    $.ajax({
+        url: '/Dispatches/RemoveUidFromSession',
+        type: 'POST',
+        data: {
+            sessionId: scanSessionId,
+            uid: uid
+        },
+        success: function (res) {
+            if (res.success) {
+                // ✅ حذف از لیست کلاینت
+                item.uids.splice(uidIdx, 1);
+                item.stockInRam += 1;
+
+                $('#uidModalStock').text(item.stockInRam);
+                $('#uidModalCount').text(item.uids.length);
+                renderUidList(item);
+
+                showToast('UID با موفقیت حذف شد', 'success');
+            } else {
+                showToast('خطا در حذف UID از سشن', 'error');
+            }
+        },
+        error: function () {
+            showToast('خطا در ارتباط با سرور', 'error');
+        }
+    });
 }
-
 function renderUidList(item) {
     var html = '';
     $.each(item.uids, function (j, uid) {
@@ -133,21 +128,57 @@ function renderUidList(item) {
 }
 
 $(function () {
-    // auto-submit بعد از ۲۰ کاراکتر — برای اسکنر
+
+    let uidTimer;
+
     $('#uidInput').on('input', function () {
-        var val = $(this).val().replace(/\D/g, '');
-        if (val.length > 20) val = val.slice(0, 20);
+
+        let val = $(this).val().replace(/\s/g, '');
+
         $(this).val(val);
-        if (val.length === 20) submitUid();
+
+        clearTimeout(uidTimer);
+
+        uidTimer = setTimeout(function () {
+
+            if (/^\d{20}$/.test(val)) {
+                submitUid();
+                return;
+            }
+
+            if (val.length > 30) {
+                submitUid();
+                return;
+            }
+
+        }, 200);
+
     });
 
-    // Enter برای تایپ دستی
+
+
     $('#uidInput').on('keydown', function (e) {
-        if (e.key === 'Enter') { e.preventDefault(); submitUid(); }
+
+        if (e.key === 'Enter') {
+
+            e.preventDefault();
+
+            let val = $(this).val().trim();
+
+
+            if (val.length >= 20) {
+                submitUid();
+            }
+        }
+
     });
 
-    // بستن با کلیک روی overlay
     $('#uidModalOverlay').on('click', function (e) {
-        if ($(e.target).is('#uidModalOverlay')) closeUidModal();
+
+        if ($(e.target).is('#uidModalOverlay')) {
+            closeUidModal();
+        }
+
     });
+
 });

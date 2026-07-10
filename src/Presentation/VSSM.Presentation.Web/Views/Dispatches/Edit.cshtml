@@ -1,23 +1,22 @@
-﻿@using VSSM.Application.DTOs.BaseEntities
+﻿﻿@using VSSM.Application.DTOs.BaseEntities
 @using VSSM.Application.DTOs.BaseEntities.Dispatches
 @using VSSM.Application.DTOs.BaseEntities.Recipient
 @using VSSM.Presentation.Web.Models.Base
 @model UpdateDispatchDto
 
 @{
-    var transportModes = ViewBag.TransportModes as List<EnumListDto>;
+    var transportModes = ViewBag.TransportModes as List<SelectListItem>;
     var recipients = ViewBag.Recipients as List<RecipientGetDto>;
-    var receivingModes = ViewBag.ReceivingModes as List<EnumListDto>;
-    var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
+    var receivingModes = ViewBag.ReceivingMethods as List<SelectListItem>;
+    var itemTypes = ViewBag.ItemTypes as List<SelectListItem>;
+    var vvmStages = ViewBag.VvmStages as List<SelectListItem>;
     bool isConfirmed = Model?.IsConfirmed ?? false;
-
-    @* مقدار فعلی گیرنده برای pre-select در SearchableSelect *@
     var currentReceiverId = Model?.ReceiverId.ToString() ?? "";
     var currentReceiverName = recipients?.FirstOrDefault(r => r.RecipientId == Model.ReceiverId)?.FullName ?? "";
 }
 
 @section Styles {
-    <link href="~/css/persian-datepicker.css" rel="stylesheet" />
+    <link href="~/css/components/shared/datepicker.css" rel="stylesheet" />
     <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
     <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
     <link href="~/css/components/shared/btn.css" rel="stylesheet" />
@@ -26,6 +25,7 @@
     <link href="~/css/components/shared/uid-modal.css" rel="stylesheet" />
     <link href="~/css/components/shared/search-bar.css" rel="stylesheet" />
     <link href="~/css/dispatch-form.css" rel="stylesheet" />
+    <link href="~/css/components/shared/pagination-table.css" rel="stylesheet" />
 }
 
 <div id="toastContainer"></div>
@@ -62,7 +62,7 @@
 
 <div class="dispatch-wrap">
 
-    <form id="dispatchForm" asp-action="Edit" method="post" novalidate>
+    <form id="dispatchForm" asp-action="Update" method="post" novalidate>
         @Html.AntiForgeryToken()
 
         <input type="hidden" asp-for="Id" />
@@ -81,8 +81,8 @@
                     @if (isConfirmed)
                     {
                         <span style="font-size:11px; font-weight:500; color:#15803d;
-                                         background:#f0fdf4; border:1px solid #bbf7d0;
-                                         border-radius:6px; padding:2px 10px; margin-right:8px;">
+                                                 background:#f0fdf4; border:1px solid #bbf7d0;
+                                                 border-radius:6px; padding:2px 10px; margin-right:8px;">
                             <i class="fa fa-check"></i> تایید شده
                         </span>
                     }
@@ -94,9 +94,14 @@
 
                     <div class="f-group">
                         <label class="f-label">تاریخ ارسال <span class="req-tag">اجباری</span></label>
-                        <input asp-for="Date" id="Date" class="f-control"
-                               placeholder="مثال: ۱۴۰۴/۰۱/۱۵" autocomplete="off"
-                               disabled="@isConfirmed" />
+                        <div class="datepicker-wrap">
+                            <input asp-for="Date" id="Date"
+                                   class="f-control datepicker-input"
+                                   placeholder="مثال: ۱۴۰۴/۰۱/۱۵"
+                                   autocomplete="off"
+                                   disabled="@isConfirmed" />
+                            <i class="fa fa-calendar datepicker-ico"></i>
+                        </div>
                         <span asp-validation-for="Date" class="text-danger" style="font-size:11px;"></span>
                     </div>
 
@@ -104,16 +109,15 @@
                         <label class="f-label">نوع کالا <span class="req-tag">اجباری</span></label>
                         <select id="itemClassSelect" class="f-control" disabled="@isConfirmed">
                             <option value="">انتخاب کنید...</option>
-                            @foreach (var ic in itemClasses)
+                            @foreach (var ic in itemTypes)
                             {
-                                <option value="@ic.Id">@ic.Name</option>
+                                <option value="@ic.Value">@ic.Text</option>
                             }
                         </select>
                     </div>
 
                     <div class="f-group">
                         <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
-                        @* ✅ مورد ۶: کالا با SearchableSelect *@
                         @if (!isConfirmed)
                         {
                             @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
@@ -128,7 +132,6 @@
                                                 }
                         else
                         {
-                            @* در حالت تایید شده فقط نمایش متن — غیرقابل ویرایش *@
                             <input type="text" class="f-control" disabled value="(تایید شده - قابل ویرایش نیست)" />
                         }
                     </div>
@@ -139,7 +142,6 @@
 
                     <div class="f-group">
                         <label class="f-label">گیرنده <span class="req-tag">اجباری</span></label>
-                        @* ✅ مورد ۶: گیرنده با SearchableSelect + مقدار فعلی pre-select شده *@
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
                         {
                             Id = "ReceiverId",
@@ -188,7 +190,7 @@
                             <option value="">انتخاب کنید...</option>
                             @foreach (var m in receivingModes)
                             {
-                                <option value="@m.Name">@m.Description</option>
+                                <option value="@m.Value">@m.Text</option>
                             }
                         </select>
                     </div>
@@ -199,7 +201,7 @@
                             <option value="">انتخاب کنید...</option>
                             @foreach (var m in transportModes)
                             {
-                                <option value="@m.Name">@m.Description</option>
+                                <option value="@m.Value">@m.Text</option>
                             }
                         </select>
                     </div>
@@ -212,9 +214,9 @@
                         <label class="f-label">مرحله VVM</label>
                         <select id="vvmStagesSelect" class="f-control" disabled="@isConfirmed">
                             <option value="">انتخاب کنید</option>
-                            @foreach (var s in ViewBag.VVMStages)
+                            @foreach (var s in vvmStages)
                             {
-                                <option value="@s.Id">@s.Title</option>
+                                <option value="@s.Value">@s.Text</option>
                             }
                         </select>
                     </div>
@@ -262,12 +264,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-
-                    <div style="padding:10px 0 4px; text-align:center; display:none;" id="showMoreWrap">
-                        <button type="button" class="btn-show-more" onclick="showMoreRows()">
-                            <i class="fa fa-chevron-down"></i> نمایش بیشتر
-                        </button>
                     </div>
 
                     <div style="padding:12px 0 0; display:flex; justify-content:flex-end;">
@@ -338,6 +334,9 @@
             </a>
         </div>
 
+        @* ═══ 🆕 SessionId مخفی ═══ *@
+        <input type="hidden" id="ScanSessionId" value="@Guid.NewGuid().ToString()" />
+
     </form>
 </div>
 
@@ -347,18 +346,20 @@
 
     <script src="~/js/shared/toast.js"></script>
     <script src="~/js/shared/uid-modal.js"></script>
-    <script src="~/js/shared/batch-table.js"></script>
+    <script src="~/js/shared/pagination/pagination-table.js"></script>
 
     <script>
         var dispatchServerMsg        = "@(TempData["ToastMessage"] as string ?? "")";
         var dispatchServerType       = "@(TempData["ToastType"] as string ?? "info")";
         var dispatchGetItemsByClass  = "@Url.Action("GetItemsByClass", "Dispatches")";
         var dispatchGetBatchesByItem = "@Url.Action("GetBatchesByItem", "Dispatches")";
-        var setUidUrl                = "@Url.Action("SetUid", "Dispatches")";
         var dispatchEditGetLinesUrl  = "@Url.Action("GetDispatchLines", "Dispatches")";
         var dispatchId               = @(Model?.Id ?? 0);
         var dispatchIsConfirmed      = @(isConfirmed ? "true" : "false");
+
+        var scanSessionId = $('#ScanSessionId').val();
+
     </script>
 
-    <script src="~/js/dispatch-edit-form.js"></script>
+    <script src="~/js/components/dispatches/dispatch-edit-form.js"></script>
 }

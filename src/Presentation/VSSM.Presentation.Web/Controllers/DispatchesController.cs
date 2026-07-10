@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services.BaseEntities;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Base;
@@ -8,11 +9,11 @@ using VSSM.Presentation.Web.Models.Base;
 namespace VSSM.Presentation.Web.Controllers;
 
 public class DispatchesController(
-    IBaseInfoService vvmstageService,
     IStoreService storeService,
     IRecipientService recipientService,
     IDispatchService dispatchService,
-    IBaseInfoService baseInfoService) : BaseController
+    IBaseInfoService baseInfoService,
+    DispatchScanSessionService dispatchScan ) : BaseController
 {
 
     [HttpGet]
@@ -32,9 +33,10 @@ public class DispatchesController(
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
-        CreateDispatchDto createDispatcheDto,
-        string submitType,
-        CancellationToken cancellationToken)
+      CreateDispatchDto createDispatcheDto,
+      string submitType,
+      string? scanSessionId,  
+      CancellationToken cancellationToken)
     {
         createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
         createDispatcheDto.EnteredById = CurrentUserId.Value;
@@ -47,10 +49,21 @@ public class DispatchesController(
             return View(createDispatcheDto);
         }
 
-
-
         var (dispatchId, seqPreview) = await dispatchService.CreateDispatchAsync(
             createDispatcheDto, submitType, cancellationToken);
+
+        if (submitType == "final" && !string.IsNullOrEmpty(scanSessionId))
+        {
+            var confirmResult = await dispatchService.ConfirmDispatchUidAsync(scanSessionId, dispatchId);
+            if (!confirmResult.success)
+            {
+                await dispatchService.DeleteDispatchAsync(dispatchId, cancellationToken);
+                TempData["ToastMessage"] = confirmResult.message;
+                TempData["ToastType"] = "error";
+                await PopulateLookupViewBagsAsync(cancellationToken);
+                return View(createDispatcheDto);
+            }
+        }
 
         if (submitType == "final")
         {
@@ -60,7 +73,6 @@ public class DispatchesController(
 
         TempData["ToastMessage"] = $"پیش فاکتور با شماره {seqPreview} با موفقیت ثبت شد.";
         TempData["ToastType"] = "success";
-
 
         return RedirectToAction(nameof(Index));
     }
@@ -247,6 +259,7 @@ public class DispatchesController(
     public async Task<IActionResult> Update(
         UpdateDispatchDto updateDispatcheDto,
         string submitType,
+        string? scanSessionId, 
         CancellationToken cancellationToken)
     {
         updateDispatcheDto.SenderId = CurrentUserRecipientId.Value;
@@ -257,36 +270,84 @@ public class DispatchesController(
             updateDispatcheDto.IsDrafted = true;
             await dispatchService.UpdateDispatchAsync(updateDispatcheDto, submitType, cancellationToken);
 
-            TempData["ToastMessage"] = "عملیات با موفقیت شد";
-            TempData["ToastType"] = "success";
+            if (submitType == "final" && !string.IsNullOrEmpty(scanSessionId))
+            {
+                var confirmResult = await dispatchService.ConfirmDispatchUidAsync(scanSessionId, updateDispatcheDto.Id);
+                if (!confirmResult.success)
+                {
+                    TempData["ToastMessage"] = confirmResult.message;
+                    TempData["ToastType"] = "error";
+                    await PopulateLookupViewBagsAsync(cancellationToken);
+                    return View(updateDispatcheDto);
+                }
+            }
 
+            TempData["ToastMessage"] = "عملیات با موفقیت انجام شد.";
+            TempData["ToastType"] = "success";
         }
         catch (ApplicationException ex)
         {
             await PopulateLookupViewBagsAsync(cancellationToken);
-
             ViewBag.ErrorMessage = ex.Message;
-
-            await PopulateLookupViewBagsAsync(cancellationToken);
-
             return View("Edit", updateDispatcheDto);
         }
 
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost("SetUid")]
-    public async Task<IActionResult> SetUid(int dispatchLineId, int id, string uid)
+    [HttpPost("AddUidToSession")]
+    public async Task<IActionResult> AddUidToSession(
+        string sessionId,
+        int? dispatchLineId,
+        int? itemDetailStoreId,
+        string barcode)
     {
-        var response = await dispatchService.SetUidAsync(dispatchLineId, id, uid);
-        return Ok(new { Success = response.isSuccess, Message = response.message, Count = response.count, RowId = response.itemId });
+        var result = await dispatchService.SetUidAsync(
+            sessionId,
+            dispatchLineId,
+            itemDetailStoreId,
+            barcode
+        );
+
+        return Ok(new
+        {
+            success = result.isSuccess,
+            message = result.message,
+            count = result.count,
+            itemId = result.itemId
+        });
     }
 
-    [HttpPost("ValidateUid")]
-    public async Task<IActionResult> ValidateUid(int itemDetailStoreId, string uid)
+    [HttpGet("GetScanSession")]
+    public IActionResult GetScanSession(string sessionId)
     {
-        var result = await dispatchService.ValidateUidAsync(itemDetailStoreId, uid);
-        return Ok(new { isSuccess = result.isSuccess, message = result.message });
+        var session =
+            dispatchScan.GetSession(sessionId);
+
+
+        return Ok(new
+        {
+            Success = true,
+            Data = session.Items
+        });
+    }
+
+    [HttpPost("RemoveScanUid")]
+    public IActionResult RemoveScanUid(
+    string sessionId,
+    string uid)
+    {
+
+        var result =
+            dispatchScan.RemovePackage(
+                sessionId,
+                uid);
+
+
+        return Ok(new
+        {
+            Success = result
+        });
     }
 
     private async Task PopulateLookupViewBagsAsync(CancellationToken ct)
@@ -307,8 +368,28 @@ public class DispatchesController(
             (await baseInfoService.GetByParentIdAsync(BaseInfoIds.VvmStages, ct))
             .ToSelectList(x => x.Id, x => x.Title);
 
-        ViewBag.Recipients = await recipientService.GetActiveRecipients(ct);
+        ViewBag.Recipients = await recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.GetValueOrDefault(),ct);
     }
 
+    [HttpPost("ConfirmDispatchUids")]
+    public async Task<IActionResult> ConfirmDispatchUids(
+       string sessionId,
+       int dispatchId)
+    {
+        var result = await dispatchService.ConfirmDispatchUidAsync(sessionId, dispatchId);
 
+        return Ok(new
+        {
+            success = result.success,
+            message = result.message,
+            count = result.count
+        });
+    }
+
+    [HttpGet("GetSessionUids")]
+    public IActionResult GetSessionUids(string sessionId)
+    {
+        var session = dispatchScan.GetSession(sessionId);
+        return Ok(session.Items);
+    }
 }

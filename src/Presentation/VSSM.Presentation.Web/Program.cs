@@ -27,7 +27,7 @@ var app = builder.Build();
 
 foreach (var entityType in app.Services.GetRequiredService<IServiceScopeFactory>()
     .CreateScope().ServiceProvider
-    .GetRequiredService<VSSMDbContext>() // نام DbContext خودت رو بذار
+    .GetRequiredService<VSSMDbContext>() 
     .Model.GetEntityTypes())
 {
     var shadows = entityType.GetProperties()

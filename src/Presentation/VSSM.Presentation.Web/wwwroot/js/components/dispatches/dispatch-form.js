@@ -1,5 +1,5 @@
 ﻿/**
- * dispatch-form.js  —  لاجیک اختصاصی فرم ارسال (با PaginationTable)
+ * dispatch-form.js  —  لاجیک اختصاصی فرم ارسال (نسخه جدید با Session)
  */
 
 var addedItems = [];
@@ -194,14 +194,16 @@ $(function () {
                 vvmStageName: vvmStageName,
                 note: '',
                 uids: [],
-                stockInRam: row.currentStock - doseCount,
+                stockInRam: row.currentStock,  // ✅ موجودی واقعی (بدون کاهش)
                 requiresDiluent: row.requiresDiluent,
                 diluentItemDetailStoreId: row.diluentItemDetailStoreId,
                 diluentItemId: row.diluentItemId,
                 diluentItemName: row.diluentItemName,
+                dispatchLineId: 0  // برای آیتم‌های جدید ۰
             });
             added++;
 
+            // حلال خودکار
             if (row.requiresDiluent && row.diluentItemDetailStoreId) {
                 addedItems.push({
                     idx: addedItems.length,
@@ -222,6 +224,7 @@ $(function () {
                     uids: [],
                     stockInRam: 0,
                     requiresDiluent: false,
+                    dispatchLineId: 0
                 });
             }
         });
@@ -318,7 +321,7 @@ $(function () {
             add('ItemId', item.itemId);
             add('StoreId', item.storeId);
             add('DoseCount', item.doseCount);
-            add('VvmStageId', item.vvmStageId);
+            add('VvmstageId', item.vvmStageId);
             add('BatchNumber', item.batchNumber);
             add('ExpiryDate', item.expiryDate);
             add('Note', item.note);
@@ -356,6 +359,14 @@ $(function () {
         $('#dispatchForm').find('input[name="submitType"]').remove();
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
             .appendTo('#dispatchForm');
+
+        // ═══ 🆕 اضافه کردن scanSessionId (فقط در حالت نهایی) ═══
+        if (submitType === 'final' && typeof scanSessionId !== 'undefined') {
+            $('#dispatchForm').find('input[name="scanSessionId"]').remove();
+            $('<input>').attr({ type: 'hidden', name: 'scanSessionId', value: scanSessionId })
+                .appendTo('#dispatchForm');
+        }
+
         $('#dispatchForm').submit();
     });
 
@@ -368,9 +379,6 @@ $(function () {
         }
     };
 
-    // ════════════════════════════════════════
-    //  bind اولیه SearchableSelect های موجود
-    // ════════════════════════════════════════
 
     $('.ss-wrapper').each(function () {
         bindSSOptionClick($(this));

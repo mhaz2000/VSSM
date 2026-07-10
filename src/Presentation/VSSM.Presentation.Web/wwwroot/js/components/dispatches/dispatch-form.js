@@ -1,5 +1,6 @@
 ﻿/**
- * dispatch-form.js  —  لاجیک اختصاصی فرم ارسال (نسخه جدید با Session)
+ * dispatch-form.js  —  لاجیک اختصاصی فرم ارسال
+ * نسخه: 2.1 - پایدار با SearchableSelect بهبودیافته (mousedown)
  */
 
 var addedItems = [];
@@ -7,20 +8,26 @@ var batchTable = null;
 
 $(function () {
 
-    // ── Toast پیام سرور ──
+    // ── Toast ──
     if (typeof dispatchServerMsg !== 'undefined' && dispatchServerMsg) {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
-    // ── DatePicker ──
+    // ════════════════════════════════════════
+    //  ۱. DatePicker (دیت‌پیکر)
+    // ════════════════════════════════════════
     var $dateInput = $('#Date');
-    DatePicker.attach($dateInput);
-    if ($dateInput.val()) $dateInput.addClass('has-value');
-    $dateInput.on('change', function () {
-        $(this).toggleClass('has-value', !!$(this).val());
-    });
+    if (typeof DatePicker !== 'undefined' && DatePicker.attach) {
+        DatePicker.attach($dateInput);
+        if ($dateInput.val()) $dateInput.addClass('has-value');
+        $dateInput.on('change', function () {
+            $(this).toggleClass('has-value', !!$(this).val());
+        });
+    }
 
-    // ── PaginationTable برای سری‌های ساخت ──
+    // ════════════════════════════════════════
+    //  ۲. PaginationTable برای سری‌های ساخت
+    // ════════════════════════════════════════
     batchTable = new PaginationTable({
         tableId: 'itemDetailsTable',
         tbodyId: 'itemDetailsTbody',
@@ -53,7 +60,7 @@ $(function () {
         }
     });
 
-    // ── رویداد change چک‌باکس‌ها ──
+    // ── رویداد change چک‌باکس ──
     $(document).on('change', '.batch-chk', function () {
         var anyChecked = $('.batch-chk:checked').length > 0;
         if (anyChecked) {
@@ -64,12 +71,37 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  helpers برای SearchableSelect
+    //  ۳. SearchableSelect - راه‌اندازی با mousedown
     // ════════════════════════════════════════
 
+    /**
+     * اتصال رویداد کلیک به گزینه‌های یک wrapper خاص
+     */
+    function bindSSOptionClick($wrapper) {
+        $wrapper.find('.ss-option').off('click.ss').on('click.ss', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var val = $(this).data('value');
+            var text = $(this).text().trim();
+            var $hidden = $wrapper.find('input[type="hidden"]');
+            var $display = $wrapper.find('.ss-text');
+
+            $hidden.val(val);
+            $display.text(text);
+            $wrapper.find('.ss-dropdown').hide();
+            $hidden.trigger('change');
+        });
+    }
+
+    /**
+     * پر کردن گزینه‌های یک SearchableSelect
+     */
     function populateSS(wrapperId, items, emptyText) {
         var $hidden = $('#' + wrapperId);
         var $wrapper = $hidden.closest('.ss-wrapper');
+        if (!$wrapper.length) return;
+
         var $options = $wrapper.find('.ss-options');
         var $display = $wrapper.find('.ss-text');
 
@@ -92,19 +124,54 @@ $(function () {
         bindSSOptionClick($wrapper);
     }
 
-    function bindSSOptionClick($wrapper) {
-        $wrapper.find('.ss-option').off('click').on('click', function () {
-            var val = $(this).data('value');
-            var text = $(this).text().trim();
-            $wrapper.find('input[type="hidden"]').val(val);
-            $wrapper.find('.ss-text').text(text);
-            $wrapper.find('.ss-dropdown').hide();
-            $wrapper.find('input[type="hidden"]').trigger('change');
+    // ── راه‌اندازی اولیه تمام SearchableSelectهای موجود ──
+    $('.ss-wrapper').each(function () {
+        var $wrapper = $(this);
+
+        // باز کردن دراپ‌داون با mousedown (یک کلیک)
+        $wrapper.find('.ss-display').off('mousedown.ss').on('mousedown.ss', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var $dd = $wrapper.find('.ss-dropdown');
+            var isOpen = $dd.is(':visible');
+
+            // بستن سایر دراپ‌داون‌ها
+            $('.ss-dropdown').not($dd).hide();
+
+            if (isOpen) {
+                $dd.hide();
+            } else {
+                $dd.show();
+                $dd.find('.ss-search').focus();
+            }
         });
-    }
+
+        // جستجو
+        $wrapper.find('.ss-search').off('input.ss').on('input.ss', function () {
+            var q = $(this).val().toLowerCase();
+            $(this).closest('.ss-dropdown').find('.ss-option').each(function () {
+                var match = $(this).text().toLowerCase().indexOf(q) > -1;
+                $(this).toggle(match);
+                $(this).next('hr').toggle(match);
+            });
+        });
+
+        // اتصال گزینه‌های اولیه
+        bindSSOptionClick($wrapper);
+    });
+
+    // ── بستن دراپ‌داون با کلیک خارج (mousedown) ──
+    $(document).off('mousedown.ss-close').on('mousedown.ss-close', function (e) {
+        if (!$(e.target).closest('.ss-wrapper').length) {
+            setTimeout(function () {
+                $('.ss-dropdown').hide();
+            }, 0);
+        }
+    });
 
     // ════════════════════════════════════════
-    //  cascade: نوع کالا ← کالا ← سری ساخت
+    //  ۴. cascade: نوع کالا ← کالا ← سری ساخت
     // ════════════════════════════════════════
 
     $('#itemClassSelect').on('change', function () {
@@ -122,10 +189,14 @@ $(function () {
             data: { classId: classId },
             success: function (items) {
                 populateSS('itemSelect', items, 'انتخاب کنید...');
+            },
+            error: function () {
+                showToast('خطا در بارگذاری کالاها', 'error');
             }
         });
     });
 
+    // ── رویداد change روی hidden input کالا ──
     $('#itemSelect').on('change', function () {
         var itemId = $(this).val();
         if (batchTable) batchTable.setData([]);
@@ -148,7 +219,7 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  افزودن آیتم به لیست
+    //  ۵. افزودن آیتم به لیست
     // ════════════════════════════════════════
 
     window.addSelectedItem = function () {
@@ -194,12 +265,12 @@ $(function () {
                 vvmStageName: vvmStageName,
                 note: '',
                 uids: [],
-                stockInRam: row.currentStock,  // ✅ موجودی واقعی (بدون کاهش)
+                stockInRam: row.currentStock,
                 requiresDiluent: row.requiresDiluent,
                 diluentItemDetailStoreId: row.diluentItemDetailStoreId,
                 diluentItemId: row.diluentItemId,
                 diluentItemName: row.diluentItemName,
-                dispatchLineId: 0  // برای آیتم‌های جدید ۰
+                dispatchLineId: 0
             });
             added++;
 
@@ -241,7 +312,7 @@ $(function () {
     };
 
     // ════════════════════════════════════════
-    //  حذف آیتم
+    //  ۶. حذف آیتم
     // ════════════════════════════════════════
 
     window.removeItem = function (idx) {
@@ -257,7 +328,7 @@ $(function () {
     };
 
     // ════════════════════════════════════════
-    //  رندر جدول کالاهای افزوده‌شده
+    //  ۷. رندر جدول کالاهای افزوده‌شده
     // ════════════════════════════════════════
 
     function renderAddedItems() {
@@ -305,7 +376,7 @@ $(function () {
     }
 
     // ════════════════════════════════════════
-    //  ساخت hidden inputs برای submit
+    //  ۸. ساخت hidden inputs برای submit
     // ════════════════════════════════════════
 
     function rebuildHiddenInputs() {
@@ -335,7 +406,7 @@ $(function () {
     }
 
     // ════════════════════════════════════════
-    //  دکمه‌های footer
+    //  ۹. دکمه‌های footer
     // ════════════════════════════════════════
 
     $('.js-footer-btn').on('click', function () {
@@ -360,7 +431,6 @@ $(function () {
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
             .appendTo('#dispatchForm');
 
-        // ═══ 🆕 اضافه کردن scanSessionId (فقط در حالت نهایی) ═══
         if (submitType === 'final' && typeof scanSessionId !== 'undefined') {
             $('#dispatchForm').find('input[name="scanSessionId"]').remove();
             $('<input>').attr({ type: 'hidden', name: 'scanSessionId', value: scanSessionId })
@@ -378,34 +448,5 @@ $(function () {
             $('#dispatchForm').submit();
         }
     };
-
-
-    $('.ss-wrapper').each(function () {
-        bindSSOptionClick($(this));
-
-        $(this).find('.ss-display').on('click', function () {
-            var $dd = $(this).siblings('.ss-dropdown');
-            $('.ss-dropdown').not($dd).hide();
-            $dd.toggle();
-            if ($dd.is(':visible')) {
-                $dd.find('.ss-search').focus();
-            }
-        });
-
-        $(this).find('.ss-search').on('input', function () {
-            var q = $(this).val().toLowerCase();
-            $(this).closest('.ss-dropdown').find('.ss-option').each(function () {
-                var match = $(this).text().toLowerCase().indexOf(q) > -1;
-                $(this).toggle(match);
-                $(this).next('hr').toggle(match);
-            });
-        });
-    });
-
-    $(document).on('click', function (e) {
-        if (!$(e.target).closest('.ss-wrapper').length) {
-            $('.ss-dropdown').hide();
-        }
-    });
 
 });

@@ -1,5 +1,6 @@
 ﻿/**
- * dispatch-edit-form.js  —  فرم ویرایش ارسال (هماهنگ با سناریوی جدید Session)
+ * dispatch-edit-form.js  —  فرم ویرایش ارسال (هماهنگ با New)
+ * نسخه: 2.1 - با SearchableSelect بهبودیافته (mousedown)
  */
 
 var addedItems = [];
@@ -12,12 +13,12 @@ $(function () {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
-    // ── DatePicker (persian-datepicker) ──
+    // ── DatePicker ──
     if ($.fn.pDatepicker) {
         $('#Date').pDatepicker({ format: 'YYYY/MM/DD', autoClose: true });
     }
 
-    // ── PaginationTable برای سری‌های ساخت ──
+    // ── PaginationTable ──
     batchTable = new PaginationTable({
         tableId: 'itemDetailsTable',
         tbodyId: 'itemDetailsTbody',
@@ -50,7 +51,6 @@ $(function () {
         }
     });
 
-    // ── رویداد change چک‌باکس ──
     $(document).on('change', '.batch-chk', function () {
         var anyChecked = $('.batch-chk:checked').length > 0;
         if (anyChecked) {
@@ -61,12 +61,31 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  helpers برای SearchableSelect
+    //  SearchableSelect (همانند dispatch-form)
     // ════════════════════════════════════════
+
+    function bindSSOptionClick($wrapper) {
+        $wrapper.find('.ss-option').off('click.ss').on('click.ss', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var val = $(this).data('value');
+            var text = $(this).text().trim();
+            var $hidden = $wrapper.find('input[type="hidden"]');
+            var $display = $wrapper.find('.ss-text');
+
+            $hidden.val(val);
+            $display.text(text);
+            $wrapper.find('.ss-dropdown').hide();
+            $hidden.trigger('change');
+        });
+    }
 
     function populateSS(wrapperId, items, emptyText) {
         var $hidden = $('#' + wrapperId);
         var $wrapper = $hidden.closest('.ss-wrapper');
+        if (!$wrapper.length) return;
+
         var $options = $wrapper.find('.ss-options');
         var $display = $wrapper.find('.ss-text');
 
@@ -89,19 +108,48 @@ $(function () {
         bindSSOptionClick($wrapper);
     }
 
-    function bindSSOptionClick($wrapper) {
-        $wrapper.find('.ss-option').off('click').on('click', function () {
-            var val = $(this).data('value');
-            var text = $(this).text().trim();
-            $wrapper.find('input[type="hidden"]').val(val);
-            $wrapper.find('.ss-text').text(text);
-            $wrapper.find('.ss-dropdown').hide();
-            $wrapper.find('input[type="hidden"]').trigger('change');
+    $('.ss-wrapper').each(function () {
+        var $wrapper = $(this);
+
+        $wrapper.find('.ss-display').off('mousedown.ss').on('mousedown.ss', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var $dd = $wrapper.find('.ss-dropdown');
+            var isOpen = $dd.is(':visible');
+
+            $('.ss-dropdown').not($dd).hide();
+
+            if (isOpen) {
+                $dd.hide();
+            } else {
+                $dd.show();
+                $dd.find('.ss-search').focus();
+            }
         });
-    }
+
+        $wrapper.find('.ss-search').off('input.ss').on('input.ss', function () {
+            var q = $(this).val().toLowerCase();
+            $(this).closest('.ss-dropdown').find('.ss-option').each(function () {
+                var match = $(this).text().toLowerCase().indexOf(q) > -1;
+                $(this).toggle(match);
+                $(this).next('hr').toggle(match);
+            });
+        });
+
+        bindSSOptionClick($wrapper);
+    });
+
+    $(document).off('mousedown.ss-close').on('mousedown.ss-close', function (e) {
+        if (!$(e.target).closest('.ss-wrapper').length) {
+            setTimeout(function () {
+                $('.ss-dropdown').hide();
+            }, 0);
+        }
+    });
 
     // ════════════════════════════════════════
-    //  cascade: نوع کالا ← کالا ← سری ساخت
+    //  cascade
     // ════════════════════════════════════════
 
     $('#itemClassSelect').on('change', function () {
@@ -119,6 +167,9 @@ $(function () {
             data: { classId: classId },
             success: function (items) {
                 populateSS('itemSelect', items, 'انتخاب کنید...');
+            },
+            error: function () {
+                showToast('خطا در بارگذاری کالاها', 'error');
             }
         });
     });
@@ -145,7 +196,7 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  pre-populate: لود آیتم‌های موجود
+    //  pre-populate آیتم‌های موجود
     // ════════════════════════════════════════
 
     if (dispatchId) {
@@ -186,7 +237,7 @@ $(function () {
     }
 
     // ════════════════════════════════════════
-    //  افزودن آیتم جدید (مشابه New)
+    //  افزودن آیتم جدید
     // ════════════════════════════════════════
 
     window.addSelectedItem = function () {
@@ -237,7 +288,7 @@ $(function () {
                 vvmStageName: vvmStageName,
                 note: '',
                 uids: [],
-                stockInRam: row.currentStock,   // ✅ موجودی واقعی
+                stockInRam: row.currentStock,
                 requiresDiluent: row.requiresDiluent,
                 diluentItemDetailStoreId: row.diluentItemDetailStoreId,
                 diluentItemId: row.diluentItemId,
@@ -245,7 +296,6 @@ $(function () {
             });
             added++;
 
-            // حلال خودکار
             if (row.requiresDiluent && row.diluentItemDetailStoreId) {
                 addedItems.push({
                     idx: addedItems.length,
@@ -352,7 +402,7 @@ $(function () {
     }
 
     // ════════════════════════════════════════
-    //  ساخت hidden inputs برای submit
+    //  rebuild hidden inputs
     // ════════════════════════════════════════
 
     function rebuildHiddenInputs() {
@@ -409,7 +459,6 @@ $(function () {
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
             .appendTo('#dispatchForm');
 
-        // ═══ 🆕 اضافه کردن scanSessionId (فقط در حالت نهایی) ═══
         if (submitType === 'final' && typeof scanSessionId !== 'undefined') {
             $('#dispatchForm').find('input[name="scanSessionId"]').remove();
             $('<input>').attr({ type: 'hidden', name: 'scanSessionId', value: scanSessionId })
@@ -427,37 +476,5 @@ $(function () {
             $('#dispatchForm').submit();
         }
     };
-
-    // ════════════════════════════════════════
-    //  bind اولیه SearchableSelect
-    // ════════════════════════════════════════
-
-    $('.ss-wrapper').each(function () {
-        bindSSOptionClick($(this));
-
-        $(this).find('.ss-display').on('click', function () {
-            var $dd = $(this).siblings('.ss-dropdown');
-            $('.ss-dropdown').not($dd).hide();
-            $dd.toggle();
-            if ($dd.is(':visible')) {
-                $dd.find('.ss-search').focus();
-            }
-        });
-
-        $(this).find('.ss-search').on('input', function () {
-            var q = $(this).val().toLowerCase();
-            $(this).closest('.ss-dropdown').find('.ss-option').each(function () {
-                var match = $(this).text().toLowerCase().indexOf(q) > -1;
-                $(this).toggle(match);
-                $(this).next('hr').toggle(match);
-            });
-        });
-    });
-
-    $(document).on('click', function (e) {
-        if (!$(e.target).closest('.ss-wrapper').length) {
-            $('.ss-dropdown').hide();
-        }
-    });
 
 });

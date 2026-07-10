@@ -20,7 +20,6 @@ public record DispatchPrintDto
 
 public record DispatchLinePrintDto
 {
-    public int Row { get; set; }
     public string Item { get; set; }
     public string BatchNumber { get; set; }
     public DateTime? ExpiryDate { get; set; }

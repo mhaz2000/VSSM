@@ -1,6 +1,6 @@
-﻿@{
-    ViewBag.Title = "امحا UID";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+﻿﻿@{
+ViewBag.Title = "امحا UID";
+Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @* ── CSS های shared پروژه ── *@
@@ -33,7 +33,7 @@
                 </button>
                 <button class="du-seg-btn" id="btnUid" onclick="switchMode('uid')">
                     <i class="fa fa-qrcode"></i>
-                    UID
+                    QR کد
                 </button>
             </div>
 
@@ -72,8 +72,8 @@
                             <input type="text"
                                    id="uidInput"
                                    class="du-search-input"
-                                   placeholder="20 رقم عددی وارد کنید"
-                                   maxlength="20"
+                                   placeholder="QR کد مورد نظر را اسکن نمایید"
+                                   maxlength="60"
                                    inputmode="numeric" />
                             <button type="button" class="du-search-btn" onclick="doSearch()" title="جستجو">
                                 <i class="fa fa-search"></i>
@@ -83,7 +83,7 @@
                             <div class="du-uid-progress-bg">
                                 <div class="du-uid-progress-fill" id="uidBar" style="width:0%"></div>
                             </div>
-                            <span class="du-uid-counter" id="uidCounter">0 / 20</span>
+                            <span class="du-uid-counter" id="uidCounter">0 / 60</span>
                         </div>
                     </div>
                 </div>
@@ -145,8 +145,8 @@
     var todayShamsi              = '@ViewBag.TodayShamsi';
 
     var reasonList = @Html.Raw(
-                                Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ReasonList ?? new object[0])
-                );
+        Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ReasonList ?? new object[0])
+    );
 </script>
 
 @* ── JS ها — ترتیب مهم است ── *@

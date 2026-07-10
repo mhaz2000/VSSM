@@ -1,36 +1,21 @@
 ﻿/**
- * dispatch-edit-form.js  —  لاجیک اختصاصی فرم ویرایش ارسال
- * ═══════════════════════════════════════════
- * وابستگی‌ها (باید قبل از این فایل لود شده باشند):
- *   - jQuery
- *   - toast.js          (showToast)
- *   - uid-modal.js      (openUidModal, closeUidModal, submitUid, removeUid)
- *   - batch-table.js    (initBatchTable, loadBatchRows, showMoreRows)
- *
- * متغیرهای تزریقی از View:
- *   dispatchServerMsg
- *   dispatchServerType
- *   dispatchGetItemsByClass
- *   dispatchGetBatchesByItem
- *   setUidUrl
- *   dispatchEditGetLinesUrl   ← URL اکشن GetDispatchLines برای pre-populate
- *   dispatchId                ← Id ارسال در حال ویرایش
- *   dispatchIsConfirmed       ← bool: آیا تایید شده؟ (در صورت true عملیات قفل)
- * ═══════════════════════════════════════════
+ * dispatch-edit-form.js  —  فرم ویرایش ارسال (با pre-populate)
+ * نسخه: 2.2 - اضافه شدن لاگ و رفع مشکل بارگذاری جدول
  */
 
-// Holds every item row currently shown in the "added items" table.
-// Kept in outer scope so uid-modal.js can read/update it too.
 var addedItems = [];
+var batchTable = null;
 
 $(function () {
 
-    // Show a leftover toast message from the previous server round-trip (e.g. after redirect).
+    // ── Toast ──
     if (typeof dispatchServerMsg !== 'undefined' && dispatchServerMsg) {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
-    // Init the Persian date picker on the Date field, if the plugin is loaded.
+    console.log('🚀 Edit form initialized. dispatchId:', dispatchId);
+
+    // ── DatePicker (با توجه به اینکه از datepicker.js استفاده می‌شود) ──
     var $dateInput = $('#Date');
     if (typeof DatePicker !== 'undefined' && DatePicker.attach) {
         DatePicker.attach($dateInput);
@@ -39,40 +24,218 @@ $(function () {
             $(this).toggleClass('has-value', !!$(this).val());
         });
     }
-    // Init the paginated batch-selection table (shared component).
-    initBatchTable({
+
+    // ── PaginationTable ──
+    batchTable = new PaginationTable({
+        tableId: 'itemDetailsTable',
         tbodyId: 'itemDetailsTbody',
-        showMoreWrap: 'showMoreWrap',
         pageSize: 5,
-        emptyText: 'کالایی انتخاب نشده',
-        colCount: 8,
+        columns: [
+            { field: 'select' },
+            { field: 'itemName' },
+            { field: 'expiryDateShamsi' },
+            { field: 'manufacturerName' },
+            { field: 'currentStock' },
+            { field: 'dosePerVialNum' },
+            { field: 'storeName' },
+            { field: 'batchNumber' }
+        ],
+        searchFields: ['itemName', 'batchNumber', 'expiryDateShamsi', 'manufacturerName'],
+        emptyMessage: 'کالایی انتخاب نشده',
+        rowRenderer: function (rowData, index) {
+            return `
+                <tr>
+                    <td><input type="checkbox" class="batch-chk" data-row='${JSON.stringify(rowData).replace(/'/g, "&#39;")}' /></td>
+                    <td>${rowData.itemName || '-'}</td>
+                    <td>${rowData.expiryDateShamsi || '-'}</td>
+                    <td>${rowData.manufacturerName || '-'}</td>
+                    <td>${rowData.currentStock || 0}</td>
+                    <td>${rowData.dosePerVialNum || 0}</td>
+                    <td>${rowData.storeName || '-'}</td>
+                    <td>${rowData.batchNumber || '-'}</td>
+                </tr>
+            `;
+        }
     });
 
+    $(document).on('change', '.batch-chk', function () {
+        var anyChecked = $('.batch-chk:checked').length > 0;
+        if (anyChecked) {
+            $('#dispatchForm').attr('data-has-item', 'true');
+        } else {
+            $('#dispatchForm').removeAttr('data-has-item');
+        }
+    });
 
-    // Fetch existing dispatch lines for this dispatch and render them into the table.
-    if (dispatchId) {
+    // ════════════════════════════════════════
+    //  SearchableSelect (همانند dispatch-form)
+    // ════════════════════════════════════════
+
+    function bindSSOptionClick($wrapper) {
+        $wrapper.find('.ss-option').off('click.ss').on('click.ss', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var val = $(this).data('value');
+            var text = $(this).text().trim();
+            var $hidden = $wrapper.find('input[type="hidden"]');
+            var $display = $wrapper.find('.ss-text');
+
+            $hidden.val(val);
+            $display.text(text);
+            $wrapper.find('.ss-dropdown').hide();
+            $hidden.trigger('change');
+        });
+    }
+
+    function populateSS(wrapperId, items, emptyText) {
+        var $hidden = $('#' + wrapperId);
+        var $wrapper = $hidden.closest('.ss-wrapper');
+        if (!$wrapper.length) return;
+
+        var $options = $wrapper.find('.ss-options');
+        var $display = $wrapper.find('.ss-text');
+
+        $hidden.val('');
+        $display.text(emptyText || 'انتخاب کنید...');
+
+        var html = '';
+        $.each(items, function (_, item) {
+            html += '<div class="ss-option" data-value="' + item.itemId + '">' +
+                item.fullName +
+                '</div><hr style="margin:5px"/>';
+        });
+
+        if (!html) {
+            html = '<div class="ss-option-empty" style="padding:8px;color:#9ca3af;text-align:center;">' +
+                (emptyText || 'موردی یافت نشد') + '</div>';
+        }
+
+        $options.html(html);
+        bindSSOptionClick($wrapper);
+    }
+
+    $('.ss-wrapper').each(function () {
+        var $wrapper = $(this);
+
+        $wrapper.find('.ss-display').off('mousedown.ss').on('mousedown.ss', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var $dd = $wrapper.find('.ss-dropdown');
+            var isOpen = $dd.is(':visible');
+
+            $('.ss-dropdown').not($dd).hide();
+
+            if (isOpen) {
+                $dd.hide();
+            } else {
+                $dd.show();
+                $dd.find('.ss-search').focus();
+            }
+        });
+
+        $wrapper.find('.ss-search').off('input.ss').on('input.ss', function () {
+            var q = $(this).val().toLowerCase();
+            $(this).closest('.ss-dropdown').find('.ss-option').each(function () {
+                var match = $(this).text().toLowerCase().indexOf(q) > -1;
+                $(this).toggle(match);
+                $(this).next('hr').toggle(match);
+            });
+        });
+
+        bindSSOptionClick($wrapper);
+    });
+
+    $(document).off('mousedown.ss-close').on('mousedown.ss-close', function (e) {
+        if (!$(e.target).closest('.ss-wrapper').length) {
+            setTimeout(function () {
+                $('.ss-dropdown').hide();
+            }, 0);
+        }
+    });
+
+    // ════════════════════════════════════════
+    //  cascade
+    // ════════════════════════════════════════
+
+    $('#itemClassSelect').on('change', function () {
+        var classId = $(this).val();
+        if (batchTable) batchTable.setData([]);
+        populateSS('itemSelect', [], 'در حال بارگذاری...');
+
+        if (!classId) {
+            populateSS('itemSelect', [], 'ابتدا نوع کالا را انتخاب کنید');
+            return;
+        }
+
+        $.ajax({
+            url: dispatchGetItemsByClass,
+            data: { classId: classId },
+            success: function (items) {
+                populateSS('itemSelect', items, 'انتخاب کنید...');
+            },
+            error: function () {
+                showToast('خطا در بارگذاری کالاها', 'error');
+            }
+        });
+    });
+
+    $('#itemSelect').on('change', function () {
+        var itemId = $(this).val();
+        if (batchTable) batchTable.setData([]);
+        if (!itemId) return;
+
+        $.ajax({
+            url: dispatchGetBatchesByItem,
+            data: { itemId: itemId },
+            success: function (rows) {
+                if (!rows || rows.length === 0) {
+                    showToast('موجودی برای این کالا یافت نشد', 'error');
+                    return;
+                }
+                if (batchTable) batchTable.setData(rows);
+            },
+            error: function () {
+                showToast('خطا در بارگذاری سری‌های ساخت', 'error');
+            }
+        });
+    });
+
+    // ════════════════════════════════════════
+    //  🆕 PRE-POPULATE: لود آیتم‌های موجود (اصلاح‌شده با لاگ)
+    // ════════════════════════════════════════
+
+    if (dispatchId && dispatchId > 0) {
+        console.log('📥 Loading existing items for dispatchId:', dispatchId);
+
         $.ajax({
             url: dispatchEditGetLinesUrl,
             data: { id: dispatchId },
             success: function (lines) {
-                if (!lines || !lines.length) return;
+                console.log('✅ Received lines:', lines);
 
-                // Map each server line into the in-memory item shape used by
-                // renderAddedItems() / rebuildHiddenInputs().
+                if (!lines || !lines.length) {
+                    console.warn('⚠️ No lines received.');
+                    renderAddedItems(); // نمایش پیام خالی
+                    return;
+                }
+
                 $.each(lines, function (_, line) {
+                    console.log('📦 Adding line:', line);
                     addedItems.push({
                         idx: addedItems.length,
-                        dispatchLineId: line.dispatchLineId,
+                        dispatchLineId: line.dispatchLineId || 0,
                         itemDetailStoreId: line.itemDetailStoreId,
                         itemId: line.itemId,
-                        itemName: line.itemName,
-                        batchNumber: line.batchNumber,
-                        expiryDateShamsi: line.expiryDateShamsi,
-                        expiryDate: line.expiryDate,
-                        storeId: line.storeId,
-                        storeName: line.storeName,
-                        manufacturerName: line.manufacturerName,
-                        doseCount: line.doseCount,
+                        itemName: line.itemName || '-',
+                        batchNumber: line.batchNumber || '-',
+                        expiryDateShamsi: line.expiryDateShamsi || '-',
+                        expiryDate: line.expiryDate || null,
+                        storeId: line.storeId || 0,
+                        storeName: line.storeName || '-',
+                        manufacturerName: line.manufacturerName || '-',
+                        doseCount: line.doseCount || 0,
                         numVial: line.numVial || 0,
                         vvmStageId: line.vvmStageId || '',
                         vvmStageName: line.vvmStageName || '-',
@@ -83,56 +246,25 @@ $(function () {
                     });
                 });
 
+                console.log('📋 Added items array:', addedItems);
                 renderAddedItems();
             },
-            error: function () {
+            error: function (xhr, status, error) {
+                console.error('❌ Error loading lines:', status, error);
                 showToast('خطا در بارگذاری اقلام ارسال', 'error');
+                renderAddedItems(); // نمایش پیام خالی
             }
         });
+    } else {
+        console.warn('⚠️ dispatchId is invalid or zero. Skipping pre-populate.');
+        renderAddedItems(); // نمایش پیام خالی
     }
 
+    // ════════════════════════════════════════
+    //  افزودن آیتم جدید
+    // ════════════════════════════════════════
 
-    // Item class changed -> reload the item dropdown, reset the batch table.
-    $('#itemClassSelect').on('change', function () {
-        var classId = $(this).val();
-        $('#itemSelect').html('<option value="">در حال بارگذاری...</option>');
-        loadBatchRows([]);
-
-        if (!classId) {
-            $('#itemSelect').html('<option value="">ابتدا نوع کالا را انتخاب کنید</option>');
-            return;
-        }
-
-        $.ajax({
-            url: dispatchGetItemsByClass,
-            data: { classId: classId },
-            success: function (items) {
-                var opts = '<option value="">انتخاب کنید...</option>';
-                $.each(items, function (_, item) {
-                    opts += '<option value="' + item.itemId + '">' + item.fullName + '</option>';
-                });
-                $('#itemSelect').html(opts);
-            }
-        });
-    });
-
-    // Item changed -> reload the batch/lot table for that item.
-    $('#itemSelect').on('change', function () {
-        var itemId = $(this).val();
-        loadBatchRows([]);
-        if (!itemId) return;
-
-        $.ajax({
-            url: dispatchGetBatchesByItem,
-            data: { itemId: itemId },
-            success: function (rows) { loadBatchRows(rows); }
-        });
-    });
-
-
-    // Add the currently-checked batch row (plus its auto diluent, if any) to addedItems.
     window.addSelectedItem = function () {
-        // Locked once the dispatch is confirmed.
         if (dispatchIsConfirmed) {
             showToast('ارسال تایید شده — امکان ویرایش وجود ندارد', 'error');
             return;
@@ -140,7 +272,7 @@ $(function () {
 
         var $checked = $('.batch-chk:checked');
         if ($checked.length === 0) {
-            showToast('لطفاً یک سری ساخت را انتخاب کنید.', 'error');
+            showToast('لطفاً حداقل یک سری ساخت را انتخاب کنید.', 'error');
             return;
         }
 
@@ -150,71 +282,84 @@ $(function () {
             return;
         }
 
-        // Row data is stashed as a JSON string in data-row (HTML-entity-encoded quotes).
-        var row = JSON.parse($checked.first().attr('data-row').replace(/&#39;/g, "'"));
         var vvmStageId = $('#vvmStagesSelect').val();
         var vvmStageName = $('#vvmStagesSelect option:selected').text();
+        var added = 0;
 
-        addedItems.push({
-            idx: addedItems.length,
-            dispatchLineId: 0,   // جدید — هنوز در DB نیست
-            itemDetailStoreId: row.itemDetailStoreId,
-            itemId: row.itemId,
-            itemName: row.itemName,
-            batchNumber: row.batchNumber,
-            expiryDateShamsi: row.expiryDateShamsi,
-            expiryDate: row.expiryDate,
-            storeId: row.storeId,
-            storeName: row.storeName,
-            manufacturerName: row.manufacturerName,
-            doseCount: doseCount,
-            numVial: row.dosePerVialNum > 0 ? Math.floor(doseCount / row.dosePerVialNum) : 0,
-            vvmStageId: vvmStageId,
-            vvmStageName: vvmStageName,
-            note: '',
-            uids: [],
-            stockInRam: row.currentStock - doseCount,
-            requiresDiluent: row.requiresDiluent,
-            diluentItemDetailStoreId: row.diluentItemDetailStoreId,
-            diluentItemId: row.diluentItemId,
-            diluentItemName: row.diluentItemName,
-        });
+        $checked.each(function () {
+            var row = JSON.parse($(this).attr('data-row').replace(/&#39;/g, "'"));
 
-        renderAddedItems();
+            var exists = addedItems.some(function (it) {
+                return it.itemDetailStoreId === row.itemDetailStoreId;
+            });
+            if (exists) return;
 
-        // حلال خودکار
-        // If the item requires a diluent, auto-add a second line for it with the same dose count.
-        if (row.requiresDiluent && row.diluentItemDetailStoreId) {
             addedItems.push({
                 idx: addedItems.length,
                 dispatchLineId: 0,
-                itemDetailStoreId: row.diluentItemDetailStoreId,
-                itemId: row.diluentItemId,
-                itemName: (row.diluentItemName || '') + ' (حلال - خودکار)',
-                batchNumber: row.diluentBatchNumber || '',
-                expiryDateShamsi: row.diluentExpiryDateShamsi || '-',
-                expiryDate: row.diluentExpiryDate || null,
+                itemDetailStoreId: row.itemDetailStoreId,
+                itemId: row.itemId,
+                itemName: row.itemName,
+                batchNumber: row.batchNumber,
+                expiryDateShamsi: row.expiryDateShamsi,
+                expiryDate: row.expiryDate,
                 storeId: row.storeId,
                 storeName: row.storeName,
-                manufacturerName: row.diluentManufacturerName || '-',
+                manufacturerName: row.manufacturerName,
                 doseCount: doseCount,
-                numVial: 0,
-                vvmStageId: '',
-                vvmStageName: '-',
-                note: 'حلال خودکار',
+                numVial: row.dosePerVialNum > 0 ? Math.floor(doseCount / row.dosePerVialNum) : 0,
+                vvmStageId: vvmStageId,
+                vvmStageName: vvmStageName,
+                note: '',
                 uids: [],
-                stockInRam: 0,
-                requiresDiluent: false,
+                stockInRam: row.currentStock,
+                requiresDiluent: row.requiresDiluent,
+                diluentItemDetailStoreId: row.diluentItemDetailStoreId,
+                diluentItemId: row.diluentItemId,
+                diluentItemName: row.diluentItemName,
             });
-            renderAddedItems();
+            added++;
+
+            if (row.requiresDiluent && row.diluentItemDetailStoreId) {
+                addedItems.push({
+                    idx: addedItems.length,
+                    dispatchLineId: 0,
+                    itemDetailStoreId: row.diluentItemDetailStoreId,
+                    itemId: row.diluentItemId,
+                    itemName: (row.diluentItemName || '') + ' (حلال - خودکار)',
+                    batchNumber: row.diluentBatchNumber || '',
+                    expiryDateShamsi: row.diluentExpiryDateShamsi || '-',
+                    expiryDate: row.diluentExpiryDate || null,
+                    storeId: row.storeId,
+                    storeName: row.storeName,
+                    manufacturerName: row.diluentManufacturerName || '-',
+                    doseCount: doseCount,
+                    numVial: 0,
+                    vvmStageId: '',
+                    vvmStageName: '-',
+                    note: 'حلال خودکار',
+                    uids: [],
+                    stockInRam: 0,
+                    requiresDiluent: false,
+                });
+            }
+        });
+
+        if (added === 0) {
+            showToast('این سری‌های ساخت قبلاً اضافه شده‌اند', 'warning');
+            return;
         }
 
+        renderAddedItems();
         $checked.prop('checked', false);
+        $('#dispatchForm').removeAttr('data-has-item');
         $('#doseCountInput').val('');
     };
 
+    // ════════════════════════════════════════
+    //  حذف آیتم
+    // ════════════════════════════════════════
 
-    // Remove a line from addedItems and give its dose count back to the on-screen stock display.
     window.removeItem = function (idx) {
         if (dispatchIsConfirmed) {
             showToast('ارسال تایید شده — امکان ویرایش وجود ندارد', 'error');
@@ -224,32 +369,34 @@ $(function () {
         var item = addedItems[idx];
         var $stockCell = $('.stock-cell-' + item.itemDetailStoreId);
         if ($stockCell.length) {
-            $stockCell.text((parseInt($stockCell.text()) || 0) + item.doseCount);
+            var toReturn = item.uids.length > 0 ? item.uids.length : item.doseCount;
+            $stockCell.text((parseInt($stockCell.text()) || 0) + toReturn);
         }
-
         addedItems.splice(idx, 1);
-        // Re-index remaining items so idx always matches array position.
         $.each(addedItems, function (i, it) { it.idx = i; });
         renderAddedItems();
     };
 
+    // ════════════════════════════════════════
+    //  رندر جدول کالاهای افزوده‌شده
+    // ════════════════════════════════════════
 
-    // Re-draw the "added items" table body from the addedItems array, then rebuild hidden inputs.
     function renderAddedItems() {
         var tbody = $('#addedItemsTbody');
+        console.log('🎨 Rendering added items. Count:', addedItems.length);
 
         if (addedItems.length === 0) {
             tbody.html(
                 '<tr><td colspan="10" style="padding:24px;color:#9ca3af;text-align:center;">' +
                 'کالایی اضافه نشده</td></tr>'
             );
+            $('#dispatchForm').removeAttr('data-has-record');
             rebuildHiddenInputs();
             return;
         }
 
         var html = '';
         $.each(addedItems, function (i, item) {
-            // No action buttons once confirmed — everything is read-only.
             var actions = dispatchIsConfirmed
                 ? '<span style="color:#9ca3af;font-size:11px;">تایید شده</span>'
                 : '<button type="button" class="btn-action btn-action-uid" title="افزودن UID" ' +
@@ -275,11 +422,15 @@ $(function () {
         });
 
         tbody.html(html);
+        $('#dispatchForm').attr('data-has-record', 'true');
         rebuildHiddenInputs();
+        console.log('✅ Render complete.');
     }
 
+    // ════════════════════════════════════════
+    //  rebuild hidden inputs
+    // ════════════════════════════════════════
 
-    // Build the Items[i].* hidden inputs (model-binding format) posted with the form.
     function rebuildHiddenInputs() {
         var $container = $('#hiddenInputsContainer').empty();
 
@@ -295,12 +446,11 @@ $(function () {
             add('ItemId', item.itemId);
             add('StoreId', item.storeId);
             add('DoseCount', item.doseCount);
-            add('VvmStageId', item.vvmStageId);
+            add('VvmstageId', item.vvmStageId);
             add('BatchNumber', item.batchNumber);
             add('ExpiryDate', item.expiryDate);
             add('Note', item.note);
 
-            // Uids[] needs its own indexed inputs, one per scanned UID.
             $.each(item.uids, function (j, uid) {
                 $container.append(
                     '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uid + '">'
@@ -309,8 +459,10 @@ $(function () {
         });
     }
 
+    // ════════════════════════════════════════
+    //  دکمه‌های footer
+    // ════════════════════════════════════════
 
-    // Final submit / draft submit buttons — validate, tag submitType, then post the form.
     $('.js-footer-btn').on('click', function () {
         var submitType = $(this).data('submit');
 
@@ -329,14 +481,19 @@ $(function () {
         }
 
         $('#toastContainer').empty();
-        // Replace any previous submitType hidden field with the one for this click.
         $('#dispatchForm').find('input[name="submitType"]').remove();
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
             .appendTo('#dispatchForm');
+
+        if (submitType === 'final' && typeof scanSessionId !== 'undefined') {
+            $('#dispatchForm').find('input[name="scanSessionId"]').remove();
+            $('<input>').attr({ type: 'hidden', name: 'scanSessionId', value: scanSessionId })
+                .appendTo('#dispatchForm');
+        }
+
         $('#dispatchForm').submit();
     });
 
-    // Delete button — confirm, then submit the form with submitType=delete.
     window.confirmDelete = function () {
         if (confirm('آیا از حذف این ارسال اطمینان دارید؟')) {
             $('#dispatchForm').find('input[name="submitType"]').remove();

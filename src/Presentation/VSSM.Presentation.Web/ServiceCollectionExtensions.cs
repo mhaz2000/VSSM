@@ -24,13 +24,14 @@ using VSSM.Application.DTOs.BaseEntities.Vvmtype;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces.RequestEntities;
 using VSSM.Application.Services;
+using VSSM.Application.Services.Barcode;
 using VSSM.Application.Services.BaseEntities;
-using VSSM.Infrastructure.Services.BaseEntities;
 using VSSM.Application.Services.ExcelGenerators;
 using VSSM.Application.Services.Reports;
 using VSSM.Application.Services.RequestEntities;
 using VSSM.Infrastructure.Data.Dapper;
 using VSSM.Infrastructure.Data.Models;
+using VSSM.Infrastructure.Services.BaseEntities;
 using VSSM.Presentation.Web.Authentication;
 using VSSM.Presentation.Web.Authorization;
 
@@ -107,6 +108,9 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IMenuService, MenuService>();
 
             services.AddScoped<ICurrentStockReportExcelGenerator, CurrentStockReportExcelGenerator>();
+            services.AddScoped<IGs1BarcodeParser, Gs1BarcodeParser>();
+
+            services.AddSingleton<DispatchScanSessionService>();
 
             /*reports services DI*/
             #region reports services DI

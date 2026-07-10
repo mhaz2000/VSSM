@@ -46,13 +46,14 @@ $(function () {
     $('#uidInput').on('input', function () {
         $(this).val($(this).val().replace(/\D/g, ''));
         var len = $(this).val().length;
-        var pct = Math.round(len / 20 * 100);
+        var pct = Math.round(len / 60 * 100);
         $('#uidBar').css({
             width: pct + '%',
-            background: len === 20 ? '#16a34a' : '#3b82f6'
+            background: len >= 45 ? '#16a34a' : '#3b82f6'
         });
-        $('#uidCounter').text(len + ' / 20');
-        if (len === 20) doSearch();
+        $('#uidCounter').text(len + ' / 60');
+        // جستجوی خودکار بعد از ۴۵ رقم
+        if (len >= 45) doSearch();
     });
 
     $('#uidInput').on('keydown', function (e) {
@@ -78,7 +79,7 @@ function switchMode(mode) {
     _searchedKeys.clear();
     $('#batchInput, #uidInput').val('');
     $('#uidBar').css({ width: '0%', background: '#3b82f6' });
-    $('#uidCounter').text('0 / 20');
+    $('#uidCounter').text('0 / 60');
 }
 
 /* ══════════════════════════════════════════════
@@ -98,13 +99,14 @@ function doSearch() {
         url = searchByBatchUrl;
         data = { batchNumber: batch };
     } else {
+        // ===== حالت UID =====
         currentUid = $('#uidInput').val().trim();
         if (!currentUid) { showToast('UID اجباری است', 'error'); return; }
         if (currentUid.length < 20) { showToast('UID وارد شده معتبر نمی‌باشد', 'error'); return; }
-        if (_searchedKeys.has('uid:' + currentUid)) {
-            showToast('این UID قبلاً جستجو شده است', 'warning');
-            return;
-        }
+        // در حالت UID، هر بار نتایج قبلی را پاک می‌کنیم (فقط یک نتیجه مجاز است)
+        _searchResults = [];
+        _searchedKeys.clear();
+        resetResults(); // جدول را خالی می‌کند
         url = searchByUidUrl;
         data = { uid: currentUid };
     }
@@ -112,6 +114,7 @@ function doSearch() {
     _setFormLocked(true, 'search');
 
     if (_searchResults.length > 0) {
+        // فقط در حالت batch ممکن است چندین رکورد داشته باشیم، برای loading یک ردیف اضافه می‌کنیم
         $('#resultsTbody').append(
             '<tr id="du-loading-row"><td colspan="10" style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">' +
             '<i class="fa fa-circle-o-notch fa-spin" style="margin-left:6px;"></i>در حال جستجو...</td></tr>'
@@ -126,30 +129,49 @@ function doSearch() {
             _setFormLocked(false, 'search');
 
             if (!res.success) {
+                // خالی کردن اینپوت‌ها در صورت خطا
+                $('#batchInput').val('');
+                $('#uidInput').val('');
+                $('#uidBar').css({ width: '0%', background: '#3b82f6' });
+                $('#uidCounter').text('0 / 60');
                 showNotFound(res.message);
-                if (_searchResults.length > 0) renderResults();
+                // اگر در حالت UID بود، نتایج قبلاً پاک شده‌اند، پس جدول خالی است
+                if (mode === 'batch' && _searchResults.length > 0) renderResults();
                 else resetResults();
                 return;
             }
 
-            // ثبت کلید جستجوشده
-            var keyVal = mode === 'batch'
-                ? 'batch:' + $('#batchInput').val().trim()
-                : 'uid:' + currentUid;
-            _searchedKeys.add(keyVal);
+            // ثبت کلید جستجوشده (فقط برای batch)
+            if (mode === 'batch') {
+                var keyVal = 'batch:' + $('#batchInput').val().trim();
+                _searchedKeys.add(keyVal);
+            }
 
             // اضافه کردن نتایج جدید
-            $.each(res.data, function (_, item) {
-                item.searchedUid = currentUid; // در batch mode این null می‌مونه
-
-                var exists = _searchResults.some(function (r) {
-                    return mode === 'batch'
-                        ? r.pkOrderInfo === item.pkOrderInfo
-                        : r.searchedUid === item.searchedUid;
+            if (mode === 'batch') {
+                // در حالت batch، ممکن است چندین رکورد بیاید، آنها را به لیست اضافه می‌کنیم
+                $.each(res.data, function (_, item) {
+                    var exists = _searchResults.some(function (r) {
+                        return r.pkOrderInfo === item.pkOrderInfo;
+                    });
+                    if (!exists) {
+                        item.searchedUid = null; // در batch mode UID ندارد
+                        _searchResults.push(item);
+                    }
                 });
-
-                if (!exists) _searchResults.push(item);
-            });
+            } else {
+                // حالت UID: فقط یک رکورد انتظار می‌رود
+                if (res.data && res.data.length > 0) {
+                    var item = res.data[0];
+                    item.searchedUid = currentUid; // برای نمایش در صورت نیاز
+                    _searchResults = [item]; // جایگزین می‌کنیم نه اضافه
+                } else {
+                    // اگر داده‌ای نبود، خطای not found نمایش داده می‌شود
+                    showNotFound('اطلاعاتی یافت نشد');
+                    resetResults();
+                    return;
+                }
+            }
 
             // پاک کردن input بعد از جستجوی موفق
             if (mode === 'batch') {
@@ -157,15 +179,20 @@ function doSearch() {
             } else {
                 $('#uidInput').val('');
                 $('#uidBar').css({ width: '0%', background: '#3b82f6' });
-                $('#uidCounter').text('0 / 20');
+                $('#uidCounter').text('0 / 60');
             }
 
             renderResults();
         },
         error: function () {
             _setFormLocked(false, 'search');
+            // خالی کردن اینپوت‌ها در صورت خطای سرور
+            $('#batchInput').val('');
+            $('#uidInput').val('');
+            $('#uidBar').css({ width: '0%', background: '#3b82f6' });
+            $('#uidCounter').text('0 / 60');
             showToast('خطا در ارتباط با سرور', 'error');
-            if (_searchResults.length > 0) renderResults();
+            if (mode === 'batch' && _searchResults.length > 0) renderResults();
             else resetResults();
         }
     });
@@ -198,7 +225,7 @@ function renderResults() {
             '<td>' +
             '<div class="datepicker-wrap">' +
             '<input type="text" class="f-control datepicker-input du-destroy-date" data-idx="' + i + '"' +
-            ' value="" placeholder="' + (todayShamsi || '1404/01/01') + '" autocomplete="off" />' +
+            ' value="' + (todayShamsi || '') + '" placeholder="' + (todayShamsi || '1404/01/01') + '" autocomplete="off" />' +
             '<i class="fa fa-calendar datepicker-ico"></i>' +
             '</div>' +
             '</td>' +
@@ -225,7 +252,7 @@ function renderResults() {
 }
 
 function removeRow(idx) {
-    // کلید جستجو رو هم پاک کن تا بتونه دوباره سرچ کنه
+    // کلید جستجو رو هم پاک کن تا بتونه دوباره سرچ کنه (فقط برای batch)
     var removed = _searchResults[idx];
     if (removed) {
         var key = removed.searchedUid
@@ -269,6 +296,7 @@ function resetResults() {
         '<span>اطلاعاتی وارد نشد</span>' +
         '</td></tr>'
     );
+    $('#submitProgressWrap').empty();
 }
 
 /* ══════════════════════════════════════════════
@@ -282,6 +310,9 @@ function submitDestroy() {
     $.each(_searchResults, function (i) {
         var reason = $('.du-reason-sel[data-idx="' + i + '"]').val();
         var date = $('.du-destroy-date[data-idx="' + i + '"]').val().trim();
+        if (!date) {
+            date = todayShamsi || '';
+        }
         if (!reason || !date) { valid = false; return false; }
         payload.push({
             pkOrderInfo: _searchResults[i].pkOrderInfo,
@@ -356,6 +387,9 @@ function submitDestroy() {
         pb.finish(false, 'خطا در ارتباط با سرور');
         showToast('خطا در ارتباط با سرور', 'error');
         _resetSubmitBtn($btn);
+        setTimeout(function () {
+            $('#submitProgressWrap').empty();
+        }, 2000);
     });
 }
 
@@ -375,15 +409,15 @@ function _handleSSEEvent(eventName, data, pb, $btn, totalUids) {
             resetResults();
             $('#batchInput, #uidInput').val('');
             $('#uidBar').css({ width: '0%', background: '#3b82f6' });
-            $('#uidCounter').text('0 / 20');
+            $('#uidCounter').text('0 / 60');
+            setTimeout(function () {
+                $('#submitProgressWrap').empty();
+            }, 3000);
+        } else {
+            setTimeout(function () {
+                $('#submitProgressWrap').empty();
+            }, 2000);
         }
         _resetSubmitBtn($btn);
     }
 }
-
-$popup.find('.cal-day:not(.empty)').on('click', function () {
-    var d = $(this).data('d');
-    $input.val(cy + '/' + pad(cm) + '/' + pad(d)).trigger('change');
-    $input.addClass('has-value');  // ← اضافه کن
-    closePicker();
-});

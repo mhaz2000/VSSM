@@ -1,4 +1,4 @@
-﻿@using VSSM.Application.DTOs.BaseEntities
+﻿﻿@using VSSM.Application.DTOs.BaseEntities
 @using VSSM.Application.DTOs.BaseEntities.Dispatches
 @using VSSM.Application.DTOs.BaseEntities.Recipient
 @using VSSM.Presentation.Web.Models.Base
@@ -25,6 +25,7 @@
     <link href="~/css/components/shared/uid-modal.css" rel="stylesheet" />
     <link href="~/css/components/shared/search-bar.css" rel="stylesheet" />
     <link href="~/css/dispatch-form.css" rel="stylesheet" />
+    <link href="~/css/components/shared/pagination-table.css" rel="stylesheet" />
 }
 
 <div id="toastContainer"></div>
@@ -61,7 +62,7 @@
 
 <div class="dispatch-wrap">
 
-    <form id="dispatchForm" asp-action="Edit" method="post" novalidate>
+    <form id="dispatchForm" asp-action="Update" method="post" novalidate>
         @Html.AntiForgeryToken()
 
         <input type="hidden" asp-for="Id" />
@@ -80,8 +81,8 @@
                     @if (isConfirmed)
                     {
                         <span style="font-size:11px; font-weight:500; color:#15803d;
-                                             background:#f0fdf4; border:1px solid #bbf7d0;
-                                             border-radius:6px; padding:2px 10px; margin-right:8px;">
+                                                 background:#f0fdf4; border:1px solid #bbf7d0;
+                                                 border-radius:6px; padding:2px 10px; margin-right:8px;">
                             <i class="fa fa-check"></i> تایید شده
                         </span>
                     }
@@ -117,7 +118,6 @@
 
                     <div class="f-group">
                         <label class="f-label">کالا <span class="req-tag">اجباری</span></label>
-                        @* ✅ مورد ۶: کالا با SearchableSelect *@
                         @if (!isConfirmed)
                         {
                             @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
@@ -132,7 +132,6 @@
                                                 }
                         else
                         {
-                            @* در حالت تایید شده فقط نمایش متن — غیرقابل ویرایش *@
                             <input type="text" class="f-control" disabled value="(تایید شده - قابل ویرایش نیست)" />
                         }
                     </div>
@@ -143,7 +142,6 @@
 
                     <div class="f-group">
                         <label class="f-label">گیرنده <span class="req-tag">اجباری</span></label>
-                        @* ✅ مورد ۶: گیرنده با SearchableSelect + مقدار فعلی pre-select شده *@
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
                         {
                             Id = "ReceiverId",
@@ -268,12 +266,6 @@
                         </table>
                     </div>
 
-                    <div style="padding:10px 0 4px; text-align:center; display:none;" id="showMoreWrap">
-                        <button type="button" class="btn-show-more" onclick="showMoreRows()">
-                            <i class="fa fa-chevron-down"></i> نمایش بیشتر
-                        </button>
-                    </div>
-
                     <div style="padding:12px 0 0; display:flex; justify-content:flex-end;">
                         <button type="button" class="btn-add-line" onclick="addSelectedItem()">
                             <i class="fa fa-plus"></i> افزودن
@@ -342,6 +334,9 @@
             </a>
         </div>
 
+        @* ═══ 🆕 SessionId مخفی ═══ *@
+        <input type="hidden" id="ScanSessionId" value="@Guid.NewGuid().ToString()" />
+
     </form>
 </div>
 
@@ -351,17 +346,19 @@
 
     <script src="~/js/shared/toast.js"></script>
     <script src="~/js/shared/uid-modal.js"></script>
-    <script src="~/js/shared/batch-table.js"></script>
+    <script src="~/js/shared/pagination/pagination-table.js"></script>
 
     <script>
         var dispatchServerMsg        = "@(TempData["ToastMessage"] as string ?? "")";
         var dispatchServerType       = "@(TempData["ToastType"] as string ?? "info")";
         var dispatchGetItemsByClass  = "@Url.Action("GetItemsByClass", "Dispatches")";
         var dispatchGetBatchesByItem = "@Url.Action("GetBatchesByItem", "Dispatches")";
-        var setUidUrl                = "@Url.Action("SetUid", "Dispatches")";
         var dispatchEditGetLinesUrl  = "@Url.Action("GetDispatchLines", "Dispatches")";
         var dispatchId               = @(Model?.Id ?? 0);
         var dispatchIsConfirmed      = @(isConfirmed ? "true" : "false");
+
+        var scanSessionId = $('#ScanSessionId').val();
+
     </script>
 
     <script src="~/js/components/dispatches/dispatch-edit-form.js"></script>

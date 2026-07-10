@@ -26,7 +26,7 @@ public class DestroyUidController(
     public async Task<IActionResult> SearchByBatch(string batchNumber, CancellationToken token)
     {
         var (success, message, data) = await destroyUidService
-            .SearchByBatchAsync(batchNumber, CurrentUserRecipientId ?? 0, token);
+            .SearchByBatchAsync(batchNumber, CurrentUserRecipientId.GetValueOrDefault(), token);
 
         return Json(new { success, message, data });
     }
@@ -35,7 +35,7 @@ public class DestroyUidController(
     public async Task<IActionResult> SearchByUid(string uid, CancellationToken token)
     {
         var (success, message, data) = await destroyUidService
-            .SearchByUidAsync(uid, CurrentUserRecipientId ?? 0, token);
+            .SearchByUidAsync(uid, CurrentUserRecipientId.GetValueOrDefault(), token);
 
         return Json(new { success, message, data });
     }

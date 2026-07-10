@@ -1,19 +1,18 @@
 ﻿/**
- * dispatch-form.js  —  لاجیک اختصاصی فرم ارسال
+ * dispatch-form.js  —  لاجیک اختصاصی فرم ارسال (با PaginationTable)
  */
 
 var addedItems = [];
+var batchTable = null;
 
 $(function () {
 
-    // ════════════════════════════════════════
-    //  ۱. مقداردهی اولیه
-    // ════════════════════════════════════════
-
+    // ── Toast پیام سرور ──
     if (typeof dispatchServerMsg !== 'undefined' && dispatchServerMsg) {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
+    // ── DatePicker ──
     var $dateInput = $('#Date');
     DatePicker.attach($dateInput);
     if ($dateInput.val()) $dateInput.addClass('has-value');
@@ -21,14 +20,40 @@ $(function () {
         $(this).toggleClass('has-value', !!$(this).val());
     });
 
-    initBatchTable({
+    // ── PaginationTable برای سری‌های ساخت ──
+    batchTable = new PaginationTable({
+        tableId: 'itemDetailsTable',
         tbodyId: 'itemDetailsTbody',
-        showMoreWrap: 'showMoreWrap',
         pageSize: 5,
-        emptyText: 'کالایی انتخاب نشده',
-        colCount: 8,
+        columns: [
+            { field: 'select' },
+            { field: 'itemName' },
+            { field: 'expiryDateShamsi' },
+            { field: 'manufacturerName' },
+            { field: 'currentStock' },
+            { field: 'dosePerVialNum' },
+            { field: 'storeName' },
+            { field: 'batchNumber' }
+        ],
+        searchFields: ['itemName', 'batchNumber', 'expiryDateShamsi', 'manufacturerName'],
+        emptyMessage: 'کالایی انتخاب نشده',
+        rowRenderer: function (rowData, index) {
+            return `
+                <tr>
+                    <td><input type="checkbox" class="batch-chk" data-row='${JSON.stringify(rowData).replace(/'/g, "&#39;")}' /></td>
+                    <td>${rowData.itemName || '-'}</td>
+                    <td>${rowData.expiryDateShamsi || '-'}</td>
+                    <td>${rowData.manufacturerName || '-'}</td>
+                    <td>${rowData.currentStock || 0}</td>
+                    <td>${rowData.dosePerVialNum || 0}</td>
+                    <td>${rowData.storeName || '-'}</td>
+                    <td>${rowData.batchNumber || '-'}</td>
+                </tr>
+            `;
+        }
     });
 
+    // ── رویداد change چک‌باکس‌ها ──
     $(document).on('change', '.batch-chk', function () {
         var anyChecked = $('.batch-chk:checked').length > 0;
         if (anyChecked) {
@@ -39,7 +64,7 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  ۲. helpers برای SearchableSelect
+    //  helpers برای SearchableSelect
     // ════════════════════════════════════════
 
     function populateSS(wrapperId, items, emptyText) {
@@ -79,12 +104,12 @@ $(function () {
     }
 
     // ════════════════════════════════════════
-    //  ۳. cascade: نوع کالا ← کالا ← سری ساخت
+    //  cascade: نوع کالا ← کالا ← سری ساخت
     // ════════════════════════════════════════
 
     $('#itemClassSelect').on('change', function () {
         var classId = $(this).val();
-        loadBatchRows([]);
+        if (batchTable) batchTable.setData([]);
         populateSS('itemSelect', [], 'در حال بارگذاری...');
 
         if (!classId) {
@@ -103,7 +128,7 @@ $(function () {
 
     $('#itemSelect').on('change', function () {
         var itemId = $(this).val();
-        loadBatchRows([]);
+        if (batchTable) batchTable.setData([]);
         if (!itemId) return;
 
         $.ajax({
@@ -114,7 +139,7 @@ $(function () {
                     showToast('موجودی برای این کالا یافت نشد', 'error');
                     return;
                 }
-                loadBatchRows(rows);
+                if (batchTable) batchTable.setData(rows);
             },
             error: function () {
                 showToast('خطا در بارگذاری سری‌های ساخت', 'error');
@@ -123,7 +148,7 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  ۴. افزودن آیتم به لیست
+    //  افزودن آیتم به لیست
     // ════════════════════════════════════════
 
     window.addSelectedItem = function () {
@@ -150,7 +175,7 @@ $(function () {
             var exists = addedItems.some(function (it) {
                 return it.itemDetailStoreId === row.itemDetailStoreId;
             });
-            if (exists) return; // continue
+            if (exists) return;
 
             addedItems.push({
                 idx: addedItems.length,
@@ -213,7 +238,7 @@ $(function () {
     };
 
     // ════════════════════════════════════════
-    //  ۵. حذف آیتم
+    //  حذف آیتم
     // ════════════════════════════════════════
 
     window.removeItem = function (idx) {
@@ -229,7 +254,7 @@ $(function () {
     };
 
     // ════════════════════════════════════════
-    //  ۶. رندر جدول کالاهای افزوده‌شده
+    //  رندر جدول کالاهای افزوده‌شده
     // ════════════════════════════════════════
 
     function renderAddedItems() {
@@ -277,7 +302,7 @@ $(function () {
     }
 
     // ════════════════════════════════════════
-    //  ۷. ساخت hidden inputs برای submit
+    //  ساخت hidden inputs برای submit
     // ════════════════════════════════════════
 
     function rebuildHiddenInputs() {
@@ -307,7 +332,7 @@ $(function () {
     }
 
     // ════════════════════════════════════════
-    //  ۸. دکمه‌های footer
+    //  دکمه‌های footer
     // ════════════════════════════════════════
 
     $('.js-footer-btn').on('click', function () {
@@ -344,7 +369,7 @@ $(function () {
     };
 
     // ════════════════════════════════════════
-    //  ۹. bind اولیه SearchableSelect های موجود
+    //  bind اولیه SearchableSelect های موجود
     // ════════════════════════════════════════
 
     $('.ss-wrapper').each(function () {

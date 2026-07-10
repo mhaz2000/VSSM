@@ -1,12 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using VSSM.Application.DTOs.Barcode;
 using VSSM.Application.DTOs.BaseEntities.DestroyUid;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Services.Barcode;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities;
 
-public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbContext خودت
+public class DestroyUidService(
+    IGs1BarcodeParser barcodeParser,
+    VSSMDbContext db) : IDestroyUidService  
 {
     public async Task<List<(int Id, string Title)>> GetDestroyReasonsAsync(CancellationToken token)
     {
@@ -20,10 +24,18 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
     }
 
     public async Task<(bool Success, string Message, List<DestroyUidSearchResultDto> Data)>
-        SearchByBatchAsync(string batchNumber, int userStoreId, CancellationToken token)
+        SearchByBatchAsync(string batchNumber, int userRecipientId, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(batchNumber))
             return (false, "سری ساخت اجباری است", []);
+
+        var validStoreIds = await db.TblStores
+             .Where(s => s.RecipientId == userRecipientId)
+             .Select(s => s.StoreId)
+             .ToListAsync(token);
+
+        if (validStoreIds.Count == 0)
+            return (false, "کاربر جاری دسترسی به هیچ انباری ندارد", []);
 
         var order = await db.TblOrderInfo
             .AsNoTracking()
@@ -38,7 +50,7 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
             u.IsActive == true &&
             u.Used == false &&
             u.FkDestroyId == null &&
-            u.CurrentStore == userStoreId);
+            u.CurrentStore == userRecipientId);
 
         if (uidCount == 0)
             return (false, "سری ساخت وارد شده فاقد UID معتبر می‌باشد", []);
@@ -65,10 +77,27 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
     public async Task<(bool Success, string Message, List<DestroyUidSearchResultDto> Data)>
         SearchByUidAsync(string uid, int userRecipientId, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(uid))
-            return (false, "UID اجباری است", []);
-        if (uid.Length < 20)
-            return (false, "UID وارد شده معتبر نمی‌باشد", []);
+        Gs1BarcodeInfo barcodeInfo;
+        if (uid.Length == 20 && uid.All(char.IsDigit))
+        {
+            barcodeInfo = new Gs1BarcodeInfo { Uid = uid, IsGs1 = false };
+        }
+        else
+        {
+            barcodeInfo = barcodeParser.Parse(uid);
+            if (barcodeInfo == null || string.IsNullOrEmpty(barcodeInfo.Uid))
+                return (false, "شناسه واکسن از بارکد استخراج نشد.", null);
+            barcodeInfo.IsGs1 = true;
+        }
+
+        if (!barcodeInfo.IsGs1)
+        {
+            if (string.IsNullOrWhiteSpace(uid))
+                return (false, "UID اجباری است", []);
+            if (uid.Length < 20)
+                return (false, "UID وارد شده معتبر نمی‌باشد", []);
+        }
+ 
 
         var validStoreIds = await db.TblStores
             .Where(s => s.RecipientId == userRecipientId)
@@ -79,7 +108,7 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
             .AsNoTracking()
             .Include(u => u.OrderInfo)
             .FirstOrDefaultAsync(u =>
-                (u.FirstLevelUid == uid || u.SecLevelUid == uid || u.ParentUid == uid) &&
+                (u.FirstLevelUid == barcodeInfo.Uid || u.SecLevelUid == barcodeInfo.Uid || u.ParentUid == barcodeInfo.Uid) &&
                 u.IsActive == true &&
                 u.Used == false &&
                 u.FkDestroyId == null &&
@@ -332,5 +361,7 @@ public class DestroyUidService(VSSMDbContext db) : IDestroyUidService  // DbCont
             return (false, "خطا در ثبت: " + ex.Message);
         }
     }
+
+
 
 }

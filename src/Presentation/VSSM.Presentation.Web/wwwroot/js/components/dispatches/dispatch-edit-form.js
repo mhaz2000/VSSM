@@ -1,6 +1,6 @@
 ﻿/**
- * dispatch-edit-form.js  —  فرم ویرایش ارسال (با pre-populate)
- * نسخه: 2.2 - اضافه شدن لاگ و رفع مشکل بارگذاری جدول
+ * dispatch-edit-form.js  —  فرم ویرایش ارسال (هماهنگ با New)
+ * نسخه: 2.2 - با data-idx و logic جدید
  */
 
 var addedItems = [];
@@ -13,9 +13,7 @@ $(function () {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
-    console.log('🚀 Edit form initialized. dispatchId:', dispatchId);
-
-    // ── DatePicker (با توجه به اینکه از datepicker.js استفاده می‌شود) ──
+    // ── DatePicker ──
     var $dateInput = $('#Date');
     if (typeof DatePicker !== 'undefined' && DatePicker.attach) {
         DatePicker.attach($dateInput);
@@ -58,6 +56,7 @@ $(function () {
         }
     });
 
+    // ── رویداد change چک‌باکس ──
     $(document).on('change', '.batch-chk', function () {
         var anyChecked = $('.batch-chk:checked').length > 0;
         if (anyChecked) {
@@ -115,6 +114,7 @@ $(function () {
         bindSSOptionClick($wrapper);
     }
 
+    // ── راه‌اندازی اولیه SearchableSelect ──
     $('.ss-wrapper').each(function () {
         var $wrapper = $(this);
 
@@ -156,7 +156,7 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  cascade
+    //  cascade: نوع کالا ← کالا ← سری ساخت
     // ════════════════════════════════════════
 
     $('#itemClassSelect').on('change', function () {
@@ -203,26 +203,19 @@ $(function () {
     });
 
     // ════════════════════════════════════════
-    //  🆕 PRE-POPULATE: لود آیتم‌های موجود (اصلاح‌شده با لاگ)
+    //  pre-populate: لود آیتم‌های موجود
     // ════════════════════════════════════════
 
     if (dispatchId && dispatchId > 0) {
-        console.log('📥 Loading existing items for dispatchId:', dispatchId);
-
         $.ajax({
             url: dispatchEditGetLinesUrl,
             data: { id: dispatchId },
             success: function (lines) {
-                console.log('✅ Received lines:', lines);
-
                 if (!lines || !lines.length) {
-                    console.warn('⚠️ No lines received.');
-                    renderAddedItems(); // نمایش پیام خالی
+                    renderAddedItems();
                     return;
                 }
-
                 $.each(lines, function (_, line) {
-                    console.log('📦 Adding line:', line);
                     addedItems.push({
                         idx: addedItems.length,
                         dispatchLineId: line.dispatchLineId || 0,
@@ -245,19 +238,15 @@ $(function () {
                         requiresDiluent: false,
                     });
                 });
-
-                console.log('📋 Added items array:', addedItems);
                 renderAddedItems();
             },
-            error: function (xhr, status, error) {
-                console.error('❌ Error loading lines:', status, error);
+            error: function () {
                 showToast('خطا در بارگذاری اقلام ارسال', 'error');
-                renderAddedItems(); // نمایش پیام خالی
+                renderAddedItems();
             }
         });
     } else {
-        console.warn('⚠️ dispatchId is invalid or zero. Skipping pre-populate.');
-        renderAddedItems(); // نمایش پیام خالی
+        renderAddedItems();
     }
 
     // ════════════════════════════════════════
@@ -378,12 +367,11 @@ $(function () {
     };
 
     // ════════════════════════════════════════
-    //  رندر جدول کالاهای افزوده‌شده
+    //  رندر جدول کالاهای افزوده‌شده (با data-idx)
     // ════════════════════════════════════════
 
     function renderAddedItems() {
         var tbody = $('#addedItemsTbody');
-        console.log('🎨 Rendering added items. Count:', addedItems.length);
 
         if (addedItems.length === 0) {
             tbody.html(
@@ -399,12 +387,12 @@ $(function () {
         $.each(addedItems, function (i, item) {
             var actions = dispatchIsConfirmed
                 ? '<span style="color:#9ca3af;font-size:11px;">تایید شده</span>'
-                : '<button type="button" class="btn-action btn-action-uid" title="افزودن UID" ' +
-                'onclick="openUidModal(' + i + ')">' +
-                '<i class="fa fa-qrcode"></i></button> ' +
-                '<button type="button" class="btn-action btn-action-del" title="حذف" ' +
-                'onclick="removeItem(' + i + ')">' +
-                '<i class="fa fa-trash"></i></button>';
+                : '<button type="button" class="btn-action btn-action-uid" data-idx="' + i + '" title="افزودن UID">' +
+                '<i class="fa fa-qrcode"></i>' +
+                '</button> ' +
+                '<button type="button" class="btn-action btn-action-del" data-idx="' + i + '" title="حذف">' +
+                '<i class="fa fa-trash"></i>' +
+                '</button>';
 
             html +=
                 '<tr>' +
@@ -424,7 +412,6 @@ $(function () {
         tbody.html(html);
         $('#dispatchForm').attr('data-has-record', 'true');
         rebuildHiddenInputs();
-        console.log('✅ Render complete.');
     }
 
     // ════════════════════════════════════════
@@ -502,5 +489,4 @@ $(function () {
             $('#dispatchForm').submit();
         }
     };
-
 });

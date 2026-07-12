@@ -147,8 +147,8 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = "برای ثبت نهایی باید حداقل یک UID اسکن شود.";
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken);
-                    return View(updateDispatcheDto);
+                    await PopulateLookupViewBagsAsync(cancellationToken); // ← اضافه شد
+                    return View("Edit", updateDispatcheDto);
                 }
 
                 var session = dispatchScan.GetSession(scanSessionId);
@@ -156,16 +156,26 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = "هیچ UID معتبری اسکن نشده است.";
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken);
-                    return View(updateDispatcheDto);
+                    await PopulateLookupViewBagsAsync(cancellationToken); // ← اضافه شد
+                    return View("Edit", updateDispatcheDto);
                 }
 
                 var mismatchItems = new List<string>();
                 foreach (var item in updateDispatcheDto.Items)
                 {
-                    var scannedCount = session.Items
-                        .Where(x => x.ItemId == item.ItemId && x.BatchNumber == item.BatchNumber)
-                        .Sum(x => x.Count);
+                    var scannedCount =
+                         session.Items
+                         .Where(x =>
+                             x.ItemId == item.ItemId &&
+                             x.BatchNumber == item.BatchNumber)
+                         .Sum(x => x.Count);
+                        
+                        
+                            if (scannedCount != item.DoseCount)
+                            {
+                                mismatchItems.Add(
+                                    $"{item.ItemName} درخواست:{item.DoseCount} اسکن:{scannedCount}");
+                    }
 
                     if (scannedCount != item.DoseCount)
                     {
@@ -177,8 +187,8 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = $"تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد: {string.Join(" - ", mismatchItems)}";
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken);
-                    return View(updateDispatcheDto);
+                    await PopulateLookupViewBagsAsync(cancellationToken); 
+                    return View("Edit", updateDispatcheDto);
                 }
             }
 
@@ -192,8 +202,8 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = confirmResult.message;
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken);
-                    return View(updateDispatcheDto);
+                    await PopulateLookupViewBagsAsync(cancellationToken); 
+                    return View("Edit", updateDispatcheDto);
                 }
             }
 

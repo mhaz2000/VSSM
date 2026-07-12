@@ -1,15 +1,17 @@
-﻿﻿@using VSSM.Application.DTOs.BaseEntities
+﻿@using VSSM.Application.DTOs.BaseEntities
 @using VSSM.Application.DTOs.BaseEntities.Dispatches
 @using VSSM.Application.DTOs.BaseEntities.Recipient
 @using VSSM.Presentation.Web.Models.Base
 @model UpdateDispatchDto
 
 @{
-    var transportModes = ViewBag.TransportModes as List<SelectListItem>;
-    var recipients = ViewBag.Recipients as List<RecipientGetDto>;
-    var receivingModes = ViewBag.ReceivingMethods as List<SelectListItem>;
-    var itemTypes = ViewBag.ItemTypes as List<SelectListItem>;
-    var vvmStages = ViewBag.VvmStages as List<SelectListItem>;
+    // ── استفاده از null-coalescing برای جلوگیری از NullReferenceException ──
+    var transportModes = ViewBag.TransportModes as List<SelectListItem> ?? new List<SelectListItem>();
+    var recipients = ViewBag.Recipients as List<RecipientGetDto> ?? new List<RecipientGetDto>();
+    var receivingModes = ViewBag.ReceivingMethods as List<SelectListItem> ?? new List<SelectListItem>();
+    var itemTypes = ViewBag.ItemTypes as List<SelectListItem> ?? new List<SelectListItem>();
+    var vvmStages = ViewBag.VvmStages as List<SelectListItem> ?? new List<SelectListItem>();
+
     bool isConfirmed = Model?.IsConfirmed ?? false;
     var currentReceiverId = Model?.ReceiverId.ToString() ?? "";
     var currentReceiverName = recipients?.FirstOrDefault(r => r.RecipientId == Model.ReceiverId)?.FullName ?? "";
@@ -34,7 +36,7 @@
 <div class="uid-modal-overlay" id="uidModalOverlay">
     <div class="uid-modal">
         <div class="uid-modal-header">
-            <h6><i class="fa fa-qrcode"></i> افزودن UID</h6>
+            <h6><i class="fa fa-qrcode"></i> <span id="uidModalHeaderTitle">افزودن UID</span></h6>
             <button type="button" class="uid-modal-close" onclick="closeUidModal()">✕</button>
         </div>
         <div class="uid-modal-body">
@@ -318,15 +320,14 @@
         <div class="form-footer">
             @if (!isConfirmed)
             {
-                <button type="button" class="btn-confirm js-footer-btn" data-submit="final">
-                    <i class="fa fa-check"></i> ارسال
+                <button type="button" class="btn-back" style="border-color:#dc2626;color:#dc2626;" onclick="confirmDelete()">
+                    <i class="fa fa-trash"></i> حذف
                 </button>
                 <button type="button" class="btn-draft js-footer-btn" data-submit="draft">
-                    <i class="fa fa-file-text"></i> پیش فاکتور
+                    <i class="fa fa-floppy-o"></i> پیش‌نویس
                 </button>
-                <button type="button" class="btn-back" style="border-color:#dc2626;color:#dc2626;"
-                        onclick="confirmDelete()">
-                    <i class="fa fa-trash"></i> حذف
+                <button type="button" class="btn-confirm js-footer-btn" data-submit="final">
+                    <i class="fa fa-check"></i> ارسال
                 </button>
             }
             <a asp-action="Index" class="btn-back">
@@ -334,7 +335,7 @@
             </a>
         </div>
 
-        @* ═══ 🆕 SessionId مخفی ═══ *@
+        @* ═══ SessionId مخفی ═══ *@
         <input type="hidden" id="ScanSessionId" value="@Guid.NewGuid().ToString()" />
 
     </form>
@@ -359,6 +360,9 @@
 
         var scanSessionId = $('#ScanSessionId').val();
 
+        var addUidToSessionUrl = '@Url.Action("AddUidToSession", "Dispatches")';
+        var removeUidFromSessionUrl = '@Url.Action("RemoveScanUid", "Dispatches")';
+        var confirmDispatchUidsUrl = '@Url.Action("ConfirmDispatchUids", "Dispatches")';
     </script>
 
     <script src="~/js/components/dispatches/dispatch-edit-form.js"></script>

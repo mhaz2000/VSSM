@@ -38,23 +38,65 @@ public class DispatchesController(
         return Json(rows);
     }
 
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
-      CreateDispatchDto createDispatcheDto,
-      string submitType,
-      string? scanSessionId,  
-      CancellationToken cancellationToken)
+        CreateDispatchDto createDispatcheDto,
+        string submitType,
+        string? scanSessionId,
+        CancellationToken cancellationToken)
     {
         createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
         createDispatcheDto.EnteredById = CurrentUserId.Value;
 
+        // ── ۱. اعتبارسنجی dosecount ──
         if (createDispatcheDto.Items.Any(i => i.DoseCount <= 0))
         {
             TempData["ToastMessage"] = "برای کلیه کالاهای ارسالی تعداد را مشخص نمایید";
             TempData["ToastType"] = "error";
             await PopulateLookupViewBagsAsync(cancellationToken);
-            return View(createDispatcheDto);
+            return View("New", createDispatcheDto);
+        }
+
+        // ── ۲. اعتبارسنجی UID برای ثبت نهایی ──
+        if (submitType == "final" && !string.IsNullOrEmpty(scanSessionId))
+        {
+            var session = dispatchScan.GetSession(scanSessionId);
+
+            if (!session.Items.Any())
+            {
+                TempData["ToastMessage"] = "هیچ UID معتبری اسکن نشده است.";
+                TempData["ToastType"] = "error";
+                await PopulateLookupViewBagsAsync(cancellationToken); // ← اضافه شد
+                return View("New", createDispatcheDto);
+            }
+
+            var mismatchItems = new List<string>();
+            foreach (var item in createDispatcheDto.Items)
+            {
+                var scannedCount =
+                  session.Items
+                  .Where(x =>
+                      x.ItemId == item.ItemId &&
+                      x.BatchNumber == item.BatchNumber)
+                  .Sum(x => x.Count);
+
+
+                if (scannedCount != item.DoseCount)
+                {
+                    mismatchItems.Add(
+                        $"{item.ItemName} درخواست:{item.DoseCount} اسکن:{scannedCount}");
+                }
+            }
+
+            if (mismatchItems.Any())
+            {
+                TempData["ToastMessage"] = $"تعداد اسکن شده صحیح نیست: {string.Join(" - ", mismatchItems)}";
+                TempData["ToastType"] = "error";
+                await PopulateLookupViewBagsAsync(cancellationToken); 
+                return View("New", createDispatcheDto);
+            }
         }
 
         var (dispatchId, seqPreview) = await dispatchService.CreateDispatchAsync(
@@ -69,7 +111,7 @@ public class DispatchesController(
                 TempData["ToastMessage"] = confirmResult.message;
                 TempData["ToastType"] = "error";
                 await PopulateLookupViewBagsAsync(cancellationToken);
-                return View(createDispatcheDto);
+                return View("New", createDispatcheDto);
             }
         }
 
@@ -81,6 +123,89 @@ public class DispatchesController(
 
         TempData["ToastMessage"] = $"پیش فاکتور با شماره {seqPreview} با موفقیت ثبت شد.";
         TempData["ToastType"] = "success";
+
+        return RedirectToAction(nameof(Index));
+    }
+
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Update(
+        UpdateDispatchDto updateDispatcheDto,
+        string submitType,
+        string? scanSessionId,
+        CancellationToken cancellationToken)
+    {
+        updateDispatcheDto.SenderId = CurrentUserRecipientId.Value;
+        updateDispatcheDto.EnteredById = CurrentUserId.Value;
+
+        try
+        {
+            if (submitType == "final")
+            {
+                if (string.IsNullOrEmpty(scanSessionId))
+                {
+                    TempData["ToastMessage"] = "برای ثبت نهایی باید حداقل یک UID اسکن شود.";
+                    TempData["ToastType"] = "error";
+                    await PopulateLookupViewBagsAsync(cancellationToken);
+                    return View(updateDispatcheDto);
+                }
+
+                var session = dispatchScan.GetSession(scanSessionId);
+                if (session == null || !session.Items.Any())
+                {
+                    TempData["ToastMessage"] = "هیچ UID معتبری اسکن نشده است.";
+                    TempData["ToastType"] = "error";
+                    await PopulateLookupViewBagsAsync(cancellationToken);
+                    return View(updateDispatcheDto);
+                }
+
+                var mismatchItems = new List<string>();
+                foreach (var item in updateDispatcheDto.Items)
+                {
+                    var scannedCount = session.Items
+                        .Where(x => x.ItemId == item.ItemId && x.BatchNumber == item.BatchNumber)
+                        .Sum(x => x.Count);
+
+                    if (scannedCount != item.DoseCount)
+                    {
+                        mismatchItems.Add($"{item.ItemName} (درخواستی: {item.DoseCount}, اسکن‌شده: {scannedCount})");
+                    }
+                }
+
+                if (mismatchItems.Any())
+                {
+                    TempData["ToastMessage"] = $"تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد: {string.Join(" - ", mismatchItems)}";
+                    TempData["ToastType"] = "error";
+                    await PopulateLookupViewBagsAsync(cancellationToken);
+                    return View(updateDispatcheDto);
+                }
+            }
+
+            updateDispatcheDto.IsDrafted = true;
+            await dispatchService.UpdateDispatchAsync(updateDispatcheDto, submitType, cancellationToken);
+
+            if (submitType == "final" && !string.IsNullOrEmpty(scanSessionId))
+            {
+                var confirmResult = await dispatchService.ConfirmDispatchUidAsync(scanSessionId, updateDispatcheDto.Id);
+                if (!confirmResult.success)
+                {
+                    TempData["ToastMessage"] = confirmResult.message;
+                    TempData["ToastType"] = "error";
+                    await PopulateLookupViewBagsAsync(cancellationToken);
+                    return View(updateDispatcheDto);
+                }
+            }
+
+            TempData["ToastMessage"] = "عملیات با موفقیت انجام شد.";
+            TempData["ToastType"] = "success";
+        }
+        catch (ApplicationException ex)
+        {
+            await PopulateLookupViewBagsAsync(cancellationToken);
+            ViewBag.ErrorMessage = ex.Message;
+            return View("Edit", updateDispatcheDto);
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -232,9 +357,7 @@ public class DispatchesController(
 
     public async Task<IActionResult> New(CancellationToken cancellationToken)
     {
-
         await PopulateLookupViewBagsAsync(cancellationToken);
-
         return View();
     }
 
@@ -264,46 +387,6 @@ public class DispatchesController(
         return View(dispatch);
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Update(
-        UpdateDispatchDto updateDispatcheDto,
-        string submitType,
-        string? scanSessionId, 
-        CancellationToken cancellationToken)
-    {
-        updateDispatcheDto.SenderId = CurrentUserRecipientId.Value;
-        updateDispatcheDto.EnteredById = CurrentUserId.Value;
-
-        try
-        {
-            updateDispatcheDto.IsDrafted = true;
-            await dispatchService.UpdateDispatchAsync(updateDispatcheDto, submitType, cancellationToken);
-
-            if (submitType == "final" && !string.IsNullOrEmpty(scanSessionId))
-            {
-                var confirmResult = await dispatchService.ConfirmDispatchUidAsync(scanSessionId, updateDispatcheDto.Id);
-                if (!confirmResult.success)
-                {
-                    TempData["ToastMessage"] = confirmResult.message;
-                    TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken);
-                    return View(updateDispatcheDto);
-                }
-            }
-
-            TempData["ToastMessage"] = "عملیات با موفقیت انجام شد.";
-            TempData["ToastType"] = "success";
-        }
-        catch (ApplicationException ex)
-        {
-            await PopulateLookupViewBagsAsync(cancellationToken);
-            ViewBag.ErrorMessage = ex.Message;
-            return View("Edit", updateDispatcheDto);
-        }
-
-        return RedirectToAction(nameof(Index));
-    }
 
     [HttpPost("AddUidToSession")]
     public async Task<IActionResult> AddUidToSession(

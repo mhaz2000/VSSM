@@ -19,5 +19,5 @@ public class ScannedPackage
 
     public bool IsExpanded { get; set; }
 
-    public List<string> ChildUids { get; set; } = new();
+    public List<int> ChildIds { get; set; } = new();
 }

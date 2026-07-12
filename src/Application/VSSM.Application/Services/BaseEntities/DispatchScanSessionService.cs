@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using VSSM.Application.DTOs.BaseEntities.Dispatches.Scan;
+using VSSM.Domain.Enums;
 
-namespace VSSM.Application.Services.BaseEntities;
 
 public class DispatchScanSessionService(IMemoryCache cache)
 {
+
     private string GetKey(string sessionId)
     {
         return $"dispatch_scan_{sessionId}";
@@ -14,19 +15,24 @@ public class DispatchScanSessionService(IMemoryCache cache)
 
     public DispatchScanSession GetSession(string sessionId)
     {
-        return cache.Get<DispatchScanSession>(GetKey(sessionId))
-               ??
-               new DispatchScanSession
-               {
-                   SessionId = sessionId
-               };
+
+        return cache.Get<DispatchScanSession>(
+            GetKey(sessionId))
+            ??
+            new DispatchScanSession
+            {
+                SessionId = sessionId
+            };
     }
+
+
 
 
 
     public void SaveSession(
         DispatchScanSession session)
     {
+
         cache.Set(
             GetKey(session.SessionId),
             session,
@@ -35,25 +41,87 @@ public class DispatchScanSessionService(IMemoryCache cache)
 
 
 
+
+
     public bool AddPackage(
         string sessionId,
         ScannedPackage package)
     {
+
         var session = GetSession(sessionId);
 
 
-        if (session.Items.Any(x => x.Uid == package.Uid))
+
+        if (session.ScannedUids.Contains(package.Uid))
         {
             return false;
         }
 
 
+        if (package.Level == UidLevel.Second)
+        {
+
+            int childId = package.ChildIds.First();
+
+
+            if (session.SelectedChildIds.Contains(childId))
+            {
+                return false;
+            }
+
+
+            session.SelectedChildIds.Add(childId);
+
+        }
+        else
+        {
+
+            foreach (var child in package.ChildIds)
+            {
+
+                if (session.SelectedChildIds.Contains(child))
+                {
+                    return false;
+                }
+
+            }
+
+
+            foreach (var child in package.ChildIds)
+            {
+                session.SelectedChildIds.Add(child);
+            }
+
+        }
+
+
+
+
         session.Items.Add(package);
+
+
+        session.ScannedUids.Add(package.Uid);
+
+
+        session.PackageIndex[package.Uid]
+            = package;
+
+
+
+        session.ItemId ??= package.ItemId;
+
+        session.BatchNumber ??= package.BatchNumber;
+
+
 
         SaveSession(session);
 
+
         return true;
     }
+
+
+
 
 
 
@@ -61,21 +129,27 @@ public class DispatchScanSessionService(IMemoryCache cache)
         string sessionId,
         string uid)
     {
+
         var session = GetSession(sessionId);
 
 
-        var item = session.Items
-            .FirstOrDefault(x => x.Uid == uid);
-
-
-        if (item == null)
+        if (!session.PackageIndex.TryGetValue(uid, out var package))
+        {
             return false;
+        }
+
+        session.Items.Remove(package);
+
+        session.ScannedUids.Remove(uid);
+
+        session.PackageIndex.Remove(uid);
 
 
-        session.Items.Remove(item);
+        foreach (var child in package.ChildIds)
+        {
+            session.SelectedChildIds.Remove(child);
+        }
 
-
-        session.RemovedUids.Add(uid);
 
 
         SaveSession(session);
@@ -84,10 +158,9 @@ public class DispatchScanSessionService(IMemoryCache cache)
         return true;
     }
 
-
-
     public void Clear(string sessionId)
     {
         cache.Remove(GetKey(sessionId));
     }
+
 }

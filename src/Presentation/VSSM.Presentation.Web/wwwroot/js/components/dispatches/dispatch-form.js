@@ -1,21 +1,12 @@
-﻿/**
- * dispatch-form.js  —  لاجیک اختصاصی فرم ارسال
- * نسخه: 2.1 - پایدار با SearchableSelect بهبودیافته (mousedown)
- */
-
-var addedItems = [];
+﻿var addedItems = [];
 var batchTable = null;
 
 $(function () {
 
-    // ── Toast ──
     if (typeof dispatchServerMsg !== 'undefined' && dispatchServerMsg) {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
-    // ════════════════════════════════════════
-    //  ۱. DatePicker (دیت‌پیکر)
-    // ════════════════════════════════════════
     var $dateInput = $('#Date');
     if (typeof DatePicker !== 'undefined' && DatePicker.attach) {
         DatePicker.attach($dateInput);
@@ -25,9 +16,6 @@ $(function () {
         });
     }
 
-    // ════════════════════════════════════════
-    //  ۲. PaginationTable برای سری‌های ساخت
-    // ════════════════════════════════════════
     batchTable = new PaginationTable({
         tableId: 'itemDetailsTable',
         tbodyId: 'itemDetailsTbody',
@@ -358,12 +346,10 @@ $(function () {
                 '<td>' + (item.manufacturerName || '-') + '</td>' +
                 '<td>' + (item.note || '-') + '</td>' +
                 '<td style="white-space:nowrap;">' +
-                '<button type="button" class="btn-action btn-action-uid" title="افزودن UID" ' +
-                'onclick="openUidModal(' + i + ')">' +
+                '<button type="button" class="btn-action btn-action-uid" data-idx="' + i + '" title="افزودن UID">' +
                 '<i class="fa fa-qrcode"></i>' +
                 '</button> ' +
-                '<button type="button" class="btn-action btn-action-del" title="حذف" ' +
-                'onclick="removeItem(' + i + ')">' +
+                '<button type="button" class="btn-action btn-action-del" data-idx="' + i + '" title="حذف">' +
                 '<i class="fa fa-trash"></i>' +
                 '</button>' +
                 '</td>' +
@@ -374,11 +360,6 @@ $(function () {
         $('#dispatchForm').attr('data-has-record', 'true');
         rebuildHiddenInputs();
     }
-
-    // ════════════════════════════════════════
-    //  ۸. ساخت hidden inputs برای submit
-    // ════════════════════════════════════════
-
     function rebuildHiddenInputs() {
         var $container = $('#hiddenInputsContainer').empty();
 

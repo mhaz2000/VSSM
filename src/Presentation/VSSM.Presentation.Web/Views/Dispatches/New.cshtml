@@ -34,7 +34,7 @@
 <div class="uid-modal-overlay" id="uidModalOverlay">
     <div class="uid-modal">
         <div class="uid-modal-header">
-            <h6><i class="fa fa-qrcode"></i> افزودن UID</h6>
+            <h6><i class="fa fa-qrcode"></i> <span id="uidModalHeaderTitle">افزودن UID</span></h6>
             <button type="button" class="uid-modal-close" onclick="closeUidModal()">✕</button>
         </div>
         <div class="uid-modal-body">
@@ -293,20 +293,11 @@
                 حذف
             </button>
 
-            <button type="submit"
-                    name="command"
-                    value="StatusDraft"
-                    class="btn-draft rq-needs-record">
-                <i class="fa fa-floppy-o"></i>
-                پیش‌نویس
+            <button type="button" class="btn-draft js-footer-btn" data-submit="draft">
+                <i class="fa fa-floppy-o"></i> پیش‌نویس
             </button>
-
-            <button type="submit"
-                    name="command"
-                    value="StatusSent"
-                    class="btn-confirm rq-needs-record">
-                <i class="fa fa-plus"></i>
-                ثبت
+            <button type="button" class="btn-confirm js-footer-btn" data-submit="final">
+                <i class="fa fa-plus"></i> ثبت
             </button>
         </div>
 
@@ -330,6 +321,11 @@
         var dispatchGetBatchesByItem = "@Url.Action("GetBatchesByItem", "Dispatches")";
 
         var scanSessionId = $('#ScanSessionId').val();
+
+        var addUidToSessionUrl = '@Url.Action("AddUidToSession", "Dispatches")';
+        var removeUidFromSessionUrl = '@Url.Action("RemoveScanUid", "Dispatches")';
+        var confirmDispatchUidsUrl = '@Url.Action("ConfirmDispatchUids", "Dispatches")';
+
 
     </script>
 

@@ -718,7 +718,7 @@ public class DispatchService(
 
         query = query.OrderByDescending(t => t.Id).AsNoTracking();
 
-       
+
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(d =>
@@ -739,109 +739,315 @@ public class DispatchService(
 
 
     public async Task<(bool isSuccess, string message, ScannedPackage data)> ValidateUidAsync(
-     int? dispatchLineId,
-     int? itemDetailStoreId,
-     string barcode)
+        int? dispatchLineId,
+        int? itemDetailStoreId,
+        string barcode)
     {
         Gs1BarcodeInfo barcodeInfo;
+
         if (barcode.Length == 20 && barcode.All(char.IsDigit))
         {
-            barcodeInfo = new Gs1BarcodeInfo { Uid = barcode, IsGs1 = false };
+            barcodeInfo = new Gs1BarcodeInfo
+            {
+                Uid = barcode,
+                IsGs1 = false
+            };
         }
         else
         {
             barcodeInfo = barcodeParser.Parse(barcode);
-            if (barcodeInfo == null || string.IsNullOrEmpty(barcodeInfo.Uid))
-                return (false, "شناسه واکسن از بارکد استخراج نشد.", null);
+
+            if (barcodeInfo == null ||
+                string.IsNullOrEmpty(barcodeInfo.Uid))
+            {
+                return (
+                    false,
+                    "شناسه واکسن از بارکد استخراج نشد.",
+                    null
+                );
+            }
+
             barcodeInfo.IsGs1 = true;
         }
 
         int? itemId = null;
-        string? batchNumber = null;
+        string batchNumber = null;
 
-        if (dispatchLineId.HasValue && dispatchLineId.Value > 0)
+
+        if (dispatchLineId.HasValue &&
+            dispatchLineId.Value > 0)
         {
-            var dispatchLine = await context.TblDispatchLines
+
+            var dispatchLine =
+                await context.TblDispatchLines
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.DispatchLineId == dispatchLineId.Value);
+                .FirstOrDefaultAsync(x =>
+                    x.DispatchLineId == dispatchLineId.Value);
+
+
+
             if (dispatchLine == null)
-                return (false, "آیتم حواله یافت نشد.", null);
+            {
+                return (
+                    false,
+                    "آیتم حواله یافت نشد.",
+                    null
+                );
+            }
+
+
             itemId = dispatchLine.ItemId;
             batchNumber = dispatchLine.BatchNumber;
+
         }
-        else if (itemDetailStoreId.HasValue && itemDetailStoreId.Value > 0)
+        else if (itemDetailStoreId.HasValue &&
+                 itemDetailStoreId.Value > 0)
         {
-            var store = await context.TblItemDetailStores
+
+            var store =
+                await context.TblItemDetailStores
                 .AsNoTracking()
-                .Include(s => s.ItemDetail)
-                .FirstOrDefaultAsync(s => s.PKItemDetailStoreId == itemDetailStoreId.Value);
+                .Include(x => x.ItemDetail)
+                .FirstOrDefaultAsync(x =>
+                    x.PKItemDetailStoreId == itemDetailStoreId.Value);
+
+
+
             if (store == null)
-                return (false, "سری ساخت یافت نشد.", null);
+            {
+                return (
+                    false,
+                    "سری ساخت یافت نشد.",
+                    null
+                );
+            }
+
+
             itemId = store.ItemDetail.ItemId;
             batchNumber = store.ItemDetail.BatchNumber;
+
         }
         else
         {
-            return (false, "اطلاعات کافی برای اعتبارسنجی وجود ندارد.", null);
+            return (
+                false,
+                "اطلاعات اعتبارسنجی ناقص است.",
+                null
+            );
         }
 
-        if (barcodeInfo.IsGs1 && barcodeInfo.ExpiryDate.HasValue && barcodeInfo.ExpiryDate.Value < DateTime.Today)
-            return (false, "تاریخ مصرف واکسن گذشته است.", null);
+        if (barcodeInfo.IsGs1 &&
+            barcodeInfo.ExpiryDate.HasValue &&
+            barcodeInfo.ExpiryDate.Value < DateTime.Today)
+        {
+            return (
+                false,
+                "تاریخ مصرف واکسن گذشته است.",
+                null
+            );
+        }
 
-        var uidInfo = await context.TblUidInfo
+        var uidInfo =
+            await context.TblUidInfo
             .AsNoTracking()
             .Include(x => x.OrderInfo)
             .Where(x =>
-                (x.FirstLevelUid == barcodeInfo.Uid ||
-                 x.SecLevelUid == barcodeInfo.Uid ||
-                 x.ParentUid == barcodeInfo.Uid)
-                && x.IsActive
-                && x.OrderInfo.FkArrivalId != null
-                && x.OrderInfo.Status == OrderInfoStatus.APPLIED.ToString()
+                (
+                    x.FirstLevelUid == barcodeInfo.Uid ||
+                    x.SecLevelUid == barcodeInfo.Uid ||
+                    x.ParentUid == barcodeInfo.Uid
+                )
+                &&
+                x.IsActive
+                &&
+                x.OrderInfo.FkArrivalId != null
+                &&
+                x.OrderInfo.Status ==
+                    OrderInfoStatus.APPLIED.ToString()
             )
             .Select(x => new
             {
                 x.PkUidInfo,
+
                 x.FirstLevelUid,
                 x.SecLevelUid,
                 x.ParentUid,
+
                 ItemId = x.OrderInfo.FkItemId,
+
                 x.OrderInfo.BatchNumber
             })
             .FirstOrDefaultAsync();
 
+
+
+
         if (uidInfo == null)
-            return (false, "برای بارکد اسکن شده واکسنی یافت نشد.", null);
+        {
+            return (
+                false,
+                "برای بارکد اسکن شده واکسنی یافت نشد.",
+                null
+            );
+        }
+
 
         if (uidInfo.ItemId != itemId)
-            return (false, "بارکد متعلق به این کالا نمی‌باشد.", null);
+        {
+            return (
+                false,
+                "بارکد متعلق به این کالا نمی‌باشد.",
+                null
+            );
+        }
+
+
 
         if (uidInfo.BatchNumber != batchNumber)
-            return (false, "بارکد متعلق به این سری ساخت نمی‌باشد.", null);
+        {
+            return (
+                false,
+                "بارکد متعلق به این سری ساخت نمی‌باشد.",
+                null
+            );
+        }
 
-        if (barcodeInfo.IsGs1 && !string.IsNullOrEmpty(barcodeInfo.BatchNumber)
-            && barcodeInfo.BatchNumber != uidInfo.BatchNumber)
-            return (false, "سری ساخت بارکد صحیح نیست.", null);
+
+
+
+
+        if (barcodeInfo.IsGs1 &&
+           !string.IsNullOrEmpty(barcodeInfo.BatchNumber) &&
+           barcodeInfo.BatchNumber != uidInfo.BatchNumber)
+        {
+            return (
+                false,
+                "سری ساخت بارکد صحیح نیست.",
+                null
+            );
+        }
+
 
         UidLevel level;
+
+
         if (uidInfo.SecLevelUid == barcodeInfo.Uid)
+        {
             level = UidLevel.Second;
+        }
         else if (uidInfo.FirstLevelUid == barcodeInfo.Uid)
+        {
             level = UidLevel.First;
+        }
         else
+        {
             level = UidLevel.Parent;
+        }
 
         var result = new ScannedPackage
         {
             Uid = barcodeInfo.Uid,
+
             Level = level,
+
+            DisplayName = level switch
+            {
+                UidLevel.Second => "ویال",
+                UidLevel.First => "بسته",
+                UidLevel.Parent => "کارتن",
+                _ => ""
+            },
+
+
             ItemId = uidInfo.ItemId,
+
             BatchNumber = uidInfo.BatchNumber,
+
             Count = 0,
-            DisplayName = level.ToString()
+
+            ChildIds = new(),
+
+            IsExpanded = false
         };
 
-        return (true, string.Empty, result);
+        switch (level)
+        {
+
+            case UidLevel.Second:
+
+
+                result.ChildIds.Add(
+                    uidInfo.PkUidInfo
+                );
+
+
+                result.Count = 1;
+
+
+                break;
+
+
+            case UidLevel.First:
+
+
+                result.ChildIds =
+                    await context.TblUidInfo
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.FirstLevelUid == barcodeInfo.Uid
+                        &&
+                        x.IsActive
+                        &&
+                        x.OrderInfo.FkArrivalId != null
+                        &&
+                        x.OrderInfo.Status ==
+                            OrderInfoStatus.APPLIED.ToString()
+                    )
+                    .Select(x =>
+                        x.PkUidInfo
+                    )
+                    .ToListAsync();
+
+
+
+                result.Count =
+                    result.ChildIds.Count;
+
+
+                result.IsExpanded = true;
+
+
+                break;
+
+            case UidLevel.Parent:
+
+
+                result.Count =
+                    await context.TblUidInfo
+                    .AsNoTracking()
+                    .CountAsync(x =>
+                        x.ParentUid == barcodeInfo.Uid
+                        &&
+                        x.IsActive
+                        &&
+                        x.OrderInfo.FkArrivalId != null
+                        &&
+                        x.OrderInfo.Status ==
+                            OrderInfoStatus.APPLIED.ToString()
+                    );
+
+
+                result.IsExpanded = false;
+
+
+                break;
+        }
+
+        return (
+            true,
+            string.Empty,
+            result
+        );
     }
 
 
@@ -851,20 +1057,54 @@ public class DispatchService(
         int? itemDetailStoreId,
         string barcode)
     {
-        var validation = await ValidateUidAsync(dispatchLineId, itemDetailStoreId, barcode);
+
+        var validation =
+            await ValidateUidAsync(
+                dispatchLineId,
+                itemDetailStoreId,
+                barcode);
+
+
+
         if (!validation.isSuccess)
-            return (false, validation.message, 0, 0);
+            return (
+                false,
+                validation.message,
+                0,
+                0
+            );
+
+
 
         var package = validation.data;
 
-        var session = dispatchScan.GetSession(sessionId);
-        if (session.Items.Any(x => x.Uid == package.Uid))
-            return (false, "این شناسه قبلا اسکن شده است.", 0, package.ItemId);
 
-        session.Items.Add(package);
-        dispatchScan.SaveSession(session);
 
-        return (true, string.Empty, 1, package.ItemId);
+        var result =
+            dispatchScan.AddPackage(
+                sessionId,
+                package);
+
+
+
+        if (!result)
+        {
+            return (
+                false,
+                "این شناسه یا بخشی از آن قبلاً انتخاب شده است.",
+                0,
+                package.ItemId
+            );
+        }
+
+
+
+        return (
+            true,
+            string.Empty,
+            package.Count,
+            package.ItemId
+        );
     }
 
     public async Task<(bool success, string message, int count)> ConfirmDispatchUidAsync(

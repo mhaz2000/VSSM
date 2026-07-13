@@ -50,7 +50,6 @@ public class DispatchesController(
         createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
         createDispatcheDto.EnteredById = CurrentUserId.Value;
 
-        // ── ۱. اعتبارسنجی dosecount ──
         if (createDispatcheDto.Items.Any(i => i.DoseCount <= 0))
         {
             TempData["ToastMessage"] = "برای کلیه کالاهای ارسالی تعداد را مشخص نمایید";
@@ -59,7 +58,6 @@ public class DispatchesController(
             return View("New", createDispatcheDto);
         }
 
-        // ── ۲. اعتبارسنجی UID برای ثبت نهایی ──
         if (submitType == "final" && !string.IsNullOrEmpty(scanSessionId))
         {
             var session = dispatchScan.GetSession(scanSessionId);
@@ -68,7 +66,7 @@ public class DispatchesController(
             {
                 TempData["ToastMessage"] = "هیچ UID معتبری اسکن نشده است.";
                 TempData["ToastType"] = "error";
-                await PopulateLookupViewBagsAsync(cancellationToken); // ← اضافه شد
+                await PopulateLookupViewBagsAsync(cancellationToken); 
                 return View("New", createDispatcheDto);
             }
 
@@ -147,7 +145,7 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = "برای ثبت نهایی باید حداقل یک UID اسکن شود.";
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken); // ← اضافه شد
+                    await PopulateLookupViewBagsAsync(cancellationToken); 
                     return View("Edit", updateDispatcheDto);
                 }
 
@@ -156,7 +154,7 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = "هیچ UID معتبری اسکن نشده است.";
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken); // ← اضافه شد
+                    await PopulateLookupViewBagsAsync(cancellationToken); 
                     return View("Edit", updateDispatcheDto);
                 }
 

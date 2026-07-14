@@ -38,5 +38,16 @@ namespace VSSM.Presentation.Web.Controllers
             return View();
         }
 
+        public IActionResult ExpiredItemsReport(int id)
+        {
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("~/Views/Shared/UnderConstructionModal.cshtml");
+            }
+
+            return View("~/Views/Shared/UnderConstruction.cshtml");
+        }
+
+
     }
 }

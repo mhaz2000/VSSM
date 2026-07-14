@@ -99,8 +99,15 @@ public class ArrivalController(
         return View(model);
     }
 
-    public IActionResult Print(int id) =>
-        View("~/Views/Shared/UnderConstruction.cshtml");
+    public IActionResult Print(int id)
+    {
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        {
+            return PartialView("~/Views/Shared/UnderConstructionModal.cshtml");
+        }
+
+        return View("~/Views/Shared/UnderConstruction.cshtml");
+    }
 
     public async Task<IActionResult> New(int? id, string? tab, CancellationToken token)
     {

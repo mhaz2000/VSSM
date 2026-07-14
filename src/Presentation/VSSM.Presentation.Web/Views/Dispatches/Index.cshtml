@@ -1,15 +1,27 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.Dispatches
 @using VSSM.Presentation.Web.Models.Base
+@using Microsoft.AspNetCore.Mvc.Rendering
 @model GridViewModel
 
 @section Styles {
     <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" asp-append-version="true" />
-    <link href="~/css/components/shared/search-bar.css"  rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/search-bar.css" rel="stylesheet" asp-append-version="true" />
 }
 
 @{
     ViewData["Title"] = "مدیریت ارسالات";
+
     var currentStatus = Context.Request.Query["status"].ToString();
+    var filterOptions = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "", Text = "همه" },
+        new SelectListItem { Value = "draft", Text = "پیش‌نویس" },
+        new SelectListItem { Value = "final", Text = "نهایی" }
+    };
+    foreach (var item in filterOptions)
+    {
+        item.Selected = (item.Value == currentStatus);
+    }
 }
 
 <div class="grid-wrapper">
@@ -19,34 +31,20 @@
             @ViewData["Title"]
         </strong>
 
-        <div class="search-bar-root">
+        @await Component.InvokeAsync("SearchBar", new
+        {
+            searchTerm = Model.SearchTerm,
+                pageSize = Model.Data.PageSize,
+                sort = Model.CurrentSort,
+                direction = Model.CurrentDirection,
+                filterOptions = filterOptions,
+                filterName = "status",
+                filterValue = currentStatus,
+                addController = ViewContext.RouteData.Values["controller"]?.ToString(),
+                addAction = "New",
+                showAddButton = true
+                })
 
-            <form method="get" class="m-0">
-                <input type="hidden" name="sort"      value="@Model.CurrentSort" />
-                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
-                <input type="hidden" name="pageSize"  value="@Model.Data.PageSize" />
-
-                <div class="search-wrap">
-                    <select name="status" class="search-select" onchange="this.form.submit()">
-                            <option value="" selected="@(currentStatus == "")">همه</option>
-                            <option value="draft" selected="@(currentStatus == "draft")">پیش‌نویس</option>
-                            <option value="final" selected="@(currentStatus == "final")">نهایی</option>
-                    </select>
-                    <div class="search-divider"></div>
-                    <input type="text" name="search" class="search-input"
-                           value="@Model.SearchTerm" placeholder="جستجو..." />
-                    <button type="submit" class="search-btn" title="جستجو">
-                        <i class="fa fa-search"></i>
-                    </button>
-                </div>
-            </form>
-
-            <a asp-action="New" class="btn-add">
-                <span class="plus-circle">+</span>
-                افزودن
-            </a>
-
-        </div>
     </div>
 
     <div>

@@ -45,6 +45,25 @@
                 <i class="fa fa-search"></i>
             </button>
 
+            @* ── 🔹 دکمه «همه» (فقط در صورت وجود فیلتر) ── *@
+            @if (Model.FilterOptions != null && Model.FilterOptions.Any())
+            {
+                var routeValues = new
+                {
+                    search = (string?)null,
+                    filterValue = (string?)null,
+                    sort = Model.Sort,
+                    direction = Model.Direction,
+                    pageSize = Model.PageSize
+                };
+                <a href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(),
+                                                         ViewContext.RouteData.Values["controller"]?.ToString(),
+                                                         routeValues)"
+               class="btn-all">
+                همه
+            </a>
+                        }
+
         </div>
     </form>
 

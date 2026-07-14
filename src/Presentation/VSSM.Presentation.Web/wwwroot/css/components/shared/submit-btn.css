@@ -32,3 +32,35 @@
     z-index: 9999;
     cursor: wait;
 }
+
+/* ── دکمه در حالت disabled با استایل یکپارچه ── */
+button:disabled,
+button.disabled,
+input[type="submit"]:disabled,
+input[type="button"]:disabled {
+    /* استایل‌های عمومی که در btn.css برای هر دکمه جداگانه تعریف شده */
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+.js-submit-btn[data-loading="true"] {
+    position: relative;
+}
+
+    .js-submit-btn[data-loading="true"] .btn-text {
+        visibility: hidden;
+    }
+
+    .js-submit-btn[data-loading="true"]::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255,255,255,.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+        transform: translate(-50%, -50%);
+    }

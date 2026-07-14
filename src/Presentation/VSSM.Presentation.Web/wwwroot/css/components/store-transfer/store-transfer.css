@@ -1,0 +1,41 @@
+﻿/* استایل‌های اختصاصی صفحه انتقال بین انبارها */
+
+.required-star {
+    color: red;
+    margin-right: 3px;
+}
+
+.f-control[readonly] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.quantity-input {
+    max-width: 120px;
+    margin: 0 auto;
+}
+
+#itemsTable td {
+    vertical-align: middle;
+}
+
+.card-body-custom {
+    padding: 16px;
+}
+
+/* تنظیم فاصله‌های داخلی جدول */
+.lines-table-wrap .lines-table tbody tr td {
+    padding: 10px 8px;
+}
+
+/* استایل پیام خالی بودن جدول */
+.empty-table-msg {
+    padding: 24px;
+    color: #9ca3af;
+    text-align: center;
+}
+
+/* هماهنگی با فوتر */
+.footer-spacer {
+    margin-top: 24px;
+}

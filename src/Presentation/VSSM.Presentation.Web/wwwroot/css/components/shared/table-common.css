@@ -1,0 +1,102 @@
+﻿
+.lines-table-wrap {
+    max-height: 400px;
+    overflow-y: auto;
+    position: relative;
+}
+
+    .lines-table-wrap.has-scroll {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    /* Custom scrollbar */
+    .lines-table-wrap::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .lines-table-wrap::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .lines-table-wrap::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+
+        .lines-table-wrap::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+/* ── Empty state row ── */
+.empty-table-row {
+    text-align: center;
+    color: #9ca3af !important;
+    padding: 32px 0 !important;
+    font-size: 13px;
+}
+
+    .empty-table-row i {
+        display: block;
+        font-size: 26px;
+        margin-bottom: 8px;
+        color: #d1d5db !important;
+    }
+
+/* ── More lines trigger button ── */
+.more-lines-trigger {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+    .more-lines-trigger td {
+        text-align: center;
+        padding: 8px !important;
+    }
+
+.btn-show-all-lines {
+    background: linear-gradient(180deg, #ffffff, #f7f9fc);
+    border: 1px solid #d9eaff;
+    color: #1d6fb8;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 10px 14px;
+    border-radius: 8px;
+    transition: all 0.18s ease;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+}
+
+    .btn-show-all-lines:hover {
+        background: #eef6ff;
+        border-color: #cfe3ff;
+        transform: translateY(-1px);
+    }
+
+    .btn-show-all-lines i {
+        transition: transform 0.25s ease;
+    }
+
+    .btn-show-all-lines[data-expanded="true"] i {
+        transform: rotate(180deg);
+    }
+
+.badge-count {
+    background: #eef6ff;
+    color: #1d6fb8;
+    padding: 5px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-right: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid #d9eaff;
+}

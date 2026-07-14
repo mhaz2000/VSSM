@@ -1,9 +1,4 @@
-﻿/* ═══════════════════════════════════════════
-   btn.css  —  دکمه‌های مشترک (shared)
-   قابل استفاده در تمام فرم‌های پروژه
-   ═══════════════════════════════════════════ */
-
-/* ── دکمه تایید (سبز پر) ── */
+﻿
 .btn-confirm {
     height: 38px;
     padding: 0 24px;
@@ -17,14 +12,23 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: background .15s;
+    transition: background .15s, opacity .15s, border-color .15s;
 }
 
-    .btn-confirm:hover {
+    .btn-confirm:hover:not(:disabled) {
         background: #15803d;
     }
 
-/* ── دکمه پیش‌نویس (سبز توخالی) ── */
+    .btn-confirm:disabled,
+    .btn-confirm.disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        pointer-events: none;
+        border-color: #9ca3af;
+        background: #d1d5db;
+        color: #6b7280;
+    }
+
 .btn-draft {
     height: 38px;
     padding: 0 24px;
@@ -38,14 +42,23 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: background .15s;
+    transition: background .15s, opacity .15s, border-color .15s;
 }
 
-    .btn-draft:hover {
+    .btn-draft:hover:not(:disabled) {
         background: #f0fdf4;
     }
 
-/* ── دکمه بازگشت ── */
+    .btn-draft:disabled,
+    .btn-draft.disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        pointer-events: none;
+        border-color: #9ca3af;
+        color: #9ca3af;
+        background: #f3f4f6;
+    }
+
 .btn-back {
     height: 38px;
     padding: 0 20px;
@@ -60,16 +73,25 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: background .15s, color .15s;
+    transition: background .15s, color .15s, opacity .15s;
 }
 
-    .btn-back:hover {
+    .btn-back:hover:not(:disabled) {
         background: #f0fdf4;
         color: #15803d;
         text-decoration: none;
     }
 
-/* ── دکمه افزودن ردیف (آبی) ── */
+    .btn-back:disabled,
+    .btn-back.disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        pointer-events: none;
+        border-color: #9ca3af;
+        color: #9ca3af;
+        background: #f3f4f6;
+    }
+
 .btn-add-line {
     height: 38px;
     padding: 0 20px;
@@ -83,14 +105,21 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: background .15s;
+    transition: background .15s, opacity .15s;
 }
 
-    .btn-add-line:hover {
+    .btn-add-line:hover:not(:disabled) {
         background: #1558a0;
     }
 
-/* ── دکمه‌های عملیات جدول (ویرایش / حذف) ── */
+    .btn-add-line:disabled,
+    .btn-add-line.disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        pointer-events: none;
+        background: #9ca3af;
+    }
+
 .btn-action {
     width: 28px;
     height: 28px;
@@ -102,7 +131,7 @@
     justify-content: center;
     cursor: pointer;
     font-size: 13px;
-    transition: background .15s, color .15s;
+    transition: background .15s, color .15s, opacity .15s;
 }
 
 .btn-action-edit {
@@ -110,7 +139,7 @@
     color: #2563eb;
 }
 
-    .btn-action-edit:hover {
+    .btn-action-edit:hover:not(:disabled) {
         background: #eff6ff;
         color: #1d4ed8;
     }
@@ -120,11 +149,20 @@
     color: #dc2626;
 }
 
-    .btn-action-del:hover {
+    .btn-action-del:hover:not(:disabled) {
         background: #fef2f2;
     }
 
-/* ── فوتر فرم ── */
+.btn-action:disabled,
+.btn-action.disabled {
+    opacity: .4;
+    cursor: not-allowed;
+    pointer-events: none;
+    border-color: #d1d5db;
+    color: #9ca3af;
+    background: #f3f4f6;
+}
+
 .form-footer {
     display: flex;
     justify-content: flex-end;

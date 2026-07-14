@@ -63,7 +63,6 @@
                                             <label class="tree-label">@parent.Title</label>
                                             <input type="hidden" asp-for="Menus[@menus.IndexOf(parent)].Id" />
                                             <input type="hidden" asp-for="Menus[@menus.IndexOf(parent)].ParentId" />
-                                            @* ❌ حذف شد: Order *@
                                         </div>
 
                                         @if (hasChildren)
@@ -89,7 +88,6 @@
                                                             <label class="tree-label">@child.Title</label>
                                                             <input type="hidden" asp-for="Menus[@menus.IndexOf(child)].Id" />
                                                             <input type="hidden" asp-for="Menus[@menus.IndexOf(child)].ParentId" />
-                                                            @* ❌ حذف شد: Order *@
                                                         </div>
 
                                                         @if (hasGrandChildren)
@@ -104,7 +102,6 @@
                                                                             <label class="tree-label">@grandChild.Title</label>
                                                                             <input type="hidden" asp-for="Menus[@menus.IndexOf(grandChild)].Id" />
                                                                             <input type="hidden" asp-for="Menus[@menus.IndexOf(grandChild)].ParentId" />
-                                                                            @* ❌ حذف شد: Order *@
                                                                         </div>
                                                                     </li>
                                                                 }

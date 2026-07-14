@@ -1,0 +1,94 @@
+﻿@using VSSM.Presentation.Web.Models.Shared
+@model ScrollableTableModel
+
+@{
+    var totalItems = Model.Items?.Count() ?? 0;
+    var hasManyItems = totalItems > Model.VisibleCount;
+    var itemsToShow = hasManyItems ? Model.Items.Take(Model.VisibleCount) : Model.Items;
+    var colSpan = Model.Columns.Count() + 1; // +1 برای ستون عملیات در صورت وجود
+}
+
+<div class="lines-table-wrap @(hasManyItems ? "has-scroll" : "")">
+    <table class="lines-table">
+        <thead>
+            <tr>
+                @foreach (var col in Model.Columns)
+                {
+                    <th>@col.Header</th>
+                }
+                @if (Model.ShowActions)
+                {
+                    <th>عملیات</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Items != null && Model.Items.Any())
+            {
+                int index = 0;
+                foreach (var item in itemsToShow)
+                {
+                    index++;
+                    <tr>
+                        @foreach (var col in Model.Columns)
+                        {
+                            <td>@col.ValueGetter(item, index)</td>
+                        }
+                        @if (Model.ShowActions)
+                        {
+                            <td>
+                                @if (Model.ActionTemplate != null)
+                                {
+                                    @Model.ActionTemplate(item)
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+
+                @if (hasManyItems)
+                {
+                    @* ردیف‌های اضافی (مخفی) *@
+                    foreach (var item in Model.Items.Skip(Model.VisibleCount))
+                    {
+                        index++;
+                        <tr class="hidden-line" style="display: none;">
+                            @foreach (var col in Model.Columns)
+                            {
+                                <td>@col.ValueGetter(item, index)</td>
+                            }
+                            @if (Model.ShowActions)
+                            {
+                                <td>
+                                    @if (Model.ActionTemplate != null)
+                                    {
+                                        @Model.ActionTemplate(item)
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+
+                    @* دکمه نمایش همه *@
+                    <tr class="more-lines-trigger">
+                        <td colspan="@colSpan">
+                            <button type="button" class="btn-show-all-lines">
+                                <i class="fa fa-chevron-down"></i>
+                                <span class="btn-text">مشاهده همه اقلام (@totalItems قلم)</span>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="@colSpan" class="empty-table-row">
+                        <i class="fa fa-inbox"></i>
+                        @Model.EmptyMessage
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

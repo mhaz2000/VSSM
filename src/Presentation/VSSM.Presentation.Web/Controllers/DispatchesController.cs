@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Services.BaseEntities;
 using VSSM.Presentation.Web.Const;
@@ -13,7 +15,7 @@ public class DispatchesController(
     IRecipientService recipientService,
     IDispatchService dispatchService,
     IBaseInfoService baseInfoService,
-    DispatchScanSessionService dispatchScan ) : BaseController
+    DispatchScanSessionService dispatchScan) : BaseController
 {
 
     [HttpGet]
@@ -66,7 +68,7 @@ public class DispatchesController(
             {
                 TempData["ToastMessage"] = "هیچ UID معتبری اسکن نشده است.";
                 TempData["ToastType"] = "error";
-                await PopulateLookupViewBagsAsync(cancellationToken); 
+                await PopulateLookupViewBagsAsync(cancellationToken);
                 return View("New", createDispatcheDto);
             }
 
@@ -92,7 +94,7 @@ public class DispatchesController(
             {
                 TempData["ToastMessage"] = $"تعداد اسکن شده صحیح نیست: {string.Join(" - ", mismatchItems)}";
                 TempData["ToastType"] = "error";
-                await PopulateLookupViewBagsAsync(cancellationToken); 
+                await PopulateLookupViewBagsAsync(cancellationToken);
                 return View("New", createDispatcheDto);
             }
         }
@@ -145,7 +147,7 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = "برای ثبت نهایی باید حداقل یک UID اسکن شود.";
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken); 
+                    await PopulateLookupViewBagsAsync(cancellationToken);
                     return View("Edit", updateDispatcheDto);
                 }
 
@@ -154,7 +156,7 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = "هیچ UID معتبری اسکن نشده است.";
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken); 
+                    await PopulateLookupViewBagsAsync(cancellationToken);
                     return View("Edit", updateDispatcheDto);
                 }
 
@@ -167,12 +169,12 @@ public class DispatchesController(
                              x.ItemId == item.ItemId &&
                              x.BatchNumber == item.BatchNumber)
                          .Sum(x => x.Count);
-                        
-                        
-                            if (scannedCount != item.DoseCount)
-                            {
-                                mismatchItems.Add(
-                                    $"{item.ItemName} درخواست:{item.DoseCount} اسکن:{scannedCount}");
+
+
+                    if (scannedCount != item.DoseCount)
+                    {
+                        mismatchItems.Add(
+                            $"{item.ItemName} درخواست:{item.DoseCount} اسکن:{scannedCount}");
                     }
 
                     if (scannedCount != item.DoseCount)
@@ -185,7 +187,7 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = $"تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد: {string.Join(" - ", mismatchItems)}";
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken); 
+                    await PopulateLookupViewBagsAsync(cancellationToken);
                     return View("Edit", updateDispatcheDto);
                 }
             }
@@ -200,7 +202,7 @@ public class DispatchesController(
                 {
                     TempData["ToastMessage"] = confirmResult.message;
                     TempData["ToastType"] = "error";
-                    await PopulateLookupViewBagsAsync(cancellationToken); 
+                    await PopulateLookupViewBagsAsync(cancellationToken);
                     return View("Edit", updateDispatcheDto);
                 }
             }
@@ -366,8 +368,15 @@ public class DispatchesController(
     public async Task<IActionResult> New(CancellationToken cancellationToken)
     {
         await PopulateLookupViewBagsAsync(cancellationToken);
-        return View();
+
+        var model = new CreateDispatchDto
+        {
+            Date = DateTime.Now.ToShamsi()
+        };
+
+        return View(model);
     }
+
 
     public async Task<IActionResult> Arrive(long id, CancellationToken cancellationToken)
     {
@@ -469,7 +478,7 @@ public class DispatchesController(
             (await baseInfoService.GetByParentIdAsync(BaseInfoIds.VvmStages, ct))
             .ToSelectList(x => x.Id, x => x.Title);
 
-        ViewBag.Recipients = await recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.GetValueOrDefault(),ct);
+        ViewBag.Recipients = await recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.GetValueOrDefault(), ct);
     }
 
     [HttpPost("ConfirmDispatchUids")]

@@ -157,7 +157,6 @@
         transform: scale(0.97);
     }
 
-    /* ── آیکون اختیاری برای دکمه همه (در صورت نیاز) ── */
     .btn-all::before {
         content: "📋";
         margin-left: 6px;

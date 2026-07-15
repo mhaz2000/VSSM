@@ -15,6 +15,7 @@ namespace VSSM.Application.Services.BaseEntities;
 public class DispatchService(
     VSSMDbContext context,
     DispatchScanSessionService dispatchScan,
+    IArrivalService arrivalService,
     IGs1BarcodeParser barcodeParser) : IDispatchService
 {
     public async Task<List<DispatchEditLineDto>> GetDispatchLinesForEditAsync(int dispatchId, CancellationToken ct = default)
@@ -493,6 +494,7 @@ public class DispatchService(
             SenderId = first.SenderId,
             ReceiverId = recipientId,
             DispatchId = first.DispatchId,
+            ReportNumber = await arrivalService.Generate()
         };
 
         var itemDetailStores = new List<TblItemDetailStore>(data.Count);

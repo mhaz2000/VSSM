@@ -242,21 +242,19 @@ public class DispatchService(
     // ──────────────────────────────────────────────────────────────────────────
     public async Task LinkUidsToDispatchUidAsync(int dispatchId, CancellationToken ct = default)
     {
-        // تمام رکوردهای tblDispatchUid مرتبط با این dispatch
         var dispatchUids = await context.TblDispatchUids
             .Where(du => du.FKDispatchId == dispatchId)
             .ToListAsync(ct);
 
         foreach (var du in dispatchUids)
         {
-            // بند ۹: بروزرسانی FK_DISPATCH_UID در tblUidInfo
             var uidInfo = await context.TblUidInfo.FindAsync(du.FKUidInfo);
             if (uidInfo == null) continue;
 
             uidInfo.FKDispatchUid = du.PKDispatchUid;
         }
 
-        await context.SaveChangesAsync(ct);
+            await context.SaveChangesAsync(ct);
     }
 
     public async Task ConfirmDispatchAsync(int id, CancellationToken cancellationToken)
@@ -1108,89 +1106,146 @@ public class DispatchService(
     }
 
     public async Task<(bool success, string message, int count)> ConfirmDispatchUidAsync(
-    string sessionId,
-    int dispatchId)
+        string sessionId,
+        int dispatchId)
     {
-
-        var session =
-            dispatchScan.GetSession(sessionId);
-
-
-
+        var session = dispatchScan.GetSession(sessionId);
         if (session == null || !session.Items.Any())
-        {
-            return (
-                false,
-                "موردی برای ثبت وجود ندارد.",
-                0
-            );
-        }
+            return (false, "هیچ UID معتبری اسکن نشده است.", 0);
 
-
-
-        var finalUidIds =
-            new HashSet<int>();
-
-
-
+        var uidInfoList = new List<TblUidInfo>();
         foreach (var item in session.Items)
         {
-
-            IQueryable<int> query =
-                context.TblUidInfo
+            var infos = await context.TblUidInfo
                 .Where(x =>
                     x.FirstLevelUid == item.Uid ||
                     x.SecLevelUid == item.Uid ||
-                    x.ParentUid == item.Uid
-                )
-                .Select(x => x.PkUidInfo);
-
-
-
-            var ids =
-                await query.ToListAsync();
-
-
-
-            foreach (var id in ids)
-            {
-                finalUidIds.Add(id);
-            }
-
+                    x.ParentUid == item.Uid)
+                .ToListAsync();
+            uidInfoList.AddRange(infos);
         }
 
+        if (!uidInfoList.Any())
+            return (false, "هیچ UID معتبری یافت نشد.", 0);
 
-
-        var entities =
-            finalUidIds.Select(x =>
-                new TblDispatchUid
-                {
-                    FKDispatchId = dispatchId,
-                    FKUidInfo = x
-                })
+        var dispatchUids = uidInfoList
+            .Select(uidInfo => new TblDispatchUid
+            {
+                FKDispatchId = dispatchId,
+                FKUidInfo = uidInfo.PkUidInfo
+            })
+            .Distinct() 
             .ToList();
 
+        await context.TblDispatchUids.AddRangeAsync(dispatchUids);
+        await context.SaveChangesAsync(); 
 
+        var reloadedDispatchUids = await context.TblDispatchUids
+            .Where(d => d.FKDispatchId == dispatchId)
+            .ToListAsync();
 
-        await context.TblDispatchUids
-            .AddRangeAsync(entities);
+        foreach (var uidInfo in uidInfoList)
+        {
+            var matched = reloadedDispatchUids
+                .FirstOrDefault(d => d.FKUidInfo == uidInfo.PkUidInfo);
+            if (matched != null)
+            {
+                uidInfo.FKDispatchUid = matched.PKDispatchUid; 
+            }
+        }
 
-
-
+        context.TblUidInfo.UpdateRange(uidInfoList);
         await context.SaveChangesAsync();
-
-
-
+        
         dispatchScan.Clear(sessionId);
 
-
-
-        return (
-            true,
-            "ثبت با موفقیت انجام شد.",
-            entities.Count
-        );
+        return (true, $"ثبت {dispatchUids.Count} UID با موفقیت انجام شد.", dispatchUids.Count);
     }
+
+    //public async Task<(bool success, string message, int count)> ConfirmDispatchUidAsync(
+    //string sessionId,
+    //int dispatchId)
+    //{
+
+    //    var session =
+    //        dispatchScan.GetSession(sessionId);
+
+
+
+    //    if (session == null || !session.Items.Any())
+    //    {
+    //        return (
+    //            false,
+    //            "موردی برای ثبت وجود ندارد.",
+    //            0
+    //        );
+    //    }
+
+
+
+    //    var finalUidIds =
+    //        new HashSet<int>();
+
+
+
+    //    foreach (var item in session.Items)
+    //    {
+
+    //        IQueryable<int> query =
+    //            context.TblUidInfo
+    //            .Where(x =>
+    //                x.FirstLevelUid == item.Uid ||
+    //                x.SecLevelUid == item.Uid ||
+    //                x.ParentUid == item.Uid
+    //            )
+    //            .Select(x => x.PkUidInfo);
+
+
+
+    //        var ids =
+    //            await query.ToListAsync();
+
+
+
+    //        foreach (var id in ids)
+    //        {
+    //            finalUidIds.Add(id);
+    //        }
+
+    //    }
+
+
+
+    //    var entities =
+    //        finalUidIds.Select(x =>
+    //            new TblDispatchUid
+    //            {
+    //                FKDispatchId = dispatchId,
+    //                FKUidInfo = x
+    //            })
+    //        .ToList();
+
+
+
+    //    await context.TblDispatchUids
+    //        .AddRangeAsync(entities);
+
+
+
+    //    await context.SaveChangesAsync();
+
+
+
+    //    dispatchScan.Clear(sessionId);
+
+
+
+    //    return (
+    //        true,
+    //        "ثبت با موفقیت انجام شد.",
+    //        entities.Count
+    //    );
+    //}
 
     public Task<bool> RemoveUidFromSessionAsync(string sessionId, string uid)
     {

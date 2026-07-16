@@ -441,12 +441,31 @@ public class DispatchService(
 
     public async Task DeleteDispatchAsync(int id, CancellationToken cancellationToken)
     {
+        var dispatchUids = await context.TblDispatchUids
+            .Where(du => du.FKDispatchId == id)
+            .ToListAsync(cancellationToken);
+
+        if (dispatchUids.Any())
+        {
+            var uidInfoIds = dispatchUids.Select(du => du.FKUidInfo).ToList();
+            var uidInfos = await context.TblUidInfo
+                .Where(u => uidInfoIds.Contains(u.PkUidInfo))
+                .ToListAsync(cancellationToken);
+
+            foreach (var uid in uidInfos)
+            {
+                uid.FKDispatchUid = null; 
+            }
+
+            context.TblDispatchUids.RemoveRange(dispatchUids);
+        }
+
         var dispatch = await context.TblDispatches.FindAsync(id);
-
-        context.TblDispatches.Remove(dispatch);
-
-        await context.SaveChangesAsync(cancellationToken);
-
+        if (dispatch != null)
+        {
+            context.TblDispatches.Remove(dispatch);
+            await context.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task DispatchArrivedAsync(

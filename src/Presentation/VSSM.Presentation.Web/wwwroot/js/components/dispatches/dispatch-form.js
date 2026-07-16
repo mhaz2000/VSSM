@@ -407,6 +407,31 @@ $(function () {
             return;
         }
 
+        // ── اعتبارسنجی تعداد UID در حالت final ──
+        if (submitType === 'final') {
+            var mismatchItems = [];
+            $.each(addedItems, function (_, item) {
+                // محاسبه تعداد کل UIDهای اسکن‌شده برای این آیتم
+                var scannedCount = 0;
+                $.each(item.uids, function (_, entry) {
+                    var cnt = typeof entry === 'object' ? (entry.count || 1) : 1;
+                    scannedCount += cnt;
+                });
+
+                if (scannedCount !== item.doseCount) {
+                    mismatchItems.push(item.itemName + ' (درخواستی: ' + item.doseCount + ', اسکن‌شده: ' + scannedCount + ')');
+                }
+            });
+
+            if (mismatchItems.length > 0) {
+                showToast(
+                    'تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد:\n' + mismatchItems.join('\n'),
+                    'error'
+                );
+                return; 
+            }
+        }
+
         $('#toastContainer').empty();
         $('#dispatchForm').find('input[name="submitType"]').remove();
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })

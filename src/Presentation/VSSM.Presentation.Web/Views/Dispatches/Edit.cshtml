@@ -5,7 +5,11 @@
 @model UpdateDispatchDto
 
 @{
-    // ── استفاده از null-coalescing برای جلوگیری از NullReferenceException ──
+    var toastMessage = TempData["ToastMessage"] as string;
+    var toastType = TempData["ToastType"] as string ?? "info";
+    TempData.Remove("ToastMessage");
+    TempData.Remove("ToastType");
+    
     var transportModes = ViewBag.TransportModes as List<SelectListItem> ?? new List<SelectListItem>();
     var recipients = ViewBag.Recipients as List<RecipientGetDto> ?? new List<RecipientGetDto>();
     var receivingModes = ViewBag.ReceivingMethods as List<SelectListItem> ?? new List<SelectListItem>();
@@ -350,8 +354,8 @@
     <script src="~/js/shared/pagination/pagination-table.js"></script>
 
     <script>
-        var dispatchServerMsg        = "@(TempData["ToastMessage"] as string ?? "")";
-        var dispatchServerType       = "@(TempData["ToastType"] as string ?? "info")";
+        var dispatchServerMsg = "@(toastMessage ?? "")";
+        var dispatchServerType = "@(toastType ?? "info")";
         var dispatchGetItemsByClass  = "@Url.Action("GetItemsByClass", "Dispatches")";
         var dispatchGetBatchesByItem = "@Url.Action("GetBatchesByItem", "Dispatches")";
         var dispatchEditGetLinesUrl  = "@Url.Action("GetDispatchLines", "Dispatches")";

@@ -6,6 +6,12 @@
 @model CreateDispatchDto
 
 @{
+
+    var toastMessage = TempData["ToastMessage"] as string;
+    var toastType = TempData["ToastType"] as string ?? "info";
+    TempData.Remove("ToastMessage");
+    TempData.Remove("ToastType");
+
     var recipients = ViewBag.Recipients as List<RecipientGetDto>;
 
     var transportModes = ViewBag.TransportModes as List<SelectListItem>;
@@ -315,8 +321,8 @@
     <script src="~/js/shared/pagination/pagination-table.js"></script>
 
     <script>
-        var dispatchServerMsg        = "@(TempData["ToastMessage"] as string ?? "")";
-        var dispatchServerType       = "@(TempData["ToastType"] as string ?? "info")";
+        var dispatchServerMsg = "@(toastMessage ?? "")";
+        var dispatchServerType = "@(toastType ?? "info")";
         var dispatchGetItemsByClass  = "@Url.Action("GetItemsByClass", "Dispatches")";
         var dispatchGetBatchesByItem = "@Url.Action("GetBatchesByItem", "Dispatches")";
 

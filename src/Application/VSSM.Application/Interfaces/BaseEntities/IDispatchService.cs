@@ -27,15 +27,17 @@ public interface IDispatchService
     Task RestoreStockAsync(int dispatchId, CancellationToken ct = default);
     Task LinkUidsToDispatchUidAsync(int dispatchId, CancellationToken ct = default);
     Task<(bool isSuccess, string message, ScannedPackage data)> ValidateUidAsync(
-        int? dispatchLineId,
-        int? itemDetailStoreId,
-        string barcode);
+       int? dispatchLineId,
+       int? itemDetailStoreId,
+       string barcode,
+       int recipientId);
 
     Task<(bool isSuccess, string message, int count, int itemId)> SetUidAsync(
         string sessionId,
         int? dispatchLineId,
         int? itemDetailStoreId,
-        string barcode);
+        string barcode,
+        int recipientId);
 
     Task<(bool success, string message, int count)> ConfirmDispatchUidAsync(
         string sessionId,

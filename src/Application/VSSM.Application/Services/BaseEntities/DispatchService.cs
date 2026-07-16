@@ -812,7 +812,8 @@ public class DispatchService(
     public async Task<(bool isSuccess, string message, ScannedPackage data)> ValidateUidAsync(
         int? dispatchLineId,
         int? itemDetailStoreId,
-        string barcode)
+        string barcode,
+        int recipientId)  
     {
         Gs1BarcodeInfo barcodeInfo;
 
@@ -918,6 +919,7 @@ public class DispatchService(
             );
         }
 
+        // ── دریافت UID ──
         var uidInfo =
             await context.TblUidInfo
             .AsNoTracking()
@@ -943,6 +945,8 @@ public class DispatchService(
                 x.FirstLevelUid,
                 x.SecLevelUid,
                 x.ParentUid,
+
+                x.CurrentStore,        
 
                 ItemId = x.OrderInfo.FkItemId,
 
@@ -998,7 +1002,24 @@ public class DispatchService(
             );
         }
 
+        if (uidInfo.CurrentStore.HasValue && recipientId > 0)
+        {
+            var userStoreIds = await context.TblStores
+                .Where(s => s.RecipientId == recipientId)
+                .Select(s => s.StoreId)
+                .ToListAsync();
 
+            if (!userStoreIds.Contains(uidInfo.CurrentStore.Value))
+            {
+                return (
+                    false,
+                    "UID یافت نشد.",   // همان پیغام درخواستی شما
+                    null
+                );
+            }
+        }
+
+        // ── ادامه بیزینس قبلی ──
         UidLevel level;
 
 
@@ -1126,16 +1147,16 @@ public class DispatchService(
         string sessionId,
         int? dispatchLineId,
         int? itemDetailStoreId,
-        string barcode)
+        string barcode,
+        int recipientId)
     {
 
         var validation =
             await ValidateUidAsync(
                 dispatchLineId,
                 itemDetailStoreId,
-                barcode);
-
-
+                barcode,
+                recipientId);
 
         if (!validation.isSuccess)
             return (
@@ -1145,18 +1166,12 @@ public class DispatchService(
                 0
             );
 
-
-
         var package = validation.data;
-
-
 
         var result =
             dispatchScan.AddPackage(
                 sessionId,
                 package);
-
-
 
         if (!result)
         {
@@ -1167,8 +1182,6 @@ public class DispatchService(
                 package.ItemId
             );
         }
-
-
 
         return (
             true,

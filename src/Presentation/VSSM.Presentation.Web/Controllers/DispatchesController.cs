@@ -416,7 +416,8 @@ public class DispatchesController(
             sessionId,
             dispatchLineId,
             itemDetailStoreId,
-            barcode
+            barcode,
+            CurrentUserRecipientId.GetValueOrDefault()
         );
 
         return Ok(new

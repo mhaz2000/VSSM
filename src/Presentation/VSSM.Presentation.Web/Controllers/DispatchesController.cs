@@ -121,8 +121,8 @@ public class DispatchesController(
             await dispatchService.LinkUidsToDispatchUidAsync(dispatchId, cancellationToken);
         }
 
-        //TempData["ToastMessage"] = $"پیش فاکتور با شماره {seqPreview} با موفقیت ثبت شد.";
-        //TempData["ToastType"] = "success";
+        TempData["ToastMessage"] = $"پیش فاکتور با شماره {seqPreview} با موفقیت ثبت شد.";
+        TempData["ToastType"] = "success";
 
         return RedirectToAction(nameof(Index));
     }

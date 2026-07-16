@@ -322,9 +322,6 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
         await db.SaveChangesAsync();
     }
 
-    /* =========================
-ADD LINE (INCREMENTAL)
-========================= */
     public async Task AddLine(int arrivalId, ArrivalLineDto dto, CancellationToken token)
     {
         var does = int.Parse(db.TblBaseInfo.First(z => z.BaseInfoId == dto.DosePerVialId).Title);
@@ -333,7 +330,6 @@ ADD LINE (INCREMENTAL)
         //var id = _db.TblArrivalLines.OrderByDescending(z => z.ArrivalLineId).First().ArrivalLineId + 1;
         var line = new TblArrivalLine
         {
-            //ArrivalLineId = id,
             ArrivalId = arrivalId,
             ItemId = dto.ItemId,
             BatchNum = dto.BatchNum,
@@ -355,7 +351,6 @@ ADD LINE (INCREMENTAL)
 
         db.TblArrivalLines.Add(line);
 
-        // update header total volume
         var arrival = await db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
 
         await db.SaveChangesAsync(token);

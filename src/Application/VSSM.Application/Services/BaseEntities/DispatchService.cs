@@ -255,7 +255,7 @@ public class DispatchService(
             uidInfo.FKDispatchUid = du.PKDispatchUid;
         }
 
-            await context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
     }
 
     public async Task ConfirmDispatchAsync(int id, CancellationToken cancellationToken)
@@ -428,15 +428,19 @@ public class DispatchService(
         int recipientId,
         CancellationToken cancellationToken)
     {
+        if (arrivedDto?.Lines == null || !arrivedDto.Lines.Any())
+            throw new ArgumentException("هیچ خطی برای ورود وجود ندارد.");
+
         var lineIds = arrivedDto.Lines.Select(t => t.DispatchLineId).ToList();
         var storeMap = arrivedDto.Lines.ToDictionary(l => l.DispatchLineId, l => l.StoreId);
-        var batchNumbers = new HashSet<string>();
 
-        // ── ۱. واکشی همه داده با یک کوئری ──
         var fiscalPeriodId = await context.TblFiscalPeriods
             .Where(f => f.IsActive.Value)
             .Select(f => f.FiscalPeriodId)
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (fiscalPeriodId == 0)
+            throw new InvalidOperationException("دوره مالی فعالی یافت نشد. لطفاً ابتدا یک دوره مالی فعال تعریف کنید.");
 
         var data = await (
             from line in context.TblDispatchLines.Where(l => lineIds.Contains(l.DispatchLineId))
@@ -466,92 +470,132 @@ public class DispatchService(
                 line.FkVvmTypeBaseInfo,
             }).ToListAsync(cancellationToken);
 
-        if (data.Count == 0) return;
+        if (data.Count == 0)
+            throw new InvalidOperationException("هیچ داده‌ای برای ورود یافت نشد.");
 
-        var first = data[0];
+        var missingStores = lineIds.Except(storeMap.Keys).ToList();
+        if (missingStores.Any())
+            throw new ArgumentException($"برای خطوط {string.Join(", ", missingStores)} انبار مقصد مشخص نشده است.");
+
+        var first = data.First();
         var now = DateTime.Now;
 
-        // ── ۲. ساخت ReceiveDispatch ──
-        var receiveDispatch = new TblReceiveDispatches
+        using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+
+        try
         {
-            ReceiveDate = DateTime.Today,
-            CreationTime = now,
-            CreatedBy = userId
-        };
-        context.TblReceiveDispatches.Add(receiveDispatch);
-        await context.SaveChangesAsync(cancellationToken);
-
-        // ── ۳. ساخت Arrival و خطوطش ──
-        var arrival = new TblArrival
-        {
-            Date = now,
-            FiscalPeriodId = fiscalPeriodId,
-            EntryDate = now,
-            EnteredById = userId.ToString(),
-            IsConfirmed = true,
-            IsDrafted = false,
-            ConfirmationTime = now,
-            SenderId = first.SenderId,
-            ReceiverId = recipientId,
-            DispatchId = first.DispatchId,
-            ReportNumber = await arrivalService.Generate()
-        };
-
-        var itemDetailStores = new List<TblItemDetailStore>(data.Count);
-
-        foreach (var item in data)
-        {
-            var storeId = storeMap[item.DispatchLineId];
-
-            arrival.TblArrivalLines.Add(new TblArrivalLine
+            var receiveDispatch = new TblReceiveDispatches
             {
-                BatchNum = item.BatchNumber,
-                CommertialNameId = item.CommercialNameId,
-                DosePerVialId = item.DosePerVialId,
+                ReceiveDate = DateTime.Today,
+                CreationTime = now,
+                CreatedBy = userId
+            };
+            context.TblReceiveDispatches.Add(receiveDispatch);
+            await context.SaveChangesAsync(cancellationToken);
+
+            var arrival = new TblArrival
+            {
+                Date = now,
+                FiscalPeriodId = fiscalPeriodId,
                 EntryDate = now,
-                ExpiryDate = item.ExpiryDate,
-                ItemDetailId = item.ItemDetailId,
-                ItemId = item.ItemId,
-                ManufacturerId = item.ManufacturerId,
-                ProductionDate = item.ProductionDate,
-                Quantity = item.Quantity,
-                StoreId = storeId,
-                FkUseId = item.FkUseBaseInfo,
-                FkVvmStageId = item.FkVvmStageBaseInfo,
-                FkVvmTypeId = item.FkVvmTypeBaseInfo,
-            });
+                EnteredById = userId.ToString(),
+                IsConfirmed = true,
+                IsDrafted = false,
+                ConfirmationTime = now,
+                SenderId = first.SenderId,
+                ReceiverId = recipientId,
+                DispatchId = first.DispatchId,
+                ReportNumber = await arrivalService.Generate()
+            };
 
-            itemDetailStores.Add(new TblItemDetailStore
+            var itemDetailStores = new List<TblItemDetailStore>(data.Count);
+
+            foreach (var item in data)
             {
-                ItemDetailId = item.ItemDetailId,
-                StoreId = storeId,
-                CurrentStock = item.Quantity,
-                EntryDate = now
-            });
+                var newStoreId = storeMap[item.DispatchLineId];
 
-            batchNumbers.Add(item.BatchNumber);
+                arrival.TblArrivalLines.Add(new TblArrivalLine
+                {
+                    BatchNum = item.BatchNumber,
+                    CommertialNameId = item.CommercialNameId,
+                    DosePerVialId = item.DosePerVialId,
+                    EntryDate = now,
+                    ExpiryDate = item.ExpiryDate,
+                    ItemDetailId = item.ItemDetailId,
+                    ItemId = item.ItemId,
+                    ManufacturerId = item.ManufacturerId,
+                    ProductionDate = item.ProductionDate,
+                    Quantity = item.Quantity,
+                    StoreId = newStoreId,
+                    FkUseId = item.FkUseBaseInfo,
+                    FkVvmStageId = item.FkVvmStageBaseInfo,
+                    FkVvmTypeId = item.FkVvmTypeBaseInfo,
+                });
+
+                itemDetailStores.Add(new TblItemDetailStore
+                {
+                    ItemDetailId = item.ItemDetailId,
+                    StoreId = newStoreId,
+                    CurrentStock = item.Quantity,
+                    EntryDate = now
+                });
+            }
+
+            context.TblItemDetailStores.AddRange(itemDetailStores);
+            context.TblArrivals.Add(arrival);
+            await context.SaveChangesAsync(cancellationToken);
+
+
+            var batchToStoreMap = data.ToDictionary(
+                d => d.BatchNumber,
+                d => storeMap[d.DispatchLineId]
+            );
+
+            var dispatchIds = data.Select(d => d.DispatchId).Distinct().ToHashSet();
+
+            var dispatchUids = await context.TblDispatchUids
+                .Where(du => dispatchIds.Contains(du.FKDispatchId))
+                .ToListAsync(cancellationToken);
+
+            var uidIds = dispatchUids.Select(du => du.FKUidInfo).ToList();
+
+            var uids = await context.TblUidInfo
+                .Where(u => uidIds.Contains(u.PkUidInfo) /*&& u.FkReceiveDispatchId == null*/)
+                .Include(u => u.OrderInfo)
+                .ToListAsync(cancellationToken);
+
+            if (uids.Any())
+            {
+                foreach (var uid in uids)
+                {
+                    if (uid.OrderInfo != null && batchToStoreMap.TryGetValue(uid.OrderInfo.BatchNumber, out var newStoreId))
+                    {
+                        //uid.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
+                        uid.CurrentStore = newStoreId;
+                    }
+
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+
+                var currentDispatch = await context.TblDispatches
+                    .FirstOrDefaultAsync(d => d.DispatchId == first.DispatchId, cancellationToken);
+
+                if (currentDispatch != null)
+                {
+                    currentDispatch.ArrivalId = arrival.ArrivalId;
+                    currentDispatch.ReceiverStatus = 2;
+                    currentDispatch.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+
+                await transaction.CommitAsync(cancellationToken);
+            }
         }
-
-        context.TblItemDetailStores.AddRange(itemDetailStores);
-        context.TblArrivals.Add(arrival);
-        await context.SaveChangesAsync(cancellationToken);
-
-        // ── ۴. آپدیت UIDها با یک کوئری ──
-        var uids = await context.TblUidInfo
-            .Where(u => batchNumbers.Contains(u.OrderInfo.BatchNumber) && u.FkReceiveDispatchId == null)
-            .ToListAsync(cancellationToken);
-
-        foreach (var uid in uids)
+        catch (Exception)
         {
-            uid.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
         }
-
-        var currentDispatch = await context.TblDispatches.FindAsync(first.DispatchId);
-        currentDispatch.ArrivalId = arrival.ArrivalId;
-        currentDispatch.ReceiverStatus = 2;
-        currentDispatch.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
-
-        await context.SaveChangesAsync(cancellationToken);
     }
     public async Task<UpdateDispatchDto?> GetByIdAsync(int id)
     {
@@ -1136,11 +1180,11 @@ public class DispatchService(
                 FKDispatchId = dispatchId,
                 FKUidInfo = uidInfo.PkUidInfo
             })
-            .Distinct() 
+            .Distinct()
             .ToList();
 
         await context.TblDispatchUids.AddRangeAsync(dispatchUids);
-        await context.SaveChangesAsync(); 
+        await context.SaveChangesAsync();
 
         var reloadedDispatchUids = await context.TblDispatchUids
             .Where(d => d.FKDispatchId == dispatchId)
@@ -1152,13 +1196,13 @@ public class DispatchService(
                 .FirstOrDefault(d => d.FKUidInfo == uidInfo.PkUidInfo);
             if (matched != null)
             {
-                uidInfo.FKDispatchUid = matched.PKDispatchUid; 
+                uidInfo.FKDispatchUid = matched.PKDispatchUid;
             }
         }
 
         context.TblUidInfo.UpdateRange(uidInfoList);
         await context.SaveChangesAsync();
-        
+
         dispatchScan.Clear(sessionId);
 
         return (true, $"ثبت {dispatchUids.Count} UID با موفقیت انجام شد.", dispatchUids.Count);

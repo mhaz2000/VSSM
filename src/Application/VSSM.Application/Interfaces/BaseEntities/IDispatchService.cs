@@ -19,7 +19,10 @@ public interface IDispatchService
     Task<UpdateDispatchDto?> GetByIdAsync(int id);
     Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken);
     Task<List<ItemLookupDto>> GetItemsByClassAsync(int classId, CancellationToken ct = default);
-    Task<List<BatchRowDto>> GetBatchesByItemAsync(int itemId, CancellationToken ct = default);
+    Task<List<BatchRowDto>> GetBatchesByItemAsync(
+            int itemId,
+            int recipientId,
+            CancellationToken ct = default);
     Task DecrementStockOnFinalAsync(List<DispatchLineDto> lines, CancellationToken ct = default);
     Task RestoreStockAsync(int dispatchId, CancellationToken ct = default);
     Task LinkUidsToDispatchUidAsync(int dispatchId, CancellationToken ct = default);

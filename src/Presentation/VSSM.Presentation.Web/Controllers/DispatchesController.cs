@@ -36,7 +36,7 @@ public class DispatchesController(
     [HttpGet]
     public async Task<IActionResult> GetBatchesByItem(int itemId, CancellationToken ct)
     {
-        var rows = await dispatchService.GetBatchesByItemAsync(itemId, ct);
+        var rows = await dispatchService.GetBatchesByItemAsync(itemId,CurrentUserRecipientId.GetValueOrDefault(), ct);
         return Json(rows);
     }
 

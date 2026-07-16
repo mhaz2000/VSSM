@@ -18,6 +18,16 @@ public class DispatchService(
     IArrivalService arrivalService,
     IGs1BarcodeParser barcodeParser) : IDispatchService
 {
+
+    private async Task<List<int>> GetUserStoreIdsAsync(int recipientId)
+    {
+        var storeIds = await context.TblStores
+            .Where(s => s.RecipientId == recipientId)
+            .Select(s => s.StoreId)
+            .ToListAsync();
+
+        return storeIds;
+    }
     public async Task<List<DispatchEditLineDto>> GetDispatchLinesForEditAsync(int dispatchId, CancellationToken ct = default)
     {
         var rawLines = await (
@@ -113,17 +123,38 @@ public class DispatchService(
             .ToListAsync(ct);
     }
 
-    public async Task<List<BatchRowDto>> GetBatchesByItemAsync(int itemId, CancellationToken ct = default)
+    public async Task<List<BatchRowDto>> GetBatchesByItemAsync(
+        int itemId,
+        int recipientId,
+        CancellationToken ct = default)
     {
-        var item = await context.TblItems.FindAsync(itemId);
+        List<int> allowedStoreIds = new List<int>();
+        bool isAdmin = (recipientId == 0);
 
-        // بند ۶: پیدا کردن حلال مرتبط در صورت RequiresDiluent = true
-        // از فیلد DiluentId در TblItem استفاده می‌شود (IsDiluent وجود ندارد)
+        if (!isAdmin)
+        {
+            allowedStoreIds = await context.TblStores
+                .Where(s => s.RecipientId == recipientId)
+                .Select(s => s.StoreId)
+                .ToListAsync(ct);
+
+            if (allowedStoreIds.Count == 0)
+                return new List<BatchRowDto>();
+        }
+
+        var item = await context.TblItems
+            .FirstOrDefaultAsync(i => i.ItemId == itemId, ct);
+
+        if (item == null)
+            return new List<BatchRowDto>();
+
         TblItem? diluentItem = null;
         TblItemDetailStore? diluentStore = null;
-        if (item?.RequiresDiluent == true && item.DiluentId.HasValue)
+
+        if (item.RequiresDiluent.HasValue && item.RequiresDiluent.Value && item.DiluentId.HasValue)
         {
-            diluentItem = await context.TblItems.FindAsync(item.DiluentId.Value);
+            diluentItem = await context.TblItems
+                .FirstOrDefaultAsync(i => i.ItemId == item.DiluentId.Value, ct);
 
             if (diluentItem != null)
             {
@@ -131,40 +162,39 @@ public class DispatchService(
                     .Include(s => s.ItemDetail)
                     .Where(s => s.ItemDetail.ItemId == diluentItem.ItemId && s.CurrentStock > 0)
                     .OrderByDescending(s => s.ItemDetailId)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(ct);
             }
         }
 
-        // بند ۷a + بند ۶: query بدون ToShamsi (چون EF نمی‌تواند ترجمه کند)
-        // تاریخ‌ها به صورت خام برگشت داده و سپس در حافظه تبدیل می‌شوند
-        var rawRows = await (
-            from ids in context.TblItemDetailStores
-                .Where(s => s.ItemDetail.ItemId == itemId && s.CurrentStock > 0)
-            join id in context.TblItemDetails on ids.ItemDetailId equals id.ItemDetailId
-            join mfr in context.TblBaseInfo on id.ManufacturerId equals mfr.BaseInfoId
-                into mfrJ
-            from mfr in mfrJ.DefaultIfEmpty()
-            join dpv in context.TblBaseInfo on id.DosePerVialId equals dpv.BaseInfoId
-                into dpvJ
-            from dpv in dpvJ.DefaultIfEmpty()
-            join store in context.TblStores on ids.StoreId equals store.StoreId
-                into storeJ
-            from store in storeJ.DefaultIfEmpty()
-            select new
-            {
-                ids.PKItemDetailStoreId,
-                id.BatchNumber,
-                id.ExpiryDate,
-                CurrentStock = ids.CurrentStock ?? 0,
-                DosePerVialStr = dpv != null ? dpv.Title : "-",
-                DosePerVialNum = dpv != null ? int.Parse(dpv.Title) : 0,
-                ManufacturerName = mfr != null ? mfr.Title : "-",
-                StoreId = store != null ? store.StoreId : 0,
-                StoreName = store != null ? store.Name : "-",
-            }
-        ).ToListAsync(ct);
+        var query = from ids in context.TblItemDetailStores
+                        .Where(s => s.ItemDetail.ItemId == itemId && s.CurrentStock > 0)
+                    join id in context.TblItemDetails on ids.ItemDetailId equals id.ItemDetailId
+                    join mfr in context.TblBaseInfo on id.ManufacturerId equals mfr.BaseInfoId into mfrJ
+                    from mfr in mfrJ.DefaultIfEmpty()
+                    join dpv in context.TblBaseInfo on id.DosePerVialId equals dpv.BaseInfoId into dpvJ
+                    from dpv in dpvJ.DefaultIfEmpty()
+                    join store in context.TblStores on ids.StoreId equals store.StoreId into storeJ
+                    from store in storeJ.DefaultIfEmpty()
+                    select new
+                    {
+                        ids.PKItemDetailStoreId,
+                        StoreId = ids.StoreId ?? 0,      // ← تبدیل int? به int
+                        id.BatchNumber,
+                        id.ExpiryDate,
+                        CurrentStock = ids.CurrentStock ?? 0,
+                        DosePerVialStr = dpv != null ? dpv.Title : "-",
+                        DosePerVialNum = dpv != null ? int.Parse(dpv.Title) : 0,
+                        ManufacturerName = mfr != null ? mfr.Title : "-",
+                        StoreName = store != null ? store.Name : "-",
+                    };
 
-        // بند ۷a: تبدیل تاریخ انقضا به شمسی در حافظه (نه داخل EF query)
+        if (!isAdmin)
+        {
+            query = query.Where(x => allowedStoreIds.Contains(x.StoreId));
+        }
+
+        var rawRows = await query.ToListAsync(ct);
+
         var result = rawRows.Select(r => new BatchRowDto
         {
             ItemDetailStoreId = r.PKItemDetailStoreId,
@@ -179,17 +209,14 @@ public class DispatchService(
             ManufacturerName = r.ManufacturerName,
             StoreId = r.StoreId,
             StoreName = r.StoreName,
-
-            // بند ۶: اطلاعات حلال — در حافظه محاسبه می‌شود
-            RequiresDiluent = item.RequiresDiluent == true,
+            RequiresDiluent = item.RequiresDiluent.HasValue && item.RequiresDiluent.Value,
             DiluentItemDetailStoreId = diluentStore?.PKItemDetailStoreId,
             DiluentItemId = diluentItem?.ItemId,
             DiluentItemName = diluentItem?.FullName,
             DiluentBatchNumber = diluentStore?.ItemDetail?.BatchNumber,
-            // بند ۷a: تبدیل تاریخ انقضا حلال نیز در حافظه
             DiluentExpiryDateShamsi = diluentStore?.ItemDetail?.ExpiryDate.HasValue == true
-                                               ? diluentStore.ItemDetail.ExpiryDate.Value.ToShamsi()
-                                               : null,
+                                        ? diluentStore.ItemDetail.ExpiryDate.Value.ToShamsi()
+                                        : null,
             DiluentExpiryDate = diluentStore?.ItemDetail?.ExpiryDate,
             DiluentManufacturerName = null,
         }).ToList();

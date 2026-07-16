@@ -12,7 +12,14 @@ public interface IItemService
     Task<ItemSelectDto> GetById(int id, CancellationToken cancellationToken);
     Task<List<ItemListDto>> GetActives(CancellationToken cancellationToken);
     Task<List<ItemListDto>> GetActiveVaccines(CancellationToken cancellationToken);
-    Task<PagingSearchOrderDto<ItemListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
+    Task<PagingSearchOrderDto<ItemListDto>> GetPagedList(
+            string? search,
+            int page,
+            int pageSize,
+            string sortField,
+            string sortOrder,
+            string? status,
+            CancellationToken cancellationToken);
     Task<List<ItemListDto>> GetItemsByClassAsync(int classItemId);
     Task<string> GetItemNamesAsync(List<int> itemIds);
     Task<IEnumerable<DosePerVialListDto>> GetItemDoesPerVialsAsync(int itemId, CancellationToken token);

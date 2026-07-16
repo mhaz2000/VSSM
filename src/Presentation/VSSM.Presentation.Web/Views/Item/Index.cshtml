@@ -1,13 +1,27 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.Item
 @using VSSM.Presentation.Web.Models.Base
+@using Microsoft.AspNetCore.Mvc.Rendering
 @model GridViewModel
 
 @section Styles {
-    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components/shared/search-bar.css" rel="stylesheet" asp-append-version="true" />
 }
 
 @{
     ViewData["Title"] = "مدیریت کالا";
+
+    var currentStatus = Context.Request.Query["status"].ToString();
+    var filterOptions = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "", Text = "همه" },
+        new SelectListItem { Value = "active", Text = "فعال" },
+        new SelectListItem { Value = "inactive", Text = "غیرفعال" }
+    };
+    foreach (var item in filterOptions)
+    {
+        item.Selected = (item.Value == currentStatus);
+    }
 }
 
 <div class="grid-wrapper">
@@ -23,7 +37,10 @@
                 pageSize = Model.Data.PageSize,
                 sort = Model.CurrentSort,
                 direction = Model.CurrentDirection,
-                addController = "Item",
+                filterOptions = filterOptions,
+                filterName = "status",
+                filterValue = currentStatus,
+                addController = ViewContext.RouteData.Values["controller"]?.ToString(),
                 addAction = "New",
                 showAddButton = true
                 })
@@ -34,3 +51,12 @@
         @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
 </div>
+
+@if (TempData["ToastMessage"] != null)
+{
+    <script>
+        $(document).ready(function () {
+            showToast('@Html.Raw(TempData["ToastMessage"])', '@TempData["ToastType"]');
+        });
+    </script>
+}

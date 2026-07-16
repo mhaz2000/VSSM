@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Services.BaseEntities;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Base;
@@ -36,7 +34,7 @@ public class DispatchesController(
     [HttpGet]
     public async Task<IActionResult> GetBatchesByItem(int itemId, CancellationToken ct)
     {
-        var rows = await dispatchService.GetBatchesByItemAsync(itemId,CurrentUserRecipientId.GetValueOrDefault(), ct);
+        var rows = await dispatchService.GetBatchesByItemAsync(itemId, CurrentUserRecipientId.GetValueOrDefault(), ct);
         return Json(rows);
     }
 
@@ -231,14 +229,14 @@ public class DispatchesController(
     }
 
     public async Task<IActionResult> Index(CancellationToken cancellationToken, string? search,
-                                            int pageNumber = 1,
-                                            int pageSize = 10,
-                                            string? status = null,
-                                            string sort = "Orders",
-                                            string direction = "desc")
+                                        int pageNumber = 1,
+                                        int pageSize = 10,
+                                        string? status = null,
+                                        string sort = "Orders",
+                                        string direction = "desc")
     {
-
-        var (data, count) = await dispatchService.GetPagedDispatchesAsync(search, pageNumber, pageSize, sort, direction, status, CurrentUserRecipientId.Value, cancellationToken);
+        var (data, count) = await dispatchService.GetPagedDispatchesAsync(
+            search, pageNumber, pageSize, sort, direction, status, CurrentUserRecipientId.Value, cancellationToken);
 
         var model = new GridViewModel
         {
@@ -254,52 +252,58 @@ public class DispatchesController(
             },
             Columns = new List<GridColumn>
             {
-                new() { Header = "تاریخ", PropertyName = nameof(DispatchListDto.DateText),  Sortable = false },
+                new() { Header = "تاریخ", PropertyName = nameof(DispatchListDto.DateText), Sortable = false },
                 new() { Header = "گیرنده", PropertyName = nameof(DispatchListDto.ReceiverName), Sortable = false },
                 new() { Header = "شماره فاکتور", PropertyName = nameof(DispatchListDto.DispatchVoucherNumber), Sortable = false },
-                new() { Header = "پیش فاکتور", PropertyName = nameof(DispatchListDto.IsDraftedText),  Sortable = false },
-                new() { Header = "وضعیت گیرنده", PropertyName = nameof(DispatchListDto.ReceiverStatusText),  Sortable = false },
-                new() { Header = "عملیات", IsActionColumn = true}
+                new() { Header = "پیش فاکتور", PropertyName = nameof(DispatchListDto.IsDraftedText), Sortable = false },
+                new() { Header = "وضعیت گیرنده", PropertyName = nameof(DispatchListDto.ReceiverStatusText), Sortable = false },
+                new() { Header = "عملیات", IsActionColumn = true }
             },
             Actions = new List<GridAction>
+        {
+            new()
             {
-                new()
+                Title = "ویرایش",
+                Controller = "Dispatches",
+                Action = "Edit",
+                RouteIdProperty = nameof(DispatchListDto.Id),
+                IconClass = "fa fa-edit",
+                DynamicSkip = item =>
                 {
-                    Title = "ویرایش",
-                    Controller = "Dispatches",
-                    Action = "Edit",
-                    RouteIdProperty = nameof(DispatchListDto.Id),
-                    LinkClass = "",
-                    IconClass = "fa fa-edit",
-                    DynamicSkip = item =>
-                    {
-                        var row = (DispatchListDto)item;
-
-                        return (row.IsConfirmed.HasValue && row.IsConfirmed.Value).ToString();
-                    }
-
-                },
-                new()
+                    var row = (DispatchListDto)item;
+                    return (row.IsConfirmed.HasValue && row.IsConfirmed.Value).ToString();
+                }
+            },
+            new()
+            {
+                Title = "مشاهده",
+                Controller = "Dispatches",
+                Action = "Edit",
+                RouteIdProperty = nameof(DispatchListDto.Id),
+                IconClass = "fa fa-eye",
+                DynamicSkip = item =>
                 {
-                    Title = "چاپ پیش فاکتور",
-                    Controller = "Dispatches",
-                    Action = "Print",
-                    RouteIdProperty = nameof(DispatchListDto.Id),
-                    LinkClass = "",
-                    IconClass = "fa fa-print",
-                    DynamicSkip = item =>
-                    {
-                        var row = (DispatchListDto)item;
-
-                        return (!(row.IsDrafted.HasValue && row.IsDrafted.Value)).ToString();
-                    }
+                    var row = (DispatchListDto)item;
+                    return (!(row.IsConfirmed.HasValue && row.IsConfirmed.Value)).ToString();
+                }
+            },
+            new()
+            {
+                Title = "چاپ پیش فاکتور",
+                Controller = "Dispatches",
+                Action = "Print",
+                RouteIdProperty = nameof(DispatchListDto.Id),
+                IconClass = "fa fa-print",
+                DynamicSkip = item =>
+                {
+                    var row = (DispatchListDto)item;
+                    return (!(row.IsDrafted.HasValue && row.IsDrafted.Value)).ToString();
                 }
             }
+        }
         };
 
-
         return View(model);
-
     }
 
 

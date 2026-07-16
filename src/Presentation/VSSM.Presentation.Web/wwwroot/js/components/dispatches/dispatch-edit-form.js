@@ -1,6 +1,6 @@
 ﻿/**
  * dispatch-edit-form.js  —  فرم ویرایش ارسال (هماهنگ با New)
- * نسخه: 2.2 - با data-idx و logic جدید
+ * نسخه: 2.3 - با اصلاح doseCount برای UID
  */
 
 var addedItems = [];
@@ -202,9 +202,6 @@ $(function () {
         });
     });
 
-    // ════════════════════════════════════════
-    //  pre-populate: لود آیتم‌های موجود
-    // ════════════════════════════════════════
 
     if (dispatchId && dispatchId > 0) {
         $.ajax({
@@ -216,6 +213,21 @@ $(function () {
                     return;
                 }
                 $.each(lines, function (_, line) {
+                    // پشتیبانی از هر دو حالت حروف بزرگ/کوچک
+                    var doseCount = line.doseCount || line.DoseCount || 0;
+                    var numVial = line.numVial || line.NumVial || 0;
+                    var dosePerVial = line.dosePerVial || line.DosePerVial || 0;
+
+                    // اگر doseCount صفر بود و numVial و dosePerVial موجود باشند، محاسبه کن
+                    if (doseCount === 0 && numVial > 0 && dosePerVial > 0) {
+                        doseCount = numVial * dosePerVial;
+                    }
+
+                    // در صورت صفر ماندن، مقدار پیش‌فرض 1 قرار بده (برای جلوگیری از خطای UID)
+                    if (doseCount === 0) {
+                        doseCount = 1;
+                    }
+
                     addedItems.push({
                         idx: addedItems.length,
                         dispatchLineId: line.dispatchLineId || 0,
@@ -228,8 +240,9 @@ $(function () {
                         storeId: line.storeId || 0,
                         storeName: line.storeName || '-',
                         manufacturerName: line.manufacturerName || '-',
-                        doseCount: line.doseCount || 0,
-                        numVial: line.numVial || 0,
+                        doseCount: doseCount,
+                        numVial: numVial,
+                        dosePerVial: dosePerVial,
                         vvmStageId: line.vvmStageId || '',
                         vvmStageName: line.vvmStageName || '-',
                         note: line.note || '',
@@ -245,12 +258,10 @@ $(function () {
                 renderAddedItems();
             }
         });
-    } else {
-        renderAddedItems();
     }
 
     // ════════════════════════════════════════
-    //  افزودن آیتم جدید
+    //  افزودن آیتم جدید (با ذخیره dosePerVial)
     // ════════════════════════════════════════
 
     window.addSelectedItem = function () {
@@ -297,6 +308,7 @@ $(function () {
                 manufacturerName: row.manufacturerName,
                 doseCount: doseCount,
                 numVial: row.dosePerVialNum > 0 ? Math.floor(doseCount / row.dosePerVialNum) : 0,
+                dosePerVial: row.dosePerVialNum || 0,
                 vvmStageId: vvmStageId,
                 vvmStageName: vvmStageName,
                 note: '',
@@ -324,6 +336,7 @@ $(function () {
                     manufacturerName: row.diluentManufacturerName || '-',
                     doseCount: doseCount,
                     numVial: 0,
+                    dosePerVial: 0,
                     vvmStageId: '',
                     vvmStageName: '-',
                     note: 'حلال خودکار',

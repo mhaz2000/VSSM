@@ -723,7 +723,7 @@ public class DispatchService(
 
         // base query using joins
         var query = from d in context.TblDispatches.Where(dispatch => dispatch.SenderId == senderId)
-                    join r in context.TblUsers on d.ReceiverId equals r.UserId into rj
+                    join r in context.TblRecipients on d.ReceiverId equals r.RecipientId into rj
                     from r in rj.DefaultIfEmpty()
                     select new DispatchListDto
                     {
@@ -735,7 +735,7 @@ public class DispatchService(
                         IsDrafted = d.IsDrafted,
                         ReceiverStatus = d.ReceiverStatus ?? 0,
                         SeqPreview = d.SeqPreview,
-                        ReceiverName = r != null ? r.FirstName + " " + r.LastName : "-",
+                        ReceiverName = r != null ? r.FullName : "-",
                     };
 
         if (!string.IsNullOrEmpty(status))

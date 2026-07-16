@@ -107,7 +107,7 @@ public class DispatchesController(
             var confirmResult = await dispatchService.ConfirmDispatchUidAsync(scanSessionId, dispatchId);
             if (!confirmResult.success)
             {
-                await dispatchService.DeleteDispatchAsync(dispatchId, cancellationToken);
+                //await dispatchService.DeleteDispatchAsync(dispatchId, cancellationToken);
                 TempData["ToastMessage"] = confirmResult.message;
                 TempData["ToastType"] = "error";
                 await PopulateLookupViewBagsAsync(cancellationToken);
@@ -255,7 +255,7 @@ public class DispatchesController(
             Columns = new List<GridColumn>
             {
                 new() { Header = "تاریخ", PropertyName = nameof(DispatchListDto.DateText),  Sortable = false },
-                new() { Header = "شماره درخواست", PropertyName = nameof(DispatchListDto.RequestNum), Sortable = false },
+                new() { Header = "گیرنده", PropertyName = nameof(DispatchListDto.ReceiverName), Sortable = false },
                 new() { Header = "شماره فاکتور", PropertyName = nameof(DispatchListDto.DispatchVoucherNumber), Sortable = false },
                 new() { Header = "پیش فاکتور", PropertyName = nameof(DispatchListDto.IsDraftedText),  Sortable = false },
                 new() { Header = "وضعیت گیرنده", PropertyName = nameof(DispatchListDto.ReceiverStatusText),  Sortable = false },

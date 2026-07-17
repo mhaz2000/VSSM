@@ -880,7 +880,7 @@ public class DispatchService(
         int? dispatchLineId,
         int? itemDetailStoreId,
         string barcode,
-        int recipientId)  
+        int recipientId)
     {
         Gs1BarcodeInfo barcodeInfo;
 
@@ -896,14 +896,9 @@ public class DispatchService(
         {
             barcodeInfo = barcodeParser.Parse(barcode);
 
-            if (barcodeInfo == null ||
-                string.IsNullOrEmpty(barcodeInfo.Uid))
+            if (barcodeInfo == null || string.IsNullOrEmpty(barcodeInfo.Uid))
             {
-                return (
-                    false,
-                    "شناسه واکسن از بارکد استخراج نشد.",
-                    null
-                );
+                return (false, "شناسه واکسن از بارکد استخراج نشد.", null);
             }
 
             barcodeInfo.IsGs1 = true;
@@ -912,115 +907,80 @@ public class DispatchService(
         int? itemId = null;
         string batchNumber = null;
 
-
-        if (dispatchLineId.HasValue &&
-            dispatchLineId.Value > 0)
+        if (dispatchLineId.HasValue && dispatchLineId.Value > 0)
         {
-
-            var dispatchLine =
-                await context.TblDispatchLines
+            var dispatchLine = await context.TblDispatchLines
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x =>
-                    x.DispatchLineId == dispatchLineId.Value);
-
-
+                .FirstOrDefaultAsync(x => x.DispatchLineId == dispatchLineId.Value);
 
             if (dispatchLine == null)
-            {
-                return (
-                    false,
-                    "آیتم حواله یافت نشد.",
-                    null
-                );
-            }
-
+                return (false, "آیتم حواله یافت نشد.", null);
 
             itemId = dispatchLine.ItemId;
             batchNumber = dispatchLine.BatchNumber;
-
         }
-        else if (itemDetailStoreId.HasValue &&
-                 itemDetailStoreId.Value > 0)
+        else if (itemDetailStoreId.HasValue && itemDetailStoreId.Value > 0)
         {
-
-            var store =
-                await context.TblItemDetailStores
+            var store = await context.TblItemDetailStores
                 .AsNoTracking()
                 .Include(x => x.ItemDetail)
-                .FirstOrDefaultAsync(x =>
-                    x.PKItemDetailStoreId == itemDetailStoreId.Value);
-
-
+                .FirstOrDefaultAsync(x => x.PKItemDetailStoreId == itemDetailStoreId.Value);
 
             if (store == null)
-            {
-                return (
-                    false,
-                    "سری ساخت یافت نشد.",
-                    null
-                );
-            }
-
+                return (false, "سری ساخت یافت نشد.", null);
 
             itemId = store.ItemDetail.ItemId;
             batchNumber = store.ItemDetail.BatchNumber;
-
         }
         else
         {
-            return (
-                false,
-                "اطلاعات اعتبارسنجی ناقص است.",
-                null
-            );
+            return (false, "اطلاعات اعتبارسنجی ناقص است.", null);
         }
 
-        if (barcodeInfo.IsGs1 &&
-            barcodeInfo.ExpiryDate.HasValue &&
-            barcodeInfo.ExpiryDate.Value < DateTime.Today)
+        if (barcodeInfo.IsGs1 && barcodeInfo.ExpiryDate.HasValue && barcodeInfo.ExpiryDate.Value < DateTime.Today)
         {
-            return (
-                false,
-                "تاریخ مصرف واکسن گذشته است.",
-                null
-            );
+            return (false, "تاریخ مصرف واکسن گذشته است.", null);
         }
 
-        var uidInfoRaw =
-          await context.TblUidInfo
-          .AsNoTracking()
-          .Include(x => x.OrderInfo)
-          .Where(x =>
-              (x.FirstLevelUid == barcodeInfo.Uid ||
-               x.SecLevelUid == barcodeInfo.Uid ||
-               x.ParentUid == barcodeInfo.Uid)
-              &&
-              x.IsActive
-              &&
-              x.OrderInfo.FkArrivalId != null
-              &&
-              x.OrderInfo.Status == OrderInfoStatus.APPLIED.ToString()
-          )
-          .Select(x => new
-          {
-              x.PkUidInfo,
-              x.FirstLevelUid,
-              x.SecLevelUid,
-              x.ParentUid,
-              x.CurrentStore,
-              x.FKDispatchUid,
-              x.FkReceiveDispatchId,
-              ItemId = x.OrderInfo.FkItemId,
-              x.OrderInfo.BatchNumber
-          })
-          .FirstOrDefaultAsync();
+
+        var uidInfoRaw = await context.TblUidInfo
+            .AsNoTracking()
+            .Include(x => x.OrderInfo)
+            .Where(x =>
+                (x.FirstLevelUid == barcodeInfo.Uid ||
+                 x.SecLevelUid == barcodeInfo.Uid ||
+                 x.ParentUid == barcodeInfo.Uid)
+                &&
+                x.IsActive
+                &&
+                x.OrderInfo.FkArrivalId != null
+                &&
+                x.OrderInfo.Status == OrderInfoStatus.APPLIED.ToString()
+            )
+            .Select(x => new
+            {
+                x.PkUidInfo,
+                x.FirstLevelUid,
+                x.SecLevelUid,
+                x.ParentUid,
+                x.CurrentStore,
+                x.FKDispatchUid,
+                x.FkReceiveDispatchId,
+                x.Used,
+                ItemId = x.OrderInfo.FkItemId,
+                x.OrderInfo.BatchNumber
+            })
+            .FirstOrDefaultAsync();
 
         if (uidInfoRaw == null)
         {
             return (false, "برای بارکد اسکن شده واکسنی یافت نشد.", null);
         }
 
-
+        if (uidInfoRaw.Used != false)
+        {
+            return (false, "UID مورد نظر مصرف شده است.", null);
+        }
 
         if (uidInfoRaw.FKDispatchUid.HasValue)
         {
@@ -1037,18 +997,11 @@ public class DispatchService(
             return (false, "بارکد متعلق به این کالا نمی‌باشد.", null);
         }
 
-
-
-
         if (barcodeInfo.IsGs1 &&
-           !string.IsNullOrEmpty(barcodeInfo.BatchNumber) &&
-           barcodeInfo.BatchNumber != uidInfoRaw.BatchNumber)
+            !string.IsNullOrEmpty(barcodeInfo.BatchNumber) &&
+            barcodeInfo.BatchNumber != uidInfoRaw.BatchNumber)
         {
-            return (
-                false,
-                "سری ساخت بارکد صحیح نیست.",
-                null
-            );
+            return (false, "سری ساخت بارکد صحیح نیست.", null);
         }
 
         if (uidInfoRaw.CurrentStore.HasValue && recipientId > 0)
@@ -1060,37 +1013,23 @@ public class DispatchService(
 
             if (!userStoreIds.Contains(uidInfoRaw.CurrentStore.Value))
             {
-                return (
-                    false,
-                    "UID یافت نشد.",   // همان پیغام درخواستی شما
-                    null
-                );
+                return (false, "UID یافت نشد.", null);
             }
         }
 
-        // ── ادامه بیزینس قبلی ──
         UidLevel level;
 
-
         if (uidInfoRaw.SecLevelUid == barcodeInfo.Uid)
-        {
             level = UidLevel.Second;
-        }
         else if (uidInfoRaw.FirstLevelUid == barcodeInfo.Uid)
-        {
             level = UidLevel.First;
-        }
         else
-        {
             level = UidLevel.Parent;
-        }
 
         var result = new ScannedPackage
         {
             Uid = barcodeInfo.Uid,
-
             Level = level,
-
             DisplayName = level switch
             {
                 UidLevel.Second => "ویال",
@@ -1098,97 +1037,69 @@ public class DispatchService(
                 UidLevel.Parent => "کارتن",
                 _ => ""
             },
-
-
             ItemId = uidInfoRaw.ItemId,
-
             BatchNumber = uidInfoRaw.BatchNumber,
-
             Count = 0,
-
             ChildIds = new(),
-
             IsExpanded = false
         };
 
         switch (level)
         {
-
             case UidLevel.Second:
-
-
-                result.ChildIds.Add(
-                    uidInfoRaw.PkUidInfo
-                );
-
-
+                result.ChildIds.Add(uidInfoRaw.PkUidInfo);
                 result.Count = 1;
-
-
                 break;
 
-
             case UidLevel.First:
-
-
-                result.ChildIds =
-                    await context.TblUidInfo
+                result.ChildIds = await context.TblUidInfo
                     .AsNoTracking()
                     .Where(x =>
                         x.FirstLevelUid == barcodeInfo.Uid
                         &&
                         x.IsActive
                         &&
+                        x.Used == false
+                        &&
+                        x.FKDispatchUid == null
+                        &&
+                        x.FkReceiveDispatchId == null
+                        &&
                         x.OrderInfo.FkArrivalId != null
                         &&
-                        x.OrderInfo.Status ==
-                            OrderInfoStatus.APPLIED.ToString()
+                        x.OrderInfo.Status == OrderInfoStatus.APPLIED.ToString()
                     )
-                    .Select(x =>
-                        x.PkUidInfo
-                    )
+                    .Select(x => x.PkUidInfo)
                     .ToListAsync();
 
-
-
-                result.Count =
-                    result.ChildIds.Count;
-
-
+                result.Count = result.ChildIds.Count;
                 result.IsExpanded = true;
-
-
                 break;
 
             case UidLevel.Parent:
-
-
-                result.Count =
-                    await context.TblUidInfo
+                result.Count = await context.TblUidInfo
                     .AsNoTracking()
                     .CountAsync(x =>
                         x.ParentUid == barcodeInfo.Uid
                         &&
                         x.IsActive
                         &&
+                        x.Used == false
+                        &&
+                        x.FKDispatchUid == null
+                        &&
+                        x.FkReceiveDispatchId == null
+                        &&
                         x.OrderInfo.FkArrivalId != null
                         &&
-                        x.OrderInfo.Status ==
-                            OrderInfoStatus.APPLIED.ToString()
+                        x.OrderInfo.Status == OrderInfoStatus.APPLIED.ToString()
                     );
 
-
                 result.IsExpanded = false;
-
-
                 break;
         }
 
-        return (
-            true,
-            string.Empty,
-            result
-        );
+        return (true, string.Empty, result);
     }
 
 

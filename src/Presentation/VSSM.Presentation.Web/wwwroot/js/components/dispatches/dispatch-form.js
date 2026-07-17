@@ -447,11 +447,27 @@ $(function () {
     });
 
     window.confirmDelete = function () {
-        if (confirm('آیا از حذف این ارسال اطمینان دارید؟')) {
-            $('#dispatchForm').find('input[name="submitType"]').remove();
-            $('<input>').attr({ type: 'hidden', name: 'submitType', value: 'delete' })
-                .appendTo('#dispatchForm');
-            $('#dispatchForm').submit();
+        if (typeof VSSM !== 'undefined' && VSSM.Modal) {
+            VSSM.Modal.confirm({
+                title: 'حذف ارسال',
+                message: 'آیا از حذف این ارسال مطمئن هستید؟',
+                confirmText: 'حذف',
+                cancelText: 'انصراف',
+                type: 'danger',
+                onConfirm: function () {
+                    $('#dispatchForm').find('input[name="submitType"]').remove();
+                    $('<input>').attr({ type: 'hidden', name: 'submitType', value: 'delete' })
+                        .appendTo('#dispatchForm');
+                    $('#dispatchForm').submit();
+                }
+            });
+        } else {
+            if (confirm('آیا از حذف این ارسال اطمینان دارید؟')) {
+                $('#dispatchForm').find('input[name="submitType"]').remove();
+                $('<input>').attr({ type: 'hidden', name: 'submitType', value: 'delete' })
+                    .appendTo('#dispatchForm');
+                $('#dispatchForm').submit();
+            }
         }
     };
 

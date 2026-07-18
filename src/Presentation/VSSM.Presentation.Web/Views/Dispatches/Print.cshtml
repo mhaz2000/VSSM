@@ -22,7 +22,7 @@
                 <div class="dprint-header">
 
                     <div>
-                        <div><span class="dprint-label">شماره حواله:</span> <span class="dprint-value">@Model.DispatchVoucherNumber</span></div>
+                        <div><span class="dprint-label">@(Model.IsConfirmed.HasValue && Model.IsConfirmed.Value ? "شماره حواله" : "شماره پیش فاکتور"):</span> <span class="dprint-value">@Model.DispatchVoucherNumber</span></div>
                         @if (Model.IsCopied)
                         {
                             <span class="dprint-copy-badge">کپی</span>
@@ -50,46 +50,42 @@
                 </div>
             </div>
 
-            <table class="dprint-colhead">
-                <thead>
+        </div>
+        <table class="dprint-colhead dprint-table-wrap">
+            <thead>
+                <tr>
+                    <th>ردیف</th>
+                    <th>کالا</th>
+                    <th>شماره سری ساخت</th>
+                    <th>تاریخ انقضا</th>
+                    <th>تعداد دوز</th>
+                    <th>تعداد ویال</th>
+                    <th>حجم ویال</th>
+                    <th>شماره انبار سردخانه</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @{
+                    int rowNumber = 1;
+                }
+                @foreach (var line in Model.Items)
+                {
                     <tr>
-                        <th>ردیف</th>
-                        <th>کالا</th>
-                        <th>شماره سری ساخت</th>
-                        <th>تاریخ انقضا</th>
-                        <th>تعداد دوز</th>
-                        <th>تعداد ویال</th>
-                        <th>حجم ویال</th>
-                        <th>شماره انبار سردخانه</th>
+                        <td>@rowNumber</td>
+                        <td>@line.Item</td>
+                        <td>@line.BatchNumber</td>
+                        <td>@line.ExpiryDateText</td>
+                        <td>@line.DoseCount</td>
+                        <td>@(line.VialNumber ?? 0)</td>
+                        <td>@line.VialSize</td>
+                        <td>@line.ColdStorageNumber</td>
                     </tr>
-                </thead>
-            </table>
-        </div>
+                    rowNumber++;
 
-        <div class="dprint-table-wrap">
-            <table>
-                <tbody>
-                    @{
-                        int rowNumber = 1;
-                    }
-                    @foreach (var line in Model.Items)
-                    {
-                        <tr>
-                            <td>@rowNumber</td>
-                            <td>@line.Item</td>
-                            <td>@line.BatchNumber</td>
-                            <td>@line.ExpiryDateText</td>
-                            <td>@line.DoseCount</td>
-                            <td>@line.VialNumber</td>
-                            <td>@line.VialSize</td>
-                            <td>@line.ColdStorageNumber</td>
-                        </tr>
-                        rowNumber++;
-
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
 
         <div class="dprint-footer">
             <a class="dprint-back-btn" href="@Url.Action("Index", "Dispatches")">
@@ -127,7 +123,7 @@
                     <div class="dprint-header">
 
                         <div>
-                            <div><span class="dprint-label">شماره حواله:</span> <span class="dprint-value">@Model.DispatchVoucherNumber</span></div>
+                            <div><span class="dprint-label">@(Model.IsConfirmed.HasValue && Model.IsConfirmed.Value ? "شماره حواله" : "شماره پیش فاکتور"):</span> <span class="dprint-value">@Model.DispatchVoucherNumber</span></div>
                             @if (Model.IsCopied)
                             {
                                 <span class="dprint-copy-badge">کپی</span>
@@ -181,7 +177,7 @@
                                 <td>@line.Item.BatchNumber</td>
                                 <td>@line.Item.ExpiryDateText</td>
                                 <td>@line.Item.DoseCount</td>
-                                <td>@line.Item.VialNumber</td>
+                                <td>@(line.Item.VialNumber ?? 0)</td>
                                 <td>@line.Item.VialSize</td>
                                 <td>@line.Item.ColdStorageNumber</td>
                             </tr>

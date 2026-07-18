@@ -290,6 +290,8 @@ public class DispatchesController(
                     DynamicSkip = item =>
                     {
                         var row = (DispatchListDto)item;
+                        if(row.IsConfirmed.HasValue && row.IsConfirmed.Value)
+                            return false.ToString();
 
                         return (!(row.IsDrafted.HasValue && row.IsDrafted.Value)).ToString();
                     }

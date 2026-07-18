@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.Barcode;
@@ -1341,7 +1342,7 @@ public class DispatchService(
 
     public async Task<DispatchPrintDto?> GetDispatchPrintDataAsync(int id)
     {
-        return await context.TblDispatches
+        var dispatch = await context.TblDispatches
             .Include(t => t.TblDispatchLines).ThenInclude(t => t.DosePerVial)
             .Include(t => t.TblDispatchLines).ThenInclude(t => t.Item)
             .Include(t => t.TblDispatchLines).ThenInclude(t => t.Store)
@@ -1353,13 +1354,15 @@ public class DispatchService(
             {
                 Id = s.DispatchId,
                 Note = s.Note,
-                DispatchVoucherNumber = s.SeqPreview.ToString(),
+                DispatchVoucherNumber = s.IsConfirmed.HasValue && s.IsConfirmed.Value ? s.DispatchVoucherNumber : s.SeqPreview.ToString(),
                 RequestNumber = s.RequestNum,
                 TransportMode = s.TransportMode,
                 Date = s.Date,
                 InputPerson = s.EnteredBy.FirstName + " " + s.EnteredBy.LastName,
                 DeliveryPlace = s.Receiver.FullName,
                 Recipient = s.Sender.FullName,
+                IsCopied = s.DispatchVoucherPrinted ?? false,
+                IsConfirmed = s.IsConfirmed,
                 Items = s.TblDispatchLines.Select(t => new DispatchLinePrintDto()
                 {
                     BatchNumber = t.BatchNumber,
@@ -1374,5 +1377,14 @@ public class DispatchService(
             })
             .FirstOrDefaultAsync(t => t.Id == id);
 
+        var transportMode = await context.TblBaseInfo.FindAsync(int.Parse(dispatch?.TransportMode ?? "0"));
+
+        dispatch.TransportMode = transportMode?.Title ?? string.Empty;
+
+        var dispatchEntity = await context.TblDispatches.FindAsync(id);
+        dispatchEntity.DispatchVoucherPrinted = true;
+        await context.SaveChangesAsync();
+
+        return dispatch;
     }
 }

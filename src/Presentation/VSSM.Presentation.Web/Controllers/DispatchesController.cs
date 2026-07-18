@@ -287,7 +287,6 @@ public class DispatchesController(
                     return (!(row.IsConfirmed.HasValue && row.IsConfirmed.Value)).ToString();
                 }
             },
-            // ── دکمه چاپ پیش فاکتور ──
             new()
             {
                 Title = "چاپ پیش فاکتور",
@@ -298,6 +297,8 @@ public class DispatchesController(
                 DynamicSkip = item =>
                 {
                     var row = (DispatchListDto)item;
+                    if(row.IsConfirmed.HasValue && row.IsConfirmed.Value)
+                            return false.ToString();
                     return (!(row.IsDrafted.HasValue && row.IsDrafted.Value)).ToString();
                 }
             },

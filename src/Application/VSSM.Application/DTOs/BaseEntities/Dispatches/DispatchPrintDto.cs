@@ -16,6 +16,7 @@ public record DispatchPrintDto
     public string Note { get; set; }
     public IEnumerable<DispatchLinePrintDto> Items { get; set; }
     public int Id { get; internal set; }
+    public bool? IsConfirmed { get; internal set; }
 }
 
 public record DispatchLinePrintDto

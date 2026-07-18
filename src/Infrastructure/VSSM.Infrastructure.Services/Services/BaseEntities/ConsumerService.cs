@@ -40,12 +40,15 @@ public sealed class ConsumerService : IConsumerService
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.SecLevelUid == request.Uid || u.ParentUid == request.Uid || u.FirstLevelUid == request.Uid, token);
 
+
         if (uidInfo == null)
         {
             response.StatusCode = "101";
             response.StatusDesc = "Uid موجود نمی‌باشد";
             return response;
         }
+
+        var store =  uidInfo.CurrentStore.HasValue ? await _db.TblStores.FindAsync(uidInfo.CurrentStore) : null;
 
         if (uidInfo.Used)
         {
@@ -65,7 +68,7 @@ public sealed class ConsumerService : IConsumerService
             return response;
         }
 
-        if (uidInfo.CurrentStore.HasValue && uidInfo.CurrentStore.Value != recipient.RecipientId)
+        if (uidInfo.CurrentStore.HasValue && store is not null &&  store.RecipientId != recipient.RecipientId)
         {
             response.StatusCode = "104";
             response.StatusDesc = "Uid متعلق به مرکز شما نمی‌باشد";

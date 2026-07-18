@@ -58,7 +58,6 @@ public class DestroyUidController(
             await Response.Body.FlushAsync(token);
         }
 
-        // شمارش کل UIDs قبل از شروع — تا progress bar بدونه total چقدره
         var total = await destroyUidService
             .CountDestroyableUidsAsync(items, CurrentUserRecipientId ?? 0, token);
 

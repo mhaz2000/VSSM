@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Antiforgery;
+﻿using DocumentFormat.OpenXml.Validation;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
@@ -382,9 +383,12 @@ public class ArrivalController(
         await arrivalService.Confirm(model.ArrivalId.Value, dto, token);
 
         var confirmed = await arrivalService.GetById(model.ArrivalId.Value, token);
+
+        bool isHalal = string.Equals(model.ArrivalType, "halal", StringComparison.OrdinalIgnoreCase);
+
         foreach (var line in confirmed?.Lines ?? new List<ArrivalLineDto>())
         {
-            if (string.IsNullOrWhiteSpace(line.BatchNum)) continue;
+            if (string.IsNullOrWhiteSpace(line.BatchNum)) continue; 
 
             await uidInfoService.SetArrivalFkForBatchNums(
                 new List<string> { line.BatchNum! },
@@ -392,6 +396,7 @@ public class ArrivalController(
                 line.DosePerVialId,
                 line.StoreId,
                 line.ItemId,
+                isHalal, 
                 token);
         }
 

@@ -6,21 +6,16 @@ namespace VSSM.Infrastructure.Services.BaseEntities;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.Interfaces.BaseEntities;
 
-public sealed class UidInfoService : IUidInfoService
+public sealed class UidInfoService(VSSMDbContext dbContext) : IUidInfoService
 {
-    private readonly VSSMDbContext _db;
-    public UidInfoService(VSSMDbContext dbContext)
-    {
-        _db = dbContext;
-    }
-
     public async Task SetArrivalFkForBatchNums(
-     List<string> batchNums,
-     int arrivalId,
-     int? doseCount,
-     int? storeId,
-     int? itemId,
-     CancellationToken token)
+        List<string> batchNums,
+        int arrivalId,
+        int? doseCount,
+        int? storeId,
+        int? itemId,
+        bool? isHalal,
+        CancellationToken token)
     {
         if (arrivalId <= 0) throw new ArgumentOutOfRangeException(nameof(arrivalId));
         if (batchNums == null || batchNums.Count == 0)
@@ -35,11 +30,10 @@ public sealed class UidInfoService : IUidInfoService
         if (normalized.Count == 0)
             throw new ArgumentException("لیست سری ساخت معتبر نیست", nameof(batchNums));
 
-        await using var transaction = await _db.Database.BeginTransactionAsync(token);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(token);
         try
         {
-            // مرحله ۱: آپدیت TblOrderInfo — بدون شرط FkArrivalId == null
-            await _db.TblOrderInfo
+            await dbContext.TblOrderInfo
                 .Where(o =>
                     normalized.Contains(o.BatchNumber) &&
                     o.TblUidInfos.Any(u => u.IsActive))
@@ -48,8 +42,7 @@ public sealed class UidInfoService : IUidInfoService
                     .SetProperty(o => o.FkItemId, itemId),
                     token);
 
-            // مرحله ۲: آپدیت TblUidInfo با storeId درست
-            var affectedUids = await _db.TblUidInfo
+            var affectedUids = await dbContext.TblUidInfo
                 .Where(u =>
                     u.IsActive &&
                     normalized.Contains(u.OrderInfo.BatchNumber))
@@ -58,8 +51,8 @@ public sealed class UidInfoService : IUidInfoService
                     .SetProperty(u => u.DoseCount, doseCount),
                     token);
 
-            if (affectedUids == 0)
-                 throw new InvalidOperationException(
+            if (!isHalal.HasValue && affectedUids == 0)
+                throw new InvalidOperationException(
                     "هیچ UID فعالی برای سری ساخت‌های انتخاب‌شده یافت نشد.");
 
             await transaction.CommitAsync(token);
@@ -71,19 +64,16 @@ public sealed class UidInfoService : IUidInfoService
         }
     }
 
-
-
-
     public async Task ClearArrivalFkByArrivalId(int arrivalId, CancellationToken token)
     {
         if (arrivalId <= 0)
             throw new ArgumentOutOfRangeException(nameof(arrivalId));
 
-        await using var transaction = await _db.Database.BeginTransactionAsync(token);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(token);
 
         try
         {
-            var orderIds = await _db.TblOrderInfo
+            var orderIds = await dbContext.TblOrderInfo
                 .Where(o => o.FkArrivalId == arrivalId)
                 .Select(o => o.PkOrderInfo)
                 .Distinct()
@@ -92,14 +82,14 @@ public sealed class UidInfoService : IUidInfoService
             if (orderIds.Count == 0)
                 return;
 
-            await _db.TblOrderInfo
+            await dbContext.TblOrderInfo
                 .Where(o => orderIds.Contains(o.PkOrderInfo))
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(o => o.FkArrivalId, (int?)null)
                     .SetProperty(o => o.FkItemId, (int?)null),
                     token);
 
-            await _db.TblUidInfo
+            await dbContext.TblUidInfo
                 .Where(u => u.FkOrderInfo != null && orderIds.Contains(u.FkOrderInfo))
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(u => u.CurrentStore, (int?)null)
@@ -123,12 +113,12 @@ public sealed class UidInfoService : IUidInfoService
         batchNum = batchNum.Trim();
 
         // اول StoreId های متعلق به این recipientId رو بگیر
-        var validStoreIds = await _db.TblStores
+        var validStoreIds = await dbContext.TblStores
             .Where(s => s.RecipientId == recipientId)
             .Select(s => s.StoreId)
             .ToListAsync(token);
 
-        var list = await _db.TblUidInfo
+        var list = await dbContext.TblUidInfo
             .Include(t => t.OrderInfo)
             .AsNoTracking()
             .Where(u =>
@@ -151,7 +141,7 @@ public sealed class UidInfoService : IUidInfoService
     }
     public async Task ClearArrivalFkByLineId(int arrivalLineId, CancellationToken token)
     {
-        var uidsToUpdate = await _db.TblUidInfo.Include(t => t.OrderInfo)
+        var uidsToUpdate = await dbContext.TblUidInfo.Include(t => t.OrderInfo)
             .Where(x => x.OrderInfo.FkArrivalId == arrivalLineId)
             .ToListAsync(token);
 
@@ -162,7 +152,7 @@ public sealed class UidInfoService : IUidInfoService
                 uid.OrderInfo.FkArrivalId = null;
             }
 
-            await _db.SaveChangesAsync(token);
+            await dbContext.SaveChangesAsync(token);
         }
     }
 

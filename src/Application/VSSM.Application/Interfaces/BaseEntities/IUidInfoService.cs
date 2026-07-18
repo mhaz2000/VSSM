@@ -14,9 +14,10 @@ public interface IUidInfoService
     Task SetArrivalFkForBatchNums(
         List<string> batchNums,
         int arrivalId,
-        int? dosePerVialId,
+        int? doseCount,
         int? storeId,
         int? itemId,
+        bool? isHalal,
         CancellationToken token);
 
 

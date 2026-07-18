@@ -45,11 +45,8 @@ public interface IDispatchService
 
     Task<bool> RemoveUidFromSessionAsync(string sessionId, string uid);
 
-    /// <summary>
-    /// بند ۹: لینک کردن UIDها به ردیف‌های حواله در جدول اطلاعات UID
-    /// </summary>
-
     Task<List<DispatchEditLineDto>> GetDispatchLinesForEditAsync(int dispatchId, CancellationToken ct = default);
 
     Task<DispatchPrintDto?> GetDispatchPrintDataAsync(int id);
+    Task<string> GenerateReportNumberAsync();
 }

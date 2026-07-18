@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Text;
+using System.Text.RegularExpressions;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.Barcode;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
@@ -425,9 +426,14 @@ public class DispatchService(
         }
     }
 
-    public async Task<(int dispatchId, long seqPreview)> CreateDispatchAsync(CreateDispatchDto createDispatcheDto, string submitType, CancellationToken cancellationToken)
+    public async Task<(int dispatchId, long seqPreview)> CreateDispatchAsync(
+        CreateDispatchDto createDispatcheDto, 
+        string submitType, 
+        CancellationToken cancellationToken)
     {
         var fiscalPeriod = await context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
+
+        var reportNumber = await GenerateReportNumberAsync();
 
         var dispatch = new TblDispatch
         {
@@ -448,7 +454,7 @@ public class DispatchService(
             ConfirmationTime = submitType == "final" ? DateTime.Now : null,
             ReceiverStatus = 0,
             DispatchVoucherNumber = createDispatcheDto.DispatchVoucherNumber.ToString(),
-            ReportNumber = createDispatcheDto.ReportNumber
+            ReportNumber = reportNumber
         };
 
         float totalPrice = 0;
@@ -1334,5 +1340,44 @@ public class DispatchService(
             })
             .FirstOrDefaultAsync(t => t.Id == id);
 
+    }
+
+    public async Task<string> GenerateReportNumberAsync()
+    {
+        var fiscalPeriod = await context.TblFiscalPeriods
+            .FirstOrDefaultAsync(x => x.IsActive == true);
+
+        var year = ExtractYear(fiscalPeriod?.FullName);
+        var prefix = $"{year}-";
+
+        var numbers = await context.TblDispatches
+            .Where(x => x.ReportNumber.StartsWith(prefix))
+            .Select(x => x.ReportNumber)
+            .ToListAsync();
+
+        int maxNumber = numbers
+            .Select(rn => rn.Split('-'))
+            .Where(parts => parts.Length == 2)
+            .Select(parts => int.TryParse(parts[1], out int num) ? num : 0)
+            .DefaultIfEmpty(0)
+            .Max();
+
+        int nextNumber = maxNumber + 1;
+        return $"{year}-{nextNumber:D3}";
+    }
+
+
+    private static string ExtractYear(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return "UNKNOWN";
+
+
+        var match = Regex.Match(fullName, @"\d{4}");
+
+
+        return match.Success
+            ? match.Value
+            : "UNKNOWN";
     }
 }

@@ -47,8 +47,8 @@ public class DispatchesController(
         string? scanSessionId,
         CancellationToken cancellationToken)
     {
-        createDispatcheDto.SenderId = CurrentUserRecipientId.Value;
-        createDispatcheDto.EnteredById = CurrentUserId.Value;
+        createDispatcheDto.SenderId = CurrentUserRecipientId.GetValueOrDefault();
+        createDispatcheDto.EnteredById = CurrentUserId.GetValueOrDefault();
 
         if (createDispatcheDto.Items.Any(i => i.DoseCount <= 0))
         {
@@ -61,7 +61,8 @@ public class DispatchesController(
         var (dispatchId, seqPreview) = await dispatchService.CreateDispatchAsync(
             createDispatcheDto, "draft", cancellationToken);
 
-        // ── اگر درخواست final است، UIDها را بررسی کنید ──
+
+
         if (submitType == "final" && !string.IsNullOrEmpty(scanSessionId))
         {
             var session = dispatchScan.GetSession(scanSessionId);
@@ -213,7 +214,7 @@ public class DispatchesController(
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpGet]  
+    [HttpGet]
     public async Task<IActionResult> Delete(int id, CancellationToken token)
     {
         await dispatchService.RestoreStockAsync(id, token);
@@ -307,7 +308,7 @@ public class DispatchesController(
                 Action = "Delete",
                 RouteIdProperty = nameof(DispatchListDto.Id),
                 IconClass = "fa fa-trash",
-                LinkClass = "text-danger", 
+                LinkClass = "text-danger",
                 DynamicSkip = item =>
                 {
                     var row = (DispatchListDto)item;
@@ -387,9 +388,12 @@ public class DispatchesController(
     {
         await PopulateLookupViewBagsAsync(cancellationToken);
 
+        var reportNumber = await dispatchService.GenerateReportNumberAsync();
+
         var model = new CreateDispatchDto
         {
-            Date = DateTime.Now.ToShamsi()
+            Date = DateTime.Now.ToShamsi(),
+            ReportNumber = reportNumber
         };
 
         return View(model);

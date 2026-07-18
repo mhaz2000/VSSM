@@ -140,8 +140,11 @@
 
                     <div class="f-group">
                         <label class="f-label">شماره فاکتور</label>
-                        <input asp-for="DispatchVoucherNumber" type="number" class="f-control"
-                               placeholder="شماره فاکتور را وارد کنید" />
+                        <input asp-for="ReportNumber"
+                               class="f-control"
+                               readonly
+                               disabled
+                               style="background-color:#f3f4f6; cursor:not-allowed;" />
                     </div>
 
                     <div class="f-group">

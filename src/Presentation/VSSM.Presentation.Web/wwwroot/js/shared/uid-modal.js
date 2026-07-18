@@ -108,9 +108,7 @@ function submitUid() {
                         uid: barcode
                     },
                     success: function (delRes) {
-                        if (delRes.success) {
-                            showToast('UID به دلیل تجاوز از حد مجاز حذف شد', 'warning');
-                        } else {
+                        if (!delRes.success) {
                             showToast('خطا در حذف UID از سشن', 'error');
                         }
                         $('#uidInput').val('').focus();

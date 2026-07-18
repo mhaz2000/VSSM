@@ -11,6 +11,12 @@
 @{
     ViewData["Title"] = "مدیریت ارسالات";
 
+    // ── دریافت و پاک کردن TempData ──
+    var toastMessage = TempData["ToastMessage"] as string;
+    var toastType = TempData["ToastType"] as string ?? "info";
+    TempData.Remove("ToastMessage");
+    TempData.Remove("ToastType");
+
     var currentStatus = Context.Request.Query["status"].ToString();
     var filterOptions = new List<SelectListItem>
     {
@@ -52,11 +58,11 @@
     </div>
 </div>
 
-@if (TempData["ToastMessage"] != null)
+@if (!string.IsNullOrEmpty(toastMessage))
 {
     <script>
         $(document).ready(function () {
-            showToast('@Html.Raw(TempData["ToastMessage"])', '@TempData["ToastType"]');
+            showToast('@Html.Raw(toastMessage)', '@toastType');
         });
     </script>
 }

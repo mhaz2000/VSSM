@@ -16,7 +16,6 @@
 
         <div class="search-wrap">
 
-            @* ── دراپ‌داون فیلتر (اختیاری) ── *@
             @if (Model.FilterOptions != null && Model.FilterOptions.Any())
             {
                 <select name="@Model.FilterName"
@@ -33,41 +32,38 @@
                 <div class="search-divider"></div>
             }
 
-            @* ── اینپوت متن جستجو ── *@
             <input type="text"
                    name="search"
                    class="search-input"
                    value="@Model.SearchTerm"
                    placeholder="جستجو..." />
 
-            @* ── دکمه جستجو ── *@
             <button type="submit" class="search-btn" title="جستجو">
                 <i class="fa fa-search"></i>
             </button>
 
-            @* ── 🔹 دکمه «همه» (فقط در صورت وجود فیلتر) ── *@
-            @if (Model.FilterOptions != null && Model.FilterOptions.Any())
-            {
-                var routeValues = new
-                {
-                    search = (string?)null,
-                    filterValue = (string?)null,
-                    sort = Model.Sort,
-                    direction = Model.Direction,
-                    pageSize = Model.PageSize
-                };
-                <a href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(),
-                                                         ViewContext.RouteData.Values["controller"]?.ToString(),
-                                                         routeValues)"
-               class="btn-all">
-                همه
-            </a>
-                        }
-
         </div>
     </form>
 
-    @* ── دکمه افزودن ── *@
+    @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.FilterValue))
+    {
+        var routeValues = new
+        {
+            search = (string?)null,
+            status = (string?)null,  
+            sort = Model.Sort,
+            direction = Model.Direction,
+            pageSize = Model.PageSize
+        };
+        <a href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(),
+                                        ViewContext.RouteData.Values["controller"]?.ToString(),
+                                        routeValues)"
+       class="btn-all" title="حذف فیلترها و نمایش همه">
+        <i class="fa fa-undo" style="font-size:12px;"></i>
+        <span style="font-size:12px;">همه</span>
+    </a>
+        }
+
     @if (Model.ShowAddButton)
     {
         <a asp-controller="@Model.AddController"

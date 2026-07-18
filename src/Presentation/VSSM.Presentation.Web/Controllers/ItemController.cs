@@ -24,10 +24,11 @@ public class ItemController(
         int page = 1,
         int pageSize = 10,
         string sort = "Id",
-        string direction = "desc")
+        string direction = "desc",
+        string? status = null)  
     {
         var paged = await itemService.GetPagedList(
-            search, page, pageSize, sort, direction, cancellationToken);
+            search, page, pageSize, sort, direction, status, cancellationToken);
 
         var model = new GridViewModel
         {
@@ -42,30 +43,30 @@ public class ItemController(
                 TotalCount = paged.Paging.TotalPages * pageSize
             },
             Columns = new List<GridColumn>
-            {
-                new() { Header = "کد",           PropertyName = nameof(ItemListDto.Code),        Sortable = true  },
-                new() { Header = "نام کامل",      PropertyName = nameof(ItemListDto.FullName),    Sortable = true  },
-                new() { Header = "حلال",          PropertyName = nameof(ItemListDto.DiluentName), Sortable = false },
-                new() { Header = "ترتیب نمایش",  PropertyName = nameof(ItemListDto.OrderInList), Sortable = true  },
-                new() { Header = "وضعیت",         PropertyName = nameof(ItemListDto.IsActive),    Sortable = false, IsBadgeColumn = true,
-                        BadgeMap = new Dictionary<string, (string Text, string CssClass)>
-                        {
-                            ["True"]  = ("فعال",    "badge-success"),
-                            ["False"] = ("غیرفعال", "badge-danger"),
-                        }},
-                new() { Header = "عملیات", IsActionColumn = true }
-            },
+        {
+            new() { Header = "کد",           PropertyName = nameof(ItemListDto.Code),        Sortable = true  },
+            new() { Header = "نام کامل",      PropertyName = nameof(ItemListDto.FullName),    Sortable = true  },
+            new() { Header = "حلال",          PropertyName = nameof(ItemListDto.DiluentName), Sortable = false },
+            new() { Header = "ترتیب نمایش",  PropertyName = nameof(ItemListDto.OrderInList), Sortable = true  },
+            new() { Header = "وضعیت",         PropertyName = nameof(ItemListDto.IsActive),    Sortable = false, IsBadgeColumn = true,
+                    BadgeMap = new Dictionary<string, (string Text, string CssClass)>
+                    {
+                        ["True"]  = ("فعال",    "badge-success"),
+                        ["False"] = ("غیرفعال", "badge-danger"),
+                    }},
+            new() { Header = "عملیات", IsActionColumn = true }
+        },
             Actions = new List<GridAction>
+        {
+            new()
             {
-                new()
-                {
-                    Title           = "ویرایش",
-                    Controller      = "Item",
-                    Action          = "Edit",
-                    RouteIdProperty = nameof(ItemListDto.ItemId),
-                    IconClass       = "fa fa-edit",
-                }
+                Title           = "ویرایش",
+                Controller      = "Item",
+                Action          = "Edit",
+                RouteIdProperty = nameof(ItemListDto.ItemId),
+                IconClass       = "fa fa-edit",
             }
+        }
         };
 
         return View(model);

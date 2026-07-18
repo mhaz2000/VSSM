@@ -33,6 +33,7 @@
     <link href="~/css/components/dispatches/dispatch-form.css" rel="stylesheet" />
     <link href="~/css/components/shared/datepicker.css" rel="stylesheet" />
     <link href="~/css/components/shared/pagination-table.css" rel="stylesheet" />
+    <link href="~/css/components/shared/modal.css" rel="stylesheet" asp-append-version="true" />  
 }
 
 <div id="toastContainer"></div>
@@ -139,8 +140,11 @@
 
                     <div class="f-group">
                         <label class="f-label">شماره فاکتور</label>
-                        <input asp-for="DispatchVoucherNumber" type="number" class="f-control"
-                               placeholder="شماره فاکتور را وارد کنید" />
+                        <input asp-for="ReportNumber"
+                               class="f-control"
+                               readonly
+                               disabled
+                               style="background-color:#f3f4f6; cursor:not-allowed;" />
                     </div>
 
                     <div class="f-group">
@@ -319,6 +323,7 @@
     <script src="~/js/shared/uid-modal.js"></script>
     <script src="~/js/shared/datepicker.js"></script>
     <script src="~/js/shared/pagination/pagination-table.js"></script>
+    <script src="~/js/shared/modal.js" asp-append-version="true"></script>
 
     <script>
         var dispatchServerMsg = "@(toastMessage ?? "")";
@@ -336,4 +341,6 @@
     </script>
 
     <script src="~/js/components/dispatches/dispatch-form.js"></script>
+
+
 }

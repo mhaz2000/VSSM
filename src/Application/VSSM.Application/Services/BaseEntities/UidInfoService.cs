@@ -59,7 +59,7 @@ public sealed class UidInfoService : IUidInfoService
                     token);
 
             if (affectedUids == 0)
-                throw new InvalidOperationException(
+                 throw new InvalidOperationException(
                     "هیچ UID فعالی برای سری ساخت‌های انتخاب‌شده یافت نشد.");
 
             await transaction.CommitAsync(token);

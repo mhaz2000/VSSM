@@ -137,16 +137,31 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
     }
 
     public async Task<PagingSearchOrderDto<ItemListDto>> GetPagedList(
-        string? search, int page, int pageSize,
-        string sortField, string sortOrder,
+        string? search,
+        int page,
+        int pageSize,
+        string sortField,
+        string sortOrder,
+        string? status,  
         CancellationToken cancellationToken)
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
         IQueryable<TblItem> query = dbContext.TblItems;
 
+        // ── فیلتر وضعیت ──
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (status == "active")
+                query = query.Where(x => x.IsActive == true);
+            else if (status == "inactive")
+                query = query.Where(x => x.IsActive == false);
+        }
+
+        // ── جستجو ──
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(x => x.FullName.Contains(search) || x.Code.Contains(search));
 
+        // ── مرتب‌سازی ──
         query = sortField switch
         {
             "Name" => sortOrder == "asc" ? query.OrderBy(x => x.FullName) : query.OrderByDescending(x => x.FullName),
@@ -154,9 +169,9 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
             _ => sortOrder == "asc" ? query.OrderBy(x => x.OrderId) : query.OrderByDescending(x => x.OrderId)
         };
 
-        paging.TotalItems = await query.CountAsync();
+        paging.TotalItems = await query.CountAsync(cancellationToken);
 
-        var items = await query.OrderByDescending(t => t.ItemId)
+        var items = await query
             .Skip(paging.Skip)
             .Take(paging.PageSize)
             .ToListAsync(cancellationToken);

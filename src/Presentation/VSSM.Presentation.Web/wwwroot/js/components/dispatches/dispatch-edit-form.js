@@ -462,7 +462,6 @@ $(function () {
     // ════════════════════════════════════════
     //  دکمه‌های footer
     // ════════════════════════════════════════
-
     $('.js-footer-btn').on('click', function () {
         var submitType = $(this).data('submit');
 
@@ -480,6 +479,31 @@ $(function () {
             return;
         }
 
+        // ── اعتبارسنجی تعداد UID در حالت final ──
+        if (submitType === 'final') {
+            var mismatchItems = [];
+            $.each(addedItems, function (_, item) {
+                var scannedCount = 0;
+                $.each(item.uids, function (_, entry) {
+                    var cnt = typeof entry === 'object' ? (entry.count || 1) : 1;
+                    scannedCount += cnt;
+                });
+
+                if (scannedCount !== item.doseCount) {
+                    mismatchItems.push(item.itemName + ' (درخواستی: ' + item.doseCount + ', اسکن‌شده: ' + scannedCount + ')');
+                }
+            });
+
+            if (mismatchItems.length > 0) {
+                showToast(
+                    'تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد:\n' + mismatchItems.join('\n'),
+                    'error'
+                );
+                return;
+            }
+        }
+
+        // ── ادامه کد ──
         $('#toastContainer').empty();
         $('#dispatchForm').find('input[name="submitType"]').remove();
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
@@ -495,11 +519,27 @@ $(function () {
     });
 
     window.confirmDelete = function () {
-        if (confirm('آیا از حذف این ارسال اطمینان دارید؟')) {
-            $('#dispatchForm').find('input[name="submitType"]').remove();
-            $('<input>').attr({ type: 'hidden', name: 'submitType', value: 'delete' })
-                .appendTo('#dispatchForm');
-            $('#dispatchForm').submit();
+        if (typeof VSSM !== 'undefined' && VSSM.Modal) {
+            VSSM.Modal.confirm({
+                title: 'حذف ارسال',
+                message: 'آیا از حذف این ارسال مطمئن هستید؟',
+                confirmText: 'حذف',
+                cancelText: 'انصراف',
+                type: 'danger',
+                onConfirm: function () {
+                    $('#dispatchForm').find('input[name="submitType"]').remove();
+                    $('<input>').attr({ type: 'hidden', name: 'submitType', value: 'delete' })
+                        .appendTo('#dispatchForm');
+                    $('#dispatchForm').submit();
+                }
+            });
+        } else {
+            if (confirm('آیا از حذف این ارسال اطمینان دارید؟')) {
+                $('#dispatchForm').find('input[name="submitType"]').remove();
+                $('<input>').attr({ type: 'hidden', name: 'submitType', value: 'delete' })
+                    .appendTo('#dispatchForm');
+                $('#dispatchForm').submit();
+            }
         }
     };
 });

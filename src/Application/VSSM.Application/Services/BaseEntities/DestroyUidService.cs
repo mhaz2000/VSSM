@@ -10,7 +10,8 @@ namespace VSSM.Application.Services.BaseEntities;
 
 public class DestroyUidService(
     IGs1BarcodeParser barcodeParser,
-    VSSMDbContext db) : IDestroyUidService  
+    IBaseInfoService baseInfoService,
+    VSSMDbContext db) : IDestroyUidService
 {
     public async Task<List<(int Id, string Title)>> GetDestroyReasonsAsync(CancellationToken token)
     {
@@ -77,79 +78,100 @@ public class DestroyUidService(
     public async Task<(bool Success, string Message, List<DestroyUidSearchResultDto> Data)>
         SearchByUidAsync(string uid, int userRecipientId, CancellationToken token)
     {
-        Gs1BarcodeInfo barcodeInfo;
-        if (uid.Length == 20 && uid.All(char.IsDigit))
-        {
-            barcodeInfo = new Gs1BarcodeInfo { Uid = uid, IsGs1 = false };
-        }
-        else
-        {
-            barcodeInfo = barcodeParser.Parse(uid);
-            if (barcodeInfo == null || string.IsNullOrEmpty(barcodeInfo.Uid))
-                return (false, "شناسه واکسن از بارکد استخراج نشد.", null);
-            barcodeInfo.IsGs1 = true;
-        }
+        var barcodeInfo = ParseBarcode(uid);
+        if (barcodeInfo == null)
+            return (false, "شناسه واکسن از بارکد استخراج نشد.", null);
 
-        if (!barcodeInfo.IsGs1)
-        {
-            if (string.IsNullOrWhiteSpace(uid))
-                return (false, "UID اجباری است", []);
-            if (uid.Length < 20)
-                return (false, "UID وارد شده معتبر نمی‌باشد", []);
-        }
- 
+        if (string.IsNullOrWhiteSpace(barcodeInfo.Uid) || barcodeInfo.Uid.Length < 20)
+            return (false, "UID وارد شده معتبر نمی‌باشد", []);
 
         var validStoreIds = await db.TblStores
             .Where(s => s.RecipientId == userRecipientId)
             .Select(s => s.StoreId)
             .ToListAsync(token);
 
-        var uidRecord = await db.TblUidInfo
+        if (!validStoreIds.Any())
+            return (false, "کاربر مجاز به هیچ انباری نیست", []);
+
+        var baseQuery = db.TblUidInfo
             .AsNoTracking()
             .Include(u => u.OrderInfo)
-            .FirstOrDefaultAsync(u =>
-                (u.FirstLevelUid == barcodeInfo.Uid || u.SecLevelUid == barcodeInfo.Uid || u.ParentUid == barcodeInfo.Uid) &&
+            .Where(u =>
                 u.IsActive == true &&
                 u.Used == false &&
                 u.FkDestroyId == null &&
-                u.CurrentStore != null &&
-                validStoreIds.Contains(u.CurrentStore.Value), token);
+                u.CurrentStore.HasValue &&
+                validStoreIds.Contains(u.CurrentStore.Value));
+
+        var uidRecord = await baseQuery.FirstOrDefaultAsync(u => u.SecLevelUid == barcodeInfo.Uid, token)
+                     ?? await baseQuery.FirstOrDefaultAsync(u => u.FirstLevelUid == barcodeInfo.Uid, token)
+                     ?? await baseQuery.FirstOrDefaultAsync(u => u.ParentUid == barcodeInfo.Uid, token);
 
         if (uidRecord == null)
             return (false, "UID یافت نشد", []);
 
-        var order = uidRecord.OrderInfo;
+        if (uidRecord.OrderInfo == null)
+            return (false, "اطلاعات سفارش برای این UID یافت نشد", []);
 
-        var childCount = await db.TblUidInfo.CountAsync(u =>
-            u.ParentUid == uid &&
-            u.IsActive == true &&
-            u.Used == false &&
-            u.FkDestroyId == null &&
-            u.CurrentStore != null &&
-            validStoreIds.Contains(u.CurrentStore.Value), token);
-
-        var uidCount = childCount > 0 ? childCount : 1;
+        var uidCount = await CalculateUidCountAsync(barcodeInfo.Uid, uidRecord, validStoreIds, token);
 
         var itemName = await db.TblItems
             .AsNoTracking()
-            .Where(i => i.ItemId == order.FkItemId)
+            .Where(i => i.ItemId == uidRecord.OrderInfo.FkItemId)
             .Select(i => i.FullName)
             .FirstOrDefaultAsync(token) ?? "-";
 
-        var result = new DestroyUidSearchResultDto
-        {
-            PkOrderInfo = order.PkOrderInfo,
-            SearchedUid = uid,   
-            BatchNumber = order.BatchNumber,
-            ItemName = itemName,
-            DosePerVial = order.FkDosePerVialId,
-            ProductionDate = order.ManufactureDate.ToShamsi(),
-            ExpiryDate = order.ExpirationDate?.ToShamsi() ?? "-",
-            UidCount = uidCount
-        };
+        var doseInfo = await baseInfoService.GetByIdAsync(uidRecord.OrderInfo.FkDosePerVialId);
 
-        return (true, string.Empty, [result]);
+        int? dosePerVial = null;
+        if (doseInfo != null && int.TryParse(doseInfo.Title.ToString(), out var parsedDose))
+            dosePerVial = parsedDose;
+
+        return (true, string.Empty, [new DestroyUidSearchResultDto
+    {
+        PkOrderInfo = uidRecord.OrderInfo.PkOrderInfo,
+        SearchedUid = barcodeInfo.Uid,
+        BatchNumber = uidRecord.OrderInfo.BatchNumber,
+        ItemName = itemName,
+        DosePerVial = dosePerVial,
+        ProductionDate = uidRecord.OrderInfo.ManufactureDate.ToShamsi(),
+        ExpiryDate = uidRecord.OrderInfo.ExpirationDate?.ToShamsi() ?? "-",
+        UidCount = uidCount
+    }]);
     }
+
+
+    private Gs1BarcodeInfo ParseBarcode(string uid)
+    {
+        if (uid.Length == 20 && uid.All(char.IsDigit))
+            return new Gs1BarcodeInfo { Uid = uid, IsGs1 = false };
+
+        var info = barcodeParser.Parse(uid);
+        if (info != null && !string.IsNullOrEmpty(info.Uid))
+        {
+            info.IsGs1 = true;
+            return info;
+        }
+        return null;
+    }
+
+    private async Task<int> CalculateUidCountAsync(string uid, TblUidInfo record, List<int> validStoreIds, CancellationToken token)
+    {
+        var query = db.TblUidInfo.Where(u => u.IsActive == true && u.Used == false && u.FkDestroyId == null && u.CurrentStore.HasValue && validStoreIds.Contains(u.CurrentStore.Value));
+
+        if (record.SecLevelUid == uid) return 1;
+
+        if (record.FirstLevelUid == uid)
+            return await query.CountAsync(u => u.FirstLevelUid == uid, token);
+
+        if (record.ParentUid == uid)
+        {
+            var count = await query.CountAsync(u => u.ParentUid == uid, token);
+            return count > 0 ? count : 1;
+        }
+        return 1;
+    }
+
 
     //public async Task<(bool Success, string Message)>
     //    SubmitDestroyAsync(List<DestroyUidSubmitDto> items, int userId, int userStoreId, CancellationToken token)

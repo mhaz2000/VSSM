@@ -209,8 +209,16 @@ public static class MenuConfig
                     new MenuItem { Title = "کالا‌های زیر حداقل", Controller = "Warnings", Action = "LowItemsMinIndex" },
                     new MenuItem { Title = "کالاهای نزدیک به انقضا", Controller = "Warnings", Action = "CloseToExirationItemsIndex" },
                     new MenuItem { Title = "امحا UID", Controller = "DestroyUid", Action = "Index" }
-
                 }
+            },
+
+
+            new MenuItem
+            {
+                Icon = "fa fa-history",
+                Title = "تاریخچه واکسن",
+                Controller = "UidHistory",
+                Action = "Index"
             },
 
             // ---------------- Logout ----------------

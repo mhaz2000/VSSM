@@ -29,6 +29,7 @@ using VSSM.Application.Services.BaseEntities;
 using VSSM.Application.Services.ExcelGenerators;
 using VSSM.Application.Services.Reports;
 using VSSM.Application.Services.RequestEntities;
+using VSSM.Application.Services.UidHistory;
 using VSSM.Infrastructure.Data.Dapper;
 using VSSM.Infrastructure.Data.Models;
 using VSSM.Infrastructure.Services.BaseEntities;
@@ -50,6 +51,8 @@ namespace VSSM.Presentation.Web
             //{
             //    options.LoginPath = "/Account/Login";
             //});
+            services.AddScoped<IUidHistoryService, UidHistoryService>();
+
             services.AddScoped<IDestroyUidService, DestroyUidService>();
             services.AddScoped<IUidInfoService, UidInfoService>();
             services.AddScoped<IConsumerService, ConsumerService>();

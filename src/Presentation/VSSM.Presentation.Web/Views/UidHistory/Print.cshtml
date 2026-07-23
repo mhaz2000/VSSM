@@ -1,0 +1,70 @@
+﻿@using VSSM.Application.DTOs.UidHistory
+@model UidHistoryPrintViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>گزارش تاریخچه UID</title>
+    <link rel="stylesheet" href="~/css/components/UidHistory/uid-history-print.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="print-report">
+        <header class="report-header">
+            <div class="report-brand">سامانه مدیریت، نگهداری و توزیع واکسن</div>
+            <h1>گزارش تاریخچه UID</h1>
+            <p>گزارش کامل سوابق و رویدادهای ثبت‌شده برای شناسه مورد نظر</p>
+        </header>
+
+        <section class="report-info">
+            <div>
+                <strong>UID:</strong>
+                <span class="uid-value">@Model.Uid</span>
+            </div>
+            <div>
+                <strong>تاریخ چاپ:</strong>
+                <span>@Model.PrintDate</span>
+            </div>
+            <div>
+                <strong>تعداد رویدادها:</strong>
+                <span>@Model.RowCount</span>
+            </div>
+        </section>
+
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>ردیف</th>
+                    <th>تاریخ</th>
+                    <th>توضیحات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        <td class="row-number">@row.RowNumber</td>
+                        <td>@row.EventDate</td>
+                        <td>@row.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <footer class="report-footer">
+            <span>گزارش تاریخچه UID</span>
+            <span>تولید شده توسط سامانه</span>
+        </footer>
+    </div>
+
+    <script>
+        window.onload = function () {
+            window.print();
+        };
+    </script>
+</body>
+</html>

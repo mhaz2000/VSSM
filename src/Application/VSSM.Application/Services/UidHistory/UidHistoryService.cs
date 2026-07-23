@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography.X509Certificates;
 using VSSM.Application.DTOs.UidHistory;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -14,23 +15,27 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
         if (string.IsNullOrWhiteSpace(uid) || uid.Length < 20)
             return (false, "UID وارد شده معتبر نمی‌باشد (حداقل ۲۰ کاراکتر)", null);
 
+        // 1. دریافت UidInfo با تمام ارتباطات مورد نیاز
         var uidRecord = await db.TblUidInfo
-          .AsNoTracking()
-          .Include(u => u.OrderInfo)
-              .ThenInclude(o => o.Item)
-          .Include(u => u.OrderInfo)
-              .ThenInclude(o => o.DosePerVial)
-          .Include(u => u.OrderInfo)
-              .ThenInclude(o => o.Arrival)
-                  .ThenInclude(a => a.Receiver)
-          .Include(u => u.OrderInfo)
-              .ThenInclude(o => o.Arrival)
-                  .ThenInclude(a => a.Sender)
-          .FirstOrDefaultAsync(
-              u => u.SecLevelUid == uid ||
-                   u.FirstLevelUid == uid ||
-                   u.ParentUid == uid,
-              token);
+            .AsNoTracking()
+            .Include(u => u.OrderInfo)
+                .ThenInclude(o => o.Item)
+            .Include(u => u.OrderInfo)
+                .ThenInclude(o => o.DosePerVial)
+            .Include(u => u.OrderInfo)
+                .ThenInclude(o => o.Arrival)
+                    .ThenInclude(a => a.Receiver)
+            .Include(u => u.OrderInfo)
+                .ThenInclude(o => o.Arrival)
+                    .ThenInclude(a => a.Sender)
+            .Include(u => u.OrderInfo)
+                .ThenInclude(o => o.Arrival)
+                    .ThenInclude(a => a.TblArrivalLines)
+            .FirstOrDefaultAsync(
+                u => u.SecLevelUid == uid ||
+                     u.FirstLevelUid == uid ||
+                     u.ParentUid == uid,
+                token);
 
         if (uidRecord == null)
             return (false, "UID یافت نشد", null);
@@ -39,7 +44,7 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
         if (order == null)
             return (false, "اطلاعات محموله برای این UID یافت نشد", null);
 
-        // 🔹 دریافت نام کاربر سازنده
+        // 2. دریافت نام کاربر سازنده
         string? createdByUserName = null;
         if (order.CreatedBy > 0)
         {
@@ -51,14 +56,10 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
             createdByUserName = user ?? order.CreatedBy.ToString();
         }
 
-        // 2. دریافت اطلاعات مرتبط
+        // 3. دریافت اطلاعات مرتبط
         var arrival = order.Arrival;
-        TblDispatch? dispatch = null;
-        TblReceiveDispatches? receiveDispatch = null;
-        TblConsumerPerson? consumer = null;
-        TblDestroyUid? destroy = null;
 
-        // دریافت Dispatch
+        TblDispatch? dispatch = null;
         var dispatchUid = await db.TblDispatchUids
             .AsNoTracking()
             .Include(d => d.Dispatch)
@@ -67,7 +68,7 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
         if (dispatchUid != null)
             dispatch = dispatchUid.Dispatch;
 
-        // دریافت ReceiveDispatch
+        TblReceiveDispatches? receiveDispatch = null;
         if (uidRecord.FkReceiveDispatchId.HasValue)
         {
             receiveDispatch = await db.TblReceiveDispatches
@@ -75,49 +76,73 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
                 .FirstOrDefaultAsync(r => r.PkReceiveDispatchesId == uidRecord.FkReceiveDispatchId, token);
         }
 
-        // دریافت Consumer
-        consumer = await db.TblConsumerPeople
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.FkUid == uidRecord.PkUidInfo, token);
+        TblConsumerPerson? consumer = null;
+        if (uidRecord.PkUidInfo > 0)
+        {
+            consumer = await db.TblConsumerPeople
+                .AsNoTracking()
+                .Include(c => c.Recipient)
+                .FirstOrDefaultAsync(c => c.FkUid == uidRecord.PkUidInfo, token);
+        }
 
-        // دریافت Destroy
-        destroy = await db.TblDestroyUids
-            .AsNoTracking()
-            .Include(d => d.DestroyReason)
-            .Include(d => d.Location)
-            .FirstOrDefaultAsync(d => d.FkUid == uidRecord.PkUidInfo, token);
+        TblDestroyUid? destroy = null;
+        if (uidRecord.PkUidInfo > 0)
+        {
+            destroy = await db.TblDestroyUids
+                .AsNoTracking()
+                .Include(d => d.DestroyReason)
+                .Include(d => d.Location)
+                .Include(d => d.CreatedByUser)
+                .FirstOrDefaultAsync(d => d.FkUid == uidRecord.PkUidInfo, token);
+        }
 
+        // 4. ساخت ردیف‌های تاریخچه
         var rows = new List<UidHistoryRowDto>();
 
-        var madeDesc = $"تاریخ تولید: {order.ManufactureDate.ToShamsi()}" +
-                       $" - نام کالا: {order.Item?.FullName ?? "-"}" +
-                       $" - شماره بچ: {order.BatchNumber ?? "-"}" +
-                       $" - تعداد دوز: {order.DosePerVial?.Title ?? "-"}" +
-                       $" - کاربر: {createdByUserName ?? order.CreatedBy.ToString()}";
+        // ─── ردیف ۱: بارگذاری فایل ───
+        string madeDesc =
+            $"سری ساخت: {order.BatchNumber ?? "-"} - " +
+            $"نام کالا: {order.Item?.FullName ?? "-"} - " +
+            $"تاریخ تولید: {order.ManufactureDate.ToShamsi()} - " +
+            $"تاریخ انقضا: {(order.ExpirationDate.HasValue ? order.ExpirationDate.Value.ToShamsi() : "-")} - " +
+            $"تعداد دوز: {order.DosePerVial?.Title ?? "-"} - " +
+            $"کاربر: {createdByUserName ?? order.CreatedBy.ToString()} - " +
+            $"مصرف شده: {(uidRecord.Used ? "بله" : "خیر")}";
+
         rows.Add(new UidHistoryRowDto
         {
-            RowNumber = 0, 
+            RowNumber = 0,
+            EventTitle = "تاریخ بارگذاری فایل :",
             EventDate = order.CreationTime.ToShamsi(),
             Description = madeDesc,
             SortOrder = 1
         });
 
+       string storeName = "-";
+        
         if (arrival != null)
         {
-            var reportNumber = arrival.ReportNumber ?? "-";
+            string reportNumber = arrival.ReportNumber ?? "-";
 
+            var arrivalLine = arrival.TblArrivalLines?.FirstOrDefault();
+            if (arrivalLine?.StoreId.HasValue == true)
+            {
+                var store = await db.TblStores
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.StoreId == arrivalLine.StoreId.Value, token);
+                storeName = store?.Name ?? "-";
+            }
 
-            var arrivalDesc =
-                $"تاریخ ورود: {arrival.Date?.ToShamsi() ?? "-"}" +
-                $" - شماره گزارش: \u2066{reportNumber}\u2069" +
-                $" - فرستنده: {arrival.Sender?.FullName ?? "-"}" +
-                $" - گیرنده: {arrival.Receiver?.FullName ?? "-"}" +
-                $" - تاریخ انقضا: {order.ExpirationDate?.ToShamsi() ?? "-"}";
+            string arrivalDesc =
+                $"طی شماره گزارش: {reportNumber} - " +
+                $"وارد انبار: {storeName} - " +
+                $"کاربر: {createdByUserName ?? order.CreatedBy.ToString()}";
 
             rows.Add(new UidHistoryRowDto
             {
                 RowNumber = 0,
-                EventDate = arrival.Date.Value.ToShamsi(),
+                EventTitle = "تاریخ ورود به انبار مرکز تهران :",
+                EventDate = arrival.Date?.ToShamsi() ?? "-",
                 Description = arrivalDesc,
                 SortOrder = 2
             });
@@ -125,13 +150,22 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
 
         if (dispatch != null)
         {
-            var dispatchDesc = $"تاریخ ارسال: {dispatch.Date.Value.ToShamsi()}" +
-                               $" - شماره رسید: {dispatch.ReceiverId}" +
-                               $" - دریافت کننده: {dispatch.Receiver?.FullName ?? "-"}";
+            string receiverName = dispatch.Receiver?.FullName ?? "-";
+            string transportMode = dispatch.TransportMode?.ToString() ?? "-";
+            string requestNum = dispatch.RequestNum ?? "-";
+
+            string dispatchDesc =
+                $"انتقال برای: {receiverName} - " +
+                $"طی شماره فاکتور: {dispatch.DispatchVoucherNumber ?? "-"} - " +
+                $"از طریق انبار: {storeName ?? "-"} - " +
+                $"روش انتقال: {transportMode} - " +
+                $"شماره درخواست: {requestNum}";
+
             rows.Add(new UidHistoryRowDto
             {
                 RowNumber = 0,
-                EventDate = dispatch.Date.Value.ToShamsi(),
+                EventTitle = "تاریخ ارسال :",
+                EventDate = dispatch.Date?.ToShamsi() ?? "-",
                 Description = dispatchDesc,
                 SortOrder = 3
             });
@@ -139,12 +173,17 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
 
         if (receiveDispatch != null)
         {
-            var receiveDesc = $"تاریخ دریافت: {receiveDispatch.ReceiveDate.ToShamsi()}" +
-                              $" - شماره دریافت: {receiveDispatch.ReceiveNumber}" +
-                              $" - وضعیت دریافت: دریافت شده";
+            string receiverName = dispatch?.Receiver?.FullName ?? "-";
+
+            string receiveDesc =
+                $"محل دریافت: {receiverName} - " +
+                $"شماره رسید: {receiveDispatch.ReceiveNumber} - " +
+                $"وضعیت دریافت: دریافت شده";
+
             rows.Add(new UidHistoryRowDto
             {
                 RowNumber = 0,
+                EventTitle = "تاریخ ورود به انبار مراکز :",
                 EventDate = receiveDispatch.ReceiveDate.ToShamsi(),
                 Description = receiveDesc,
                 SortOrder = 4
@@ -153,13 +192,20 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
 
         if (consumer != null)
         {
-            var consumerDesc = $"تاریخ مصرف: {consumer.EntryDate.ToShamsi()}" +
-                               $" - گیرنده: {consumer.ConsumerPerson ?? "-"}" +
-                               $" - واکسیناتور: {consumer.Vaccinator ?? "-"}" +
-                               $" - کد ملی: {consumer.FkConsumerRecipientId}";
+            string consumerPerson = consumer.ConsumerPerson ?? "-";
+            string vaccinator = consumer.Vaccinator ?? "-";
+            string recipientName = consumer.Recipient?.FullName ?? "-";
+
+            string consumerDesc =
+                $"واکسن مورد نظر در تاریخ: {consumer.EntryDate.ToShamsi()} - " +
+                $"توسط کد ملی: {consumerPerson} - " +
+                $"در محل: {recipientName} - " +
+                $"تزریق کننده: {vaccinator}";
+
             rows.Add(new UidHistoryRowDto
             {
                 RowNumber = 0,
+                EventTitle = "تاریخ مصرف :",
                 EventDate = consumer.EntryDate.ToShamsi(),
                 Description = consumerDesc,
                 SortOrder = 5
@@ -168,12 +214,23 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
 
         if (destroy != null)
         {
-            var destroyDesc = $"تاریخ امحا: {destroy.DestroyDate}" +
-                              $" - محل امحا: {destroy.Location?.FullName ?? "-"}" +
-                              $" - دلیل امحا: {destroy.DestroyReason?.Title ?? "-"}";
+            string location = destroy.Location?.FullName ?? "-";
+            string reason = destroy.DestroyReason?.Title ?? "-";
+            string destroyedBy = (destroy.CreatedByUser != null)
+                ? $"{destroy.CreatedByUser.FirstName} {destroy.CreatedByUser.LastName}"
+                : "-";
+
+            string destroyDesc =
+                $"واکسن مورد نظر در تاریخ: {destroy.DestroyDate} - " +
+                $"در محل: {location} - " +
+                $"به دلیل: {reason} - " +
+                $"امحا گردید - " +
+                $"امحا کننده: {destroyedBy}";
+
             rows.Add(new UidHistoryRowDto
             {
                 RowNumber = 0,
+                EventTitle = "تاریخ امحا :",
                 EventDate = destroy.DestroyDate,
                 Description = destroyDesc,
                 SortOrder = 6
@@ -181,18 +238,13 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
         }
 
         rows = rows.OrderBy(r => r.SortOrder).ToList();
-
         for (int i = 0; i < rows.Count; i++)
-        {
             rows[i].RowNumber = i + 1;
-        }
 
-        var result = new UidHistoryResultDto
+        return (true, string.Empty, new UidHistoryResultDto
         {
             SearchedUid = uid,
             Rows = rows
-        };
-
-        return (true, string.Empty, result);
+        });
     }
 }

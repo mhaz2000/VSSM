@@ -23,13 +23,41 @@ public class UidHistoryController(IUidHistoryService historyService) : BaseContr
         if (!success)
             return Json(new { success, message });
 
-        var tableRows = data.Rows.Select((r, idx) => new
+        var tableRows = data.Rows.Select(r => new
         {
-            ردیف = idx + 1,
-            تاریخ = r.EventDate,
-            توضیحات = r.Description
+            rowNumber = r.RowNumber,
+            eventTitle = r.EventTitle,
+            eventDate = r.EventDate,
+            description = r.Description
         }).ToList();
 
         return Json(new { success = true, data = tableRows });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Print(
+    string uid,
+    CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(uid))
+            return BadRequest("UID اجباری است.");
+
+        var (success, message, data) = await historyService
+            .GetHistoryByUidAsync(
+                uid,
+                CurrentUserRecipientId ?? 0,
+                token);
+
+        if (!success)
+            return BadRequest(message);
+
+        var model = new UidHistoryPrintViewModel
+        {
+            Uid = uid,
+            PrintDate = DateTime.Now,
+            Rows = data.Rows
+        };
+
+        return View(model);
     }
 }

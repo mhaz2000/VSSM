@@ -1,0 +1,191 @@
+﻿/* =========================================================
+   UID HISTORY PRINT REPORT
+   ========================================================= */
+
+@page {
+    size: A4;
+    margin: 15mm;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+    background: #fff;
+    font-family: Tahoma, Arial, sans-serif;
+    font-size: 11px;
+    color: #1f2937;
+}
+
+.print-report {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.report-header {
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #1f2937;
+}
+
+.report-brand {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.report-header h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.report-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   Report Info
+   ========================================================= */
+
+.report-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 10px 12px;
+    margin-bottom: 18px;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+}
+
+    .report-info > div {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+
+    .report-info strong {
+        font-weight: bold;
+    }
+
+.uid-value {
+    direction: ltr;
+    font-family: Consolas, monospace;
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   History Table
+   ========================================================= */
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    table-layout: fixed;
+    margin-top: 10px;
+}
+
+    .history-table thead {
+        display: table-header-group;
+    }
+
+    .history-table tr {
+        page-break-inside: avoid;
+    }
+
+    .history-table th {
+        padding: 9px 8px;
+        background: #374151;
+        color: #fff;
+        border: 1px solid #1f2937;
+        font-weight: bold;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .history-table td {
+        padding: 8px;
+        border: 1px solid #d1d5db;
+        color: #1f2937;
+        vertical-align: middle;
+        line-height: 1.8;
+        word-break: normal;
+        overflow-wrap: break-word;
+    }
+
+    .history-table tbody tr:nth-child(even) td {
+        background: #f9fafb;
+    }
+
+
+    /* =========================================================
+   Columns
+   ========================================================= */
+
+    .history-table th:first-child,
+    .history-table td:first-child {
+        width: 50px;
+        text-align: center;
+    }
+
+    .history-table th:nth-child(2),
+    .history-table td:nth-child(2) {
+        width: 170px;
+        text-align: center;
+    }
+
+    .history-table th:nth-child(3),
+    .history-table td:nth-child(3) {
+        text-align: right;
+    }
+
+
+/* =========================================================
+   Footer
+   ========================================================= */
+
+.report-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 8px;
+    border-top: 1px solid #d1d5db;
+    color: #6b7280;
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   Print
+   ========================================================= */
+
+@media print {
+
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .history-table thead {
+        display: table-header-group;
+    }
+
+    .history-table tr {
+        page-break-inside: avoid;
+    }
+}

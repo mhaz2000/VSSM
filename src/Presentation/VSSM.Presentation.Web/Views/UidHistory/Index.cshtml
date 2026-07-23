@@ -14,50 +14,79 @@
     ViewData["Title"] = "تاریخچه UID";
 }
 
-@* ── کارت جستجو ── *@
-<div class="a-card">
+@* =========================================================
+   جستجوی UID
+   ========================================================= *@
+<div class="a-card uh-search-card">
     <div class="a-card-header">
-        <h6><i class="fa fa-search" style="color:#1d6fb8;"></i> جستجوی UID</h6>
+        <h6>
+            <i class="fa fa-search" style="color:#1d6fb8;"></i>
+            جستجوی UID
+        </h6>
     </div>
+
     <div class="a-card-body" style="padding:16px;">
         <div class="uh-search-wrap">
-            <input type="text" id="uidInput" class="f-control"
-                   placeholder="UID (حداقل ۲۰ کاراکتر) را وارد کنید..." />
+            <input type="text"
+                   id="uidInput"
+                   class="f-control"
+                   placeholder="UID (حداقل ۲۰ کاراکتر) را وارد کنید..."
+                   autocomplete="off" />
+
             <button id="searchBtn"
+                    type="button"
                     class="btn-confirm uh-search-btn"
                     disabled>
                 <i class="fa fa-search"></i>
                 جستجو
             </button>
         </div>
+
         <div class="uh-progress-wrap" style="margin-top:8px;">
             <div class="uh-progress-bg">
-                <div id="uidProgress" class="uh-progress-fill" style="width:0%;"></div>
+                <div id="uidProgress"
+                     class="uh-progress-fill"
+                     style="width:0%;">
+                </div>
             </div>
-            <span id="uidCounter" class="uh-counter">0 / 20</span>
+
+            <span id="uidCounter" class="uh-counter">
+                0 / 20
+            </span>
         </div>
     </div>
 </div>
 
-@* ── کارت نتایج ── *@
-<div class="a-card">
+@* =========================================================
+   نتایج تاریخچه UID
+   ========================================================= *@
+<div class="a-card" id="resultCard">
     <div class="a-card-header">
-        <h6><i class="fa fa-history" style="color:#1d6fb8;"></i> تاریخچه UID</h6>
+        <h6>
+            <i class="fa fa-history" style="color:#1d6fb8;"></i>
+            تاریخچه UID
+        </h6>
     </div>
+
     <div class="a-card-body" style="padding:16px;">
         <div class="lines-table-wrap">
             <table class="lines-table" id="historyTable">
                 <thead>
                     <tr>
                         <th style="width:60px;">ردیف</th>
-                        <th style="width:150px;">تاریخ</th>
+                        <th style="width:220px;">تاریخ</th>
                         <th>توضیحات</th>
                     </tr>
                 </thead>
+
                 <tbody id="historyTbody">
                     <tr>
-                        <td colspan="3" style="padding:24px;color:#9ca3af;text-align:center;">
-                            <i class="fa fa-search" style="display:block;font-size:24px;margin-bottom:8px;"></i>
+                        <td colspan="3"
+                            class="empty-table-row"
+                            style="padding:24px; color:#9ca3af; text-align:center;">
+                            <i class="fa fa-search"
+                               style="display:block; font-size:24px; margin-bottom:8px;">
+                            </i>
                             برای مشاهده تاریخچه، UID مورد نظر را جستجو کنید
                         </td>
                     </tr>
@@ -65,11 +94,39 @@
             </table>
         </div>
     </div>
+
+    @* =========================================================
+       عملیات نتیجه
+       ========================================================= *@
+    <div class="a-card-footer"
+         id="resultFooter"
+         style="display:none;
+                padding:12px 20px;
+                border-top:1px solid #e5e7eb;
+                background:#f9fafb;
+                gap:10px;
+                justify-content:flex-start;">
+        <button id="printBtn"
+                type="button"
+                class="btn-confirm uh-footer-btn">
+            <i class="fa fa-print"></i>
+            چاپ
+        </button>
+
+        <button id="resetBtn"
+                type="button"
+                class="btn-back uh-footer-btn">
+            <i class="fa fa-refresh"></i>
+            بازنشانی
+        </button>
+    </div>
 </div>
 
 @section Scripts {
     <script>
         var searchUrl = '@Url.Action("Search", "UidHistory")';
+        var printUrlTemplate = '@Url.Action("Print", "UidHistory")?uid=__UID__';
     </script>
+
     <script src="~/js/components/UidHistory/uid-history.js" asp-append-version="true"></script>
 }

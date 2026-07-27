@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Security.Cryptography.X509Certificates;
 using VSSM.Application.DTOs.UidHistory;
 using VSSM.Application.Helpers;
@@ -7,7 +8,9 @@ using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.UidHistory;
 
-public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
+public class UidHistoryService(
+    VSSMDbContext db,
+    IBaseInfoService baseInfoService) :IUidHistoryService
 {
     public async Task<(bool Success, string Message, UidHistoryResultDto Data)>
         GetHistoryByUidAsync(string uid, int recipientId, CancellationToken token)
@@ -134,7 +137,7 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
             }
 
             string arrivalDesc =
-                $"طی شماره گزارش: {reportNumber} - " +
+                $"طی شماره گزارش: \u200E{reportNumber}\u200E - " +
                 $"وارد انبار: {storeName} - " +
                 $"کاربر: {createdByUserName ?? order.CreatedBy.ToString()}";
 
@@ -151,14 +154,15 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
         if (dispatch != null)
         {
             string receiverName = dispatch.Receiver?.FullName ?? "-";
-            string transportMode = dispatch.TransportMode?.ToString() ?? "-";
             string requestNum = dispatch.RequestNum ?? "-";
+            int.TryParse(dispatch.TransportMode, out int transportModeId);
+            var transportMode = await baseInfoService.GetByIdAsync(transportModeId);
 
             string dispatchDesc =
                 $"انتقال برای: {receiverName} - " +
                 $"طی شماره فاکتور: {dispatch.DispatchVoucherNumber ?? "-"} - " +
                 $"از طریق انبار: {storeName ?? "-"} - " +
-                $"روش انتقال: {transportMode} - " +
+                $"روش انتقال: {transportMode.Title} - " +
                 $"شماره درخواست: {requestNum}";
 
             rows.Add(new UidHistoryRowDto
@@ -197,9 +201,9 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
             string recipientName = consumer.Recipient?.FullName ?? "-";
 
             string consumerDesc =
-                $"واکسن مورد نظر در تاریخ: {consumer.EntryDate.ToShamsi()} - " +
-                $"توسط کد ملی: {consumerPerson} - " +
-                $"در محل: {recipientName} - " +
+                $"تاریخ مصرف: {consumer.EntryDate.ToShamsi()} - " +
+                $"مصرف‌کننده: {consumerPerson} - " +
+                $"محل مصرف: {recipientName} - " +
                 $"تزریق کننده: {vaccinator}";
 
             rows.Add(new UidHistoryRowDto
@@ -222,7 +226,7 @@ public class UidHistoryService(VSSMDbContext db) : IUidHistoryService
 
             string destroyDesc =
                 $"واکسن مورد نظر در تاریخ: {destroy.DestroyDate} - " +
-                $"در محل: {location} - " +
+                $"محل مصرف: {location} - " +
                 $"به دلیل: {reason} - " +
                 $"امحا گردید - " +
                 $"امحا کننده: {destroyedBy}";

@@ -26,6 +26,10 @@
                 <span class="uid-value">@Model.Uid</span>
             </div>
             <div>
+                <strong>گیرنده گزارش:</strong>
+                <span>@Model.ReceiverName</span>
+            </div>
+            <div>
                 <strong>تاریخ چاپ:</strong>
                 <span>@Model.PrintDate</span>
             </div>
@@ -48,8 +52,8 @@
                 {
                     <tr>
                         <td class="row-number">@row.RowNumber</td>
-                        <td>@row.EventDate</td>
-                        <td>@row.Description</td>
+                        <td>@(row.EventTitle + " " + row.EventDate)</td>
+                        <td class="description-cell">@row.Description</td>
                     </tr>
                 }
             </tbody>

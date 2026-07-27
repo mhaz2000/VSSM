@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.UidHistory;
+using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class UidHistoryController(IUidHistoryService historyService) : BaseController
+public class UidHistoryController(
+    IUidHistoryService historyService,
+    IUserService userService) : BaseController
 {
     public IActionResult Index()
     {
@@ -35,26 +38,29 @@ public class UidHistoryController(IUidHistoryService historyService) : BaseContr
     }
 
     [HttpGet]
-    public async Task<IActionResult> Print(
-    string uid,
-    CancellationToken token)
+    public async Task<IActionResult> Print(string uid, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(uid))
             return BadRequest("UID اجباری است.");
 
         var (success, message, data) = await historyService
-            .GetHistoryByUidAsync(
-                uid,
-                CurrentUserRecipientId ?? 0,
-                token);
+            .GetHistoryByUidAsync(uid, CurrentUserRecipientId ?? 0, token);
 
         if (!success)
             return BadRequest(message);
 
+        string receiverName = "-";
+        if (CurrentUserId.HasValue)
+        {
+            var recipient = await userService.GetById(CurrentUserId.Value, default);
+            receiverName = recipient.FullName;
+        }
+
         var model = new UidHistoryPrintViewModel
         {
             Uid = uid,
-            PrintDate = DateTime.Now,
+            PrintDate = DateTime.Now.ToShamsi(),
+            ReceiverName = receiverName,
             Rows = data.Rows
         };
 

@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace VSSM.Application.Helpers;
 
@@ -79,4 +80,47 @@ public static class DateTimeHelper
 
         return miladiDate;
     }
+
+    public static DateTime ParseWhetherGeorgianOrJalli(this string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            throw new ArgumentNullException(nameof(input));
+
+        input = input.Trim();
+
+        // Accept / or -
+        var match = Regex.Match(input, @"^(?<y>\d{4})[-/](?<m>\d{1,2})[-/](?<d>\d{1,2})$");
+
+        if (!match.Success)
+            throw new FormatException("Invalid date format.");
+
+        int year = int.Parse(match.Groups["y"].Value);
+        int month = int.Parse(match.Groups["m"].Value);
+        int day = int.Parse(match.Groups["d"].Value);
+
+        // Persian (Shamsi)
+        if (year < 1700)
+        {
+            var pc = new PersianCalendar();
+            return pc.ToDateTime(year, month, day, 0, 0, 0, 0);
+        }
+
+        // Gregorian
+        return new DateTime(year, month, day);
+    }
+
+    public static bool TryParseWhetherGeorgianOrJalli(string input, out DateTime result)
+    {
+        try
+        {
+            result = ParseWhetherGeorgianOrJalli(input);
+            return true;
+        }
+        catch
+        {
+            result = default;
+            return false;
+        }
+    }
+
 }

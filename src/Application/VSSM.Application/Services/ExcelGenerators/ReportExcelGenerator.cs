@@ -3,7 +3,7 @@ using VSSM.Application.DTOs.BaseEntities.Reports;
 
 namespace VSSM.Application.Services.ExcelGenerators
 {
-    public class CurrentStockReportExcelGenerator : ICurrentStockReportExcelGenerator
+    public class ReportExcelGenerator : IReportExcelGenerator
     {
         public MemoryStream AvailableQuantityDetailReportExcel(List<GroupedAvailableQuantityDetailDto> data)
         {
@@ -225,6 +225,59 @@ namespace VSSM.Application.Services.ExcelGenerators
                     ws.Cell(row, 2).Value = item.ItemName;
                     ws.Cell(row, 3).Value = item.DoesPerVial;
                     ws.Cell(row, 4).Value = item.CurrentStock;
+
+                    row++;
+                }
+
+
+                ws.SheetView.FreezeRows(1);
+
+                ws.Columns().AdjustToContents();
+
+                ws.Row(1).Height = 25;
+
+                wb.SaveAs(stream);
+            }
+
+            stream.Position = 0;
+            return stream;
+        }
+
+        public MemoryStream GetTotalLossExcel(List<TotalLossReportDto> data)
+        {
+            var stream = new MemoryStream();
+
+            using (var wb = new XLWorkbook())
+            {
+                var ws = wb.Worksheets.Add("گزارش اتلاف کل");
+
+                // Right to Left sheet
+                ws.RightToLeft = true;
+
+                // Headers
+                ws.Cell(1, 1).Value = "کالا";
+                ws.Cell(1, 2).Value = "دلیل امحا";
+                ws.Cell(1, 3).Value = "امحا شده توسط";
+                ws.Cell(1, 4).Value = "تاریخ";
+
+                var header = ws.Range(1, 1, 1, 4);
+                header.Style.Font.Bold = true;
+                header.Style.Font.FontSize = 12;
+                header.Style.Fill.BackgroundColor = XLColor.FromHtml("#4472C4");
+                header.Style.Font.FontColor = XLColor.White;
+                header.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                header.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                header.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                header.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                int row = 2;
+
+                foreach (var item in data)
+                {
+                    ws.Cell(row, 1).Value = item.Item;
+                    ws.Cell(row, 2).Value = item.DestroyReason;
+                    ws.Cell(row, 3).Value = item.DestroyBy;
+                    ws.Cell(row, 4).Value = item.Date;
 
                     row++;
                 }
@@ -576,6 +629,71 @@ namespace VSSM.Application.Services.ExcelGenerators
                 ws.Columns().AdjustToContents();
 
                 ws.Row(1).Height = 25;
+
+                wb.SaveAs(stream);
+            }
+
+            stream.Position = 0;
+            return stream;
+        }
+
+        public MemoryStream ExpiredItemsReportExcel(List<GroupedExpiredItemDto> data)
+        {
+            var stream = new MemoryStream();
+
+            using (var wb = new XLWorkbook())
+            {
+
+                foreach (var groupedItem in data)
+                {
+                    var ws = wb.Worksheets.Add(groupedItem.Meta.ItemName);
+
+                    // Right to Left sheet
+                    ws.RightToLeft = true;
+
+                    // Headers
+                    ws.Cell(1, 1).Value = "سری ساخت";
+                    ws.Cell(1, 2).Value = "سازنده";
+                    ws.Cell(1, 3).Value = "تاریخ انقضا";
+                    ws.Cell(1, 4).Value = "دوز بر ویال";
+                    ws.Cell(1, 5).Value = "تعداد";
+                    ws.Cell(1, 6).Value = "تعداد ویال";
+                    ws.Cell(1, 7).Value = "انبار";
+                    ws.Cell(1, 8).Value = "مرحله VVM";
+
+                    var header = ws.Range(1, 1, 1, 8);
+                    header.Style.Font.Bold = true;
+                    header.Style.Font.FontSize = 12;
+                    header.Style.Fill.BackgroundColor = XLColor.FromHtml("#4472C4");
+                    header.Style.Font.FontColor = XLColor.White;
+                    header.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    header.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    header.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    header.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                    int row = 2;
+
+                    foreach (var item in groupedItem.Details)
+                    {
+                        ws.Cell(row, 1).Value = item.BatchNumber;
+                        ws.Cell(row, 2).Value = item.ManufacturerName;
+                        ws.Cell(row, 3).Value = item.ExpiryDateText;
+                        ws.Cell(row, 4).Value = item.DoesPerVial;
+                        ws.Cell(row, 5).Value = item.CurrentStock;
+                        ws.Cell(row, 6).Value = item.VialNumber;
+                        ws.Cell(row, 7).Value = item.Stock;
+                        ws.Cell(row, 8).Value = item.Vvmstage;
+
+                        row++;
+                    }
+
+
+                    ws.SheetView.FreezeRows(1);
+
+                    ws.Columns().AdjustToContents();
+
+                    ws.Row(1).Height = 25;
+                }
 
                 wb.SaveAs(stream);
             }

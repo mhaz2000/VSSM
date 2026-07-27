@@ -110,7 +110,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMenuService, MenuService>();
 
-            services.AddScoped<ICurrentStockReportExcelGenerator, CurrentStockReportExcelGenerator>();
+            services.AddScoped<IReportExcelGenerator, ReportExcelGenerator>();
             services.AddScoped<IGs1BarcodeParser, Gs1BarcodeParser>();
 
             services.AddSingleton<DispatchScanSessionService>();

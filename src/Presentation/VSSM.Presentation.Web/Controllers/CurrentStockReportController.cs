@@ -6,13 +6,14 @@ using VSSM.Application.DTOs.BaseEntities.Reports;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Services.ExcelGenerators;
 using VSSM.Application.Shared;
+using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers
 {
     public class CurrentStockReportController(IReportService _reportService,
         IItemClassService _itemClassService,
-        ICurrentStockReportExcelGenerator _reportExcelGenerator,
+        IReportExcelGenerator _reportExcelGenerator,
         IItemService _itemService,
         IStoreService _storeService,
         ISourceService _sourceService,
@@ -28,7 +29,7 @@ namespace VSSM.Presentation.Web.Controllers
         {
             // Load dropdowns
             ViewBag.CommercialNames = await _baseInfoService.GetByParentIdAsync(35, cancellationToken);
-            ViewBag.ItemClasses = await _itemClassService.GetActives(cancellationToken);
+            ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId);
             ViewBag.Items = await _itemService.GetActives(cancellationToken);
             ViewBag.Sources = await _sourceService.GetAll(cancellationToken);
             ViewBag.Stores = await _storeService.GetAllWithRecipientId(CurrentUserRecipientId!.Value, cancellationToken);

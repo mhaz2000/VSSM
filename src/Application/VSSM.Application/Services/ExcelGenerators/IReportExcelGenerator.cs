@@ -2,12 +2,14 @@
 
 namespace VSSM.Application.Services.ExcelGenerators
 {
-    public interface ICurrentStockReportExcelGenerator
+    public interface IReportExcelGenerator
     {
         MemoryStream AvailableQuantityDetailReportExcel(List<GroupedAvailableQuantityDetailDto> data);
         MemoryStream AvailableQuantityQuantitySummaryReportExcel(List<AvailableQuantityQuantitySummaryDto> data);
         MemoryStream AvailableQuantitySummaryReportExcel(List<AvailableQuantitySummaryDto> data);
         MemoryStream AvailableQuantitySummaryWithDosePerVialReportExcel(List<AvailableQuantitySummaryWithDosePerVialDto> data);
+        MemoryStream ExpiredItemsReportExcel(List<GroupedExpiredItemDto> data);
+        MemoryStream GetTotalLossExcel(List<TotalLossReportDto> data);
         MemoryStream InventoryHistoryExcel(List<InventoryHistoryDto> data);
         MemoryStream ItemForRecipientInYearExcel(List<ItemForRecipientInYearDto> data);
         MemoryStream ItemIndicatorExcel(List<ItemIndicatorDto> data);

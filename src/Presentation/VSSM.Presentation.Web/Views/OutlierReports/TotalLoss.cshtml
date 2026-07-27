@@ -1,0 +1,147 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@{
+    ViewData["Title"] = "گزارش موجودی";
+}
+
+<link href="~/css/components/shared/datepicker.css" rel="stylesheet" />
+
+@{
+    var items = ViewBag.Items as List<ItemListDto>;
+}
+
+@section styles{
+    <style>
+        .form-label{
+            line-height: 22px !important;
+            font-size: 1rem;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+
+    <div class="card mt-3">
+        <div class="card-block">
+
+            <div class="grid-wrapper">
+
+                <div class="grid-header">
+                    <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
+                </div>
+
+                <form method="get" action="/OutlierReports/TotalLossReport" target="_blank" class="card p-3 mb-3">
+
+                    <div class="row g-3">
+
+                        <div class="col-12 mb-2">
+                            <button type="button" class="btn-toggle-date-mode" id="toggleDateMode" title="تغییر به شمسی">
+                                <i class="fa fa-exchange"></i>
+                                <span class="mode-label">میلادی</span>
+                            </button>
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+                            <label class="f-label">از تاریخ</label>
+                            <div class="datepicker-wrap">
+                                <input type="text" id="fromDate" name="fromDate" class="f-control datepicker-input"
+                                       placeholder="انتخاب تاریخ" autocomplete="off" />
+                                <i class="fa fa-calendar datepicker-ico"></i>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+                            <label class="f-label">تا تاریخ</label>
+                            <div class="datepicker-wrap">
+                                <input type="text" id="toDate" name="toDate" class="f-control datepicker-input"
+                                       placeholder="انتخاب تاریخ" autocomplete="off" />
+                                <i class="fa fa-calendar datepicker-ico"></i>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 input-sec">
+
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                        new SearchableSelectModel
+                                                        {
+                                                            Id = "itemId",
+                                                            IsRequired = false,
+                                                            Name = "itemId",
+                                                            Label = "کالا",
+                                                            Options = items
+                                                            .Select(x => new SelectOption
+                                                            {
+                                                                Value = x.ItemId.ToString(),
+                                                                Text = x.FullName
+                                                            }).ToList()
+                                                        })
+                        </div>
+
+                    </div>
+
+                    <div class="text-start mt-3" style="margin-top: 1rem; margin-right: 0px;">
+                        <button type="submit" class="btn btn-primary" id="searchBtn" disabled>
+                            <i class="fa fa-search"></i> جستجو
+                        </button>
+
+                    </div>
+                </form>
+
+                @if (Model != null)
+                {
+                    <div style="margin-top: 1rem;">
+                        @await Html.PartialAsync("ReportHeader")
+                    </div>
+
+                    <div style="margin-top: 1rem;">
+                        @await Html.PartialAsync("_DynamicGrid", Model)
+                    </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/shared/datepicker.js"></script>
+    <script>
+        $(function () {
+            var dateMode = 'gregorian';
+            var $from = $('#fromDate');
+            var $to = $('#toDate');
+            var $btn = $('#searchBtn');
+            var $toggle = $('#toggleDateMode');
+
+            function attachDatepickers(mode) {
+                DatePicker.close();
+                DatePicker.attach($from, mode);
+                DatePicker.attach($to, mode);
+                dateMode = mode;
+                var label = (mode === 'gregorian') ? 'میلادی' : 'شمسی';
+                $toggle.find('.mode-label').text(label);
+                $toggle.attr('title', 'تغییر به ' + (mode === 'gregorian' ? 'شمسی' : 'میلادی'));
+            }
+
+            function updateButtonState() {
+                $btn.prop('disabled', !($from.val() && $to.val()));
+            }
+
+            $toggle.on('click', function () {
+                var newMode = (dateMode === 'gregorian') ? 'jalali' : 'gregorian';
+                $from.val('').removeClass('has-value');
+                $to.val('').removeClass('has-value');
+                attachDatepickers(newMode);
+                updateButtonState();
+            });
+
+            $from.on('change', updateButtonState);
+            $to.on('change', updateButtonState);
+
+            attachDatepickers(dateMode);
+            updateButtonState();
+        });
+    </script>
+}

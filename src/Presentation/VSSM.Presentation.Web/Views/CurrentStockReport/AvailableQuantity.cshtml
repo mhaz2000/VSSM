@@ -9,7 +9,7 @@
 }
 
 @{
-    var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
+    var itemClasses = ViewBag.ItemClasses as List<BaseInfoDto>;
     var recipients = ViewBag.Recipients as List<RecipientGetDto>;
     var chainLevels = ViewBag.ChainLevels as List<int>;
     var items = ViewBag.Items as List<ItemListDto>;
@@ -67,7 +67,7 @@
                                     .Select(x => new SelectOption
                                     {
                                         Value = x.Id.ToString(),
-                                        Text = x.Name
+                                        Text = x.Title
                                     }).ToList()
                             })
                         </div>

@@ -55,7 +55,7 @@
             if (res.success) {
 
                 const items = res.result.map(i => ({
-                    value: i.id,
+                    value: i.itemId,
                     text: i.fullName
                 }));
 

@@ -1,10 +1,12 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Reports;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Domain.Entities;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities
@@ -56,7 +58,7 @@ namespace VSSM.Application.Services.BaseEntities
                 from i in itemQuery
                 join id in itemDetailQuery
                     on i.ItemId equals id.ItemId
-                join ids in itemDetailStoreQuery.Where(t=> t.CurrentStock > 0)
+                join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0)
                     on id.ItemDetailId equals ids.ItemDetailId
                 join s in storeQuery
                     on ids.StoreId equals s.StoreId
@@ -133,7 +135,7 @@ namespace VSSM.Application.Services.BaseEntities
                     Meta = new AvailableQuantityDetailMetaDto()
                     {
                         ItemName = g.Key,
-                        Count = g.Sum(t=> t.CurrentStock) ?? 0
+                        Count = g.Sum(t => t.CurrentStock) ?? 0
                     },
                     Details = g.Select(d => new AvailableQuantityDetailDto()
                     {
@@ -359,7 +361,7 @@ namespace VSSM.Application.Services.BaseEntities
                     on id.ItemDetailId equals ids.ItemDetailId
                 join s in storeQuery
                     on ids.StoreId equals s.StoreId
-                join v in _context.TblBaseInfo 
+                join v in _context.TblBaseInfo
                     on id.DosePerVialId equals v.BaseInfoId
                 group new { i, ids, v }
                 by new { i.FullName, i.Code, NumDosePerVial = v.Title }
@@ -398,7 +400,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             var dispatches = fiscalPeriodId is not null ? _context.TblDispatches.Where(t => t.FiscalPeriodId == fiscalPeriodId) : _context.TblDispatches;
             var arrivals = fiscalPeriodId is not null ? _context.TblArrivals.Where(t => t.FiscalPeriodId == fiscalPeriodId) : _context.TblArrivals;
-            var reciepients = recipientId is null ? _context.TblRecipients.Where(t => t.ParentId == currentRecipientId) : _context.TblRecipients.Where(t=> t.RecipientId == recipientId);
+            var reciepients = recipientId is null ? _context.TblRecipients.Where(t => t.ParentId == currentRecipientId) : _context.TblRecipients.Where(t => t.RecipientId == recipientId);
             reciepients = level is not null ? reciepients.Where(t => t.ChainLevel == level) : reciepients;
 
             var query =
@@ -450,7 +452,7 @@ namespace VSSM.Application.Services.BaseEntities
                                        - g.Sum(x => x.DispatchDate != null ? x.DispatchQuantity : 0) ?? 0
                           };
 
-            grouped = grouped.OrderBy(t=> t.Year).ThenBy(t=> t.Month).AsNoTracking();
+            grouped = grouped.OrderBy(t => t.Year).ThenBy(t => t.Month).AsNoTracking();
 
             var total = await grouped.CountAsync();
 
@@ -738,5 +740,148 @@ namespace VSSM.Application.Services.BaseEntities
                 .Take(pageSize)
                 .ToListAsync(), total);
         }
+
+        public async Task<(List<TotalLossReportDto> data, int count)> GetTotalLossAsync(long? itemId, DateTime fromDateTime, DateTime toDateTime, int pageNumber,
+            int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
+        {
+            var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
+
+            // base query using joins
+
+            var query = _context.TblDestroyUids.Include(t => t.UidInfo).ThenInclude(t => t.OrderInfo).ThenInclude(t => t.Item)
+                                                .Include(t => t.DestroyReason)
+                                                .Include(t => t.DestroyedByUser)
+                .Select(s => new TotalLossReportDto()
+                {
+                    Item = s.UidInfo.OrderInfo.Item.FullName,
+                    DestroyReason = s.DestroyReason.Title,
+                    Date = s.DestroyDate,
+                    DestroyBy = s.DestroyedByUser.FirstName + " " + s.DestroyedByUser.LastName,
+                });
+
+            var shamsiToDate = toDateTime.ToShamsi();
+            var shamsiFromDate = fromDateTime.ToShamsi();
+
+            query = query.Where(t => t.Date.CompareTo(shamsiToDate) <= 0 && shamsiFromDate.CompareTo(t.Date) <= 0);
+
+            query = query.AsNoTracking();
+
+            query = query.Distinct();
+
+            var total = await query.CountAsync();
+
+            query = query.ApplySorting(sort, direction == "desc");
+
+            if (fetchAll)
+                return (await query.ToListAsync(), 0);
+
+            return (await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(), total);
+        }
+
+        public async Task<(List<GroupedExpiredItemDto> data, int count)> GetExpiredItemAsync(int currentRecipientId,
+            int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
+        {
+            var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
+
+
+            var itemQuery = _context.TblItems;
+            var itemDetailQuery = _context.TblItemDetails.Where(t => t.ExpiryDate.HasValue && t.ExpiryDate.Value < DateTime.Now);
+            var itemDetailStoreQuery = _context.TblItemDetailStores;
+
+            var storeQuery = _context.TblStores.AsQueryable();
+            storeQuery = storeQuery.Where(t => t.RecipientId == currentRecipientId);
+
+            var query =
+                from i in itemQuery
+                join id in itemDetailQuery
+                    on i.ItemId equals id.ItemId
+                join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0)
+                    on id.ItemDetailId equals ids.ItemDetailId
+                join s in storeQuery
+                    on ids.StoreId equals s.StoreId
+                join r in _context.TblRecipients
+                    on s.RecipientId equals r.RecipientId
+
+                join m in _context.TblBaseInfo
+                    on id.ManufacturerId equals m.BaseInfoId into mJoin
+                from m in mJoin.DefaultIfEmpty()
+
+
+                join dpv in _context.TblBaseInfo
+                    on id.DosePerVialId equals dpv.BaseInfoId into dpvJoin
+                from dpv in dpvJoin.DefaultIfEmpty()
+
+                join vs in _context.TblBaseInfo
+                    on ids.FkVvmStageId equals vs.BaseInfoId into vsJoin
+                from vs in vsJoin.DefaultIfEmpty()
+
+                group new { i, id, ids, s, m, dpv, vs }
+                by new
+                {
+                    id.ItemDetailId,
+                    id.BatchNumber,
+                    id.ExpiryDate,
+                    id.ProductionDate,
+                    Recipient = r.FullName,
+                    ItemName = i.FullName,
+                    ManufacturerName = m.Title,
+                    StoreName = s.Name,
+                    DoesPerVial = dpv.Title,
+                    Vvmstage = vs.Title
+                } into g
+                select new ExpiredItemDto
+                {
+                    ItemName = g.Key.ItemName,
+                    BatchNumber = g.Key.BatchNumber,
+                    ManufacturerName = g.Key.ManufacturerName,
+                    ExpiryDate = g.Key.ExpiryDate,
+                    DoesPerVial = int.Parse(g.Key.DoesPerVial),
+                    Stock = g.Key.StoreName,
+                    VialNumber = int.Parse(g.Key.DoesPerVial),
+                    Vvmstage = g.Key.Vvmstage,
+                    CurrentStock = g.Sum(t => t.ids.CurrentStock)
+                };
+
+            query = query.AsNoTracking();
+
+            var total = await query.CountAsync();
+
+            query = query.ApplySorting(sort, direction == "desc");
+
+            var list = fetchAll ? await query.ToListAsync() : await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var grouped = list
+                .GroupBy(x => x.ItemName)
+                .Select(g => new GroupedExpiredItemDto()
+                {
+                    Meta = new ExpiredItemDtoDetailMetaDto()
+                    {
+                        ItemName = g.Key,
+                        Count = g.Sum(t => t.CurrentStock) ?? 0
+                    },
+                    Details = g.Select(d => new ExpiredItemDto()
+                    {
+                        Stock = d.Stock,
+                        Vvmstage = d.Vvmstage,
+                        BatchNumber = d.BatchNumber,
+                        ManufacturerName = d.ManufacturerName,
+                        ExpiryDate = d.ExpiryDate,
+                        DoesPerVial = d.DoesPerVial,
+                        CurrentStock = d.CurrentStock,
+                        VialNumber = d.VialNumber
+                    }).ToList()
+                })
+                .ToList();
+
+            return (grouped, total);
+
+        }
+
     }
 }

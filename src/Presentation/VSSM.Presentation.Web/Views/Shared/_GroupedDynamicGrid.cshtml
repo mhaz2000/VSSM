@@ -2,80 +2,94 @@
 @using VSSM.Presentation.Web.Models.Base
 @model GroupedGridViewModel<object, object>
 
-<div class="grouped-grid-wrapper">
+@{
+    int colCount = Model.Columns.Count + 1;
 
-@foreach (var group in Model.Groups)
-{
-    <div class="group-section">
+    const string cssKey = "_GroupedDynamicGrid_CSS";
 
-        <!-- META DATA -->
-        <div class="group-meta">
-        @foreach (var prop in group.Meta.GetType().GetProperties())
-        {
-            var display = prop.GetCustomAttributes(typeof(DisplayAttribute), false)
-                              .Cast<DisplayAttribute>()
-                              .FirstOrDefault()?.Name ?? prop.Name;
-        
-            <div class="meta-row">
-                <strong>@display :</strong>
-                <span>@prop.GetValue(group.Meta)</span>
-            </div>
-        }
-        </div>
+    bool needsCss = !ViewContext.HttpContext.Items.ContainsKey(cssKey);
 
-        <!-- DETAIL TABLE -->
-        <div class="dynamic-grid-wrapper mt-2">
-            <table class="dynamic-grid table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th class="row-col">#</th>
-
-                        @foreach (var column in Model.Columns)
-                        {
-                            <th>@column.Header</th>
-                        }
-                    </tr>
-                </thead>
-
-                <tbody>
-                @{
-                    int rowIndex = 1;
-                }
-
-                @foreach (var detail in group.Details)
-                {
-                    <tr>
-                        <td>@rowIndex</td>
-                        @{
-                            rowIndex++;
-                        }
-
-                        @foreach (var column in Model.Columns)
-                        {
-                            <td>
-                                @{
-                                    var prop = detail.GetType().GetProperty(column.PropertyName);
-                                    var value = prop?.GetValue(detail);
-                                }
-                                @value
-                            </td>
-                        }
-                    </tr>
-                }
-
-                </tbody>
-            </table>
-        </div>
-
-    </div>
+    if (needsCss) ViewContext.HttpContext.Items[cssKey] = true;
 }
 
-</div>
+@if (needsCss)
+{
+    <link rel="stylesheet"
+          href="~/css/components/shared/dynamic-grid.css"
+          asp-append-version="true" />
+}
 
-@await Component.InvokeAsync("Pagination",
-    new {
-        model = Model.Data,
-        sort = Model.CurrentSort,
-        direction = Model.CurrentDirection,
-        isPost = true 
-    })
+<div class="dg-wrap">
+
+    @foreach (var group in Model.Groups)
+    {
+        <div class="dg-card" style="margin-bottom:20px;">
+
+            @* Meta info bar *@
+            <div style="padding:10px 16px;background:#fafbfc;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 20px;font-size:12px;">
+                @foreach (var prop in group.Meta.GetType().GetProperties())
+                {
+                    var display = prop.GetCustomAttributes(typeof(DisplayAttribute), false)
+                                      .Cast<DisplayAttribute>()
+                                      .FirstOrDefault()?.Name ?? prop.Name;
+
+                    <div>
+                        <strong style="color:#374151;">@display :</strong>
+                        <span style="color:#111827;">@prop.GetValue(group.Meta)</span>
+                    </div>
+                }
+            </div>
+
+            @* Table *@
+            <div class="dg-table-scroll">
+                <table class="dg-table">
+                    <thead>
+                        <tr class="dg-col-row">
+                            <th>ردیف</th>
+                            @foreach (var column in Model.Columns)
+                            {
+                                <th>@column.Header</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int rowIndex = 1;
+                        }
+
+                        @foreach (var detail in group.Details)
+                        {
+                            <tr>
+                                <td class="dg-row-num">@(rowIndex++)</td>
+
+                                @foreach (var column in Model.Columns)
+                                {
+                                    <td>
+                                        @{
+                                            var prop = detail.GetType().GetProperty(column.PropertyName);
+                                            var value = prop?.GetValue(detail);
+                                        }
+                                        @value
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    }
+
+    @* Pagination *@
+    <div class="dg-footer" style="margin-top:12px;">
+        @await Component.InvokeAsync("Pagination", new
+        {
+            model = Model.Data,
+            sort = Model.CurrentSort,
+            direction = Model.CurrentDirection,
+            isPost = true
+        })
+    </div>
+
+</div>

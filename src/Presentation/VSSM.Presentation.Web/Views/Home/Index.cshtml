@@ -1,4 +1,8 @@
-﻿@{
+﻿@using VSSM.Application.DTOs.Dashboard
+﻿@using VSSM.Presentation.Web.Models
+@model DashboardViewModel
+
+@{
     ViewData["Title"] = "داشبورد";
 }
 
@@ -12,22 +16,18 @@
 
 <div class="db-page">
 
-    <!-- ردیف وسط: در RTL از راست شروع می‌شه -->
-    <!-- راست: کارت‌های کوچک | وسط: area سبز | چپ: bar آبی -->
     <div class="db-row-mid">
 
-        <!-- ستون راست: محموله رسیده + پیش نویس -->
         <div class="db-col-sm">
 
             <div class="db-card db-card-sm">
                 <div class="db-sm-row">
-                    <!-- در RTL: آیکون اول = سمت راست -->
                     <div class="db-sm-icon">
                         <i class="fa fa-archive"></i>
                     </div>
                     <div class="db-sm-text">
                         <div class="db-lbl">محموله رسیده</div>
-                        <div class="db-val">۴۰۰</div>
+                        <div class="db-val">@Model.ArrivedShipments</div>
                     </div>
                 </div>
             </div>
@@ -38,13 +38,12 @@
                     <span class="db-lbl" style="margin:0">پیش نویس</span>
                 </div>
                 <div class="db-draft-stats">
-                    <!-- در RTL: ارسالی سمت راست، ورودی سمت چپ -->
                     <div class="db-draft-stat">
-                        <div class="db-val">۴۴</div>
+                        <div class="db-val">@Model.DraftOutgoing</div>
                         <div class="db-sub">ارسالی</div>
                     </div>
                     <div class="db-draft-stat">
-                        <div class="db-val">۲۵</div>
+                        <div class="db-val">@Model.DraftIncoming</div>
                         <div class="db-sub">ورودی</div>
                     </div>
                 </div>
@@ -52,22 +51,18 @@
 
         </div>
 
-        <!-- وسط: کالاهای زیر حداقل (area سبز) -->
         <div class="db-card db-card-chart">
             <div class="db-ch">
                 <span class="db-ct">کالاهای زیر حداقل</span>
-                <span class="db-badge up"><i class="fa fa-arrow-up"></i> ۸٪</span>
             </div>
             <div class="db-chart-wrap">
                 <canvas id="chart-below-min" role="img" aria-label="نمودار کالاهای زیر حداقل"></canvas>
             </div>
         </div>
 
-        <!-- چپ: کالاهای زیر سطح درخواست (bar آبی) -->
         <div class="db-card db-card-chart">
             <div class="db-ch">
                 <span class="db-ct">کالاهای زیر سطح درخواست</span>
-                <span class="db-badge dn"><i class="fa fa-arrow-down"></i> ۸٪</span>
             </div>
             <div class="db-chart-wrap">
                 <canvas id="chart-below-request" role="img" aria-label="نمودار کالاهای زیر سطح درخواست"></canvas>
@@ -76,26 +71,20 @@
 
     </div>
 
-    <!-- ردیف پایین -->
-    <!-- راست: نزدیک منقضی (سبز) | چپ: بالای حداکثر (آبی) -->
     <div class="db-row-btm">
 
-        <!-- راست: کالاهای نزدیک به منقضی شدن (zigzag سبز) -->
         <div class="db-card db-card-chart">
             <div class="db-ch">
                 <span class="db-ct">کالاهای نزدیک به منقضی شدن</span>
-                <span class="db-badge dn"><i class="fa fa-arrow-down"></i> ۸٪</span>
             </div>
             <div class="db-chart-wrap">
                 <canvas id="chart-near-expiry" role="img" aria-label="نمودار کالاهای نزدیک به منقضی شدن"></canvas>
             </div>
         </div>
 
-        <!-- چپ: کالاهای بالای حداکثر (zigzag آبی) -->
         <div class="db-card db-card-chart">
             <div class="db-ch">
                 <span class="db-ct">کالاهای بالای حداکثر</span>
-                <span class="db-badge up"><i class="fa fa-arrow-up"></i> ۸٪</span>
             </div>
             <div class="db-chart-wrap">
                 <canvas id="chart-above-max" role="img" aria-label="نمودار کالاهای بالای حداکثر"></canvas>
@@ -108,5 +97,64 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            const belowMinLabels = @Html.Raw(Json.Serialize(Model.BelowMinItems.Select(x => x.Label)));
+            const belowMinValues = @Html.Raw(Json.Serialize(Model.BelowMinItems.Select(x => x.Value)));
+
+            const belowRequestLabels = @Html.Raw(Json.Serialize(Model.BelowRequestItems.Select(x => x.Label)));
+            const belowRequestValues = @Html.Raw(Json.Serialize(Model.BelowRequestItems.Select(x => x.Value)));
+
+            const nearExpiryLabels = @Html.Raw(Json.Serialize(Model.NearExpiryItems.Select(x => x.Label)));
+            const nearExpiryValues = @Html.Raw(Json.Serialize(Model.NearExpiryItems.Select(x => x.Value)));
+
+            const aboveMaxLabels = @Html.Raw(Json.Serialize(Model.AboveMaxItems.Select(x => x.Label)));
+            const aboveMaxValues = @Html.Raw(Json.Serialize(Model.AboveMaxItems.Select(x => x.Value)));
+
+            function createChart(canvasId, labels, data, color) {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: color,
+                            borderColor: color,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { display: false }
+                            },
+                            x: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (belowMinLabels.length) {
+                createChart('chart-below-min', belowMinLabels, belowMinValues, 'rgba(46, 204, 113, 0.7)');
+            }
+            if (belowRequestLabels.length) {
+                createChart('chart-below-request', belowRequestLabels, belowRequestValues, 'rgba(52, 152, 219, 0.7)');
+            }
+            if (nearExpiryLabels.length) {
+                createChart('chart-near-expiry', nearExpiryLabels, nearExpiryValues, 'rgba(46, 204, 113, 0.7)');
+            }
+            if (aboveMaxLabels.length) {
+                createChart('chart-above-max', aboveMaxLabels, aboveMaxValues, 'rgba(52, 152, 219, 0.7)');
+            }
+        })();
+    </script>
 }

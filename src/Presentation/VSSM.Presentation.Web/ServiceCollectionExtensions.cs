@@ -52,6 +52,7 @@ namespace VSSM.Presentation.Web
             //    options.LoginPath = "/Account/Login";
             //});
             services.AddScoped<IUidHistoryService, UidHistoryService>();
+            services.AddScoped<IDashboardService, DashboardService>();
 
             services.AddScoped<IDestroyUidService, DestroyUidService>();
             services.AddScoped<IUidInfoService, UidInfoService>();

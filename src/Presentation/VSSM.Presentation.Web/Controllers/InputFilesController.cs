@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Xml.Linq;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.DosePerVial;
@@ -189,6 +190,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult> Remove(int id, CancellationToken cancellationToken)
     {
@@ -196,6 +198,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult> Confirm(int id, CancellationToken cancellationToken)
     {
@@ -203,6 +206,7 @@ public class InputFilesController(IOrderInfoService _orderInfoService, IItemServ
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult> DownloadErrorFile(int id, CancellationToken cancellationToken)
     {

@@ -1,0 +1,54 @@
+﻿@model VSSM.Presentation.Web.Models.Base.Reports.ReportResult
+
+@{
+    Layout = "~/Views/Shared/_ReportLayout.cshtml";
+}
+
+<h5 style="text-align: center;">@Model.Title</h5>
+
+@if (Model.AllowExcel)
+{
+    <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+        <button type="button" class="btn btn-success" onclick="submitExcel()">
+            <i class="fas fa-file-excel"></i> خروجی اکسل
+        </button>
+    </div>
+}
+
+<div>
+    @foreach (var info in Model.AdditionalInfo)
+    {
+        <div><strong>@info.Key:</strong> @info.Value</div>
+    }
+</div>
+
+<div style="margin-top: 1rem;">
+    @if (Model.IsGrouped)
+    {
+        @await Html.PartialAsync("_GroupedDynamicGrid", Model.GridData)
+    }
+    else
+    {
+        @await Html.PartialAsync("_DynamicGrid", Model.GridData)
+    }
+</div>
+
+<script>
+    function submitExcel() {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = '@Model.ExcelAction';
+
+        var params = new URLSearchParams(window.location.search);
+        for (const [key, value] of params) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+        }
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+</script>

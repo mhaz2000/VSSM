@@ -1,0 +1,222 @@
+﻿.ss-wrapper,
+.ms-wrapper {
+    width: 100%;
+    position: relative;
+}
+
+
+.ss-control,
+.ms-control {
+    position: relative;
+    width: 100%;
+}
+
+
+.ss-display,
+.ms-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+    .ss-display:hover,
+    .ms-display:hover {
+        border-color: #94a3b8;
+    }
+
+.ss-control.open .ss-display,
+.ms-control.open .ms-display {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
+}
+
+
+.ss-text,
+.ms-tags {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    color: #1f2937;
+}
+
+
+.ms-placeholder {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+
+.ss-caret,
+.ms-caret {
+    flex-shrink: 0;
+    margin-right: 8px;
+    color: #6b7280;
+    font-size: 12px;
+    transition: transform .2s;
+}
+
+.ss-control.open .ss-caret,
+.ms-control.open .ms-caret {
+    transform: rotate(180deg);
+}
+
+
+.ss-dropdown,
+.ms-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
+    max-height: 260px;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.ss-control.open .ss-dropdown,
+.ms-control.open .ms-dropdown {
+    display: flex;
+}
+
+
+.ss-search,
+.ms-search {
+    width: calc(100% - 16px);
+    margin: 8px;
+    padding: 0 10px;
+    height: 34px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    outline: none;
+    font-size: 13px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+    .ss-search:focus,
+    .ms-search:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, .1);
+    }
+
+
+.ss-options,
+.ms-options {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+
+.ss-option,
+.ms-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #1f2937;
+    cursor: pointer;
+    transition: background .1s;
+}
+
+    .ss-option:hover,
+    .ms-option:hover {
+        background: #f3f4f6;
+    }
+
+    .ms-option.selected {
+        background: #eff6ff;
+    }
+
+
+    .ms-option input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #3b82f6;
+        cursor: pointer;
+        margin: 0;
+        flex-shrink: 0;
+    }
+
+
+.ss-option-separator,
+.ms-option-separator {
+    margin: 0 12px;
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+.ms-select-all {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+    .ms-select-all input[type="checkbox"] {
+        accent-color: #3b82f6;
+    }
+
+
+.ms-tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.ms-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e5e7eb;
+    color: #374151;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+    .ms-tag .ms-remove-tag {
+        cursor: pointer;
+        font-size: 10px;
+        color: #6b7280;
+    }
+
+        .ms-tag .ms-remove-tag:hover {
+            color: #dc2626;
+        }
+
+/* ── غیرفعال ── */
+.ss-wrapper.disabled .ss-display,
+.ms-wrapper.disabled .ms-display {
+    background: #f8fafc;
+    color: #9ca3af;
+    cursor: not-allowed;
+    opacity: .8;
+}
+
+.ss-wrapper.disabled .ss-caret,
+.ms-wrapper.disabled .ms-caret {
+    opacity: .5;
+}

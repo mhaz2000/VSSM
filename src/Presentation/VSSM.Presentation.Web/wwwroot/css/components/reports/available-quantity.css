@@ -1,0 +1,171 @@
+﻿
+.report-wrap {
+    margin: 1.5rem;
+    direction: rtl;
+}
+
+.report-page-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+}
+
+/* ── گرید ۵-۵-۳ ── */
+.fg-5-5-3 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+    /* ردیف سوم (۳ ستونه) */
+    .fg-5-5-3 .row-3 {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+
+    .fg-5-5-3 .row-checkbox {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        width: fit-content;
+        min-height: 42px;
+        padding: 0 14px;
+        margin-top: 0.25rem;
+        gap: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-sizing: border-box;
+        transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+        .fg-5-5-3 .row-checkbox:hover {
+            background: #f0fdf4;
+            border-color: #86efac;
+            box-shadow: 0 2px 6px rgba(22, 163, 74, .08);
+        }
+
+        .fg-5-5-3 .row-checkbox label {
+            display: flex;
+            align-items: center;
+            margin: 0;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.5;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .fg-5-5-3 .row-checkbox input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            position: relative;
+            width: 19px;
+            height: 19px;
+            flex: 0 0 19px;
+            margin: 0;
+            border: 2px solid #94a3b8;
+            border-radius: 5px;
+            background: #fff;
+            cursor: pointer;
+            transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+        }
+
+            .fg-5-5-3 .row-checkbox input[type="checkbox"]:hover {
+                border-color: #16a34a;
+                box-shadow: 0 0 0 3px rgba(22, 163, 74, .10);
+            }
+
+            .fg-5-5-3 .row-checkbox input[type="checkbox"]:focus-visible {
+                outline: none;
+                border-color: #16a34a;
+                box-shadow: 0 0 0 3px rgba(22, 163, 74, .15);
+            }
+
+            .fg-5-5-3 .row-checkbox input[type="checkbox"]:checked {
+                background: #16a34a;
+                border-color: #16a34a;
+            }
+
+                .fg-5-5-3 .row-checkbox input[type="checkbox"]:checked::after {
+                    content: "";
+                    position: absolute;
+                    top: 2px;
+                    left: 5px;
+                    width: 5px;
+                    height: 9px;
+                    border: solid #fff;
+                    border-width: 0 2px 2px 0;
+                    transform: rotate(45deg);
+                }
+
+
+
+        .fg-5-5-3 .row-checkbox:has( input[type="checkbox"]:checked ) {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+
+
+/* موبایل */
+
+@media (max-width: 576px) {
+
+    .fg-5-5-3 .row-checkbox {
+        width: 100%;
+        padding: 0 12px;
+    }
+}
+
+/* ── فوتر ── */
+.form-footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 20px;
+    margin-top: 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid #e5e7eb;
+    border-radius: 0 0 10px 10px;
+}
+
+/* ── ریسپانسیو ── */
+@media (max-width: 992px) {
+    .fg-5-5-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+        .fg-5-5-3 .row-3 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+}
+
+@media (max-width: 576px) {
+    .report-wrap {
+        margin: 0.75rem;
+    }
+
+    .fg-5-5-3 {
+        grid-template-columns: 1fr;
+    }
+
+        .fg-5-5-3 .row-3 {
+            grid-template-columns: 1fr;
+        }
+
+    .form-footer {
+        justify-content: center;
+    }
+
+        .form-footer .btn-confirm,
+        .form-footer .btn-back {
+            flex: 1 1 auto;
+        }
+}

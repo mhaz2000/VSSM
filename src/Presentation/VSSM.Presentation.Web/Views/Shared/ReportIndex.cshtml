@@ -1,0 +1,112 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@using VSSM.Presentation.Web.Models.Base.Reports
+@model VSSM.Presentation.Web.Models.Base.Reports.ReportConfig
+
+@{
+    var filters = Model?.Filters ?? new List<FilterField>();
+    var actionButtons = Model?.ActionButtons ?? new List<ActionButton>();
+}
+
+<div class="container-fluid">
+    <div class="card mt-3">
+        <div class="card-block">
+            <div class="grid-wrapper">
+                <div class="grid-header">
+                    <strong style="font-size: 1.2rem">@(Model?.Title ?? "گزارش")</strong>
+                </div>
+
+                <form method="post" action="@Url.Action(Model?.Action ?? "Generate", Model?.Controller ?? "Home")" target="_blank" class="card p-3 mb-3">
+                    <div class="row g-3">
+                        @foreach (var filter in filters)
+                        {
+                            <div class="col-md-4 input-sec">
+                                @switch (filter.Type)
+                                {
+                                    case FilterType.Select:
+                                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
+                                        {
+                                            Id = filter.Id,
+                                                        Name = filter.Name,
+                                                        Label = filter.Label,
+                                                        IsRequired = filter.Required,
+                                                        Options = filter.Options,
+                                                        SelectedValue = filter.DefaultValue,
+                                                        HasDefaultOption = true,
+                                                        DefaultText = "انتخاب کنید"
+                                                        })
+                                                        break;
+
+                                    case FilterType.MultiSelect:
+                                        @await Html.PartialAsync("Components/SearchableMultiSelect/_SearchableMultiSelect", new SearchableMultiSelectModel
+                                        {
+                                            Id = filter.Id,
+                                                        Name = filter.Name,
+                                                        Label = filter.Label,
+                                                        Options = filter.Options
+                                                        })
+                                                        break;
+
+                                    case FilterType.Date:
+                                        <label class="form-label">@filter.Label</label>
+                                        <input id="@filter.Id" class="form-control bg-warning-subtle" placeholder="@filter.Placeholder" autocomplete="off" />
+                                        <input type="hidden" id="@(filter.Id)En" name="@filter.Name" />
+                                        break;
+
+                                    case FilterType.Text:
+                                        <label class="form-label">@filter.Label</label>
+                                        <input id="@filter.Id" name="@filter.Name" class="form-control" placeholder="@filter.Placeholder" />
+                                        break;
+
+                                    case FilterType.Checkbox:
+                                        <div style="height: 8rem; display: flex; align-items: center; gap: 1.5rem; padding: 1rem;">
+                                            <input type="checkbox" class="big-checkbox" name="@filter.Name" value="true" @(filter.DefaultValue == "true" ? "checked" : "") />
+                                            <label>@filter.Label</label>
+                                            <input type="hidden" name="@filter.Name" value="false" />
+                                        </div>
+                                        break;
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="text-start mt-3">
+                        @foreach (var btn in actionButtons)
+                        {
+                            <button type="submit" class="btn @btn.CssClass" name="reportType" value="@btn.ReportType">
+                                <i class="@btn.Icon"></i> @btn.Text
+                            </button>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (filters.Any(f => f.Type == FilterType.Date))
+    {
+        <script src="~/js/persian-date.js"></script>
+        <script src="~/js/persian-datepicker.js"></script>
+    }
+    <script>
+        $(document).ready(function() {
+            @foreach (var filter in filters.Where(f => f.Type == FilterType.Date))
+            {
+                    <text>
+                    $("#@filter.Id").pDatepicker({
+                        format: 'YYYY/MM/DD',
+                        autoClose: true,
+                        onSelect: function(unix) {
+                            var date = new Date(unix);
+                            var year = date.getFullYear();
+                            var month = ("0" + (date.getMonth() + 1)).slice(-2);
+                            var day = ("0" + date.getDate()).slice(-2);
+                            $("#@(filter.Id)En").val(year + "/" + month + "/" + day);
+                        }
+                    });
+                    </text>
+            }
+        });
+    </script>
+}

@@ -172,9 +172,45 @@
         var serverType = "@(serverType ?? "info")";
 
         $(function () {
-        if (serverMsg) {
-        showToast(serverMsg, serverType);
-        }
+            if (serverMsg) {
+                showToast(serverMsg, serverType);
+            }
+
+            function trimOnBlur(selector) {
+                $(selector).on('blur', function () {
+                    var val = $(this).val();
+                    if (val) {
+                        $(this).val(val.trim());
+                    }
+                });
+            }
+
+            trimOnBlur('#UserName');
+            trimOnBlur('#FirstName');
+            trimOnBlur('#LastName');
+            trimOnBlur('#Email');
+            trimOnBlur('#Phone1');
+            trimOnBlur('#Phone2');
+            trimOnBlur('#Idnumber');
+            trimOnBlur('#Course');
+
+            $('form').on('submit', function () {
+                $(this).find('input[type="text"], input[type="email"], input[type="tel"]').each(function () {
+                    var val = $(this).val();
+                    if (val) {
+                        $(this).val(val.trim());
+                    }
+                });
+            });
+
+            $('#UserName, #FirstName, #LastName').on('keypress', function (e) {
+                if (e.key === ' ') {
+                    var caretPos = this.selectionStart;
+                    if (caretPos === 0 || $(this).val().length === 0) {
+                        e.preventDefault();
+                    }
+                }
+            });
         });
     </script>
 }

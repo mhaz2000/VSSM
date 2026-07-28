@@ -139,18 +139,18 @@ namespace VSSM.Presentation.Web.Controllers
             var model = new UserViewModel
             {
                 UserId = dto.UserId,
-                UserName = dto.UserName,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Email = dto.Email,
-                Phone1 = dto.Phone1,
-                Phone2 = dto.Phone2,
+                UserName = dto.UserName.Trim(),
+                FirstName = dto.FirstName.Trim(),
+                LastName = dto.LastName.Trim(),
+                Email = dto.Email?.Trim(),
+                Phone1 = dto.Phone1?.Trim(),
+                Phone2 = dto.Phone2?.Trim(),
                 RecipientId = dto.RecipientId,
-                Idnumber = dto.Idnumber,
+                Idnumber = dto.Idnumber?.Trim(),
                 CodeEdu = dto.CodeEdu,
                 CodeJob = dto.CodeJob,
                 IsAdmin = dto.IsAdmin,
-                Course = dto.Course,
+                Course = dto.Course?.Trim(),
                 RoleId = dto.RoleId
             };
 

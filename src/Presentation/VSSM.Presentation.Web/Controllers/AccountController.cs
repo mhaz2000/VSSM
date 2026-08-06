@@ -95,11 +95,17 @@ namespace VSSM.Presentation.Web.Controllers
                 ? await _recipientService.GetById(user.RecipientId.Value, CancellationToken.None)
                 : null;
 
+            var role = user.IsAdmin ? "Admin" : "User";
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FullName ?? string.Empty),
                 new Claim("UserId", user.UserId.ToString()),
-                new Claim("UserRole", user.IsAdmin ? "Admin" : "User"),
+            
+                new Claim("UserRole", role),
+            
+                new Claim(ClaimTypes.Role, role),
+            
                 new Claim("RecipientId", user.RecipientId.GetValueOrDefault().ToString()),
                 new Claim("RoleId", user.RoleId.GetValueOrDefault().ToString()),
                 new Claim("Level", recipient?.ChainLevel.GetValueOrDefault().ToString() ?? "0"),

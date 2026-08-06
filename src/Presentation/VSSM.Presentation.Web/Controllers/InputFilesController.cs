@@ -14,7 +14,10 @@ using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class InputFilesController(IOrderInfoService _orderInfoService, IItemService _itemService, IBaseInfoService _dosePerVialService) : BaseController
+public class InputFilesController(
+    IOrderInfoService _orderInfoService,
+    IItemService _itemService,
+    IBaseInfoService _dosePerVialService) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> Index(CancellationToken cancellationToken, string? search, int pageNumber = 1,

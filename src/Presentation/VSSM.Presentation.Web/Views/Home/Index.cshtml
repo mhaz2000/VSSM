@@ -20,7 +20,10 @@
 
         <div class="db-col-sm">
 
-            <div class="db-card db-card-sm">
+            <a asp-controller="Dispatches"
+               asp-action="ToBeArrivedIndex"
+               class="db-card db-card-sm"
+               style="text-decoration: none; color: inherit; display: block;">
                 <div class="db-sm-row">
                     <div class="db-sm-icon">
                         <i class="fa fa-archive"></i>
@@ -30,7 +33,7 @@
                         <div class="db-val">@Model.ArrivedShipments</div>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <div class="db-card db-card-sm">
                 <div class="db-draft-hd">
@@ -38,14 +41,20 @@
                     <span class="db-lbl" style="margin:0">پیش نویس</span>
                 </div>
                 <div class="db-draft-stats">
-                    <div class="db-draft-stat">
+                    <a asp-controller="Dispatches"
+                       asp-action="Index"   
+                       class="db-draft-stat"
+                       style="text-decoration: none; color: inherit; display: block;">
                         <div class="db-val">@Model.DraftOutgoing</div>
                         <div class="db-sub">ارسالی</div>
-                    </div>
-                    <div class="db-draft-stat">
+                    </a>
+                    <a asp-controller="Arrival"
+                       asp-action="Index"
+                       class="db-draft-stat"
+                       style="text-decoration: none; color: inherit; display: block;">
                         <div class="db-val">@Model.DraftIncoming</div>
                         <div class="db-sub">ورودی</div>
-                    </div>
+                    </a>
                 </div>
             </div>
 

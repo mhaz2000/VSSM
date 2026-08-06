@@ -17,25 +17,26 @@ public class DashboardService(
 
         try
         {
-            viewModel.ArrivedShipments = await context.TblArrivals
+            viewModel.ArrivedShipments = await context.TblDispatches
                 .AsNoTracking()
-                .Where(a => a.ConfirmationTime != null)
+                .Where(d => d.ReceiverId == recipientId &&
+                            d.ReceiverStatus == 0 &&
+                            d.IsConfirmed.HasValue &&
+                            d.IsConfirmed.Value)
                 .CountAsync();
 
-            var draftStatus = RequestStatusEnum.Draft;
-
-            viewModel.DraftOutgoing = await context.TblRequests
+            viewModel.DraftOutgoing = await context.TblDispatches
                 .AsNoTracking()
-                .Where(r =>
-                    r.Status == draftStatus &&
-                    r.SenderId == recipientId)
+                .Where(d => 
+                d.SenderId == recipientId &&
+                d.IsDrafted == true)
                 .CountAsync();
 
-            viewModel.DraftIncoming = await context.TblRequests
+            viewModel.DraftIncoming = await context.TblArrivals
                 .AsNoTracking()
-                .Where(r =>
-                    r.Status == draftStatus &&
-                    r.ReceiverId == recipientId)
+                .Where(a => a.ReceiverId == recipientId &&
+                            a.IsDrafted == true &&
+                            a.IsCancelled != true)
                 .CountAsync();
 
             viewModel.BelowMinItems = await context.TblItemDetailStores

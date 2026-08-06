@@ -5,154 +5,162 @@
     ViewData["Title"] = "فایل های ورودی";
 }
 
-@if (TempData["ToastMessage"] != null)
-{
-    <script>
-        $(document).ready(function() {
-            var message = '@Html.Raw(TempData["ToastMessage"])';
-            var type = '@TempData["ToastType"]';
-            toastService.show(message, type);
-        });
-    </script>
+@section Styles {
+    <link rel="stylesheet" href="~/css/components/shared/a-card.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/shared/btn.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/shared/f-control.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/shared/toast.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/shared/modal.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/shared/progress-bar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/shared/dynamic-grid.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/shared/submit-btn.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components/InputFiles/input-files.css" asp-append-version="true" />
 }
 
 @{
     var items = ViewBag.Items as List<ItemListDto>;
 }
 
-<div class="container-fluid">
+<div class="report-wrap">
+    <div class="report-page-title">
+        <i class="fa fa-file-text-o" style="color:#3b82f6;"></i>
+        <span>@ViewData["Title"]</span>
+    </div>
 
-    <div class="card mt-3">
-        <div class="card-block">
+    <div class="a-card">
+        <div class="a-card-header">
+            <i class="fa fa-upload" style="color:#16a34a;"></i>
+            <h6>آپلود فایل XML</h6>
+        </div>
+        <div class="a-card-body">
+            <form asp-controller="InputFiles"
+                  asp-action="Upload"
+                  method="post"
+                  enctype="multipart/form-data"
+                  id="uploadForm">
 
-            <div class="grid-wrapper">
+                <div class="fg-3">
 
-                <div class="grid-header mb-4">
-                    <strong style="font-size:1.2rem">@ViewData["Title"]</strong>
-                </div>
+                    <div class="f-group">
+                        <label class="f-label" for="xmlFile">
+                            انتخاب فایل XML
+                            <span class="req-tag">اجباری</span>
+                        </label>
+                        <div class="file-upload-wrapper">
+                            <div class="file-upload-control">
+                                <div class="file-btn-wrapper">
+                                    <button type="button"
+                                            class="file-upload-btn"
+                                            title="انتخاب فایل">
+                                        <i class="fa fa-upload"></i>
+                                        <span>انتخاب فایل</span>
+                                    </button>
+                                    <input type="file"
+                                           id="xmlFile"
+                                           name="xmlFile"
+                                           class="file-input-hidden"
+                                           accept=".xml,text/xml" />
+                                </div>
 
-                <form asp-controller="InputFiles"
-                      asp-action="Upload"
-                      method="post"
-                      enctype="multipart/form-data">
+                                <span class="file-name-display" id="fileNameDisplay">
+                                    هیچ فایلی انتخاب نشده است
+                                </span>
 
-                    <div class="row g-3" style="display: flex; align-items: center; margin-bottom: 2rem;">
-
-                        <div class="col-md-4" style="position: relative">
-
-                            <label class="mb-2" style="font-size:18px">انتخاب فایل XML<span class="input-req-tag" style="margin-top: 3px;">(اجباری)</span></label>
-
-                            <div class="input-group">
-
-                                <input type="file"
-                                       id="xmlFile"
-                                       name="xmlFile"
-                                       class="form-control"
-                                       accept=".xml,text/xml"
-                                       onchange="handleFileSelect(this)" />
-
+                                <button type="button"
+                                        id="fileRemoveBtn"
+                                        class="file-remove-btn d-none"
+                                        title="حذف فایل">
+                                    <i class="fa fa-times"></i>
+                                </button>
                             </div>
-
-                            <small id="fileName" class="text-muted" style="position: absolute">
-                                هیچ فایلی انتخاب نشده است
-                            </small>
-
                         </div>
-
-                        <div class="col-md-4 input-sec">
-
-                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                            new SearchableSelectModel
-                            {
-                                Id = "ItemId",
-                                IsRequired = true,
-                                Name = "ItemId",
-                                Label = "کالا",
-                                SelectedValue = string.Empty,
-                                Options = items
-                            .Select(x => new SelectOption
-                            {
-                                Value = x.ItemId.ToString(),
-                                Text = x.FullName
-                            }).ToList()
-                            })
-                        </div>
-
-                        <div class="col-md-4 input-sec">
-
-                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                                        new SearchableSelectModel
-                                                        {
-                                                            Id = "DosePerVialId",
-                                                            IsRequired = true,
-                                                            Name = "DosePerVialId",
-                                                            Label = "دوز بر ویال",
-                                                            SelectedValue = string.Empty,
-                                                            Options = []
-                                                        })
-                        </div>
-
                     </div>
 
+                    <div class="f-group">
+                        <label class="f-label" for="ItemId">
+                            کالا
+                            <span class="req-tag">اجباری</span>
+                        </label>
+                        <select id="ItemId" name="ItemId" class="f-control">
+                            <option value="">-- انتخاب کنید --</option>
+                            @foreach (var item in items ?? new List<ItemListDto>())
+                            {
+                                <option value="@item.ItemId">@item.FullName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="DosePerVialId">
+                            دوز بر ویال
+                            <span class="req-tag">اجباری</span>
+                        </label>
+                        <select id="DosePerVialId" name="DosePerVialId" class="f-control" disabled>
+                            <option value="">-- ابتدا کالا را انتخاب کنید --</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div id="progressContainer" style="margin-top: 1rem;"></div>
+
+                <div class="form-footer">
+                    <a asp-action="Index" class="btn-back">
+                        <i class="fa fa-arrow-right"></i>
+                        <span>بازگشت</span>
+                    </a>
                     <button id="uploadBtn"
                             type="submit"
-                            class="btn btn-primary mt-3"
+                            class="btn-confirm js-submit-btn"
                             disabled>
-                        آپلود فایل
+                        <span class="js-btn-content">
+                            <i class="fa fa-upload"></i> آپلود فایل
+                        </span>
+                        <span class="js-btn-spinner" hidden>
+                            <span class="submit-spinner"></span>
+                        </span>
                     </button>
-
-
-
-                </form>
-
-                <div style="margin-top: 1rem;">
-                    @await Html.PartialAsync("_DynamicGrid", Model)
                 </div>
 
-            </div>
+            </form>
         </div>
     </div>
 
-    <div class="modal fade" id="confirmModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">تایید نهایی</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning" style="font-size:14px; line-height:1.6;">
-                        <i class="fa fa-exclamation-triangle" style="margin-left:6px;"></i>
-                        UIDهای این فایل استعلام TTac ندارند. آیا از تایید آنها اطمینان دارید؟
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">انصراف</button>
-                    <button type="button" class="btn btn-success" id="confirmModalSubmit">تایید</button>
-                </div>
-            </div>
+    <hr class="section-divider" />
+
+    <div class="a-card">
+        <div class="a-card-header">
+            <i class="fa fa-list" style="color:#3b82f6;"></i>
+            <h6>لیست فایل‌های آپلود شده</h6>
+        </div>
+        <div class="a-card-body">
+            @await Html.PartialAsync("_DynamicGrid", Model)
         </div>
     </div>
-
 </div>
 
+<div id="toastContainer"></div>
+
 @section Scripts {
-    <script src="~/js/components/InputFiles/input-files.js"></script>
-    <script>
-        $(function () {
-            var pendingForm = null;
+    <script src="~/js/components/shared/toast.js" asp-append-version="true"></script>
+    <script src="~/js/components/shared/modal.js" asp-append-version="true"></script>
+    <script src="~/js/components/shared/progress-bar.js" asp-append-version="true"></script>
+    <script src="~/js/components/shared/dynamic-grid.js" asp-append-version="true"></script>
+    <script src="~/js/components/shared/submit-btn.js" asp-append-version="true"></script>
+    <script src="~/js/components/InputFiles/input-files.js" asp-append-version="true"></script>
 
-            $(document).on("click", ".confirm-read", function (e) {
-                e.preventDefault();
-                pendingForm = $(this).closest("form");
-                $("#confirmModal").modal("show");
-            });
-
-            $("#confirmModalSubmit").on("click", function () {
-                if (pendingForm) {
-                    pendingForm.submit();
+    @if (TempData["ToastMessage"] != null)
+    {
+        <script>
+            $(document).ready(function() {
+                var message = '@Html.Raw(TempData["ToastMessage"])';
+                var type = '@TempData["ToastType"]';
+                if (typeof toastService !== 'undefined') {
+                    toastService.show(message, type);
+                } else {
+                    showToast(message, type);
                 }
-                $("#confirmModal").modal("hide");
             });
-        });
-    </script>
+        </script>
+    }
 }

@@ -1,0 +1,217 @@
+﻿/* ═══════════════════════════════════════════
+   input-files.css  —  استایل‌های اختصاصی صفحه فایل‌های ورودی
+   ═══════════════════════════════════════════ */
+
+/* ── صفحه ── */
+.report-wrap {
+    margin: 1.5rem;
+    direction: rtl;
+}
+
+.report-page-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+}
+
+/* ── گرید ۳ ستونه ── */
+.fg-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px 20px;
+}
+
+/* ── کامپوننت آپلود فایل ── */
+.file-upload-wrapper {
+    width: 100%;
+    position: relative;
+}
+
+.file-upload-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 38px;
+    padding: 0 4px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+    .file-upload-control:focus-within {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+/* ── دکمه انتخاب فایل ── */
+.file-btn-wrapper {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.file-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 14px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 6px;
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+    .file-upload-btn:hover {
+        background: #e5e7eb;
+    }
+
+    .file-upload-btn i {
+        font-size: 14px;
+        color: #6b7280;
+        pointer-events: none;
+    }
+
+/* ── input مخفی ── */
+.file-input-hidden {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── نمایش نام فایل ── */
+.file-name-display {
+    flex: 1;
+    font-size: 13px;
+    color: #9ca3af;
+    padding: 0 4px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: right;
+    pointer-events: none;
+}
+
+    .file-name-display.has-file {
+        color: #1f2937;
+        font-weight: 500;
+    }
+
+/* ── دکمه حذف ── */
+.file-remove-btn {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #9ca3af;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    z-index: 5;
+    position: relative;
+}
+
+    .file-remove-btn:not(.d-none) {
+        display: flex;
+    }
+
+    .file-remove-btn:hover {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+/* ── جداکننده ── */
+.section-divider {
+    margin: 24px 0;
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* ── دکمه آپلود (فقط هم‌ترازی) ── */
+#uploadBtn {
+    min-width: 180px;
+    justify-content: center;
+    gap: 8px;
+}
+
+    #uploadBtn .js-btn-content,
+    #uploadBtn .js-btn-spinner {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        #uploadBtn .js-btn-spinner[hidden] {
+            display: none !important;
+        }
+
+        #uploadBtn .js-btn-spinner:not([hidden]) {
+            display: inline-flex !important;
+        }
+
+    /* تنظیم فاصله اسپینر برای RTL */
+    #uploadBtn .submit-spinner {
+        margin-left: 0;
+        margin-right: 6px;
+    }
+
+/* ── ریسپانسیو ── */
+@media (max-width: 992px) {
+    .fg-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .report-wrap {
+        margin: 0.75rem;
+    }
+
+    .fg-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .file-upload-control {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 6px;
+    }
+
+    .file-upload-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .file-name-display {
+        width: 100%;
+        text-align: center;
+    }
+
+    #uploadBtn {
+        min-width: 120px;
+        width: 100%;
+        justify-content: center;
+    }
+}

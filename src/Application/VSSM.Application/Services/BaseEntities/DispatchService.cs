@@ -989,10 +989,10 @@ public class DispatchService(
             return (false, "UID مورد نظر مصرف شده است.", null);
         }
 
-        if (uidInfoRaw.FKDispatchUid.HasValue)
-        {
-            return (false, "این UID قبلاً در یک ارسال دیگر استفاده شده است.", null);
-        }
+        //if (uidInfoRaw.FKDispatchUid.HasValue)
+        //{
+        //    return (false, "این UID قبلاً در یک ارسال دیگر استفاده شده است.", null);
+        //}
 
         if (uidInfoRaw.FkReceiveDispatchId.HasValue)
         {

@@ -23,11 +23,133 @@ public class InputFilesController(
     public async Task<ActionResult> Index(CancellationToken cancellationToken, string? search, int pageNumber = 1,
         int pageSize = 10, string sort = "Id", string direction = "desc")
     {
-
         ViewBag.Items = await _itemService.GetActiveVaccines(cancellationToken);
         ViewBag.DosePerVials = await _dosePerVialService.GetByParentIdAsync(84, cancellationToken);
 
         var (data, count) = await _orderInfoService.GetPagedAsync(search, pageNumber, pageSize, sort, direction, cancellationToken);
+
+        bool isAdmin = User.IsInRole("Admin") || (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1);
+
+        var actions = new List<GridAction>();
+        if (isAdmin)
+        {
+            actions = new List<GridAction>
+        {
+            new()
+            {
+                DynamicTitle = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.READ.ToString())
+                        return "حذف";
+                    return string.Empty;
+                },
+                Controller = "InputFiles",
+                Action = "Remove",
+                Method = "Post",
+                RouteIdProperty = nameof(OrderInfoDto.Id),
+                LinkClass = "",
+                DynamicIconStyle = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.READ.ToString())
+                        return "color: red;";
+                    return string.Empty;
+                },
+                DynamicIconClass = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.READ.ToString())
+                        return "fa fa-trash";
+                    return string.Empty;
+                },
+            },
+            new()
+            {
+                DynamicTitle = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status == OrderInfoStatus.APPLIED.ToString())
+                        return "فایل خطا";
+                    return string.Empty;
+                },
+                Controller = "InputFiles",
+                Action = "DownloadErrorFile",
+                RouteIdProperty = nameof(OrderInfoDto.Id),
+                LinkClass = "",
+                DynamicIconStyle = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status == OrderInfoStatus.APPLIED.ToString())
+                        return "color: orange;";
+                    return string.Empty;
+                },
+                DynamicIconClass = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status == OrderInfoStatus.APPLIED.ToString())
+                        return "fa fa-file";
+                    return string.Empty;
+                },
+            },
+            new()
+            {
+                DynamicTitle = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status == OrderInfoStatus.IS_VALID.ToString() ||
+                        (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
+                        return "تایید نهایی";
+                    return string.Empty;
+                },
+                Controller = "InputFiles",
+                Action = "Confirm",
+                RouteIdProperty = nameof(OrderInfoDto.Id),
+                LinkClass = "",
+                Method = "Post",
+                DynamicLinkClass = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.READ.ToString())
+                        return "confirm-read";
+                    return "";
+                },
+                DynamicIconStyle = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status == OrderInfoStatus.IS_VALID.ToString() ||
+                        (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
+                        return "color: green;";
+                    return string.Empty;
+                },
+                DynamicIconClass = item =>
+                {
+                    var row = (OrderInfoDto)item;
+                    if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status == OrderInfoStatus.IS_VALID.ToString() ||
+                        (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
+                        return "fa fa-check";
+                    return string.Empty;
+                }
+            }
+        };
+        }
+
+        // ساخت لیست ستون‌ها – در صورت غیرمدیر، ستون عملیات را اضافه نمی‌کنیم
+        var columns = new List<GridColumn>
+    {
+        new() { Header = "نام فایل", PropertyName = nameof(OrderInfoDto.FileName), Sortable = false },
+        new() { Header = "تاریخ ایجاد", PropertyName = nameof(OrderInfoDto.CreationTime), Sortable = false },
+        new() { Header = "ایجاد کننده", PropertyName = nameof(OrderInfoDto.CreatedBy), Sortable = false },
+        new() { Header = "سری ساخت", PropertyName = nameof(OrderInfoDto.BatchNumber), Sortable = false },
+        new() { Header = "تعداد", PropertyName = nameof(OrderInfoDto.Quantity), Sortable = false },
+        new() { Header = "نام کالا", PropertyName = nameof(OrderInfoDto.ItemName), Sortable = false },
+        new() { Header = "دوز بر ویال", PropertyName = nameof(OrderInfoDto.DoseName), Sortable = false },
+        new() { Header = "وضعیت", PropertyName = nameof(OrderInfoDto.Status), Sortable = false },
+    };
+        if (isAdmin)
+        {
+            columns.Add(new() { Header = "عملیات", IsActionColumn = true });
+        }
 
         var model = new GridViewModel
         {
@@ -41,139 +163,9 @@ public class InputFilesController(
                 PageSize = pageSize,
                 TotalCount = count
             },
-            Columns = new List<GridColumn>
-                {
-                    new() { Header = "نام فایل", PropertyName = nameof(OrderInfoDto.FileName),  Sortable = false },
-                    new() { Header = "تاریخ ایجاد", PropertyName = nameof(OrderInfoDto.CreationTime), Sortable = false },
-                    new() { Header = "ایجاد کننده", PropertyName = nameof(OrderInfoDto.CreatedBy), Sortable = false },
-                    new() { Header = "سری ساخت", PropertyName = nameof(OrderInfoDto.BatchNumber), Sortable = false },
-                    new() { Header = "تعداد", PropertyName = nameof(OrderInfoDto.Quantity), Sortable = false },
-                    new() { Header = "نام کالا", PropertyName = nameof(OrderInfoDto.ItemName), Sortable = false },
-                    new() { Header = "دوز بر ویال", PropertyName = nameof(OrderInfoDto.DoseName), Sortable = false },
-                    new() { Header = "وضعیت", PropertyName = nameof(OrderInfoDto.Status), Sortable = false },
-                    new() { Header = "عملیات", IsActionColumn = true}
-                },
-            Actions = new List<GridAction>
-                {
-                    new()
-                    {
-                        DynamicTitle = item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.READ.ToString())
-                                return "حذف";
-
-                            return string.Empty;
-                        },
-                        Controller = "InputFiles",
-                        Action = "Remove",
-                        Method = "Post",
-                        RouteIdProperty = nameof(OrderInfoDto.Id),
-                        LinkClass = "",
-                        DynamicIconStyle= item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.READ.ToString())
-                                return "color: red;";
-
-                            return string.Empty;
-                        },
-                        DynamicIconClass = item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.READ.ToString())
-                                return "fa fa-trash";
-
-                            return string.Empty;
-                        },
-                    },
-                     new()
-                    {
-                        DynamicTitle = item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLIED.ToString())
-                                return "فایل خطا";
-
-                            return string.Empty;
-                        },
-                        Controller = "InputFiles",
-                        Action = "DownloadErrorFile",
-                        RouteIdProperty = nameof(OrderInfoDto.Id),
-                        LinkClass = "",
-                        DynamicIconStyle= item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLIED.ToString())
-                                return "color: orange;";
-
-                            return string.Empty;
-                        },
-                        DynamicIconClass = item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.APPLIED.ToString())
-                                return "fa fa-file";
-
-                            return string.Empty;
-                        },
-                    },
-                     new()
-                    {
-                        DynamicTitle = item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() ||
-                                (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
-                                return "تایید نهایی";
-
-                            return string.Empty;
-                        },
-                        Controller = "InputFiles",
-                        Action = "Confirm",
-                        RouteIdProperty = nameof(OrderInfoDto.Id),
-                        LinkClass = "",
-                        Method = "Post",
-                        DynamicLinkClass = item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.READ.ToString())
-                                return "confirm-read";
-
-                            return "";
-                        },
-                        DynamicIconStyle= item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() ||
-                                (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
-                                return "color: green;";
-
-                            return string.Empty;
-                        },
-                        DynamicIconClass = item =>
-                        {
-                            var row = (OrderInfoDto)item;
-
-                            if(row.Status == OrderInfoStatus.HAS_ERROR.ToString() || row.Status ==  OrderInfoStatus.IS_VALID.ToString() ||
-                                (CurrentUserRoleId.HasValue && CurrentUserRoleId == 1 && row.Status == OrderInfoStatus.READ.ToString()))
-                                return "fa fa-check";
-
-                            return string.Empty;
-                        }
-                    }
-                }
+            Columns = columns,
+            Actions = actions
         };
-
 
         return View(model);
     }

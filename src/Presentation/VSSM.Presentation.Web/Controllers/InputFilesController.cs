@@ -134,7 +134,6 @@ public class InputFilesController(
         };
         }
 
-        // ساخت لیست ستون‌ها – در صورت غیرمدیر، ستون عملیات را اضافه نمی‌کنیم
         var columns = new List<GridColumn>
     {
         new() { Header = "نام فایل", PropertyName = nameof(OrderInfoDto.FileName), Sortable = false },

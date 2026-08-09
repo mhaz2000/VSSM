@@ -10,7 +10,7 @@ namespace VSSM.Application.Services.UidHistory;
 
 public class UidHistoryService(
     VSSMDbContext db,
-    IBaseInfoService baseInfoService) :IUidHistoryService
+    IBaseInfoService baseInfoService) : IUidHistoryService
 {
     public async Task<(bool Success, string Message, UidHistoryResultDto Data)>
         GetHistoryByUidAsync(string uid, int recipientId, CancellationToken token)
@@ -118,11 +118,11 @@ public class UidHistoryService(
             EventTitle = "تاریخ بارگذاری فایل :",
             EventDate = order.CreationTime.ToShamsi(),
             Description = madeDesc,
-            SortOrder = 1
+            SortOrder = 10
         });
 
-       string storeName = "-";
-        
+        string storeName = "-";
+
         if (arrival != null)
         {
             string reportNumber = arrival.ReportNumber ?? "-";
@@ -147,7 +147,7 @@ public class UidHistoryService(
                 EventTitle = "تاریخ ورود به انبار مرکز تهران :",
                 EventDate = arrival.Date?.ToShamsi() ?? "-",
                 Description = arrivalDesc,
-                SortOrder = 2
+                SortOrder = 20
             });
         }
 
@@ -171,7 +171,24 @@ public class UidHistoryService(
                 EventTitle = "تاریخ ارسال :",
                 EventDate = dispatch.Date?.ToShamsi() ?? "-",
                 Description = dispatchDesc,
-                SortOrder = 3
+                SortOrder = 30
+            });
+        }
+
+        // ─── ردیف جدید: وضعیت دریافت نشده ───
+        if (dispatch != null && receiveDispatch == null)
+        {
+            string receiverName = dispatch.Receiver?.FullName ?? "-";
+            string notReceivedDesc =
+                $"محموله برای {receiverName} ارسال شده، اما تاکنون دریافت نشده است.";
+
+            rows.Add(new UidHistoryRowDto
+            {
+                RowNumber = 0,
+                EventTitle = "وضعیت دریافت :",
+                EventDate = dispatch.Date?.ToShamsi() ?? "-",
+                Description = notReceivedDesc,
+                SortOrder = 35
             });
         }
 
@@ -190,7 +207,7 @@ public class UidHistoryService(
                 EventTitle = "تاریخ ورود به انبار مراکز :",
                 EventDate = receiveDispatch.ReceiveDate.ToShamsi(),
                 Description = receiveDesc,
-                SortOrder = 4
+                SortOrder = 40
             });
         }
 
@@ -212,7 +229,7 @@ public class UidHistoryService(
                 EventTitle = "تاریخ مصرف :",
                 EventDate = consumer.EntryDate.ToShamsi(),
                 Description = consumerDesc,
-                SortOrder = 5
+                SortOrder = 50
             });
         }
 
@@ -237,7 +254,7 @@ public class UidHistoryService(
                 EventTitle = "تاریخ امحا :",
                 EventDate = destroy.DestroyDate,
                 Description = destroyDesc,
-                SortOrder = 6
+                SortOrder = 60
             });
         }
 

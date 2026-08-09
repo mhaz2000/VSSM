@@ -671,7 +671,7 @@ public class DispatchService(
                 {
                     if (uid.OrderInfo != null && batchToStoreMap.TryGetValue(uid.OrderInfo.BatchNumber, out var newStoreId))
                     {
-                        //uid.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
+                        uid.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
                         uid.CurrentStore = newStoreId;
                     }
 

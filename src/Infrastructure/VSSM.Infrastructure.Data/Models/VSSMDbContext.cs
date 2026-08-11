@@ -2,174 +2,46 @@
 
 namespace VSSM.Infrastructure.Data.Models;
 
-public partial class VSSMDbContext : DbContext
+public partial class VSSMDbContext(
+    DbContextOptions<VSSMDbContext> options) : DbContext(options)
 {
-    public VSSMDbContext(DbContextOptions<VSSMDbContext> options)
-        : base(options)
-    {
-    }
-
     public virtual DbSet<AppLog> AppLogs { get; set; }
-
     public virtual DbSet<Menu> Menus { get; set; }
-
     public virtual DbSet<Role> Roles { get; set; }
-
     public virtual DbSet<TblConsumerPerson> TblConsumerPeople { get; set; }
-
     public virtual DbSet<TblOrderInfo> TblOrderInfo { get; set; }
-
     public virtual DbSet<TblUidInfo> TblUidInfo { get; set; }
-
     public virtual DbSet<TblDispatchUid> TblDispatchUids { get; set; }
-
     public virtual DbSet<TblUidError> TblUidErrors { get; set; }
-
     public virtual DbSet<TblBaseInfo> TblBaseInfo { get; set; }
-
     public virtual DbSet<RoleMenu> RoleMenus { get; set; }
-
-    public virtual DbSet<Sync> Syncs { get; set; }
-
-    public virtual DbSet<SyncBasic> SyncBasics { get; set; }
-
-    public virtual DbSet<SyncNew> SyncNews { get; set; }
-
-    public virtual DbSet<TblAdjUserPermision> TblAdjUserPermisions { get; set; }
-
     public virtual DbSet<TblAdjustment> TblAdjustments { get; set; }
-
-    public virtual DbSet<TblAdjustmentArrival> TblAdjustmentArrivals { get; set; }
-
-    public virtual DbSet<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; }
-
     public virtual DbSet<TblArrival> TblArrivals { get; set; }
-
     public virtual DbSet<TblArrivalLine> TblArrivalLines { get; set; }
-
-    public virtual DbSet<TblArrivalRepConfig> TblArrivalRepConfigs { get; set; }
-
-    public virtual DbSet<TblAuthenticationMode> TblAuthenticationModes { get; set; }
-
-    public virtual DbSet<TblBundle> TblBundles { get; set; }
-
-    public virtual DbSet<TblBundleDetail> TblBundleDetails { get; set; }
-
-    public virtual DbSet<TblCountryCode> TblCountryCodes { get; set; }
-
     public virtual DbSet<TblCulture> TblCultures { get; set; }
-
     public virtual DbSet<TblDispatch> TblDispatches { get; set; }
-
     public virtual DbSet<TblDispatchLine> TblDispatchLines { get; set; }
-
-    public virtual DbSet<TblDispatchPack> TblDispatchPacks { get; set; }
-
     public virtual DbSet<TblDispatchRepConfig> TblDispatchRepConfigs { get; set; }
-
     public virtual DbSet<TblFiscalPeriod> TblFiscalPeriods { get; set; }
-
-    public virtual DbSet<TblGlobalConfiguration> TblGlobalConfigurations { get; set; }
-
-    public virtual DbSet<TblHelp> TblHelps { get; set; }
-
     public virtual DbSet<TblItem> TblItems { get; set; }
-
     public virtual DbSet<TblItemDetail> TblItemDetails { get; set; }
-
     public virtual DbSet<TblItemDetailStore> TblItemDetailStores { get; set; }
-
     public virtual DbSet<TblItemDoseAssignment> TblItemDoseAssignments { get; set; }
-
     public virtual DbSet<TblItemsClass> TblItemsClasses { get; set; }
-
-    public virtual DbSet<TblItemsCode> TblItemsCodes { get; set; }
-
     public virtual DbSet<TblLevel> TblLevels { get; set; }
-
     public virtual DbSet<TblManItemClass> TblManItemClasses { get; set; }
-
-    public virtual DbSet<TblMessage> TblMessages { get; set; }
-
     public virtual DbSet<TblMinMaxItem> TblMinMaxItems { get; set; }
-
-    public virtual DbSet<TblNews> TblNews { get; set; }
-
-    public virtual DbSet<TblOrder> TblOrders { get; set; }
-
-    public virtual DbSet<TblOrderLine> TblOrderLines { get; set; }
-
-    public virtual DbSet<TblOrderReceive> TblOrderReceives { get; set; }
-
-    public virtual DbSet<TblPack> TblPacks { get; set; }
-
-    public virtual DbSet<TblPackItemClass> TblPackItemClasses { get; set; }
-
-    public virtual DbSet<TblPackingType> TblPackingTypes { get; set; }
-
-    public virtual DbSet<TblPresentationType> TblPresentationTypes { get; set; }
-
-    public virtual DbSet<TblReasonForNotutiliz> TblReasonForNotutilizs { get; set; }
-
     public virtual DbSet<TblRecipient> TblRecipients { get; set; }
-
     public virtual DbSet<TblRecipientConfiguration> TblRecipientConfigurations { get; set; }
-
     public virtual DbSet<TblRecipientMaxItem> TblRecipientMaxItems { get; set; }
-
     public virtual DbSet<TblRequest> TblRequests { get; set; }
-
     public virtual DbSet<TblRequestLine> TblRequestLines { get; set; }
-
-    public virtual DbSet<TblRequestsNew> TblRequestsNews { get; set; }
-
     public virtual DbSet<TblSource> TblSources { get; set; }
-
-    public virtual DbSet<TblStockHistory> TblStockHistories { get; set; }
-
-    public virtual DbSet<TblStockLog> TblStockLogs { get; set; }
-
     public virtual DbSet<TblStore> TblStores { get; set; }
-
     public virtual DbSet<TblDestroyUid> TblDestroyUids { get; set; }
-
-    public virtual DbSet<TblStoreUsageWarning> TblStoreUsageWarnings { get; set; }
-
-    public virtual DbSet<TblUse> TblUses { get; set; }
-
     public virtual DbSet<TblUser> TblUsers { get; set; }
-
-    public virtual DbSet<TblUserHome> TblUserHomes { get; set; }
-
-    public virtual DbSet<TblUserLog> TblUserLogs { get; set; }
-
-    public virtual DbSet<TblVaccInfoAgeGroup> TblVaccInfoAgeGroups { get; set; }
-
-    public virtual DbSet<TblVaccInfoDoseCat> TblVaccInfoDoseCats { get; set; }
-
-    public virtual DbSet<TblVaccInfoTargetGroup> TblVaccInfoTargetGroups { get; set; }
-
-    public virtual DbSet<TblVaccItemAgeGroup> TblVaccItemAgeGroups { get; set; }
-
-    public virtual DbSet<TblVaccItemDoseCat> TblVaccItemDoseCats { get; set; }
-
-    public virtual DbSet<TblVaccItemTargetGroup> TblVaccItemTargetGroups { get; set; }
-
-    public virtual DbSet<TblVaccSubmit> TblVaccSubmits { get; set; }
-
-    public virtual DbSet<TblVaccSubmitDetail> TblVaccSubmitDetails { get; set; }
-
     public virtual DbSet<TblVoucherConfig> TblVoucherConfigs { get; set; }
-
-
-    public virtual DbSet<UserSync> UserSyncs { get; set; }
-
-    public virtual DbSet<UserSync2> UserSync2s { get; set; }
-    public DbSet<TblReceiveDispatches> TblReceiveDispatches { get; set; }
-
-
-
-
+    public virtual DbSet<TblReceiveDispatches> TblReceiveDispatches { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -357,86 +229,6 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_RoleMenu_Roles");
         });
 
-        modelBuilder.Entity<Sync>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_syncLineTable");
-
-            entity.ToTable("sync");
-
-            entity.Property(e => e.Id).HasColumnName("ID");
-            entity.Property(e => e.ClientId).HasColumnName("clientID");
-            entity.Property(e => e.Date)
-                .HasMaxLength(50)
-                .HasColumnName("date");
-            entity.Property(e => e.Edit).HasColumnName("edit");
-            entity.Property(e => e.RefId).HasColumnName("refID");
-            entity.Property(e => e.ServerId).HasColumnName("serverID");
-            entity.Property(e => e.Sync1).HasColumnName("sync");
-            entity.Property(e => e.TableName)
-                .HasMaxLength(50)
-                .HasColumnName("tableName");
-        });
-
-        modelBuilder.Entity<SyncBasic>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("syncBasic");
-
-            entity.Property(e => e.Action).HasColumnName("action");
-            entity.Property(e => e.Date)
-                .HasMaxLength(50)
-                .HasColumnName("date");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("ID");
-            entity.Property(e => e.ServerId).HasColumnName("serverID");
-            entity.Property(e => e.TableName)
-                .HasMaxLength(50)
-                .HasColumnName("tableName");
-        });
-
-        modelBuilder.Entity<SyncNew>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("syncNew");
-
-            entity.Property(e => e.Action).HasColumnName("action");
-            entity.Property(e => e.ClientId).HasColumnName("clientID");
-            entity.Property(e => e.Date)
-                .HasMaxLength(50)
-                .HasColumnName("date");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("ID");
-            entity.Property(e => e.RefId).HasColumnName("refID");
-            entity.Property(e => e.ServerId).HasColumnName("serverID");
-            entity.Property(e => e.TableName)
-                .HasMaxLength(50)
-                .HasColumnName("tableName");
-        });
-
-        modelBuilder.Entity<TblAdjUserPermision>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblAdjUserPermision");
-
-            entity.Property(e => e.Arr).HasColumnName("arr");
-            entity.Property(e => e.Arv).HasColumnName("arv");
-            entity.Property(e => e.Curdec).HasColumnName("curdec");
-            entity.Property(e => e.Curinc).HasColumnName("curinc");
-            entity.Property(e => e.Dis).HasColumnName("dis");
-            entity.Property(e => e.Frcst).HasColumnName("frcst");
-            entity.Property(e => e.Move).HasColumnName("move");
-            entity.Property(e => e.Ordr).HasColumnName("ordr");
-            entity.Property(e => e.Recp).HasColumnName("recp");
-            entity.Property(e => e.Req).HasColumnName("req");
-            entity.Property(e => e.Ship).HasColumnName("ship");
-            entity.Property(e => e.Userid).HasColumnName("userid");
-        });
-
         modelBuilder.Entity<TblAdjustment>(entity =>
         {
             entity.HasKey(e => e.AdjustmentId);
@@ -478,100 +270,6 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblAdjustments_tblAdjustments");
         });
 
-        modelBuilder.Entity<TblAdjustmentArrival>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblAdjustmentArrivals");
-
-            entity.Property(e => e.AdjustmentArrivalId).HasColumnName("AdjustmentArrivalID");
-            entity.Property(e => e.ConfirmationTime)
-                .HasColumnType("datetime")
-                .HasColumnName("ConfirmationTIme");
-            entity.Property(e => e.Date).HasColumnType("datetime");
-            entity.Property(e => e.DispatchId).HasColumnName("DispatchID");
-            entity.Property(e => e.EnteredById).HasColumnName("EnteredByID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FirstTimeArrangementItemId).HasColumnName("FirstTimeArrangementItemID");
-            entity.Property(e => e.FirstTimeArrangementStoreId).HasColumnName("FirstTimeArrangementStoreID");
-            entity.Property(e => e.FiscalPeriodId).HasColumnName("FiscalPeriodID");
-            entity.Property(e => e.ReceiverId).HasColumnName("ReceiverID");
-            entity.Property(e => e.SenderId).HasColumnName("SenderID");
-            entity.Property(e => e.SourceId).HasColumnName("SourceID");
-        });
-
-        modelBuilder.Entity<TblAdjustmentArrivalLine>(entity =>
-        {
-            entity.HasKey(e => e.AdjustmentArrivalLineId);
-
-            entity.ToTable("tblAdjustmentArrivalLines");
-
-            entity.Property(e => e.AdjustmentArrivalLineId)
-                .ValueGeneratedNever()
-                .HasColumnName("AdjustmentArrivalLineID");
-            entity.Property(e => e.AdjustreasonId).HasColumnName("AdjustreasonID");
-            entity.Property(e => e.ArrivalId).HasColumnName("ArrivalID");
-            entity.Property(e => e.CommertialNameId).HasColumnName("CommertialNameID");
-            entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.ExpiryDate).HasColumnType("datetime");
-            entity.Property(e => e.ItemDetailId).HasColumnName("ItemDetailID");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.ManufacturerId).HasColumnName("ManufacturerID");
-            entity.Property(e => e.Pisnumber).HasColumnName("PISNumber");
-            entity.Property(e => e.ProductionDate).HasColumnType("datetime");
-            entity.Property(e => e.ResponseDate).HasColumnType("datetime");
-            entity.Property(e => e.SendDate).HasColumnType("datetime");
-            entity.Property(e => e.StoreId).HasColumnName("StoreID");
-            entity.Property(e => e.UseId).HasColumnName("UseID");
-            entity.Property(e => e.VvmstageId).HasColumnName("VVMStageID");
-            entity.Property(e => e.VvmtypeId).HasColumnName("VVMTypeID");
-
-            entity.HasOne(d => d.Adjustreason).WithMany()
-                .HasForeignKey(d => d.AdjustreasonId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_adjustmentreason");
-
-            entity.HasOne(d => d.Arrival).WithMany(p => p.TblAdjustmentArrivalLines)
-                .HasForeignKey(d => d.ArrivalId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblArrivals");
-
-            entity.HasOne(d => d.CommertialName).WithMany()
-                .HasForeignKey(d => d.CommertialNameId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_commercialNames");
-
-            entity.HasOne(d => d.DosePerVial).WithMany()
-                .HasForeignKey(d => d.DosePerVialId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_dosePerVials");
-
-            entity.HasOne(d => d.ItemDetail).WithMany(p => p.TblAdjustmentArrivalLines)
-                .HasForeignKey(d => d.ItemDetailId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblItemDetails");
-
-            entity.HasOne(d => d.Item).WithMany(p => p.TblAdjustmentArrivalLines)
-                .HasForeignKey(d => d.ItemId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblItems");
-
-            entity.HasOne(d => d.Manufacturer).WithMany()
-                .HasForeignKey(d => d.ManufacturerId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_manufacturers");
-
-            entity.HasOne(d => d.Store).WithMany(p => p.TblAdjustmentArrivalLines)
-                .HasForeignKey(d => d.StoreId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblStores");
-
-            entity.HasOne(d => d.Use).WithMany(p => p.TblAdjustmentArrivalLines)
-                .HasForeignKey(d => d.UseId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblUses");
-
-            entity.HasOne(d => d.Vvmstage).WithMany()
-                .HasForeignKey(d => d.VvmstageId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_VVMStages");
-
-            entity.HasOne(d => d.Vvmtype).WithMany()
-                .HasForeignKey(d => d.VvmtypeId)
-                .HasConstraintName("FK_tblAdjustmentArrivalLines_tblBaseInfo_VVMTypes");
-        });
 
         modelBuilder.Entity<TblArrival>(entity =>
         {
@@ -892,18 +590,6 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblDispatchLines_tblStores");
         });
 
-        modelBuilder.Entity<TblDispatchPack>(entity =>
-        {
-            entity.HasKey(e => e.DispatchPackId);
-
-            entity.ToTable("tblDispatchPacks");
-
-            entity.Property(e => e.DispatchPackId).HasColumnName("DispatchPackID");
-            entity.Property(e => e.DispatchId).HasColumnName("DispatchID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.PackId).HasColumnName("PackID");
-        });
-
         modelBuilder.Entity<TblDispatchRepConfig>(entity =>
         {
             entity
@@ -938,80 +624,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.FullName).HasMaxLength(200);
             entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.SuggestedEndDate).HasColumnType("datetime");
-        });
-
-        modelBuilder.Entity<TblGlobalConfiguration>(entity =>
-        {
-            entity.HasKey(e => e.ConfigurationId).HasName("PK_tblConfigurations");
-
-            entity.ToTable("tblGlobalConfigurations");
-
-            entity.Property(e => e.ConfigurationId).HasColumnName("ConfigurationID");
-            entity.Property(e => e.Abr).HasMaxLength(10);
-            entity.Property(e => e.Country).HasMaxLength(100);
-            entity.Property(e => e.Currency).HasMaxLength(10);
-            entity.Property(e => e.DateFormat)
-                .HasMaxLength(12)
-                .IsUnicode(false);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.Multigender).HasColumnName("multigender");
-            entity.Property(e => e.Offlinesystem).HasColumnName("offlinesystem");
-            entity.Property(e => e.Password)
-                .HasMaxLength(500)
-                .IsUnicode(false)
-                .HasColumnName("password");
-        });
-
-        modelBuilder.Entity<TblHelp>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblHelp");
-
-            entity.Property(e => e.Field1)
-                .HasColumnType("ntext")
-                .HasColumnName("field1");
-            entity.Property(e => e.Field2)
-                .HasColumnType("ntext")
-                .HasColumnName("field2");
-            entity.Property(e => e.Field3)
-                .HasColumnType("ntext")
-                .HasColumnName("field3");
-            entity.Property(e => e.Field4)
-                .HasColumnType("ntext")
-                .HasColumnName("field4");
-            entity.Property(e => e.Field5)
-                .HasColumnType("ntext")
-                .HasColumnName("field5");
-            entity.Property(e => e.Field6)
-                .HasColumnType("ntext")
-                .HasColumnName("field6");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("id");
-            entity.Property(e => e.Orderby).HasColumnName("orderby");
-            entity.Property(e => e.Pid).HasColumnName("pid");
-            entity.Property(e => e.Title)
-                .HasMaxLength(200)
-                .HasColumnName("title");
-            entity.Property(e => e.Title1)
-                .HasMaxLength(200)
-                .HasColumnName("title1");
-            entity.Property(e => e.Title2)
-                .HasMaxLength(200)
-                .HasColumnName("title2");
-            entity.Property(e => e.Title3)
-                .HasMaxLength(200)
-                .HasColumnName("title3");
-            entity.Property(e => e.Title4)
-                .HasMaxLength(200)
-                .HasColumnName("title4");
-            entity.Property(e => e.Title5)
-                .HasMaxLength(200)
-                .HasColumnName("title5");
-            entity.Property(e => e.Title6)
-                .HasMaxLength(200)
-                .HasColumnName("title6");
         });
 
         modelBuilder.Entity<TblItem>(entity =>
@@ -1211,16 +823,6 @@ public partial class VSSMDbContext : DbContext
                 .OnDelete(DeleteBehavior.NoAction);
         });
 
-        modelBuilder.Entity<TblItemsCode>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblItemsCode");
-
-            entity.Property(e => e.Code).HasColumnName("code");
-            entity.Property(e => e.UnicCode).HasMaxLength(255);
-        });
-
         modelBuilder.Entity<TblLevel>(entity =>
         {
             entity
@@ -1249,29 +851,6 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblManItemClass_tblBaseInfo_manufacturers");
         });
 
-        modelBuilder.Entity<TblMessage>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblMessages");
-
-            entity.Property(e => e.Isnew).HasColumnName("isnew");
-            entity.Property(e => e.Message)
-                .HasMaxLength(4000)
-                .HasColumnName("message");
-            entity.Property(e => e.MessageId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("messageID");
-            entity.Property(e => e.Ondate)
-                .HasColumnType("datetime")
-                .HasColumnName("ondate");
-            entity.Property(e => e.Reciever).HasColumnName("reciever");
-            entity.Property(e => e.Sender).HasColumnName("sender");
-            entity.Property(e => e.Subject)
-                .HasMaxLength(1000)
-                .HasColumnName("subject");
-        });
-
         modelBuilder.Entity<TblMinMaxItem>(entity =>
         {
             entity.HasKey(e => e.MinMaxItemId);
@@ -1290,136 +869,6 @@ public partial class VSSMDbContext : DbContext
             entity.HasOne(d => d.Recipient).WithMany(p => p.TblMinMaxItems)
                 .HasForeignKey(d => d.RecipientId)
                 .HasConstraintName("FK_tblMinMaxItem_tblRecipients");
-        });
-
-        modelBuilder.Entity<TblNews>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblNews");
-
-            entity.Property(e => e.Description)
-                .HasMaxLength(4000)
-                .HasColumnName("description");
-            entity.Property(e => e.Enable).HasColumnName("enable");
-            entity.Property(e => e.EnterbyId).HasColumnName("enterbyID");
-            entity.Property(e => e.NewsId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("newsID");
-            entity.Property(e => e.Ondate)
-                .HasColumnType("datetime")
-                .HasColumnName("ondate");
-            entity.Property(e => e.Title)
-                .HasMaxLength(300)
-                .HasColumnName("title");
-        });
-
-        modelBuilder.Entity<TblOrder>(entity =>
-        {
-            entity.HasKey(e => e.OrderId);
-
-            entity.ToTable("tblOrder");
-
-            entity.Property(e => e.OrderId).HasColumnName("OrderID");
-            entity.Property(e => e.FiscalPeriodId).HasColumnName("FiscalPeriodID");
-            entity.Property(e => e.OrderNumber).HasMaxLength(50);
-            entity.Property(e => e.SenderId).HasColumnName("SenderID");
-            entity.Property(e => e.SourceId).HasColumnName("SourceID");
-            entity.Property(e => e.SubmitDate)
-                .HasColumnType("datetime")
-                .HasColumnName("submitDate");
-        });
-
-        modelBuilder.Entity<TblOrderLine>(entity =>
-        {
-            entity.HasKey(e => e.OrderLineId);
-
-            entity.ToTable("tblOrderLine");
-
-            entity.Property(e => e.OrderLineId).HasColumnName("OrderLineID");
-            entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
-            entity.Property(e => e.EstimatedDate).HasColumnType("datetime");
-            entity.Property(e => e.Finished).HasColumnName("finished");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.ManufactureId).HasColumnName("ManufactureID");
-            entity.Property(e => e.OrderId).HasColumnName("OrderID");
-            entity.Property(e => e.RecpId).HasColumnName("RecpID");
-        });
-
-        modelBuilder.Entity<TblOrderReceive>(entity =>
-        {
-            entity.HasKey(e => e.OrderRecvId);
-
-            entity.ToTable("tblOrderReceive");
-
-            entity.Property(e => e.OrderRecvId).HasColumnName("OrderRecvID");
-            entity.Property(e => e.BatchNum).HasMaxLength(50);
-            entity.Property(e => e.ExpiryDate).HasColumnType("datetime");
-            entity.Property(e => e.OrderLineId).HasColumnName("OrderLineID");
-            entity.Property(e => e.RecpId).HasColumnName("RecpID");
-            entity.Property(e => e.RecvdDate).HasColumnType("datetime");
-            entity.Property(e => e.StoreId).HasColumnName("StoreID");
-            entity.Property(e => e.SubmitDate).HasColumnType("datetime");
-        });
-
-        modelBuilder.Entity<TblPack>(entity =>
-        {
-            entity.HasKey(e => e.PackId).HasName("PK_Packs");
-
-            entity.ToTable("tblPacks");
-
-            entity.Property(e => e.PackId).HasColumnName("PackID");
-            entity.Property(e => e.Code).HasMaxLength(100);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(100);
-            entity.Property(e => e.UseForOs).HasColumnName("UseForOS");
-            entity.Property(e => e.UseForVacDl).HasColumnName("UseForVacDL");
-        });
-
-        modelBuilder.Entity<TblPackItemClass>(entity =>
-        {
-            entity.HasKey(e => e.PackItemClassId).HasName("PK_tblBundleItemClass");
-
-            entity.ToTable("tblPackItemClass");
-
-            entity.Property(e => e.PackItemClassId).HasColumnName("PackItemClassID");
-            entity.Property(e => e.ItemClassId).HasColumnName("ItemClassID");
-            entity.Property(e => e.PackId).HasColumnName("PackID");
-        });
-
-        modelBuilder.Entity<TblPackingType>(entity =>
-        {
-            entity.HasKey(e => e.PackingTypeId);
-
-            entity.ToTable("tblPackingType");
-
-            entity.Property(e => e.PackingTypeId).HasColumnName("PackingTypeID");
-            entity.Property(e => e.FullName).HasMaxLength(200);
-        });
-
-        modelBuilder.Entity<TblPresentationType>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblPresentationType");
-
-            entity.Property(e => e.FullName).HasMaxLength(200);
-            entity.Property(e => e.PresentationTypeId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("PresentationTypeID");
-        });
-
-        modelBuilder.Entity<TblReasonForNotutiliz>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblReasonForNotutiliz");
-
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.FullName).HasMaxLength(150);
-            entity.Property(e => e.ReasonForNotutilizId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("ReasonForNotutilizID");
         });
 
         modelBuilder.Entity<TblRecipient>(entity =>
@@ -1578,27 +1027,6 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblRequest_tblRecipients");
         });
 
-
-
-        modelBuilder.Entity<TblRequestsNew>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblRequestsNew");
-
-            entity.Property(e => e.Annualrequiement).HasColumnName("annualrequiement");
-            entity.Property(e => e.DateFr)
-                .HasColumnType("datetime")
-                .HasColumnName("dateFR");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.Itemclass).HasColumnName("itemclass");
-            entity.Property(e => e.Levelhigher).HasColumnName("levelhigher");
-            entity.Property(e => e.Note).HasMaxLength(300);
-            entity.Property(e => e.RequestId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("RequestID");
-        });
-
         modelBuilder.Entity<TblSource>(entity =>
         {
             entity.HasKey(e => e.SourceId);
@@ -1609,36 +1037,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.Code).HasMaxLength(50);
             entity.Property(e => e.EntryDate).HasColumnType("datetime");
             entity.Property(e => e.FullName).HasMaxLength(200);
-        });
-
-        modelBuilder.Entity<TblStockHistory>(entity =>
-        {
-            entity.HasKey(e => e.StockHistoryId);
-
-            entity.ToTable("tblStockHistories");
-
-            entity.Property(e => e.StockHistoryId).HasColumnName("StockHistoryID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.RecipientId).HasColumnName("RecipientID");
-        });
-
-        modelBuilder.Entity<TblStockLog>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblStockLog");
-
-            entity.Property(e => e.BatchNumber).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.ItemDetailStoreId).HasColumnName("ItemDetailStoreID");
-            entity.Property(e => e.Remark).HasMaxLength(300);
-            entity.Property(e => e.StockLogId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("StockLogID");
-            entity.Property(e => e.Vochrep)
-                .HasMaxLength(100)
-                .HasColumnName("vochrep");
         });
 
         modelBuilder.Entity<TblStore>(entity =>
@@ -1673,29 +1071,6 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblStores_tblBaseInfo_store");
         });
 
-
-        modelBuilder.Entity<TblStoreUsageWarning>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblStoreUsageWarning");
-
-            entity.Property(e => e.Az).HasColumnName("az");
-            entity.Property(e => e.Bz).HasColumnName("bz");
-            entity.Property(e => e.Dry).HasColumnName("dry");
-        });
-
-        modelBuilder.Entity<TblUse>(entity =>
-        {
-            entity.HasKey(e => e.UseId);
-
-            entity.ToTable("tblUses");
-
-            entity.Property(e => e.UseId).HasColumnName("UseID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
-        });
 
         modelBuilder.Entity<TblUser>(entity =>
         {
@@ -1748,140 +1123,6 @@ public partial class VSSMDbContext : DbContext
                 .HasConstraintName("FK_tblUsers_Roles");
         });
 
-        modelBuilder.Entity<TblUserHome>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblUserHome");
-
-            entity.Property(e => e.Loginmessage)
-                .HasMaxLength(2000)
-                .HasColumnName("loginmessage");
-            entity.Property(e => e.Message)
-                .HasMaxLength(2000)
-                .HasColumnName("message");
-            entity.Property(e => e.Message2)
-                .HasMaxLength(2000)
-                .HasColumnName("message2");
-            entity.Property(e => e.Message3)
-                .HasMaxLength(2000)
-                .HasColumnName("message3");
-        });
-
-        modelBuilder.Entity<TblUserLog>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblUserLog");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.LogDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasAnnotation("Relational:DefaultConstraintName", "DF_tblUserLog_logDate")
-                .HasColumnType("datetime")
-                .HasColumnName("logDate");
-            entity.Property(e => e.UserActivityId).HasColumnName("userActivityId");
-            entity.Property(e => e.UserId).HasColumnName("userID");
-        });
-
-        modelBuilder.Entity<TblVaccInfoAgeGroup>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblVacc_Info_AgeGroup");
-
-            entity.Property(e => e.AgeGroupId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("AgeGroupID");
-            entity.Property(e => e.OrderId).HasColumnName("OrderID");
-            entity.Property(e => e.Title).HasMaxLength(200);
-        });
-
-        modelBuilder.Entity<TblVaccInfoDoseCat>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblVacc_Info_DoseCat");
-
-            entity.Property(e => e.DoseCatId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("DoseCatID");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.Title).HasMaxLength(200);
-        });
-
-        modelBuilder.Entity<TblVaccInfoTargetGroup>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblVacc_Info_TargetGroup");
-
-            entity.Property(e => e.OrderId).HasColumnName("OrderID");
-            entity.Property(e => e.TargetId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("TargetID");
-            entity.Property(e => e.Title).HasMaxLength(200);
-        });
-
-        modelBuilder.Entity<TblVaccItemAgeGroup>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblVacc_Item_AgeGroup");
-
-            entity.Property(e => e.AgeGroupId).HasColumnName("AgeGroupID");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-        });
-
-        modelBuilder.Entity<TblVaccItemDoseCat>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblVacc_Item_DoseCat");
-
-            entity.Property(e => e.DoseCatId).HasColumnName("DoseCatID");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-        });
-
-        modelBuilder.Entity<TblVaccItemTargetGroup>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblVacc_Item_TargetGroup");
-
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.TargetGroupId).HasColumnName("TargetGroupID");
-        });
-
-        modelBuilder.Entity<TblVaccSubmit>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblVacc_Submit");
-
-            entity.Property(e => e.RecpId).HasColumnName("RecpID");
-            entity.Property(e => e.SubmitDate).HasColumnType("datetime");
-            entity.Property(e => e.VaccSubmitId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("VaccSubmitID");
-        });
-
-        modelBuilder.Entity<TblVaccSubmitDetail>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("tblVacc_Submit_Detail");
-
-            entity.Property(e => e.AgeId).HasColumnName("AgeID");
-            entity.Property(e => e.DetailId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("DetailID");
-            entity.Property(e => e.DoseId).HasColumnName("DoseID");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.SubmitId).HasColumnName("SubmitID");
-            entity.Property(e => e.TargetId).HasColumnName("TargetID");
-        });
-
         modelBuilder.Entity<TblVoucherConfig>(entity =>
         {
             entity.HasKey(e => e.VoucherConfigurationId);
@@ -1898,31 +1139,6 @@ public partial class VSSMDbContext : DbContext
             entity.Property(e => e.SignPlaceHolder4).HasMaxLength(200);
         });
 
-        modelBuilder.Entity<UserSync>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("userSync");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("ID");
-            entity.Property(e => e.RecpId).HasColumnName("recpID");
-            entity.Property(e => e.SyncBasicId).HasColumnName("syncBasicID");
-        });
-
-        modelBuilder.Entity<UserSync2>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("userSync2");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("ID");
-            entity.Property(e => e.RecpId).HasColumnName("recpID");
-            entity.Property(e => e.SyncId).HasColumnName("syncID");
-        });
 
         modelBuilder.Entity<TblOrderInfo>(entity =>
         {

@@ -42,8 +42,6 @@ public partial class TblItemDetail
 
     public virtual TblBaseInfo Manufacturer { get; set; }
 
-    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
-
     public virtual ICollection<TblItemDetailStore> TblItemDetailStores { get; set; } = new List<TblItemDetailStore>();
 
     public virtual TblBaseInfo Vvmtype { get; set; }

@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using System.Security.Cryptography.X509Certificates;
 using VSSM.Application.DTOs.UidHistory;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;

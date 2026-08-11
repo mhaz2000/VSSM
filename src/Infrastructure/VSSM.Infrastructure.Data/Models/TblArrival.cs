@@ -41,8 +41,6 @@ public partial class TblArrival
 
     public virtual TblRecipient Sender { get; set; }
 
-    public virtual ICollection<TblAdjustmentArrivalLine> TblAdjustmentArrivalLines { get; set; } = new List<TblAdjustmentArrivalLine>();
-
     public virtual ICollection<TblArrivalLine> TblArrivalLines { get; set; } = new List<TblArrivalLine>();
 
     public virtual ICollection<TblDispatch> TblDispatches { get; set; } = new List<TblDispatch>();

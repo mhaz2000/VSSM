@@ -407,40 +407,6 @@ public partial class VSSMDbContext(
             entity.Property(e => e.LdapPath).HasColumnName("LDAP_Path");
         });
 
-        modelBuilder.Entity<TblBundle>(entity =>
-        {
-            entity.HasKey(e => e.BundleId);
-
-            entity.ToTable("tblBundles");
-
-            entity.Property(e => e.BundleId).HasColumnName("BundleID");
-            entity.Property(e => e.Code).HasMaxLength(100);
-            entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(100);
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.ReceiverId).HasColumnName("ReceiverID");
-            entity.Property(e => e.RecipientId).HasColumnName("RecipientID");
-            entity.Property(e => e.UseId).HasColumnName("UseID");
-        });
-
-        modelBuilder.Entity<TblBundleDetail>(entity =>
-        {
-            entity.HasKey(e => e.BundleDetailId);
-
-            entity.ToTable("tblBundleDetails");
-
-            entity.Property(e => e.BundleDetailId).HasColumnName("BundleDetailID");
-            entity.Property(e => e.BundleId).HasColumnName("BundleID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-
-            entity.HasOne(d => d.Bundle).WithMany(p => p.TblBundleDetails)
-                .HasForeignKey(d => d.BundleId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK_tblBundleDetails_tblBundles");
-        });
-
         modelBuilder.Entity<TblCountryCode>(entity =>
         {
             entity

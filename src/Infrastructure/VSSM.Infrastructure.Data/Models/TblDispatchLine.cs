@@ -33,8 +33,6 @@ public partial class TblDispatchLine
 
     public DateTime? EntryDate { get; set; }
 
-    public virtual TblBundle Bundle { get; set; }
-
     public virtual TblDispatch Dispatch { get; set; }
 
     public virtual TblBaseInfo DosePerVial { get; set; }

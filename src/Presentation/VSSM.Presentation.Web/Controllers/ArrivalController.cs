@@ -99,7 +99,7 @@ public class ArrivalController(
                 {
                     Title           = "مشاهده",
                     Controller      = "Arrival",
-                    Action          = "Edit",
+                    Action          = "Details",
                     RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
                     IconClass       = "fa fa-eye",
                     DynamicSkip = item =>
@@ -720,4 +720,34 @@ public class ArrivalController(
 
     private static bool TryParseLineId(string command, out int lineId) =>
         int.TryParse(command.Split('_').Last(), out lineId);
+
+    public async Task<IActionResult> Details(int id, CancellationToken token)
+    {
+        var dto = await arrivalService.GetById(id, token);
+        if (dto == null) return NotFound();
+
+        var lineViewModels = await MapLinesToViewModelAsync(dto.Lines, token);
+
+        var fiscalPeriod = (await fiscalService.GetActives(token)).FirstOrDefault();
+
+        var model = new ArrivalViewModel
+        {
+            ArrivalId = dto.ArrivalId,
+            Date = dto.Date.HasValue ? DateTimeHelper.ToShamsi(dto.Date.Value) : "",
+            ReportNumber = dto.ReportNumber,
+            FiscalPeriodName = fiscalPeriod?.FullName,
+            EntryDate = dto.EntryDate,
+            IsConfirmed = dto.IsConfirmed ?? false,
+            IsDrafted = dto.IsDrafted ?? false,
+            IsCancelled = dto.IsCancelled ?? false,
+            Note = dto.Note,
+            ArrivalType = dto.ArrivalType ?? "vaccine",
+            Lines = lineViewModels,
+            NewLine = new ArrivalLineViewModel()
+        };
+
+        ViewBag.IsReadOnly = true; 
+
+        return View(model);
+    }
 }

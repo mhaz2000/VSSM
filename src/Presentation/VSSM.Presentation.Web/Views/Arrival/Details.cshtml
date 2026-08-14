@@ -1,0 +1,54 @@
+﻿@using VSSM.Presentation.Web.Models.Arrival
+@model ArrivalViewModel
+
+@{
+    ViewData["Title"] = "مشاهده ورود شماره " + Model.ReportNumber;
+    ViewBag.IsReadOnly = true;
+}
+
+<partial name="Partials/_ArrivalStyles" />
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-12">
+
+            <h5>
+                <i class="fa fa-eye text-primary"></i>
+                مشاهده ورود شماره
+                <span dir="ltr">&nbsp;@Model.ReportNumber</span>
+            </h5>
+
+            <form id="arrivalForm" asp-action="Details" method="get">
+                @Html.AntiForgeryToken()
+                <partial name="Partials/_ArrivalLinesTable" model="Model" />
+
+                @* فوتر فقط با دکمه بازگشت (دکمه‌های ثبت و پیش‌نویس مخفی می‌شوند) *@
+                <div class="form-footer mt-3">
+                    <a href="@Url.Action("Index")" class="btn-back">
+                        <i class="fa fa-arrow-right"></i> بازگشت
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<partial name="Partials/_ArrivalScripts" model="Model" />
+
+<script>
+    $(function () {
+        // غیرفعال کردن همه فیلدهای ورودی و دکمه‌ها
+        $('#arrivalForm :input').prop('disabled', true);
+        $('#arrivalForm .btn, #arrivalForm button').prop('disabled', true);
+        $('#arrivalForm').off('submit');
+
+        // اگر دیت‌پیکر نیاز به تنظیم مجدد دارد (فقط برای نمایش)
+        if (typeof DatePicker !== 'undefined') {
+            DatePicker.attach($('#Date'), 'readonly');
+        }
+
+        // حذف هر گونه رفتار کلیک روی تب‌ها (در صورت وجود)
+        $('.arrival-tab').off('click').css('cursor', 'default');
+    });
+</script>

@@ -18,9 +18,5 @@
 
  
         public int? ParentId { get; set; } // numeric enum value
-    }
-
-
-
-  
+    }  
 }

@@ -113,7 +113,8 @@ public static class MenuConfig
                     new MenuItem { Title = "نقشها", Controller = "Role", Action = "Index" },
                     //new MenuItem { Title = "منوها", Controller = "Home", Action = "UnderConstruction" },
                     //new MenuItem { Title = "دسترسی نقش به منوها", Controller = "Home", Action = "UnderConstruction" },
-                    new MenuItem { Title = "ورود در نقش مدیر سیستم", Controller = "Home", Action = "UnderConstruction" }
+                    new MenuItem { Title = "ورود در نقش مدیر سیستم", Controller = "Home", Action = "UnderConstruction" },
+                    new MenuItem { Title = "مدیریت محل خدمت کاربران", Controller = "UserManagement", Action = "ManageRecipient" },
                 }
             },
 

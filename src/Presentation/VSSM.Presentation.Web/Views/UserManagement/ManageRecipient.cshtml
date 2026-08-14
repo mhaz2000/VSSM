@@ -1,0 +1,239 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+
+@{
+    ViewData["Title"] = "مدیریت محل خدمت کاربران";
+}
+
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
+    <link href="~/css/components/shared/searchable-controls.css" rel="stylesheet" />
+    <link href="~/css/components/shared/lines-table.css" rel="stylesheet" />
+    <link href="~/css/components/shared/modal.css" rel="stylesheet" />
+
+    <link href="~/css/components/user-management/manage-user-recipient.css" rel="stylesheet" />
+}
+
+<div class="management-wrap">
+
+    <div class="page-title">
+        <i class="fa fa-users"></i>
+        <span>@ViewData["Title"]</span>
+    </div>
+
+    <div class="a-card">
+
+        <div class="a-card-header">
+            <i class="fa fa-search"></i>
+            <h6>جستجوی کاربران</h6>
+        </div>
+
+        <div class="a-card-body">
+
+            <div class="search-row">
+
+                <div class="f-group">
+
+                    <input type="text"
+                           id="searchInput"
+                           class="f-control"
+                           placeholder="جستجو بر اساس نام کاربری، نام، نام خانوادگی..." />
+
+                </div>
+
+                <button type="button"
+                        id="searchBtn"
+                        class="btn-confirm"
+                        disabled>
+
+                    <i class="fa fa-search"></i>
+                    جستجو
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="a-card">
+
+        <div class="a-card-header">
+            <i class="fa fa-list"></i>
+            <h6>لیست کاربران</h6>
+        </div>
+
+        <div class="a-card-body">
+
+            <div class="lines-table-wrap">
+
+                <table class="lines-table" id="usersTable">
+
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>نام کاربری</th>
+                            <th>نام</th>
+                            <th>نام خانوادگی</th>
+                            <th>محل خدمت فعلی</th>
+                            <th>کد محل خدمت</th>
+                            <th>استان</th>
+                            <th>شهر</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="usersTbody">
+
+                        <tr>
+                            <td colspan="9"
+                                class="table-state table-empty">
+
+                                برای جستجو، عبارت مورد نظر را وارد کنید.
+
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div id="paginationContainer"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="modal-overlay"
+     id="changeRecipientModal">
+
+    <div class="modal manage-recipient-modal">
+
+        <div class="modal-header">
+
+            <h6>
+                <i class="fa fa-exchange"></i>
+                تغییر محل خدمت
+            </h6>
+
+            <button type="button"
+                    class="modal-close"
+                    id="closeChangeRecipientModal">
+
+                ✕
+
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div class="user-info-grid">
+
+                <div class="info-item">
+
+                    <span class="info-label">
+                        کاربر:
+                    </span>
+
+                    <span id="modalUserName"
+                          class="info-value">
+                    </span>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span class="info-label">
+                        نام کاربری:
+                    </span>
+
+                    <span id="modalUserUsername"
+                          class="info-value">
+                    </span>
+
+                </div>
+
+
+                <div class="info-item full-width">
+
+                    <span class="info-label">
+                        محل خدمت فعلی:
+                    </span>
+
+                    <span id="modalCurrentRecipient"
+                          class="info-value">
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="f-group">
+
+                <label class="f-label">
+                    محل خدمت جدید
+                </label>
+
+                @await Html.PartialAsync(
+                    "Components/SearchableSelect/_SearchableSelect",
+                                new SearchableSelectModel
+                                {
+                                    Id = "newRecipientSelect",
+                                    Name = "newRecipientSelect",
+                                    Label = "",
+                                    DefaultText = "جستجوی محل خدمت...",
+                                    Options = new List<SelectOption>()
+                                })
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button type="button"
+                    class="btn-back"
+                    id="cancelChangeRecipientModal">
+
+                انصراف
+
+            </button>
+
+            <button type="button"
+                    class="btn-confirm"
+                    id="saveRecipientBtn"
+                    disabled>
+
+                <i class="fa fa-save"></i>
+                ذخیره
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script src="~/js/shared/toast.js"></script>
+    <script src="~/js/shared/pagination-table.js"></script>
+    <script src="~/js/shared/modal.js"></script>
+
+    <script src="~/js/components/user-management/manage-user-recipient.js"></script>
+}

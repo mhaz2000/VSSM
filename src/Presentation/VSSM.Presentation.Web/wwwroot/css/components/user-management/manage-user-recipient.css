@@ -1,0 +1,339 @@
+﻿/* ═══════════════════════════════════════════
+   مدیریت محل خدمت کاربران - استایل صفحه
+   ═══════════════════════════════════════════ */
+
+.management-wrap {
+    direction: rtl;
+    padding: 24px 32px;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+}
+
+.search-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+    .search-row .f-group {
+        flex: 1;
+    }
+
+.btn-change-recipient {
+    background: none;
+    border: 1px solid #93c5fd;
+    border-radius: 6px;
+    color: #2563eb;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+    .btn-change-recipient:hover {
+        background: #eff6ff;
+    }
+
+.user-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+    .user-info-grid .full-width {
+        grid-column: 1 / -1;
+    }
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 9px 11px;
+    background: #f8fafc;
+    border: 1px solid #edf0f3;
+    border-radius: 7px;
+}
+
+.info-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.info-value {
+    font-size: 12px;
+    font-weight: 500;
+    color: #1f2937;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════
+   مدال تغییر محل خدمت
+   ═══════════════════════════════════════════ */
+
+#changeRecipientModal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.48);
+    backdrop-filter: blur(3px);
+    z-index: 99999;
+    direction: rtl;
+}
+
+    #changeRecipientModal.open {
+        display: flex;
+    }
+
+    #changeRecipientModal .manage-recipient-modal {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 480px;
+        max-height: calc(100vh - 20px);
+        min-height: 520px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        animation: recipientModalShow 0.2s ease-out;
+        overflow: hidden;
+    }
+
+@keyframes recipientModalShow {
+    from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ── Header ── */
+#changeRecipientModal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    min-height: 56px;
+    background: #fafbfc;
+    border-bottom: 1px solid #e9edf2;
+}
+
+    #changeRecipientModal .modal-header h6 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        color: #1e293b;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+        #changeRecipientModal .modal-header h6 i {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: #eef2ff;
+            color: #4f46e5;
+            font-size: 14px;
+        }
+
+/* ── حذف دکمه ضربدر ── */
+#changeRecipientModal .modal-close {
+    display: none !important;
+}
+
+/* ── Body ── */
+#changeRecipientModal .modal-body {
+    padding: 20px 24px;
+    overflow: visible; /* اجازه خروج dropdown از body را می‌دهد */
+    flex: 1;
+}
+
+    #changeRecipientModal .modal-body .f-group {
+        margin-top: 0;
+    }
+
+    #changeRecipientModal .modal-body .f-label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #475569;
+    }
+
+/* ── SearchableSelect درون مودال ── */
+#changeRecipientModal .ss-wrapper {
+    position: relative;
+}
+
+#changeRecipientModal .ss-control {
+    position: relative; /* برای قرارگیری dropdown به صورت absolute نسبت به wrapper */
+}
+
+#changeRecipientModal .ss-dropdown {
+    max-height: 260px; /* فضای کافی برای search + ۵ گزینه */
+    overflow: hidden; /* خود dropdown اسکرول نمی‌خورد */
+    position: absolute;
+    width: 100%;
+    z-index: 1000;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    display: none;
+}
+
+#changeRecipientModal .ss-control.open .ss-dropdown {
+    display: block;
+}
+
+#changeRecipientModal .ss-dropdown .ss-options {
+    max-height: 200px; /* حدود ۵ آیتم (هر آیتم ~ ۳۶px) */
+    overflow-y: auto; /* اسکرول فقط برای نتایج */
+}
+
+    #changeRecipientModal .ss-dropdown .ss-options::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    #changeRecipientModal .ss-dropdown .ss-options::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    #changeRecipientModal .ss-dropdown .ss-options::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+        #changeRecipientModal .ss-dropdown .ss-options::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+/* ── Footer ── */
+#changeRecipientModal .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 24px;
+    min-height: 64px;
+    background: #fafbfc;
+    border-top: 1px solid #e9edf2;
+    flex-shrink: 0;
+}
+
+    #changeRecipientModal .modal-footer .btn-back {
+        background: #f97316;
+        border-color: #f97316;
+        color: #fff;
+    }
+
+        #changeRecipientModal .modal-footer .btn-back:hover {
+            background: #ea580c;
+            border-color: #ea580c;
+        }
+
+    #changeRecipientModal .modal-footer .btn-confirm:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+/* ═══════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .management-wrap {
+        padding: 12px;
+    }
+
+    .search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .search-row .btn-confirm {
+            width: 100%;
+            min-width: unset;
+        }
+}
+
+@media (max-width: 576px) {
+    #changeRecipientModal {
+        padding: 12px;
+    }
+
+        #changeRecipientModal .manage-recipient-modal {
+            max-width: 100%;
+            max-height: calc(100vh - 24px);
+            min-height: 420px;
+            border-radius: 12px;
+        }
+
+        #changeRecipientModal .modal-header {
+            padding: 14px 16px;
+        }
+
+        #changeRecipientModal .modal-body {
+            padding: 16px;
+        }
+
+        #changeRecipientModal .modal-footer {
+            padding: 12px 16px;
+            flex-wrap: wrap;
+        }
+
+        #changeRecipientModal .ss-dropdown {
+            max-height: 220px;
+        }
+
+            #changeRecipientModal .ss-dropdown .ss-options {
+                max-height: 160px;
+            }
+}
+
+@media (max-width: 380px) {
+    .user-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+        .user-info-grid .full-width {
+            grid-column: auto;
+        }
+
+    #changeRecipientModal .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+        #changeRecipientModal .modal-footer button {
+            width: 100%;
+        }
+}

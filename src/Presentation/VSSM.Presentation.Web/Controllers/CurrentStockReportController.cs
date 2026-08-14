@@ -950,23 +950,22 @@ namespace VSSM.Presentation.Web.Controllers
 
         #endregion
 
-        [HttpGet("GetItemsByClass/{classItemId:required:int}")]
-        public async Task<IActionResult> GetItems(int classItemId)
+        [HttpGet]
+        public async Task<IActionResult> GetItemsByClass(int id)
         {
             var apiResult = new ApiResult<List<ItemListDto>>();
 
             try
             {
-                var items = await _itemService.GetItemsByClassAsync(classItemId);
-
+                var items = await _itemService.GetItemsByClassAsync(id);
                 apiResult.Success = true;
                 apiResult.Message = string.Empty;
                 apiResult.Result = items;
             }
             catch (Exception ex)
             {
-
-                throw;
+                apiResult.Success = false;
+                apiResult.Message = ex.Message;
             }
 
             return Json(apiResult);

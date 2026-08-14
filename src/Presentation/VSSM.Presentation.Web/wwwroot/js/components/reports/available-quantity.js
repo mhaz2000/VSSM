@@ -1,145 +1,246 @@
 ﻿$(function () {
-    /* =========================================================
-       ELEMENTS
-       ========================================================= */
-    const form = $('#availableQuantityForm');
-    const searchButtons = form.find('.btn-confirm');
-    const itemClassSelect = $('#itemClassId');
-    const itemMultiSelect = $('#itemId');
-    const storeMultiSelect = $('#storeId');
-    const batchNumberInput = $('#batchNumber');
-    const fromDateInput = $('#fromDate');
-    const toDateInput = $('#toDate');
-    const fromDateEnInput = $('#fromDateEn');
-    const toDateEnInput = $('#toDateEn');
-    const allSubRecipientStocks = $('#allSubRecipientStocks');
+    "use strict";
 
-    /* =========================================================
-       INITIAL STATE
-       ========================================================= */
+    var form = $('#availableQuantityForm');
+    if (!form.length) return;
+
+    var searchButtons = form.find('.btn-confirm');
+    var itemClassSelect = $('#itemClassId');
+    var itemMultiSelect = $('#itemId');
+    var storeMultiSelect = $('#storeId');
+    var batchNumberInput = $('#batchNumber');
+    var fromDateInput = $('#fromDate');
+    var toDateInput = $('#toDate');
+    var fromDateEnInput = $('#fromDateEn');
+    var toDateEnInput = $('#toDateEn');
+    var allSubRecipientStocks = $('#allSubRecipientStocks');
+
+    var itemsRequest = null;
+    var lastRequestedClassId = null;
+
     setSearchableMultiSelectDisabled('itemId', true);
     updateSearchButtons();
+    initializeDatePickers();
 
-    /* =========================================================
-       PERSIAN DATE PICKER
-       ========================================================= */
-    $('#fromDate').pDatepicker({
-        format: "YYYY/MM/DD",
-        autoClose: true,
-        initialValue: false,
-        altField: '#fromDateEn',
-        altFormat: "YYYY-MM-DD",
-        onSelect: function () { updateSearchButtons(); }
-    });
-    $('#toDate').pDatepicker({
-        format: "YYYY/MM/DD",
-        autoClose: true,
-        initialValue: false,
-        altField: '#toDateEn',
-        altFormat: "YYYY-MM-DD",
-        onSelect: function () { updateSearchButtons(); }
-    });
-
-    /* =========================================================
-       ITEM CLASS CHANGE
-       ========================================================= */
     itemClassSelect.on('change', function () {
-        const classId = $(this).val();
+        var classId = normalizeValue($(this).val());
         updateSearchButtons();
+        abortItemsRequest();
+
         if (!classId) {
+            lastRequestedClassId = null;
+            clearItemOptions();
             setSearchableMultiSelectDisabled('itemId', true);
-            setSearchableMultiSelectOptions('itemId', []);
+            setSearchableMultiSelectLoading('itemId', false);
             updateSearchButtons();
             return;
         }
-        setSearchableMultiSelectDisabled('itemId', false);
-        setSearchableMultiSelectLoading('itemId', true);
-        $.get('/GetItemsByClass/' + classId)
-            .done(function (res) {
-                if (!res || !res.success) {
-                    setSearchableMultiSelectOptions('itemId', []);
-                    return;
-                }
-                const items = (res.result || []).map(function (item) {
-                    return { value: item.itemId, text: item.fullName };
-                });
-                setSearchableMultiSelectOptions('itemId', items);
-            })
-            .fail(function () {
-                setSearchableMultiSelectOptions('itemId', []);
-            })
-            .always(function () {
-                setSearchableMultiSelectLoading('itemId', false);
-                updateSearchButtons();
-            });
+
+        if (lastRequestedClassId === classId) return;
+        lastRequestedClassId = classId;
+        loadItemsByClass(classId);
     });
 
-    /* =========================================================
-       MULTI SELECT CHANGE
-       ========================================================= */
-    itemMultiSelect.on('change', function () { updateSearchButtons(); });
-    storeMultiSelect.on('change', function () { updateSearchButtons(); });
+    itemMultiSelect.on('change', updateSearchButtons);
+    storeMultiSelect.on('change', updateSearchButtons);
 
-    /* =========================================================
-       STANDARD SELECTS & CHECKBOX
-       ========================================================= */
-    form.on('change', 'select, input[type="checkbox"]', function () { updateSearchButtons(); });
+    form.on('change', 'select, input[type="checkbox"]', updateSearchButtons);
+    form.on('input', '#batchNumber, #fromDate, #toDate', updateSearchButtons);
 
-    /* =========================================================
-       TEXT INPUTS
-       ========================================================= */
-    form.on('input', '#batchNumber, #fromDate, #toDate', function () { updateSearchButtons(); });
+    fromDateEnInput.on('change input', updateSearchButtons);
+    toDateEnInput.on('change input', updateSearchButtons);
 
-    /* =========================================================
-       DATE HIDDEN INPUTS
-       ========================================================= */
-    fromDateEnInput.on('change', function () { updateSearchButtons(); });
-    toDateEnInput.on('change', function () { updateSearchButtons(); });
+    allSubRecipientStocks.on('change', updateSearchButtons);
 
-    /* =========================================================
-       ALL SUB RECIPIENT STOCKS
-       ========================================================= */
-    allSubRecipientStocks.on('change', function () { updateSearchButtons(); });
-
-    /* =========================================================
-       FINAL FORM SUBMIT
-       ========================================================= */
     form.on('submit', function (event) {
         if (!hasAnyFilter()) {
             event.preventDefault();
             updateSearchButtons();
             return false;
         }
+        return true;
     });
 
-    /* =========================================================
-       UPDATE SEARCH BUTTONS
-       ========================================================= */
+    function loadItemsByClass(classId) {
+        var url = '/CurrentStockReport/GetItemsByClass?classItemId=' + encodeURIComponent(classId);
+
+        setSearchableMultiSelectDisabled('itemId', true);
+        setSearchableMultiSelectLoading('itemId', true);
+        clearItemOptions();
+
+        itemsRequest = $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            cache: false,
+            success: function (response) {
+                var currentClassId = normalizeValue(itemClassSelect.val());
+                if (currentClassId !== classId) return;
+
+                if (!response || response.success !== true) {
+                    clearItemOptions();
+                    showWarningToast(response?.message || 'دریافت کالاها با خطا مواجه شد.');
+                    return;
+                }
+
+                var result = Array.isArray(response.result) ? response.result : [];
+                if (result.length === 0) {
+                    clearItemOptions();
+                    showWarningToast('برای نوع کالای انتخاب‌شده، کالایی یافت نشد.');
+                    return;
+                }
+
+                var items = result.map(function (item) {
+                    return { value: item.itemId, text: item.fullName };
+                });
+
+                // پر کردن گزینه‌ها با تابع اصلاح‌شده
+                setSearchableMultiSelectOptions('itemId', items, 'انتخاب کالا');
+
+                // فعال کردن کنترل (حتماً)
+                setSearchableMultiSelectDisabled('itemId', false);
+            },
+            error: function (xhr, status) {
+                if (status === 'abort') return;
+                clearItemOptions();
+                showErrorToast('خطا در دریافت کالاها.');
+            },
+            complete: function () {
+                itemsRequest = null;
+                setSearchableMultiSelectLoading('itemId', false);
+                updateSearchButtons();
+            }
+        });
+    }
+
+    function abortItemsRequest() {
+        if (itemsRequest) {
+            itemsRequest.abort();
+            itemsRequest = null;
+        }
+    }
+
+    function clearItemOptions() {
+        setSearchableMultiSelectOptions('itemId', [], 'انتخاب کالا');
+        setSearchableMultiSelectDisabled('itemId', true);
+    }
+
+    // =========================================================
+    // اصلاح تابع setSearchableMultiSelectOptions
+    // =========================================================
+    function setSearchableMultiSelectOptions(selectId, items, placeholder) {
+        placeholder = placeholder || 'انتخاب کنید';
+        var hidden = document.getElementById(selectId);
+        if (!hidden) return;
+
+        var wrapper = hidden.closest('.ms-wrapper');
+        if (!wrapper) return;
+
+        // پیدا کردن .ms-options داخل .ms-dropdown
+        var dropdown = wrapper.querySelector('.ms-dropdown');
+        if (!dropdown) return;
+
+        var optionsContainer = dropdown.querySelector('.ms-options');
+        if (!optionsContainer) return;
+
+        var tags = wrapper.querySelector('.ms-tags');
+        if (!tags) return;
+
+        // پاک کردن مقدار hidden
+        hidden.value = '';
+
+        // به‌روزرسانی تگ‌ها
+        tags.innerHTML = '<span class="ms-placeholder">' + escapeHtml(placeholder) + '</span>';
+
+        // پاک کردن گزینه‌های قبلی
+        optionsContainer.innerHTML = '';
+
+        if (!Array.isArray(items) || items.length === 0) {
+            $(hidden).trigger('change');
+            return;
+        }
+
+        // افزودن "انتخاب همه"
+        var selectAll = document.createElement('div');
+        selectAll.className = 'ms-option ms-select-all';
+        selectAll.dataset.value = '__all__';
+        selectAll.innerHTML = '<input type="checkbox" class="ms-option-checkbox" /><span>انتخاب همه</span>';
+        optionsContainer.appendChild(selectAll);
+
+        // افزودن گزینه‌ها
+        items.forEach(function (item) {
+            var option = document.createElement('div');
+            option.className = 'ms-option';
+            option.dataset.value = String(item.value);
+            option.innerHTML = '<input type="checkbox" class="ms-option-checkbox" /><span>' + escapeHtml(item.text) + '</span>';
+            optionsContainer.appendChild(option);
+        });
+
+        // اعلام تغییر به سیستم
+        $(hidden).trigger('change');
+    }
+
+    // =========================================================
+    // توابع کمکی دیگر
+    // =========================================================
+    function setSearchableMultiSelectDisabled(selectId, disabled) {
+        var hidden = document.getElementById(selectId);
+        if (!hidden) return;
+        var wrapper = hidden.closest('.ms-wrapper');
+        if (!wrapper) return;
+        var dropdown = wrapper.querySelector('.ms-dropdown');
+        hidden.disabled = disabled;
+        wrapper.classList.toggle('ms-disabled', disabled);
+        if (disabled) {
+            wrapper.classList.remove('open');
+            if (dropdown) dropdown.style.display = 'none';
+        } else {
+            if (dropdown) dropdown.style.display = '';
+        }
+    }
+
+    function setSearchableMultiSelectLoading(selectId, loading) {
+        var hidden = document.getElementById(selectId);
+        if (!hidden) return;
+        var wrapper = hidden.closest('.ms-wrapper');
+        if (!wrapper) return;
+        wrapper.classList.toggle('ms-loading', loading);
+    }
+
+    function initializeDatePickers() {
+        if (typeof DatePicker === 'undefined' || typeof DatePicker.attach !== 'function') return;
+        if (fromDateInput.length && !fromDateInput.hasClass('datepicker-initialized')) {
+            DatePicker.attach(fromDateInput, 'jalali');
+            fromDateInput.addClass('datepicker-initialized');
+        }
+        if (toDateInput.length && !toDateInput.hasClass('datepicker-initialized')) {
+            DatePicker.attach(toDateInput, 'jalali');
+            toDateInput.addClass('datepicker-initialized');
+        }
+    }
+
     function updateSearchButtons() {
+        if (!searchButtons.length) return;
         searchButtons.prop('disabled', !hasAnyFilter());
     }
 
-    /* =========================================================
-       CHECK ANY FILTER
-       ========================================================= */
     function hasAnyFilter() {
-        const itemClassValue = getValue('#itemClassId');
-        const itemValue = getMultiSelectValue('itemId');
-        const storeValue = getMultiSelectValue('storeId');
-        const recipientValue = getValue('#recipientId');
-        const levelValue = getValue('#level');
-        const batchNumber = $.trim(batchNumberInput.val() || '');
-        const sourceValue = getValue('#sourceId');
-        const manufacturerValue = getValue('#manufacturerId');
-        const vvmTypeValue = getValue('#vvmtypeId');
-        const vvmStageValue = getValue('#vvmstageId');
-        const commercialNameValue = getValue('#commercialNameId');
-        const fromDate = $.trim(fromDateEnInput.val() || fromDateInput.val() || '');
-        const toDate = $.trim(toDateEnInput.val() || toDateInput.val() || '');
-        const allSubStores = allSubRecipientStocks.is(':checked');
+        var itemClassValue = getValue('#itemClassId');
+        var itemValue = getMultiSelectValue('itemId');
+        var storeValue = getMultiSelectValue('storeId');
+        var recipientValue = getValue('#recipientId');
+        var levelValue = getValue('#level');
+        var batchNumber = $.trim(batchNumberInput.val() || '');
+        var sourceValue = getValue('#sourceId');
+        var manufacturerValue = getValue('#manufacturerId');
+        var vvmTypeValue = getValue('#vvmtypeId');
+        var vvmStageValue = getValue('#vvmstageId');
+        var commercialNameValue = getValue('#commercialNameId');
+        var fromDate = $.trim(fromDateEnInput.val() || fromDateInput.val() || '');
+        var toDate = $.trim(toDateEnInput.val() || toDateInput.val() || '');
+        var allSubStores = allSubRecipientStocks.is(':checked');
 
-        return Boolean(
-            hasValue(itemClassValue) ||
+        return hasValue(itemClassValue) ||
             hasValue(itemValue) ||
             hasValue(storeValue) ||
             hasValue(recipientValue) ||
@@ -152,132 +253,63 @@
             hasValue(commercialNameValue) ||
             hasValue(fromDate) ||
             hasValue(toDate) ||
-            allSubStores
-        );
+            allSubStores;
     }
 
-    /* =========================================================
-       GET NORMAL SELECT VALUE
-       ========================================================= */
     function getValue(selector) {
-        const element = $(selector);
-        if (!element.length) return null;
-        return element.val();
+        var element = $(selector);
+        return element.length ? element.val() : null;
     }
 
-    /* =========================================================
-       GET MULTI SELECT VALUE
-       ========================================================= */
     function getMultiSelectValue(selectId) {
-        const element = $('#' + selectId);
+        var element = $('#' + selectId);
         if (!element.length) return null;
-        const value = element.val();
+        var value = element.val();
+
         if (Array.isArray(value)) {
-            return value.filter(function (item) {
-                return item !== null && item !== undefined && item !== '' && item !== '__all__';
+            var filtered = value.filter(function (item) {
+                return item != null && item !== '' && item !== '__all__';
             });
+            return filtered.length ? filtered : null;
         }
-        if (value !== null && value !== undefined && value !== '') {
-            return value;
+
+        if (value != null && value !== '') {
+            var values = String(value)
+                .split(',')
+                .map(function (item) { return item.trim(); })
+                .filter(function (item) { return item !== '' && item !== '__all__'; });
+            return values.length ? values : null;
         }
         return null;
     }
 
-    /* =========================================================
-       CHECK VALUE
-       ========================================================= */
+    function normalizeValue(value) {
+        if (value == null) return null;
+        var normalized = String(value).trim();
+        return normalized === '' ? null : normalized;
+    }
+
     function hasValue(value) {
-        if (value === null || value === undefined) return false;
+        if (value == null) return false;
         if (Array.isArray(value)) return value.length > 0;
         return String(value).trim() !== '';
     }
+
+    function showWarningToast(message) {
+        if (typeof showToast === 'function') showToast(message, 'warning');
+    }
+
+    function showErrorToast(message) {
+        if (typeof showToast === 'function') showToast(message, 'error');
+    }
+
+    function escapeHtml(value) {
+        if (value == null) return '';
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 });
-
-/* 
-   DISABLE / ENABLE SEARCHABLE MULTI SELECT
-    */
-function setSearchableMultiSelectDisabled(selectId, disabled = true) {
-    const hidden = document.getElementById(selectId);
-    if (!hidden) return;
-    const wrapper = hidden.closest('.ms-wrapper');
-    if (!wrapper) return;
-    const dropdown = wrapper.querySelector('.ms-dropdown');
-    hidden.disabled = disabled;
-    if (disabled) {
-        wrapper.classList.add('ms-disabled');
-        wrapper.classList.remove('open');
-        if (dropdown) dropdown.style.display = 'none';
-    } else {
-        wrapper.classList.remove('ms-disabled');
-    }
-}
-
-/* 
-   SET MULTI SELECT OPTIONS
-    */
-function setSearchableMultiSelectOptions(selectId, items, placeholder = 'انتخاب کنید') {
-    const hidden = document.getElementById(selectId);
-    if (!hidden) return;
-    const wrapper = hidden.closest('.ms-wrapper');
-    if (!wrapper) return;
-    const optionsContainer = wrapper.querySelector('.ms-options');
-    const tags = wrapper.querySelector('.ms-tags');
-    if (!optionsContainer || !tags) return;
-    // Reset hidden value
-    hidden.value = '';
-    // Reset tags
-    tags.innerHTML = `<span class="ms-placeholder">${placeholder}</span>`;
-    // Clear options
-    optionsContainer.innerHTML = '';
-    // Normalize items
-    items = Array.isArray(items) ? items : [];
-    if (items.length === 0) {
-        tags.innerHTML = `<span class="ms-placeholder">${placeholder}</span>`;
-        $(hidden).trigger('change');
-        return;
-    }
-    // Select All
-    const selectAll = document.createElement('div');
-    selectAll.className = 'ms-option ms-select-all';
-    selectAll.dataset.value = '__all__';
-    selectAll.innerHTML = `
-        <input type="checkbox" class="ms-option-checkbox" />
-        <span>انتخاب همه</span>
-    `;
-    optionsContainer.appendChild(selectAll);
-    const hrTop = document.createElement('hr');
-    hrTop.className = 'ms-option-separator';
-    optionsContainer.appendChild(hrTop);
-    // Options
-    items.forEach(function (item, index) {
-        const div = document.createElement('div');
-        div.className = 'ms-option';
-        div.dataset.value = item.value;
-        div.innerHTML = `
-            <input type="checkbox" class="ms-option-checkbox" />
-            <span>${item.text}</span>
-        `;
-        optionsContainer.appendChild(div);
-        if (index !== items.length - 1) {
-            const hr = document.createElement('hr');
-            hr.className = 'ms-option-separator';
-            optionsContainer.appendChild(hr);
-        }
-    });
-    $(hidden).trigger('change');
-}
-
-/* 
-   MULTI SELECT LOADING STATE
-    */
-function setSearchableMultiSelectLoading(selectId, loading) {
-    const hidden = document.getElementById(selectId);
-    if (!hidden) return;
-    const wrapper = hidden.closest('.ms-wrapper');
-    if (!wrapper) return;
-    if (loading) {
-        wrapper.classList.add('ms-loading');
-    } else {
-        wrapper.classList.remove('ms-loading');
-    }
-}

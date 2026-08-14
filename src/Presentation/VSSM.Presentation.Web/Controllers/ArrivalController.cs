@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
+using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Const;
@@ -93,7 +94,20 @@ public class ArrivalController(
                     RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
                     IconClass       = "fa fa-trash",
                     DynamicTitle    = item => (item as ArrivalListDto)?.IsDrafted == true ? "حذف" : ""
-                }
+                },
+                new()
+                {
+                    Title           = "مشاهده",
+                    Controller      = "Arrival",
+                    Action          = "Edit",
+                    RouteIdProperty = nameof(ArrivalListDto.ArrivalId),
+                    IconClass       = "fa fa-eye",
+                    DynamicSkip = item =>
+                    {
+                        var row = (ArrivalListDto)item;
+                        return (!(row.IsConfirmed.HasValue && row.IsConfirmed.Value)).ToString();
+                    }
+                },
             }
         };
 

@@ -2,8 +2,6 @@
 @using VSSM.Domain.Enums
 @model RequestViewModel
 
-
-
 @{
     bool isEdit = Model?.Id > 0;
     bool hasLines = Model?.RequestLines != null && Model.RequestLines.Any();
@@ -20,11 +18,12 @@
     <link href="~/css/components/shared/submit-btn.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/components/request/request-new.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/components/shared/modal.css" rel="stylesheet" asp-append-version="true" />
-
 }
 
 <div class="rq-page" dir="rtl">
-    <form asp-action="Create" method="post" id="requestForm" data-has-record="@(hasLines ? "true" : "false")">
+    <form asp-action="Create" method="post" id="requestForm"
+          data-has-record="@(hasLines ? "true" : "false")"
+          data-is-edit="@(isEdit.ToString().ToLower())">
         <input type="hidden" asp-for="Id" />
 
         @* ═══ کارت اول: ثبت درخواست ═══ *@
@@ -169,7 +168,7 @@
                                 @foreach (var line in linesToShow)
                                 {
                                     index++;
-                                    <tr>
+                                    <tr data-item-id="@line.ItemId" data-item-class-id="@line.ItemClassId">
                                         <td>@index</td>
                                         <td>@line.ItemName</td>
                                         <td>@line.ArivCount</td>
@@ -196,7 +195,7 @@
                                     foreach (var line in Model.RequestLines.Skip(5))
                                     {
                                         index++;
-                                        <tr class="hidden-line" style="display: none;">
+                                        <tr class="hidden-line" style="display: none;" data-item-id="@line.ItemId" data-item-class-id="@line.ItemClassId">
                                             <td>@index</td>
                                             <td>@line.ItemName</td>
                                             <td>@line.ArivCount</td>
@@ -284,11 +283,7 @@
     </form>
 </div>
 
-
-}
-
-                    @section Scripts {
+@section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/components/request/request-new.js" asp-append-version="true"></script>
-
 }

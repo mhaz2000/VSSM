@@ -15,9 +15,15 @@ public interface IRequestService
     Task Delete(int id);
     Task DeleteLine(int requestLineId, CancellationToken token);
 
-    Task<PagingSearchOrderDto<RequestListDto>> GetReceivedRequestsPagedList(string? search, int page, int pageSize,
-            string sortField, string sortOrder,
-            int currentRecipientId, CancellationToken cancellationToken);
+    Task<PagingSearchOrderDto<RequestListDto>> GetReceivedRequestsPagedList(
+        string? search,
+        int page, 
+        int pageSize,
+        string sortField,
+        string sortOrder,
+        int currentUserRecipientParentId,
+        int currentUserRecipientId,
+        CancellationToken cancellationToken);
 
 
 

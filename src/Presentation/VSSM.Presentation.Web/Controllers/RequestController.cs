@@ -367,6 +367,7 @@ public class RequestController(
             sort, 
             direction,
             CurrentUserRecipientParentId.GetValueOrDefault(),
+            CurrentUserRecipientId.GetValueOrDefault(),
             cancellationToken);
 
         var model = new GridViewModel

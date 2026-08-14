@@ -1,5 +1,4 @@
-﻿
-(function () {
+﻿(function () {
     'use strict';
 
     const $form = $('#requestForm');
@@ -52,6 +51,39 @@
         $('button[formnovalidate]').prop('formnovalidate', true);
     }
 
+    // ── تنظیم dropdownها از آخرین ردیف ──
+    function setSelectsFromLastLine() {
+        // فقط در حالت ایجاد جدید (غیر ویرایش) اجرا شود
+        if ($form.data('is-edit') === 'true') return;
+
+        const $rows = $('tbody tr:not(.more-lines-trigger)');
+        if ($rows.length === 0) return;
+
+        const $lastRow = $rows.last();
+        const classId = $lastRow.data('item-class-id');
+        const itemId = $lastRow.data('item-id');
+        if (!classId || !itemId) return;
+
+        // اگر dropdown نوع کالا از قبل مقدار دارد، کاری نکن (از مقدار موجود استفاده کن)
+        if ($itemClass.val()) return;
+
+        // تنظیم نوع کالا
+        $itemClass.val(classId).trigger('change');
+
+        // پس از بارگذاری آیتم‌ها، کالا را انتخاب کن
+        function waitForItemsAndSet() {
+            if ($item.prop('disabled') === false && $item.find('option[value="' + itemId + '"]').length) {
+                $item.val(itemId).trigger('change');
+                $reqCount.val(''); // خالی کردن تعداد برای ورود جدید
+                updateAddButtonState();
+            } else {
+                setTimeout(waitForItemsAndSet, 200);
+            }
+        }
+        setTimeout(waitForItemsAndSet, 300);
+    }
+
+    // ── دکمه نمایش همه (تغییر سایز) ──
     function initToggleButton() {
         if (document.body.dataset.toggleDelegatedNew === 'true') return;
         document.body.dataset.toggleDelegatedNew = 'true';
@@ -184,7 +216,6 @@
             overlay.className = 'page-overlay';
             document.body.appendChild(overlay);
             setTimeout(() => overlay.remove(), 8000);
-
             return true;
         }
 
@@ -204,6 +235,7 @@
         disableFormValidation();
         updateAddButtonState();
         initToggleButton();
+        setSelectsFromLastLine(); // <-- فراخوانی جدید
     }
 
     if (document.readyState === 'loading') {

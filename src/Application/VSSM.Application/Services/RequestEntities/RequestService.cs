@@ -203,14 +203,18 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
         int pageSize,
         string sortField,
         string sortOrder,
-        int currentRecipientId,
+        int currentUserRecipientParentId,
+        int currentUserRecipientId,
         CancellationToken cancellationToken)
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
         IQueryable<TblRequest> query = dbContext.TblRequests;
 
-        query = query.Where(q => q.ReceiverId == currentRecipientId && q.Status == RequestStatusEnum.Sent);
+        query = query.Where(q =>
+            (q.ReceiverId == currentUserRecipientParentId ||
+             q.ReceiverId == currentUserRecipientId) &&
+            q.Status == RequestStatusEnum.Sent);
 
         if (!string.IsNullOrWhiteSpace(search))
         {

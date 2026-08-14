@@ -69,7 +69,6 @@ public class RoleController(
                 ParentId = m.ParentId,
                 IsSelected = false
             }).ToList();
-
         }
         else
         {
@@ -78,6 +77,7 @@ public class RoleController(
                 return NotFound();
 
             var allMenus = await menuService.GetMenus(cancellationToken);
+
 
             var rolemenus = await roleService.GetRoleMenus(id, cancellationToken);
 

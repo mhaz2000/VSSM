@@ -1,10 +1,16 @@
 ﻿@using VSSM.Presentation.Web.Models.Role
 @model RolePermissionViewModel
+
 @{
     string formName = Model != null && Model.RoleId > 0 ? "ویرایش" : "ثبت";
-    var menus = Model?.Menus?
-        .OrderBy(m => m.Title)
-        .ToList() ?? new List<MenuCheckboxViewModel>();
+
+    var menus = Model?.Menus?.ToList()
+        ?? new List<MenuCheckboxViewModel>();
+
+    // Index واقعی هر منو در Model.Menus
+    var menuIndexes = menus
+        .Select((menu, index) => new { menu, index })
+        .ToDictionary(x => x.menu.Id, x => x.index);
 }
 
 @section Styles {
@@ -16,123 +22,236 @@
 }
 
 <div id="toastContainer"></div>
-<div id="toastData" data-message="@TempData["ToastMessage"]" data-type="@TempData["ToastType"]"></div>
+
+<div id="toastData"
+     data-message="@TempData["ToastMessage"]"
+     data-type="@TempData["ToastType"]">
+</div>
 
 <div class="dispatch-wrap">
     <div class="a-card">
+
         <div class="a-card-header">
-            <h6><i class="fa fa-lock" style="color:#1d6fb8;"></i> @formName دسترسی‌های نقش</h6>
+            <h6>
+                <i class="fa fa-lock" style="color:#1d6fb8;"></i>
+                @formName دسترسی‌های نقش
+            </h6>
         </div>
+
         <div class="a-card-body">
 
-            <form asp-action="Create" asp-controller="Role" method="post" id="permissionForm" novalidate>
+            <form asp-action="Create"
+                  asp-controller="Role"
+                  method="post"
+                  id="permissionForm"
+                  novalidate>
+
                 @Html.AntiForgeryToken()
+
                 <input type="hidden" asp-for="RoleId" />
 
                 <div class="fg-2" style="margin-bottom:20px;">
                     <div class="f-group">
-                        <label class="f-label" for="RoleName">نام نقش <span class="req-tag">اجباری</span></label>
-                        <input type="text" asp-for="RoleName" class="f-control" placeholder="نام نقش را وارد کنید" />
-                        <span asp-validation-for="RoleName" class="text-danger" style="font-size:11px;"></span>
+
+                        <label class="f-label" for="RoleName">
+                            نام نقش
+                            <span class="req-tag">اجباری</span>
+                        </label>
+
+                        <input type="text"
+                               asp-for="RoleName"
+                               class="f-control"
+                               placeholder="نام نقش را وارد کنید" />
+
+                        <span asp-validation-for="RoleName"
+                              class="text-danger"
+                              style="font-size:11px;">
+                        </span>
+
                     </div>
                 </div>
 
                 <div class="f-group" style="margin-bottom:16px;">
-                    <label class="f-label" style="margin-bottom:8px;">دسترسی‌های منو</label>
-                    <div class="lines-table-wrap" style="padding:12px 16px; max-height:480px; overflow-y:auto; border-radius:10px;">
+
+                    <label class="f-label" style="margin-bottom:8px;">
+                        دسترسی‌های منو
+                    </label>
+
+                    <div class="lines-table-wrap"
+                         style="padding:12px 16px; max-height:480px; overflow-y:auto; border-radius:10px;">
+
                         @if (menus.Any())
                         {
                             <ul class="permission-tree" id="permissionTree">
-                                @foreach (var parent in menus.Where(m => m.ParentId == null).OrderBy(m => m.Title))
+
+                                @foreach (var parent in menus
+                                                            .Where(m => m.ParentId == null)
+                                                            .OrderBy(m => m.Title))
                                 {
-                                    var children = menus.Where(m => m.ParentId == parent.Id).OrderBy(m => m.Title).ToList();
+                                    var parentIndex = menuIndexes[parent.Id];
+
+                                    var children = menus
+                                    .Where(m => m.ParentId == parent.Id)
+                                    .OrderBy(m => m.Title)
+                                    .ToList();
+
                                     var hasChildren = children.Any();
+
                                     <li>
                                         <div class="tree-item @(hasChildren ? "has-children" : "leaf-node")">
+
                                             @if (hasChildren)
                                             {
-                                                <span class="tree-toggle expanded" data-toggle="tree" aria-label="باز/بسته کردن">
+                                                <span class="tree-toggle expanded"
+                                                      data-toggle="tree"
+                                                      aria-label="باز/بسته کردن">
                                                     <i class="fa fa-chevron-down"></i>
                                                 </span>
                                             }
                                             else
                                             {
-                                                <span class="tree-toggle leaf"><i class="fa fa-chevron-down"></i></span>
+                                                <span class="tree-toggle leaf">
+                                                    <i class="fa fa-chevron-down"></i>
+                                                </span>
                                             }
-                                            <input type="checkbox" class="tree-check" asp-for="Menus[@menus.IndexOf(parent)].IsSelected" />
-                                            <label class="tree-label">@parent.Title</label>
-                                            <input type="hidden" asp-for="Menus[@menus.IndexOf(parent)].Id" />
-                                            <input type="hidden" asp-for="Menus[@menus.IndexOf(parent)].ParentId" />
+
+                                            <input type="checkbox"
+                                                   class="tree-check"
+                                                   asp-for="Menus[@parentIndex].IsSelected" />
+
+                                            <label class="tree-label">
+                                                @parent.Title
+                                            </label>
+
+                                            <input type="hidden"
+                                                   asp-for="Menus[@parentIndex].Id" />
+
+                                            <input type="hidden"
+                                                   asp-for="Menus[@parentIndex].ParentId" />
+
                                         </div>
 
                                         @if (hasChildren)
                                         {
                                             <ul class="tree-children open">
+
                                                 @foreach (var child in children)
                                                 {
-                                                    var grandChildren = menus.Where(m => m.ParentId == child.Id).OrderBy(m => m.Title).ToList();
+                                                    var childIndex = menuIndexes[child.Id];
+
+                                                    var grandChildren = menus
+                                                    .Where(m => m.ParentId == child.Id)
+                                                    .OrderBy(m => m.Title)
+                                                    .ToList();
+
                                                     var hasGrandChildren = grandChildren.Any();
+
                                                     <li>
                                                         <div class="tree-item @(hasGrandChildren ? "has-children" : "leaf-node")">
+
                                                             @if (hasGrandChildren)
                                                             {
-                                                                <span class="tree-toggle expanded" data-toggle="tree">
+                                                                <span class="tree-toggle expanded"
+                                                                      data-toggle="tree">
                                                                     <i class="fa fa-chevron-down"></i>
                                                                 </span>
                                                             }
                                                             else
                                                             {
-                                                                <span class="tree-toggle leaf"><i class="fa fa-chevron-down"></i></span>
+                                                                <span class="tree-toggle leaf">
+                                                                    <i class="fa fa-chevron-down"></i>
+                                                                </span>
                                                             }
-                                                            <input type="checkbox" class="tree-check" asp-for="Menus[@menus.IndexOf(child)].IsSelected" />
-                                                            <label class="tree-label">@child.Title</label>
-                                                            <input type="hidden" asp-for="Menus[@menus.IndexOf(child)].Id" />
-                                                            <input type="hidden" asp-for="Menus[@menus.IndexOf(child)].ParentId" />
+
+                                                            <input type="checkbox"
+                                                                   class="tree-check"
+                                                                   asp-for="Menus[@childIndex].IsSelected" />
+
+                                                            <label class="tree-label">
+                                                                @child.Title
+                                                            </label>
+
+                                                            <input type="hidden"
+                                                                   asp-for="Menus[@childIndex].Id" />
+
+                                                            <input type="hidden"
+                                                                   asp-for="Menus[@childIndex].ParentId" />
+
                                                         </div>
 
                                                         @if (hasGrandChildren)
                                                         {
                                                             <ul class="tree-children open">
+
                                                                 @foreach (var grandChild in grandChildren)
                                                                 {
+                                                                    var grandChildIndex = menuIndexes[grandChild.Id];
+
                                                                     <li>
                                                                         <div class="tree-item leaf-node">
-                                                                            <span class="tree-toggle leaf"><i class="fa fa-chevron-down"></i></span>
-                                                                            <input type="checkbox" class="tree-check" asp-for="Menus[@menus.IndexOf(grandChild)].IsSelected" />
-                                                                            <label class="tree-label">@grandChild.Title</label>
-                                                                            <input type="hidden" asp-for="Menus[@menus.IndexOf(grandChild)].Id" />
-                                                                            <input type="hidden" asp-for="Menus[@menus.IndexOf(grandChild)].ParentId" />
+
+                                                                            <span class="tree-toggle leaf">
+                                                                                <i class="fa fa-chevron-down"></i>
+                                                                            </span>
+
+                                                                            <input type="checkbox"
+                                                                                   class="tree-check"
+                                                                                   asp-for="Menus[@grandChildIndex].IsSelected" />
+
+                                                                            <label class="tree-label">
+                                                                                @grandChild.Title
+                                                                            </label>
+
+                                                                            <input type="hidden"
+                                                                                   asp-for="Menus[@grandChildIndex].Id" />
+
+                                                                            <input type="hidden"
+                                                                                   asp-for="Menus[@grandChildIndex].ParentId" />
+
                                                                         </div>
                                                                     </li>
                                                                 }
+
                                                             </ul>
                                                         }
                                                     </li>
                                                 }
+
                                             </ul>
                                         }
+
                                     </li>
                                 }
+
                             </ul>
                         }
                         else
                         {
                             <div class="permission-tree-empty">
-                                <i class="fa fa-inbox"></i> منویی برای نمایش وجود ندارد.
+                                <i class="fa fa-inbox"></i>
+                                منویی برای نمایش وجود ندارد.
                             </div>
                         }
+
                     </div>
                 </div>
 
                 <div class="form-footer">
+
                     <a asp-action="Index" class="btn-back">
-                        <i class="fa fa-arrow-right"></i> بازگشت
+                        <i class="fa fa-arrow-right"></i>
+                        بازگشت
                     </a>
+
                     <button type="submit" class="btn-confirm">
-                        <i class="fa fa-save"></i> ثبت
+                        <i class="fa fa-save"></i>
+                        ثبت
                     </button>
+
                 </div>
+
             </form>
+
         </div>
     </div>
 </div>

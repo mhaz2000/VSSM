@@ -994,10 +994,10 @@ public class DispatchService(
         //    return (false, "این UID قبلاً در یک ارسال دیگر استفاده شده است.", null);
         //}
 
-        if (uidInfoRaw.FkReceiveDispatchId.HasValue)
-        {
-            return (false, "این UID قبلاً دریافت شده است.", null);
-        }
+        //if (uidInfoRaw.FkReceiveDispatchId.HasValue)
+        //{
+        //    return (false, "این UID قبلاً دریافت شده است.", null);
+        //}
 
         if (uidInfoRaw.ItemId != itemId)
         {

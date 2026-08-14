@@ -48,7 +48,6 @@ $(function () {
         }
     });
 
-    // ── رویداد change چک‌باکس ──
     $(document).on('change', '.batch-chk', function () {
         var anyChecked = $('.batch-chk:checked').length > 0;
         if (anyChecked) {
@@ -58,13 +57,10 @@ $(function () {
         }
     });
 
-    // ════════════════════════════════════════
-    //  ۳. SearchableSelect - راه‌اندازی با mousedown
-    // ════════════════════════════════════════
+    // =========================================================
+    // SearchableSelect - راه‌اندازی با mousedown
+    // =========================================================
 
-    /**
-     * اتصال رویداد کلیک به گزینه‌های یک wrapper خاص
-     */
     function bindSSOptionClick($wrapper) {
         $wrapper.find('.ss-option').off('click.ss').on('click.ss', function (e) {
             e.preventDefault();
@@ -82,9 +78,6 @@ $(function () {
         });
     }
 
-    /**
-     * پر کردن گزینه‌های یک SearchableSelect
-     */
     function populateSS(wrapperId, items, emptyText) {
         var $hidden = $('#' + wrapperId);
         var $wrapper = $hidden.closest('.ss-wrapper');
@@ -112,11 +105,9 @@ $(function () {
         bindSSOptionClick($wrapper);
     }
 
-    // ── راه‌اندازی اولیه تمام SearchableSelectهای موجود ──
     $('.ss-wrapper').each(function () {
         var $wrapper = $(this);
 
-        // باز کردن دراپ‌داون با mousedown (یک کلیک)
         $wrapper.find('.ss-display').off('mousedown.ss').on('mousedown.ss', function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -124,7 +115,6 @@ $(function () {
             var $dd = $wrapper.find('.ss-dropdown');
             var isOpen = $dd.is(':visible');
 
-            // بستن سایر دراپ‌داون‌ها
             $('.ss-dropdown').not($dd).hide();
 
             if (isOpen) {
@@ -135,7 +125,6 @@ $(function () {
             }
         });
 
-        // جستجو
         $wrapper.find('.ss-search').off('input.ss').on('input.ss', function () {
             var q = $(this).val().toLowerCase();
             $(this).closest('.ss-dropdown').find('.ss-option').each(function () {
@@ -145,11 +134,9 @@ $(function () {
             });
         });
 
-        // اتصال گزینه‌های اولیه
         bindSSOptionClick($wrapper);
     });
 
-    // ── بستن دراپ‌داون با کلیک خارج (mousedown) ──
     $(document).off('mousedown.ss-close').on('mousedown.ss-close', function (e) {
         if (!$(e.target).closest('.ss-wrapper').length) {
             setTimeout(function () {
@@ -158,9 +145,9 @@ $(function () {
         }
     });
 
-    // ════════════════════════════════════════
-    //  ۴. cascade: نوع کالا ← کالا ← سری ساخت
-    // ════════════════════════════════════════
+    // =========================================================
+    // Cascade: نوع کالا ← کالا ← سری ساخت
+    // =========================================================
 
     $('#itemClassSelect').on('change', function () {
         var classId = $(this).val();
@@ -184,7 +171,6 @@ $(function () {
         });
     });
 
-    // ── رویداد change روی hidden input کالا ──
     $('#itemSelect').on('change', function () {
         var itemId = $(this).val();
         if (batchTable) batchTable.setData([]);
@@ -206,9 +192,9 @@ $(function () {
         });
     });
 
-    // ════════════════════════════════════════
-    //  ۵. افزودن آیتم به لیست
-    // ════════════════════════════════════════
+    // =========================================================
+    // افزودن آیتم به لیست
+    // =========================================================
 
     window.addSelectedItem = function () {
         var $checked = $('.batch-chk:checked');
@@ -230,7 +216,6 @@ $(function () {
         $checked.each(function () {
             var row = JSON.parse($(this).attr('data-row').replace(/&#39;/g, "'"));
 
-            // جلوگیری از تکرار همان itemDetailStoreId
             var exists = addedItems.some(function (it) {
                 return it.itemDetailStoreId === row.itemDetailStoreId;
             });
@@ -262,7 +247,6 @@ $(function () {
             });
             added++;
 
-            // حلال خودکار
             if (row.requiresDiluent && row.diluentItemDetailStoreId) {
                 addedItems.push({
                     idx: addedItems.length,
@@ -299,9 +283,9 @@ $(function () {
         $('#doseCountInput').val('');
     };
 
-    // ════════════════════════════════════════
-    //  ۶. حذف آیتم
-    // ════════════════════════════════════════
+    // =========================================================
+    // حذف آیتم
+    // =========================================================
 
     window.removeItem = function (idx) {
         var item = addedItems[idx];
@@ -315,16 +299,16 @@ $(function () {
         renderAddedItems();
     };
 
-    // ════════════════════════════════════════
-    //  ۷. رندر جدول کالاهای افزوده‌شده
-    // ════════════════════════════════════════
+    // =========================================================
+    // رندر جدول کالاهای افزوده‌شده
+    // =========================================================
 
     function renderAddedItems() {
         var tbody = $('#addedItemsTbody');
 
         if (addedItems.length === 0) {
             tbody.html(
-                '<tr id="noAddedRow"><td colspan="10" ' +
+                '<tr id="noAddedRow"><td colspan="11" ' +
                 'style="padding:24px;color:#9ca3af;text-align:center;">کالایی اضافه نشده</td></tr>'
             );
             $('#dispatchForm').removeAttr('data-has-record');
@@ -341,6 +325,7 @@ $(function () {
                 '<td>' + (item.expiryDateShamsi || '-') + '</td>' +
                 '<td>' + item.doseCount + '</td>' +
                 '<td>' + item.numVial + '</td>' +
+                '<td>' + (item.uids ? item.uids.length : 0) + '</td>' +
                 '<td>-</td>' +
                 '<td>' + (item.vvmStageName || '-') + '</td>' +
                 '<td>' + (item.manufacturerName || '-') + '</td>' +
@@ -360,6 +345,14 @@ $(function () {
         $('#dispatchForm').attr('data-has-record', 'true');
         rebuildHiddenInputs();
     }
+
+    // =========================================================
+    // 🔔 گوش‌دادن به رویداد به‌روزرسانی UID
+    // =========================================================
+    $(document).on('uids-updated', function () {
+        renderAddedItems();
+    });
+
     function rebuildHiddenInputs() {
         var $container = $('#hiddenInputsContainer').empty();
 
@@ -379,16 +372,17 @@ $(function () {
             add('Note', item.note);
 
             $.each(item.uids, function (j, uid) {
+                var uidVal = typeof uid === 'string' ? uid : uid.uid;
                 $container.append(
-                    '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uid + '">'
+                    '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uidVal + '">'
                 );
             });
         });
     }
 
-    // ════════════════════════════════════════
-    //  ۹. دکمه‌های footer
-    // ════════════════════════════════════════
+    // =========================================================
+    // دکمه‌های footer
+    // =========================================================
 
     $('.js-footer-btn').on('click', function () {
         var submitType = $(this).data('submit');
@@ -407,11 +401,9 @@ $(function () {
             return;
         }
 
-        // ── اعتبارسنجی تعداد UID در حالت final ──
         if (submitType === 'final') {
             var mismatchItems = [];
             $.each(addedItems, function (_, item) {
-                // محاسبه تعداد کل UIDهای اسکن‌شده برای این آیتم
                 var scannedCount = 0;
                 $.each(item.uids, function (_, entry) {
                     var cnt = typeof entry === 'object' ? (entry.count || 1) : 1;
@@ -428,7 +420,7 @@ $(function () {
                     'تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد:\n' + mismatchItems.join('\n'),
                     'error'
                 );
-                return; 
+                return;
             }
         }
 
@@ -470,5 +462,4 @@ $(function () {
             }
         }
     };
-
 });

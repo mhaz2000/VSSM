@@ -5,11 +5,10 @@ function openUidModal(idx) {
     _uidCurrentLineIndex = idx;
     var item = addedItems[idx];
 
-    // ⭐ دریافت مقدار requestedDose مستقیماً از سلول جدول
     var row = $('#addedItemsTable tbody tr').eq(idx);
     var doseFromTable = parseInt(row.find('td:eq(3)').text().trim()) || 0;
     if (doseFromTable > 0) {
-        item.requestedDose = doseFromTable; // به‌روزرسانی در آرایه
+        item.requestedDose = doseFromTable;
     }
 
     var displayName = item.itemName || 'کالا';
@@ -31,6 +30,8 @@ function closeUidModal() {
     $('#uidModalOverlay').removeClass('open');
     _uidCurrentLineIndex = null;
     _isSubmitting = false;
+    // 🔔 به‌روزرسانی جدول اصلی پس از بستن مودال
+    $(document).trigger('uids-updated');
 }
 
 function submitUid() {
@@ -49,7 +50,6 @@ function submitUid() {
 
     var item = addedItems[_uidCurrentLineIndex];
 
-    // چک تکراری
     var exists = item.uids.some(function (entry) {
         var existingUid = typeof entry === 'string' ? entry : entry.uid;
         return existingUid === barcode;
@@ -94,12 +94,10 @@ function submitUid() {
                 currentTotal += cnt;
             });
             var newTotal = currentTotal + doseCount;
-            // ⭐ استفاده از requestedDose که از جدول به‌روز شده
             var requestedDose = item.requestedDose || 0;
 
             if (newTotal > requestedDose) {
                 showToast('تعداد کل دوزهای اسکن‌شده (' + newTotal + ') از تعداد درخواستی (' + requestedDose + ') بیشتر است', 'error');
-                // حذف UID از سشن
                 $.ajax({
                     url: removeUidFromSessionUrl || '/Dispatches/RemoveScanUid',
                     type: 'POST',
@@ -161,6 +159,9 @@ function _addUidToRam(item, uid, count) {
     updateUidModalCount(item);
     renderUidList(item);
 
+    // 🔔 به‌روزرسانی جدول اصلی
+    $(document).trigger('uids-updated');
+
     $('#uidInput').val('').focus();
 }
 
@@ -189,6 +190,9 @@ function removeUid(itemIdx, uidIdx) {
                 $('#uidModalStock').text(item.stockInRam);
                 updateUidModalCount(item);
                 renderUidList(item);
+
+                // 🔔 به‌روزرسانی جدول اصلی
+                $(document).trigger('uids-updated');
 
                 showToast('UID با موفقیت حذف شد', 'success');
             } else {

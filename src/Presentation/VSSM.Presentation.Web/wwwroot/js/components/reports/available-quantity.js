@@ -6,7 +6,7 @@
 
     var searchButtons = form.find('.btn-confirm');
     var itemClassSelect = $('#itemClassId');
-    var itemMultiSelect = $('#itemId');
+    var itemMultiSelect = $('#itemId');       // hidden input
     var storeMultiSelect = $('#storeId');
     var batchNumberInput = $('#batchNumber');
     var fromDateInput = $('#fromDate');
@@ -18,9 +18,105 @@
     var itemsRequest = null;
     var lastRequestedClassId = null;
 
-    setSearchableMultiSelectDisabled('itemId', true);
+    // =========================================================
+    // توابع مشابه dispatch-form.js
+    // =========================================================
+
+    /**
+     * پر کردن گزینه‌های MultiSelect
+     */
+    function populateMultiSelect(selectId, items, placeholder) {
+        placeholder = placeholder || 'انتخاب کنید';
+        var $hidden = $('#' + selectId);
+        if (!$hidden.length) return;
+
+        var $wrapper = $hidden.closest('.ms-wrapper');
+        if (!$wrapper.length) return;
+
+        var $optionsContainer = $wrapper.find('.ms-options');
+        var $tags = $wrapper.find('.ms-tags');
+
+        if (!$optionsContainer.length || !$tags.length) return;
+
+        // Reset
+        $hidden.val('');
+        $tags.html('<span class="ms-placeholder">' + escapeHtml(placeholder) + '</span>');
+        $optionsContainer.empty();
+
+        if (!items || items.length === 0) {
+            $hidden.trigger('change');
+            return;
+        }
+
+        // "انتخاب همه"
+        var selectAll = $('<div class="ms-option ms-select-all" data-value="__all__">' +
+            '<input type="checkbox" class="ms-option-checkbox" />' +
+            '<span>انتخاب همه</span>' +
+            '</div>');
+        $optionsContainer.append(selectAll);
+
+        // گزینه‌ها
+        $.each(items, function (_, item) {
+            var option = $('<div class="ms-option" data-value="' + escapeHtml(item.value) + '">' +
+                '<input type="checkbox" class="ms-option-checkbox" />' +
+                '<span>' + escapeHtml(item.text) + '</span>' +
+                '</div>');
+            $optionsContainer.append(option);
+        });
+
+        $hidden.trigger('change');
+    }
+
+    /**
+     * خالی کردن گزینه‌های MultiSelect
+     */
+    function clearMultiSelect(selectId) {
+        populateMultiSelect(selectId, [], 'انتخاب کالا');
+        setMultiSelectDisabled(selectId, true);
+    }
+
+    /**
+     * فعال/غیرفعال کردن MultiSelect
+     */
+    function setMultiSelectDisabled(selectId, disabled) {
+        var $hidden = $('#' + selectId);
+        if (!$hidden.length) return;
+        var $wrapper = $hidden.closest('.ms-wrapper');
+        if (!$wrapper.length) return;
+        var $dropdown = $wrapper.find('.ms-dropdown');
+
+        $hidden.prop('disabled', disabled);
+        $wrapper.toggleClass('ms-disabled', disabled);
+        if (disabled) {
+            $wrapper.removeClass('open');
+            $dropdown.hide();
+        } else {
+            $dropdown.show();
+        }
+    }
+
+    /**
+     * حالت بارگذاری MultiSelect
+     */
+    function setMultiSelectLoading(selectId, loading) {
+        var $hidden = $('#' + selectId);
+        if (!$hidden.length) return;
+        var $wrapper = $hidden.closest('.ms-wrapper');
+        if (!$wrapper.length) return;
+        $wrapper.toggleClass('ms-loading', loading);
+    }
+
+    // =========================================================
+    // مقداردهی اولیه
+    // =========================================================
+
+    setMultiSelectDisabled('itemId', true);
     updateSearchButtons();
     initializeDatePickers();
+
+    // =========================================================
+    // رویداد تغییر نوع کالا
+    // =========================================================
 
     itemClassSelect.on('change', function () {
         var classId = normalizeValue($(this).val());
@@ -29,9 +125,9 @@
 
         if (!classId) {
             lastRequestedClassId = null;
-            clearItemOptions();
-            setSearchableMultiSelectDisabled('itemId', true);
-            setSearchableMultiSelectLoading('itemId', false);
+            clearMultiSelect('itemId');
+            setMultiSelectDisabled('itemId', true);
+            setMultiSelectLoading('itemId', false);
             updateSearchButtons();
             return;
         }
@@ -41,32 +137,16 @@
         loadItemsByClass(classId);
     });
 
-    itemMultiSelect.on('change', updateSearchButtons);
-    storeMultiSelect.on('change', updateSearchButtons);
-
-    form.on('change', 'select, input[type="checkbox"]', updateSearchButtons);
-    form.on('input', '#batchNumber, #fromDate, #toDate', updateSearchButtons);
-
-    fromDateEnInput.on('change input', updateSearchButtons);
-    toDateEnInput.on('change input', updateSearchButtons);
-
-    allSubRecipientStocks.on('change', updateSearchButtons);
-
-    form.on('submit', function (event) {
-        if (!hasAnyFilter()) {
-            event.preventDefault();
-            updateSearchButtons();
-            return false;
-        }
-        return true;
-    });
+    // =========================================================
+    // بارگذاری کالاها بر اساس نوع کالا
+    // =========================================================
 
     function loadItemsByClass(classId) {
         var url = '/CurrentStockReport/GetItemsByClass?classItemId=' + encodeURIComponent(classId);
 
-        setSearchableMultiSelectDisabled('itemId', true);
-        setSearchableMultiSelectLoading('itemId', true);
-        clearItemOptions();
+        setMultiSelectDisabled('itemId', true);
+        setMultiSelectLoading('itemId', true);
+        clearMultiSelect('itemId');
 
         itemsRequest = $.ajax({
             url: url,
@@ -78,14 +158,14 @@
                 if (currentClassId !== classId) return;
 
                 if (!response || response.success !== true) {
-                    clearItemOptions();
+                    clearMultiSelect('itemId');
                     showWarningToast(response?.message || 'دریافت کالاها با خطا مواجه شد.');
                     return;
                 }
 
                 var result = Array.isArray(response.result) ? response.result : [];
                 if (result.length === 0) {
-                    clearItemOptions();
+                    clearMultiSelect('itemId');
                     showWarningToast('برای نوع کالای انتخاب‌شده، کالایی یافت نشد.');
                     return;
                 }
@@ -94,20 +174,17 @@
                     return { value: item.itemId, text: item.fullName };
                 });
 
-                // پر کردن گزینه‌ها با تابع اصلاح‌شده
-                setSearchableMultiSelectOptions('itemId', items, 'انتخاب کالا');
-
-                // فعال کردن کنترل (حتماً)
-                setSearchableMultiSelectDisabled('itemId', false);
+                populateMultiSelect('itemId', items, 'انتخاب کالا');
+                setMultiSelectDisabled('itemId', false);
             },
             error: function (xhr, status) {
                 if (status === 'abort') return;
-                clearItemOptions();
+                clearMultiSelect('itemId');
                 showErrorToast('خطا در دریافت کالاها.');
             },
             complete: function () {
                 itemsRequest = null;
-                setSearchableMultiSelectLoading('itemId', false);
+                setMultiSelectLoading('itemId', false);
                 updateSearchButtons();
             }
         });
@@ -120,92 +197,37 @@
         }
     }
 
-    function clearItemOptions() {
-        setSearchableMultiSelectOptions('itemId', [], 'انتخاب کالا');
-        setSearchableMultiSelectDisabled('itemId', true);
-    }
+    // =========================================================
+    // رویدادهای تغییر سایر فیلترها
+    // =========================================================
+
+    itemMultiSelect.on('change', updateSearchButtons);
+    storeMultiSelect.on('change', updateSearchButtons);
+
+    form.on('change', 'select, input[type="checkbox"]', updateSearchButtons);
+    form.on('input', '#batchNumber, #fromDate, #toDate', updateSearchButtons);
+
+    fromDateEnInput.on('change input', updateSearchButtons);
+    toDateEnInput.on('change input', updateSearchButtons);
+
+    allSubRecipientStocks.on('change', updateSearchButtons);
 
     // =========================================================
-    // اصلاح تابع setSearchableMultiSelectOptions
+    // ارسال فرم
     // =========================================================
-    function setSearchableMultiSelectOptions(selectId, items, placeholder) {
-        placeholder = placeholder || 'انتخاب کنید';
-        var hidden = document.getElementById(selectId);
-        if (!hidden) return;
 
-        var wrapper = hidden.closest('.ms-wrapper');
-        if (!wrapper) return;
-
-        // پیدا کردن .ms-options داخل .ms-dropdown
-        var dropdown = wrapper.querySelector('.ms-dropdown');
-        if (!dropdown) return;
-
-        var optionsContainer = dropdown.querySelector('.ms-options');
-        if (!optionsContainer) return;
-
-        var tags = wrapper.querySelector('.ms-tags');
-        if (!tags) return;
-
-        // پاک کردن مقدار hidden
-        hidden.value = '';
-
-        // به‌روزرسانی تگ‌ها
-        tags.innerHTML = '<span class="ms-placeholder">' + escapeHtml(placeholder) + '</span>';
-
-        // پاک کردن گزینه‌های قبلی
-        optionsContainer.innerHTML = '';
-
-        if (!Array.isArray(items) || items.length === 0) {
-            $(hidden).trigger('change');
-            return;
+    form.on('submit', function (event) {
+        if (!hasAnyFilter()) {
+            event.preventDefault();
+            updateSearchButtons();
+            return false;
         }
-
-        // افزودن "انتخاب همه"
-        var selectAll = document.createElement('div');
-        selectAll.className = 'ms-option ms-select-all';
-        selectAll.dataset.value = '__all__';
-        selectAll.innerHTML = '<input type="checkbox" class="ms-option-checkbox" /><span>انتخاب همه</span>';
-        optionsContainer.appendChild(selectAll);
-
-        // افزودن گزینه‌ها
-        items.forEach(function (item) {
-            var option = document.createElement('div');
-            option.className = 'ms-option';
-            option.dataset.value = String(item.value);
-            option.innerHTML = '<input type="checkbox" class="ms-option-checkbox" /><span>' + escapeHtml(item.text) + '</span>';
-            optionsContainer.appendChild(option);
-        });
-
-        // اعلام تغییر به سیستم
-        $(hidden).trigger('change');
-    }
+        return true;
+    });
 
     // =========================================================
-    // توابع کمکی دیگر
+    // توابع کمکی (بدون تغییر)
     // =========================================================
-    function setSearchableMultiSelectDisabled(selectId, disabled) {
-        var hidden = document.getElementById(selectId);
-        if (!hidden) return;
-        var wrapper = hidden.closest('.ms-wrapper');
-        if (!wrapper) return;
-        var dropdown = wrapper.querySelector('.ms-dropdown');
-        hidden.disabled = disabled;
-        wrapper.classList.toggle('ms-disabled', disabled);
-        if (disabled) {
-            wrapper.classList.remove('open');
-            if (dropdown) dropdown.style.display = 'none';
-        } else {
-            if (dropdown) dropdown.style.display = '';
-        }
-    }
-
-    function setSearchableMultiSelectLoading(selectId, loading) {
-        var hidden = document.getElementById(selectId);
-        if (!hidden) return;
-        var wrapper = hidden.closest('.ms-wrapper');
-        if (!wrapper) return;
-        wrapper.classList.toggle('ms-loading', loading);
-    }
 
     function initializeDatePickers() {
         if (typeof DatePicker === 'undefined' || typeof DatePicker.attach !== 'function') return;

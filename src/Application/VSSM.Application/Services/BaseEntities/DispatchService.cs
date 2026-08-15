@@ -599,7 +599,7 @@ public class DispatchService(
                 Date = now,
                 FiscalPeriodId = fiscalPeriodId,
                 EntryDate = now,
-                EnteredById = userId.ToString(),
+                EnteredById = userId,
                 IsConfirmed = true,
                 IsDrafted = false,
                 ConfirmationTime = now,
@@ -615,7 +615,7 @@ public class DispatchService(
             {
                 var newStoreId = storeMap[item.DispatchLineId];
 
-                arrival.TblArrivalLines.Add(new TblArrivalLine
+                arrival.ArrivalLines.Add(new TblArrivalLine
                 {
                     BatchNum = item.BatchNumber,
                     CommertialNameId = item.CommercialNameId,
@@ -683,7 +683,7 @@ public class DispatchService(
 
                 if (currentDispatch != null)
                 {
-                    currentDispatch.ArrivalId = arrival.ArrivalId;
+                    currentDispatch.ArrivalId = arrival.Id;
                     currentDispatch.ReceiverStatus = 2;
                     currentDispatch.FkReceiveDispatchId = receiveDispatch.PkReceiveDispatchesId;
                     await context.SaveChangesAsync(cancellationToken);

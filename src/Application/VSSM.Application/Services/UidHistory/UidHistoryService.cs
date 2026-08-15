@@ -31,7 +31,7 @@ public class UidHistoryService(
                     .ThenInclude(a => a.Sender)
             .Include(u => u.OrderInfo)
                 .ThenInclude(o => o.Arrival)
-                    .ThenInclude(a => a.TblArrivalLines)
+                    .ThenInclude(a => a.ArrivalLines)
             .FirstOrDefaultAsync(
                 u => u.SecLevelUid == uid ||
                      u.FirstLevelUid == uid ||
@@ -125,7 +125,7 @@ public class UidHistoryService(
         {
             string reportNumber = arrival.ReportNumber ?? "-";
 
-            var arrivalLine = arrival.TblArrivalLines?.FirstOrDefault();
+            var arrivalLine = arrival.ArrivalLines?.FirstOrDefault();
             if (arrivalLine?.StoreId.HasValue == true)
             {
                 var store = await db.TblStores

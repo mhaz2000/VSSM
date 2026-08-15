@@ -273,43 +273,92 @@ public partial class VSSMDbContext(
 
         modelBuilder.Entity<TblArrival>(entity =>
         {
-            entity.HasKey(e => e.ArrivalId);
+            entity.HasKey(e => e.Id)
+                .HasName("PK_TBL_ARRIVALS");
 
             entity.ToTable("tblArrivals");
 
-            entity.Property(e => e.ArrivalId).HasColumnName("ArrivalID");
-            entity.Property(e => e.ConfirmationTime)
-                .HasColumnType("datetime")
-                .HasColumnName("ConfirmationTIme");
-            entity.Property(e => e.Date).HasColumnType("datetime");
-            entity.Property(e => e.DispatchId).HasColumnName("DispatchID");
-            entity.Property(e => e.EnteredById).HasColumnName("EnteredByID");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
+            entity.Property(e => e.Id)
+                .HasColumnName("PK_ARRIVAL_ID");
 
-            entity.Property(e => e.FiscalPeriodId).HasColumnName("FiscalPeriodID");
-            entity.Property(e => e.ReceiverId).HasColumnName("ReceiverID");
-            entity.Property(e => e.SenderId).HasColumnName("SenderID");
-
-            entity.HasIndex(e => e.ReportNumber)
-                 .IsUnique();
+            entity.Property(e => e.Date)
+                .HasColumnName("DATE")
+                .HasColumnType("datetime");
 
             entity.Property(e => e.ReportNumber)
-                  .HasMaxLength(32)
-                  .IsUnicode();
+                .HasColumnName("REPORT_NUMBER")
+                .HasMaxLength(32)
+                .IsUnicode();
 
+            entity.Property(e => e.FiscalPeriodId)
+                .HasColumnName("FK_FISCAL_PERIOD_ID");
 
-            entity.HasOne(d => d.FiscalPeriod).WithMany(p => p.TblArrivals)
+            entity.Property(e => e.EntryDate)
+                .HasColumnName("ENTRY_DATE")
+                .HasColumnType("datetime");
+
+            entity.Property(e => e.EnteredById)
+                .HasColumnName("FK_ENTERED_BY_ID");
+
+            entity.Property(e => e.IsConfirmed)
+                .HasColumnName("IS_CONFIRMED");
+
+            entity.Property(e => e.IsCancelled)
+                .HasColumnName("IS_CANCELLED");
+
+            entity.Property(e => e.IsDrafted)
+                .HasColumnName("IS_DRAFTED");
+
+            entity.Property(e => e.ConfirmationTime)
+                .HasColumnName("CONFIRMATION_TIME")
+                .HasColumnType("datetime");
+
+            entity.Property(e => e.SenderId)
+                .HasColumnName("FK_SENDER_ID");
+
+            entity.Property(e => e.ReceiverId)
+                .HasColumnName("FK_RECEIVER_ID");
+
+            entity.Property(e => e.DispatchId)
+                .HasColumnName("FK_DISPATCH_ID");
+
+            entity.Property(e => e.Note)
+                .HasColumnName("NOTE");
+
+            entity.HasIndex(e => e.ReportNumber)
+                .IsUnique()
+                .HasDatabaseName("UX_TBL_ARRIVALS_REPORT_NUMBER");
+
+            entity.HasIndex(e => e.ReportNumber)
+                .HasDatabaseName("IX_TBL_ARRIVALS_REPORT_NUMBER_SEARCH");
+
+            entity.HasIndex(e => e.Date)
+                .HasDatabaseName("IX_TBL_ARRIVALS_DATE");
+
+            entity.HasOne(d => d.FiscalPeriod)
+                .WithMany(p => p.TblArrivals)
                 .HasForeignKey(d => d.FiscalPeriodId)
-                .HasConstraintName("FK_tblArrivals_tblFiscalPeriods");
+                .HasConstraintName("FK_TBL_ARRIVALS_FISCAL_PERIOD");
 
-            entity.HasOne(d => d.Receiver).WithMany(p => p.TblArrivalReceivers)
-                .HasForeignKey(d => d.ReceiverId)
-                .HasConstraintName("FK_tblArrivals_tblRecipients1");
+            entity.HasOne(d => d.EnteredBy)
+                .WithMany()
+                .HasForeignKey(d => d.EnteredById)
+                .HasConstraintName("FK_TBL_ARRIVALS_ENTERED_BY");
 
-            entity.HasOne(d => d.Sender).WithMany(p => p.TblArrivalSenders)
+            entity.HasOne(d => d.Sender)
+                .WithMany(p => p.TblArrivalSenders)
                 .HasForeignKey(d => d.SenderId)
-                .HasConstraintName("FK_tblArrivals_tblRecipients");
+                .HasConstraintName("FK_TBL_ARRIVALS_SENDER");
 
+            entity.HasOne(d => d.Receiver)
+                .WithMany(p => p.TblArrivalReceivers)
+                .HasForeignKey(d => d.ReceiverId)
+                .HasConstraintName("FK_TBL_ARRIVALS_RECEIVER");
+
+            entity.HasOne(d => d.Dispatch)
+                .WithMany()
+                .HasForeignKey(d => d.DispatchId)
+                .HasConstraintName("FK_TBL_ARRIVALS_DISPATCH");
         });
 
 
@@ -466,9 +515,9 @@ public partial class VSSMDbContext(
             entity.Property(e => e.TransportMode).HasColumnName("TransportMode");
 
             entity.HasOne(d => d.Arrival)
-                .WithMany(p => p.TblDispatches)
+                .WithMany()
                 .HasForeignKey(d => d.ArrivalId)
-                .HasConstraintName("FK_tblDispatches_tblArrivals");
+                .HasConstraintName("FK_TBL_DISPATCHES_ARRIVAL");
 
             entity.HasOne(d => d.EnteredBy).WithMany(p => p.TblDispatches)
                 .HasForeignKey(d => d.EnteredById)

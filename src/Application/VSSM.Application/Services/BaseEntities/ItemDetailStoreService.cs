@@ -106,7 +106,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
     {
         var lines = await _db.TblArrivalLines
             .Where(l => _db.TblArrivals
-                .Any(a => a.ReceiverId == userRecipientId && a.ArrivalId == l.ArrivalId))
+                .Any(a => a.ReceiverId == userRecipientId && a.Id == l.ArrivalId))
             .Select(l => new
             {
                 Line = l,

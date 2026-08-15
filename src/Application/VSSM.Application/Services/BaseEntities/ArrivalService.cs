@@ -44,7 +44,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
             .Take(paging.PageSize)
             .Select(a => new
             {
-                a.ArrivalId,
+                a.Id,
                 a.ReportNumber,
                 a.Date,
                 a.IsConfirmed,
@@ -68,7 +68,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
 
         var list = pagedArrivals.Select(a => new ArrivalListDto
         {
-            ArrivalId = a.ArrivalId,
+            ArrivalId = a.Id,
             ReportNumber = a.ReportNumber,
             Date = a.Date,
             IsConfirmed = a.IsConfirmed,
@@ -95,14 +95,14 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
     public async Task<ArrivalGetDto?> GetById(int id, CancellationToken token)
     {
         var arrival = await db.TblArrivals
-            .Include(x => x.TblArrivalLines)
-            .FirstOrDefaultAsync(x => x.ArrivalId == id, token);
+            .Include(x => x.ArrivalLines)
+            .FirstOrDefaultAsync(x => x.Id == id, token);
 
         if (arrival == null) return null;
 
         return new ArrivalGetDto
         {
-            ArrivalId = arrival.ArrivalId,
+            ArrivalId = arrival.Id,
             Date = arrival.Date,
             ReportNumber = arrival.ReportNumber,
             FiscalPeriodId = arrival.FiscalPeriodId,
@@ -111,8 +111,8 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
             IsDrafted = arrival.IsDrafted,
             IsCancelled = arrival.IsCancelled,
             Note = arrival.Note,
-            Lines = arrival.TblArrivalLines
-                .Where(l => l.ArrivalId == arrival.ArrivalId)
+            Lines = arrival.ArrivalLines
+                .Where(l => l.ArrivalId == arrival.Id)
                 .Select(l => new ArrivalLineDto
                 {
                     ArrivalLineId = l.ArrivalLineId,
@@ -157,7 +157,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
 
         db.TblArrivals.Add(arrival);
         await db.SaveChangesAsync(token);
-        return arrival.ArrivalId;
+        return arrival.Id;
     }
 
 
@@ -171,7 +171,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
         var now = DateTime.Now;
 
         var arrival = await db.TblArrivals
-            .FirstOrDefaultAsync(x => x.ArrivalId == arrivalId, token);
+            .FirstOrDefaultAsync(x => x.Id == arrivalId, token);
 
         if (arrival == null) return;
 
@@ -302,7 +302,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
             .OrderByDescending(x => x.EntryDate)
             .Select(x => new ArrivalCopyDto
             {
-                ArrivalId = x.ArrivalId,
+                ArrivalId = x.Id,
                 DisplayText =
                     db.TblFiscalPeriods
                         .Where(f => f.FiscalPeriodId == x.FiscalPeriodId)
@@ -317,7 +317,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
 
     public async Task Delete(int id)
     {
-        var entity = await db.TblArrivals.FirstOrDefaultAsync(z => z.ArrivalId == id);
+        var entity = await db.TblArrivals.FirstOrDefaultAsync(z => z.Id == id);
         db.TblArrivals.Remove(entity);
         await db.SaveChangesAsync();
     }
@@ -360,7 +360,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
     {
         var lines = await db.TblArrivalLines
             .Where(l => db.TblArrivals
-                .Any(a => a.ReceiverId == userRecipientId && a.ArrivalId == l.ArrivalId))
+                .Any(a => a.ReceiverId == userRecipientId && a.Id == l.ArrivalId))
             .Select(l => new
             {
                 Line = l,

@@ -589,7 +589,7 @@ public class ArrivalController(
             IsConfirmed = false,
             IsDrafted = true,
             IsCancelled = false,
-            EnterById = CurrentUserId.ToString() ?? "",
+            EnterById = CurrentUserId.GetValueOrDefault(),
             Note = model.Note ?? "",
             UserRecipientId = CurrentUserRecipientId ?? 0,
             ArrivalType = model.ArrivalType,

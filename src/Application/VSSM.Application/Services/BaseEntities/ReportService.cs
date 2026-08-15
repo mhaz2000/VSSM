@@ -405,7 +405,7 @@ namespace VSSM.Application.Services.BaseEntities
 
             var query =
                 from a in arrivals
-                join al in _context.TblArrivalLines on a.ArrivalId equals al.ArrivalId
+                join al in _context.TblArrivalLines on a.Id equals al.ArrivalId
                 join i in itemQuery on al.ItemId equals i.ItemId
                 join r in reciepients on a.ReceiverId equals r.RecipientId
                 join d in dispatches on a.DispatchId equals d.DispatchId into dispatchJoin
@@ -539,7 +539,7 @@ namespace VSSM.Application.Services.BaseEntities
             var query = from a in arrivals
                         join d in dispatches on a.DispatchId equals d.DispatchId
                         join r in reciepients on a.ReceiverId equals r.RecipientId
-                        join l in _context.TblArrivalLines on a.ArrivalId equals l.ArrivalId
+                        join l in _context.TblArrivalLines on a.Id equals l.ArrivalId
                         group new { a, d, l } by r into g
                         select new ItemForRecipientInYearDto()
                         {
@@ -626,7 +626,7 @@ namespace VSSM.Application.Services.BaseEntities
             var arrivalQuery = from a in _context.TblArrivals
                                join d in _context.TblDispatches on a.DispatchId equals d.DispatchId
                                join r in _context.TblRecipients on a.ReceiverId equals r.RecipientId
-                               join al in _context.TblArrivalLines on a.ArrivalId equals al.ArrivalId
+                               join al in _context.TblArrivalLines on a.Id equals al.ArrivalId
                                join id in _context.TblItemDetails.Where(t => t.BatchNumber == batchNumber && t.ItemId == itemId) on al.ItemId equals id.ItemId
                                join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
                                join s in _context.TblStores.Where(t => t.RecipientId == currentRecipientId) on ids.StoreId equals s.StoreId

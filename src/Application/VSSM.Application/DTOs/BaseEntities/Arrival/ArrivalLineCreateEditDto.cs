@@ -5,7 +5,7 @@ public class ArrivalCreateDto
     public DateTime Date { get; set; }
     public string ReportNumber { get; set; } = "";
     public int FiscalPeriodId { get; set; }
-    public string EnterById { get; set; } = "";
+    public int EnterById { get; set; }
     public bool IsConfirmed { get; set; }
     public bool IsDrafted { get; set; }
     public bool IsCancelled { get; set; }

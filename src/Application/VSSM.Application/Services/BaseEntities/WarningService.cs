@@ -39,7 +39,7 @@ namespace VSSM.Application.Services.BaseEntities
                     on line.ManufacturerId equals manufacturer.BaseInfoId
 
                 join vvmStage in _context.TblBaseInfo
-                    on line.VvmstageId equals vvmStage.BaseInfoId
+                    on line.VvmStageId equals vvmStage.BaseInfoId
 
                 join store in _context.TblStores
                     on line.StoreId equals store.StoreId

@@ -115,11 +115,11 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
                 .Where(l => l.ArrivalId == arrival.Id)
                 .Select(l => new ArrivalLineDto
                 {
-                    ArrivalLineId = l.ArrivalLineId,
+                    ArrivalLineId = l.Id,
                     ArrivalId = l.ArrivalId,
                     ItemId = l.ItemId,
                     BatchNum = l.BatchNum,
-                    CommercialNameId = l.CommertialNameId,
+                    CommercialNameId = l.CommercialNameId,
                     DosePerVialId = l.DosePerVialId,
                     ExpiryDate = l.ExpiryDate,
                     ProductionDate = l.ProductionDate,
@@ -130,8 +130,8 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
                     Quantity = l.Quantity,
                     StoreId = l.StoreId,
                     UseId = l.UseId,
-                    VvmStageId = l.VvmstageId,
-                    VvmTypeId = l.VvmtypeId
+                    VvmStageId = l.VvmStageId,
+                    VvmTypeId = l.VvmTypeId
                 }).ToList()
         };
     }
@@ -203,8 +203,8 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
                 ItemId = line.ItemId,
                 DosePerVialId = line.DosePerVialId,
                 ManufacturerId = line.ManufacturerId,
-                CommercialNameId = line.CommertialNameId,
-                VvmTypeId = line.VvmtypeId,
+                CommercialNameId = line.CommercialNameId,
+                VvmTypeId = line.VvmTypeId,
                 BatchNumber = line.BatchNum,
                 ExpiryDate = line.ExpiryDate,
                 ProductionDate = line.ProductionDate,
@@ -223,7 +223,6 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
 
         foreach (var (line, detail) in map)
         {
-            // FK on line (now we have real detail.ItemDetailId)
             line.ItemDetailId = detail.ItemDetailId;
 
             stores.Add(new TblItemDetailStore
@@ -232,7 +231,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
                 StoreId = line.StoreId,
                 CurrentStock = line.Quantity,
                 EntryDate = now,
-                FkVvmStageId = line.FkVvmStageId  // ← ID نه object
+                FkVvmStageId = line.VvmStageId  
             });
         }
 
@@ -333,7 +332,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
             ArrivalId = arrivalId,
             ItemId = dto.ItemId,
             BatchNum = dto.BatchNum,
-            CommertialNameId = dto.CommercialNameId,
+            CommercialNameId = dto.CommercialNameId,
             DosePerVialId = dto.DosePerVialId,
             ExpiryDate = dto.ExpiryDate,
             ProductionDate = dto.ProductionDate,
@@ -344,8 +343,8 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
             Quantity = dto.Quantity,
             StoreId = dto.StoreId,
             UseId = dto.UseId,
-            VvmstageId = dto.VvmStageId,
-            VvmtypeId = dto.VvmTypeId,
+            VvmStageId = dto.VvmStageId,
+            VvmTypeId = dto.VvmTypeId,
             EntryDate = DateTime.Now
         };
 
@@ -378,11 +377,11 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
 
             return new ArrivalLineDto
             {
-                ArrivalLineId = l.ArrivalLineId,
+                ArrivalLineId = l.Id,
                 ArrivalId = l.ArrivalId,
                 ItemId = l.ItemId,
                 BatchNum = l.BatchNum,
-                CommercialNameId = l.CommertialNameId,
+                CommercialNameId = l.CommercialNameId,
                 DosePerVialId = l.DosePerVialId,
                 ExpiryDate = l.ExpiryDate,
                 ProductionDate = l.ProductionDate,
@@ -393,8 +392,8 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
                 Quantity = l.Quantity,
                 StoreId = l.StoreId,
                 UseId = l.UseId,
-                VvmStageId = l.VvmstageId,
-                VvmTypeId = l.VvmtypeId,
+                VvmStageId = l.VvmStageId,
+                VvmTypeId = l.VvmTypeId,
                 DropDownText = string.Format(
                     "کالا: {0} | سازنده: {1} | تاریخ انقضا: {2} | سری ساخت: {3} | انبار: {4} | دوز بر ویال: {5} | مقدار موجود: {6}",
                     x.Item != null ? x.Item.FullName : "",
@@ -419,27 +418,27 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
     }
     public async Task<ArrivalLineDto> GetArrivalLineById(int id)
     {
-        var line = await db.TblArrivalLines.FirstOrDefaultAsync(c => c.ArrivalLineId == id);
+        var line = await db.TblArrivalLines.FirstOrDefaultAsync(c => c.Id == id);
 
         var dto = new ArrivalLineDto
         {
-            ArrivalLineId = line.ArrivalLineId,
+            ArrivalLineId = line.Id,
             ArrivalId = line.ArrivalId,
             ItemId = line.ItemId,
             BatchNum = line.BatchNum,
-            CommercialNameId = line.CommertialNameId,
+            CommercialNameId = line.CommercialNameId,
             DosePerVialId = line.DosePerVialId,
             ExpiryDate = line.ExpiryDate,
             ProductionDate = line.ProductionDate,
             ItemDetailId = line.ItemDetailId,
             ManufacturerId = line.ManufacturerId,
-            Note = line.Note,
+            Note = line.Note ?? " ",
             NumVials = line.NumVials,
             Quantity = line.Quantity,
             StoreId = line.StoreId,
             UseId = line.UseId,
-            VvmStageId = line.VvmstageId,
-            VvmTypeId = line.VvmtypeId
+            VvmStageId = line.VvmStageId,
+            VvmTypeId = line.VvmTypeId  
         };
 
         return dto;
@@ -451,11 +450,11 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
 
         var dto = new ArrivalLineDto
         {
-            ArrivalLineId = line.ArrivalLineId,
+            ArrivalLineId = line.Id,
             ArrivalId = line.ArrivalId,
             ItemId = line.ItemId,
             BatchNum = line.BatchNum,
-            CommercialNameId = line.CommertialNameId,
+            CommercialNameId = line.CommercialNameId,
             DosePerVialId = line.DosePerVialId,
             ExpiryDate = line.ExpiryDate,
             ProductionDate = line.ProductionDate,
@@ -466,8 +465,8 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
             Quantity = line.Quantity,
             StoreId = line.StoreId,
             UseId = line.UseId,
-            VvmStageId = line.VvmstageId,
-            VvmTypeId = line.VvmtypeId
+            VvmStageId = line.VvmStageId,
+            VvmTypeId = line.VvmTypeId
         };
 
         return dto;

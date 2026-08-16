@@ -618,7 +618,7 @@ public class DispatchService(
                 arrival.ArrivalLines.Add(new TblArrivalLine
                 {
                     BatchNum = item.BatchNumber,
-                    CommertialNameId = item.CommercialNameId,
+                    CommercialNameId = item.CommercialNameId,
                     DosePerVialId = item.DosePerVialId,
                     EntryDate = now,
                     ExpiryDate = item.ExpiryDate,
@@ -628,9 +628,9 @@ public class DispatchService(
                     ProductionDate = item.ProductionDate,
                     Quantity = item.Quantity,
                     StoreId = newStoreId,
-                    FkUseId = item.FkUseBaseInfo,
-                    FkVvmStageId = item.FkVvmStageBaseInfo,
-                    FkVvmTypeId = item.FkVvmTypeBaseInfo,
+                    UseId = item.FkUseBaseInfo,
+                    VvmStageId = item.FkVvmStageBaseInfo,
+                    VvmTypeId = item.FkVvmTypeBaseInfo,
                 });
 
                 itemDetailStores.Add(new TblItemDetailStore

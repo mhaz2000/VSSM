@@ -43,6 +43,17 @@ public partial class VSSMDbContext(
     public virtual DbSet<TblVoucherConfig> TblVoucherConfigs { get; set; }
     public virtual DbSet<TblReceiveDispatches> TblReceiveDispatches { get; set; }
 
+
+    // Database naming convention:
+    // PK_* for primary-key columns/constraints
+    // FK_* for foreign-key columns/constraints
+    // IX_* for non-unique indexes
+    // UX_* for unique indexes
+    // Use UPPER_SNAKE_CASE for database identifiers.
+    // Keep C# entity/property/navigation names clean and idiomatic (PascalCase),
+    // and map them to database names explicitly via EF Core Fluent API.
+    // Do not introduce duplicate/legacy FK columns or constraints;
+    // each relationship must have one canonical FK and one clearly named constraint.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 
@@ -249,7 +260,7 @@ public partial class VSSMDbContext(
                 .HasForeignKey(d => d.AdjustmentreasonId)
                 .HasConstraintName("FK_tblAdjustments_tblBaseInfo_adjustmentreason");
 
-            entity.HasOne(d => d.ArrivalLine).WithMany(p => p.TblAdjustments)
+            entity.HasOne(d => d.ArrivalLine).WithMany(p => p.Adjustments)
                 .HasForeignKey(d => d.ArrivalLineId)
                 .HasConstraintName("FK_tblAdjustments_tblArrivalLines");
 
@@ -364,63 +375,110 @@ public partial class VSSMDbContext(
 
         modelBuilder.Entity<TblArrivalLine>(entity =>
         {
-            entity.HasKey(e => e.ArrivalLineId);
-
             entity.ToTable("tblArrivalLines");
 
-            entity.Property(e => e.ArrivalLineId).HasColumnName("ArrivalLineID");
-            entity.Property(e => e.ArrivalId).HasColumnName("ArrivalID");
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.ManufacturerId).HasColumnName("ManufacturerID");
-            entity.Property(e => e.DosePerVialId).HasColumnName("DosePerVialID");
-            entity.Property(e => e.StoreId).HasColumnName("StoreID");
-            entity.Property(e => e.ItemDetailId).HasColumnName("ItemDetailID");
+            // Primary Key
+            entity.HasKey(e => e.Id)
+                .HasName("PK_TBL_ARRIVAL_LINES");
 
-            entity.Property(e => e.UseId).HasColumnName("UseID");
-            entity.Property(e => e.CommertialNameId).HasColumnName("CommertialNameID");
-            entity.Property(e => e.VvmtypeId).HasColumnName("VVMTypeID");
-            entity.Property(e => e.VvmstageId).HasColumnName("VVMStageID");
+            entity.Property(e => e.Id)
+                .HasColumnName("PK_ARRIVAL_LINE_ID");
 
+            // Foreign Key Columns
+            entity.Property(e => e.ArrivalId)
+                .HasColumnName("FK_ARRIVAL_ID");
 
+            entity.Property(e => e.ItemId)
+                .HasColumnName("FK_ITEM_ID");
 
-            entity.Property(e => e.BatchNum).HasMaxLength(50);
-            entity.Property(e => e.Note).HasMaxLength(500);
+            entity.Property(e => e.UseId)
+                .HasColumnName("FK_USE_ID");
 
-            entity.Property(e => e.ExpiryDate).HasColumnType("datetime");
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.ProductionDate).HasColumnType("datetime");
+            entity.Property(e => e.ManufacturerId)
+                .HasColumnName("FK_MANUFACTURER_ID");
 
+            entity.Property(e => e.DosePerVialId)
+                .HasColumnName("FK_DOSE_PER_VIAL_ID");
 
-            entity.Property(e => e.FkUseId).HasColumnName("FK_USE_ID");
-            entity.Property(e => e.FkVvmTypeId).HasColumnName("FK_VVM_TYPE_ID");
-            entity.Property(e => e.FkVvmStageId).HasColumnName("FK_VVM_STAGE_ID");
-            entity.Property(e => e.FkCommertialNameId).HasColumnName("FK_COMMERTIAL_NAME_ID");
-            entity.Property(e => e.FkManufacturerId).HasColumnName("FK_MANUFACTURER_ID");
+            entity.Property(e => e.StoreId)
+                .HasColumnName("FK_STORE_ID");
 
-            entity.HasOne(d => d.FkUse)
+            entity.Property(e => e.ItemDetailId)
+                .HasColumnName("FK_ITEM_DETAIL_ID");
+
+            entity.Property(e => e.CommercialNameId)
+                .HasColumnName("FK_COMMERCIAL_NAME_ID");
+
+            entity.Property(e => e.VvmTypeId)
+                .HasColumnName("FK_VVM_TYPE_ID");
+
+            entity.Property(e => e.VvmStageId)
+                .HasColumnName("FK_VVM_STAGE_ID");
+
+            // Data Columns
+            entity.Property(e => e.Quantity)
+                .HasColumnName("QUANTITY");
+
+            entity.Property(e => e.NumVials)
+                .HasColumnName("NUM_VIALS");
+
+            entity.Property(e => e.BatchNum)
+                .HasColumnName("BATCH_NUM")
+                .HasMaxLength(50);
+
+            entity.Property(e => e.Note)
+                .HasColumnName("NOTE")
+                .HasMaxLength(500);
+
+            entity.Property(e => e.ExpiryDate)
+                .HasColumnName("EXPIRY_DATE")
+                .HasColumnType("datetime");
+
+            entity.Property(e => e.EntryDate)
+                .HasColumnName("ENTRY_DATE")
+                .HasColumnType("datetime");
+
+            entity.Property(e => e.ProductionDate)
+                .HasColumnName("PRODUCTION_DATE")
+                .HasColumnType("datetime");
+
+            // Relationships
+
+            entity.HasOne(e => e.Arrival)
+                .WithMany(e => e.ArrivalLines)
+                .HasForeignKey(e => e.ArrivalId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_TBL_ARRIVAL_LINES_ARRIVAL");
+
+            entity.HasOne(e => e.Use)
                 .WithMany()
-                .HasForeignKey(d => d.FkUseId)
-                .HasConstraintName("FK_ARRIVAL_LINE_USE");
+                .HasForeignKey(e => e.UseId)
+                .HasConstraintName("FK_TBL_ARRIVAL_LINES_USE");
 
-            entity.HasOne(d => d.FkVvmType)
+            entity.HasOne(e => e.VvmType)
                 .WithMany()
-                .HasForeignKey(d => d.FkVvmTypeId)
-                .HasConstraintName("FK_ARRIVAL_LINE_VVM_TYPE");
+                .HasForeignKey(e => e.VvmTypeId)
+                .HasConstraintName("FK_TBL_ARRIVAL_LINES_VVM_TYPE");
 
-            entity.HasOne(d => d.FkVvmStage)
+            entity.HasOne(e => e.VvmStage)
                 .WithMany()
-                .HasForeignKey(d => d.FkVvmStageId)
-                .HasConstraintName("FK_ARRIVAL_LINE_VVM_STAGE");
+                .HasForeignKey(e => e.VvmStageId)
+                .HasConstraintName("FK_TBL_ARRIVAL_LINES_VVM_STAGE");
 
-            entity.HasOne(d => d.FkCommertialName)
+            entity.HasOne(e => e.CommercialName)
                 .WithMany()
-                .HasForeignKey(d => d.FkCommertialNameId)
-                .HasConstraintName("FK_ARRIVAL_LINE_COMMERTIAL_NAME");
+                .HasForeignKey(e => e.CommercialNameId)
+                .HasConstraintName("FK_TBL_ARRIVAL_LINES_COMMERCIAL_NAME");
 
-            entity.HasOne(d => d.FkManufacturer)
+            entity.HasOne(e => e.Manufacturer)
                 .WithMany()
-                .HasForeignKey(d => d.FkManufacturerId)
-                .HasConstraintName("FK_ARRIVAL_LINE_MANUFACTURER");
+                .HasForeignKey(e => e.ManufacturerId)
+                .HasConstraintName("FK_TBL_ARRIVAL_LINES_MANUFACTURER");
+
+            entity.HasMany(e => e.Adjustments)
+                .WithOne(e => e.ArrivalLine)
+                .HasForeignKey(e => e.ArrivalLineId)
+                .HasConstraintName("FK_tblAdjustments_tblArrivalLines");
         });
 
 

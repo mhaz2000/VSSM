@@ -1,17 +1,40 @@
-﻿/**
- * item-form.js  —  منطق فرم ثبت/ویرایش کالا
- * پیش‌نیاز: jQuery، toast.js
- */
-(function () {
-    var VACCINE_CLASS_ID = 54;
-    var DILUENT_CLASS_ID = 55;
+﻿(function () {
+    const VACCINE_CLASS_ID = 54;
+    const DILUENT_CLASS_ID = 55;
 
-    var $itemClassSelect = $("#ItemClassId");
-    var $requiresDiluent = $("#requiresDiluentCheckbox");
-    var $diluentDropdown = $("#diluentDropdown");
+    let $itemClassSelect = $("#ItemClassId");
+    let $requiresDiluent = $("#requiresDiluentCheckbox");
+    let $diluentDropdown = $("#diluentDropdown");
+    let $submitBtn = $(".btn-confirm");
+    let $form = $("form");
 
-    // اگه آپشن‌های حلال از قبل توی View لود شدن (حالت ویرایش)، دیگه از API لود نکن
-    var isEditMode = $diluentDropdown.find("option").length > 1;
+    let $requiredFields = $("#ItemClassId, #FullName, #DayToWarmExpire");
+    let isEditMode = $diluentDropdown.find("option").length > 1;
+    let isSubmitting = false;
+
+    function validateForm() {
+        var isValid = true;
+
+        $requiredFields.each(function () {
+            var $field = $(this);
+            var val = $field.val();
+
+            if ($field.is("select")) {
+                if (!val || val === "") {
+                    isValid = false;
+                    return false;
+                }
+            } else {
+                if (!val || val.trim() === "") {
+                    isValid = false;
+                    return false;
+                }
+            }
+        });
+
+        $submitBtn.prop("disabled", !isValid);
+        return isValid;
+    }
 
     function loadDiluentItems(preselectId) {
         if (isEditMode) {
@@ -41,6 +64,7 @@
                 }
                 $diluentDropdown.prop("disabled", false);
                 isEditMode = false;
+                validateForm();
             })
             .fail(function () {
                 $diluentDropdown.empty()
@@ -53,6 +77,7 @@
             .append('<option value="">-- انتخاب کنید --</option>');
         $requiresDiluent.prop({ checked: false, disabled: true });
         isEditMode = false;
+        validateForm();
     }
 
     $itemClassSelect.on("change", function () {
@@ -61,6 +86,7 @@
         } else {
             clearDiluent();
         }
+        validateForm();
     });
 
     $requiresDiluent.on("change", function () {
@@ -71,10 +97,31 @@
             $diluentDropdown.prop("disabled", true).empty()
                 .append('<option value="">-- انتخاب کنید --</option>');
             isEditMode = false;
+            validateForm();
         }
     });
 
-    // مقداردهی اولیه
+    $requiredFields.on("change keyup", function () {
+        validateForm();
+    });
+
+    $form.on("submit", function (e) {
+        if (isSubmitting) {
+            e.preventDefault();
+            return false;
+        }
+
+        if (!validateForm()) {
+            e.preventDefault();
+            showToast("لطفاً تمام فیلدهای اجباری را پر کنید", "warning");
+            return false;
+        }
+
+        isSubmitting = true;
+        $submitBtn.prop("disabled", true);
+        $submitBtn.html('<i class="fa fa-spinner fa-spin"></i> در حال ثبت...');
+    });
+
     (function init() {
         var currentClass = parseInt($itemClassSelect.val());
         if (currentClass === VACCINE_CLASS_ID) {
@@ -85,6 +132,7 @@
         } else {
             $requiresDiluent.prop("disabled", true);
         }
+        validateForm();
     })();
 
 })();

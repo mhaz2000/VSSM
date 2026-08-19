@@ -1,8 +1,4 @@
-﻿/* ═══════════════════════════════════════════
-   item-form.css  —  فرم ثبت/ویرایش کالا
-   ═══════════════════════════════════════════ */
-
-.item-form-wrap {
+﻿.item-form-wrap {
     margin: 1.5rem;
     direction: rtl;
 }
@@ -54,4 +50,24 @@
 .diluent-wrap {
     max-width: 320px;
     margin-top: 1rem;
+}
+
+.required-field .f-control {
+    border-color: #d1d5db;
+}
+
+.required-field.error .f-control {
+    border-color: #dc2626;
+    background-color: #fef2f2;
+}
+
+.required-field .field-error {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 4px;
+    display: none;
+}
+
+.required-field.error .field-error {
+    display: block;
 }

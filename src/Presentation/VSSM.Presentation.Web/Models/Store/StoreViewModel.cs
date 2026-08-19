@@ -20,7 +20,7 @@ public class StoreViewModel
 
     public float? Volume { get; set; }
     public string? Note { get; set; }
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true; 
 
     [Required(ErrorMessage = "گیرنده نمی‌تواند خالی باشد.")]
     public int? RecipientId { get; set; }

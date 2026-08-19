@@ -1,10 +1,9 @@
-﻿@using VSSM.Presentation.Web.Models.Base
+﻿﻿@using VSSM.Presentation.Web.Models.Base
 @model VSSM.Presentation.Web.Models.Store.StoreViewModel
 
 @{
     string formName = Model?.StoreId > 0 ? "ویرایش انبار" : "ثبت انبار جدید";
     var recipients = ViewBag.RecipientList as List<SelectListItem>;
-
 }
 
 @section Styles {
@@ -24,7 +23,6 @@
 
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <!-- اطلاعات اصلی -->
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-warehouse" style="color:#1d6fb8;"></i>
@@ -53,30 +51,25 @@
                 </div>
 
                 <div class="fg-3" style="margin-bottom:14px;">
-
                     <div class="f-group">
                         <label class="f-label">گیرنده <span class="req-tag">اجباری</span></label>
-
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
                         {
                             Id = "RecipientId",
-                            Name = "RecipientId",
-                            DefaultText = "جستجوی گیرنده...",
-                            Label = "",
-                            IsRequired = true,
-                            SelectedValue = Model?.RecipientId?.ToString(),
-                            ValidationMessage = "گیرنده نمی‌تواند خالی باشد.",
-                            Options = recipients.Select(r => new SelectOption
-                            {
-                                Value = r.Value.ToString(),
-                                Text = r.Text
-                            }).ToList()
-                        })
-
+                                                Name = "RecipientId",
+                                                DefaultText = "جستجوی گیرنده...",
+                                                Label = "",
+                                                IsRequired = true,
+                                                SelectedValue = Model?.RecipientId?.ToString(),
+                                                ValidationMessage = "گیرنده نمی‌تواند خالی باشد.",
+                                                Options = recipients.Select(r => new SelectOption
+                                                {
+                                                    Value = r.Value.ToString(),
+                                                    Text = r.Text
+                                                }).ToList()
+                                                })
                         <span class="text-danger" asp-validation-for="RecipientId"></span>
-
                     </div>
-
                     <div class="f-group">
                         <label class="f-label">حجم کلی فضا (لیتر)</label>
                         <input asp-for="Volume" placeholder="لیتر را وارد کنید" class="f-control" />
@@ -86,24 +79,37 @@
                         <input asp-for="FreeVolume" placeholder="حجم مفید را وارد کنید" class="f-control" />
                         <span class="text-danger" asp-validation-for="FreeVolume"></span>
                     </div>
-
                 </div>
 
-                <div class="fg-2">
+                <div class="fg-3" style="margin-bottom:0;">
                     <div class="f-group">
                         <label class="f-label">سال نصب</label>
                         <input asp-for="Year" placeholder="سال نصب را وارد کنید" class="f-control" />
                     </div>
+
+                    <div class="f-group">
+                        <label class="f-label">وضعیت</label>
+                        <div class="row-checkbox" style="margin-top:0;">
+                            <label>
+                                <input type="checkbox" asp-for="IsActive" checked="@(Model?.IsActive ?? true)" />
+                                <span style="margin-right:8px; font-size:0.9rem; font-weight:500; color:#374151;">
+                                    @(Model?.IsActive ?? true ? "فعال" : "غیرفعال")
+                                </span>
+                            </label>
+                            <span class="text-danger" asp-validation-for="IsActive" style="margin-right:8px;"></span>
+                        </div>
+                    </div>
+
                     <div class="f-group">
                         <label class="f-label">ملاحظات</label>
-                        <textarea asp-for="Note" placeholder="ملاحظات را وارد کنید" class="f-control"></textarea>
+                        <textarea asp-for="Note" placeholder="ملاحظات را وارد کنید" class="f-control" style="height:38px;"></textarea>
                     </div>
+
                 </div>
 
             </div>
         </div>
 
-        <!-- فوتر -->
         <div class="form-footer">
             <button type="submit" class="btn-confirm">
                 <i class="fa fa-save"></i> ثبت
@@ -118,7 +124,6 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // ensure jQuery validation validates SearchableSelect hidden inputs
         $(function() {
             $('.ss-wrapper').each(function() {
                 var $form = $(this).closest('form');
@@ -126,6 +131,57 @@
                     $form.data('validator').settings.ignore = '';
                 }
             });
+        });
+
+        $(document).ready(function() {
+
+            $('.ss-wrapper .ss-display').on('click', function(e) {
+                e.stopPropagation();
+                var $wrapper = $(this).closest('.ss-wrapper');
+                $('.ss-wrapper.open').not($wrapper).removeClass('open');
+                $wrapper.toggleClass('open');
+            });
+
+            $('.ss-wrapper .ss-option').on('click', function() {
+                var $wrapper = $(this).closest('.ss-wrapper');
+                var value = $(this).data('value');
+                var text = $(this).text().trim();
+                var $hidden = $wrapper.find('input[type="hidden"]');
+                var $displayText = $wrapper.find('.ss-text');
+
+                $hidden.val(value);
+                $displayText.text(text);
+                $wrapper.removeClass('open');
+            });
+
+            $('.ss-wrapper .ss-search').on('keyup', function() {
+                var searchText = $(this).val().toLowerCase();
+                var $options = $(this).closest('.ss-dropdown').find('.ss-option');
+                $options.each(function() {
+                    var text = $(this).text().toLowerCase();
+                    if (text.indexOf(searchText) > -1) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.ss-wrapper').length) {
+                    $('.ss-wrapper.open').removeClass('open');
+                }
+            });
+
+            $('.row-checkbox input[type="checkbox"]').on('change', function() {
+                var $statusText = $(this).closest('label').find('span');
+                if ($(this).is(':checked')) {
+                    $statusText.text('فعال');
+                } else {
+                    $statusText.text('غیرفعال');
+                }
+            });
+
         });
     </script>
 }

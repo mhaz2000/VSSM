@@ -2,7 +2,7 @@
 @model GridViewModel
 
 @{
-    ViewData["Title"] = "فایل های ورودی";
+    ViewData["Title"] = "بارگذاری فایل";
 }
 
 @section Styles {
@@ -104,11 +104,7 @@
 
                 <div id="progressContainer" style="margin-top: 1rem;"></div>
 
-                <div class="form-footer">
-                    <a asp-action="Index" class="btn-back">
-                        <i class="fa fa-arrow-right"></i>
-                        <span>بازگشت</span>
-                    </a>
+                <div class="form-footer">       
                     <button id="uploadBtn"
                             type="submit"
                             class="btn-confirm js-submit-btn"

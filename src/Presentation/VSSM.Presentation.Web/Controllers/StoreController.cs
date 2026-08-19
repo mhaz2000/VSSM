@@ -89,10 +89,7 @@ namespace VSSM.Presentation.Web.Controllers
         {
             await LoadDropDowns(cancellationToken);
 
-            StoreViewModel models = new StoreViewModel
-            {
-                IsActive = true
-            };
+            StoreViewModel models = new StoreViewModel();
 
             if (id.HasValue && id.Value > 0)
             {

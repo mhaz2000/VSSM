@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\Shipment\**" />
+    <Compile Remove="Views\Source\**" />
+    <Content Remove="Views\Shipment\**" />
+    <Content Remove="Views\Source\**" />
+    <EmbeddedResource Remove="Views\Shipment\**" />
+    <EmbeddedResource Remove="Views\Source\**" />
+    <None Remove="Views\Shipment\**" />
+    <None Remove="Views\Source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.10" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
   </ItemGroup>
@@ -24,11 +35,6 @@
 
   <ItemGroup>
     <Folder Include="Models\FiscalPeriod\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Views\Shipment\" />
-    <Folder Include="Views\Source\" />
   </ItemGroup>
 
   <ItemGroup>

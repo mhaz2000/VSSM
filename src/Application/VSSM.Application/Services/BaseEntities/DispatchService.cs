@@ -25,7 +25,7 @@ public class DispatchService(
     {
         var storeIds = await context.TblStores
             .Where(s => s.RecipientId == recipientId)
-            .Select(s => s.StoreId)
+            .Select(s => s.Id)
             .ToListAsync();
 
         return storeIds;
@@ -42,7 +42,7 @@ public class DispatchService(
                 into idsJoin
             from ids in idsJoin.DefaultIfEmpty()
 
-            join store in context.TblStores on line.StoreId equals store.StoreId
+            join store in context.TblStores on line.StoreId equals store.Id
                 into storeJoin
             from store in storeJoin.DefaultIfEmpty()
 
@@ -137,7 +137,7 @@ public class DispatchService(
         {
             allowedStoreIds = await context.TblStores
                 .Where(s => s.RecipientId == recipientId)
-                .Select(s => s.StoreId)
+                .Select(s => s.Id)
                 .ToListAsync(ct);
 
             if (allowedStoreIds.Count == 0)
@@ -175,7 +175,7 @@ public class DispatchService(
                     from mfr in mfrJ.DefaultIfEmpty()
                     join dpv in context.TblBaseInfo on id.DosePerVialId equals dpv.BaseInfoId into dpvJ
                     from dpv in dpvJ.DefaultIfEmpty()
-                    join store in context.TblStores on ids.StoreId equals store.StoreId into storeJ
+                    join store in context.TblStores on ids.StoreId equals store.Id into storeJ
                     from store in storeJ.DefaultIfEmpty()
                     select new
                     {
@@ -1015,7 +1015,7 @@ public class DispatchService(
         {
             var userStoreIds = await context.TblStores
                 .Where(s => s.RecipientId == recipientId)
-                .Select(s => s.StoreId)
+                .Select(s => s.Id)
                 .ToListAsync();
 
             if (!userStoreIds.Contains(uidInfoRaw.CurrentStore.Value))

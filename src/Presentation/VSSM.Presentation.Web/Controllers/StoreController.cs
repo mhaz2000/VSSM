@@ -97,7 +97,7 @@ namespace VSSM.Presentation.Web.Controllers
 
                 models = new StoreViewModel
                 {
-                    StoreId = dto.StoreId,
+                    StoreId = dto.Id,
                     Code = dto.Code,
                     Name = dto.Name,
                     TypeId = dto.TypeId,
@@ -108,17 +108,6 @@ namespace VSSM.Presentation.Web.Controllers
                     RecipientId = dto.RecipientId,
 
                     Year = dto.Year,
-                    Model = dto.Model,
-                    Manufacturer = dto.Manufacturer,
-                    Pqsno = dto.Pqsno,
-                    CoolingUnitNo = dto.CoolingUnitNo,
-                    RefrigerantGas = dto.RefrigerantGas,
-
-                    PowerSource = dto.PowerSource,
-                    Source = dto.Source,
-                    Barcode = dto.Barcode,
-                    PeriodNoteUse = dto.PeriodNoteUse,
-                    UnitCost = dto.UnitCost
                 };
             }
 
@@ -149,17 +138,7 @@ namespace VSSM.Presentation.Web.Controllers
                     RecipientId = storeView.RecipientId,
 
                     Year = storeView.Year,
-                    Model = storeView.Model,
-                    Manufacturer = storeView.Manufacturer,
-                    Pqsno = storeView.Pqsno,
-                    CoolingUnitNo = storeView.CoolingUnitNo,
-                    RefrigerantGas = storeView.RefrigerantGas,
 
-                    PowerSource = storeView.PowerSource,
-                    Source = storeView.Source,
-                    Barcode = storeView.Barcode,
-                    PeriodNoteUse = storeView.PeriodNoteUse,
-                    UnitCost = storeView.UnitCost
                 };
 
                 await _storeService.Create(dto, cancellationToken);
@@ -168,7 +147,7 @@ namespace VSSM.Presentation.Web.Controllers
             {
                 var dto = new StoreEditDto
                 {
-                    StoreId = storeView.StoreId.Value,
+                    Id = storeView.StoreId.Value,
                     Code = storeView.Code,
                     Name = storeView.Name,
                     TypeId = storeView.TypeId.Value,
@@ -179,16 +158,6 @@ namespace VSSM.Presentation.Web.Controllers
                     RecipientId = storeView.RecipientId,
 
                     Year = storeView.Year,
-                    Model = storeView.Model,
-                    Manufacturer = storeView.Manufacturer,
-                    Pqsno = storeView.Pqsno,
-                    CoolingUnitNo = storeView.CoolingUnitNo,
-
-                    PowerSource = storeView.PowerSource,
-                    Source = storeView.Source,
-                    Barcode = storeView.Barcode,
-                    PeriodNoteUse = storeView.PeriodNoteUse,
-                    UnitCost = storeView.UnitCost
                 };
 
                 await _storeService.Update(dto, cancellationToken);

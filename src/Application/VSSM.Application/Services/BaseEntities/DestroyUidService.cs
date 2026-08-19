@@ -32,7 +32,7 @@ public class DestroyUidService(
 
         var validStoreIds = await db.TblStores
              .Where(s => s.RecipientId == userRecipientId)
-             .Select(s => s.StoreId)
+             .Select(s => s.Id)
              .ToListAsync(token);
 
         if (validStoreIds.Count == 0)
@@ -87,7 +87,7 @@ public class DestroyUidService(
 
         var validStoreIds = await db.TblStores
             .Where(s => s.RecipientId == userRecipientId)
-            .Select(s => s.StoreId)
+            .Select(s => s.Id)
             .ToListAsync(token);
 
         if (!validStoreIds.Any())
@@ -295,7 +295,7 @@ public class DestroyUidService(
     {
         var validStoreIds = await db.TblStores
             .Where(s => s.RecipientId == userRecipientId)
-            .Select(s => s.StoreId)
+            .Select(s => s.Id)
             .ToListAsync(token);
 
         var orderIds = items.Select(i => i.PkOrderInfo).ToList();
@@ -316,7 +316,7 @@ public class DestroyUidService(
     {
         var validStoreIds = await db.TblStores
             .Where(s => s.RecipientId == userRecipientId)
-            .Select(s => s.StoreId)
+            .Select(s => s.Id)
             .ToListAsync(token);
 
         if (validStoreIds.Count == 0)

@@ -37,7 +37,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join itmDtlStr in _db.TblItemDetailStores.Where(t => t.CurrentStock > 0)
                     on itmDtl.ItemDetailId equals itmDtlStr.ItemDetailId
                 join str in _db.TblStores.Where(store => store.RecipientId == recipientId)
-                    on itmDtlStr.StoreId equals str.StoreId
+                    on itmDtlStr.StoreId equals str.Id
 
                 group new { itm, itmDtl, itmDtlStr, str } by itmDtl.BatchNumber into g
 
@@ -59,7 +59,7 @@ namespace VSSM.Application.Services.BaseEntities
                             on itmDtl.ItemDetailId equals itmDtlStr.ItemDetailId into itemStoreInfo
                         from i in itemStoreInfo.DefaultIfEmpty()
                         join str in _db.TblStores.Where(store => store.RecipientId == recipientId)
-                            on i.StoreId equals str.StoreId into itemAndStore
+                            on i.StoreId equals str.Id into itemAndStore
                         from s in itemAndStore
                         join manufacture in _db.TblBaseInfo
                             on itmDtl.ManufacturerId equals manufacture.BaseInfoId into manufactureInfo
@@ -80,7 +80,7 @@ namespace VSSM.Application.Services.BaseEntities
                                            on dDtl.ItemDetailId equals dStore.ItemDetailId into dStoreInfo
                                        from ds in dStoreInfo.DefaultIfEmpty()
                                        join dStr in _db.TblStores.Where(store => store.RecipientId == recipientId)
-                                           on ds.StoreId equals dStr.StoreId into dStoreFiltered
+                                           on ds.StoreId equals dStr.Id into dStoreFiltered
                                        from dS in dStoreFiltered
                                        join dMan in _db.TblBaseInfo
                                            on dDtl.ManufacturerId equals dMan.BaseInfoId into dManInfo
@@ -102,7 +102,7 @@ namespace VSSM.Application.Services.BaseEntities
                                            BatchNumber = dDtl.BatchNumber,
                                            StoreName = dS.Name,
                                            ItemDetailStoreId = ds.PKItemDetailStoreId,
-                                           StoreId = dS.StoreId,
+                                           StoreId = dS.Id,
                                            Manufacture = dm.Title
                                        }).FirstOrDefault() 
 
@@ -118,7 +118,7 @@ namespace VSSM.Application.Services.BaseEntities
                             BatchNumber = itmDtl.BatchNumber,
                             StoreName = s.Name,
                             ItemDetailStoreId = i.PKItemDetailStoreId,
-                            StoreId = s.StoreId,
+                            StoreId = s.Id,
                             Manufacture = m.Title,
                             Diluent = diluent
                         };

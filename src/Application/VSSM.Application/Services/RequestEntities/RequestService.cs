@@ -262,7 +262,7 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
     {
         var storeIds = await dbContext.TblStores
             .Where(s => s.RecipientId == recipientId)
-            .Select(s => s.StoreId)
+            .Select(s => s.Id)
             .ToListAsync(token);
 
         var baseQuery = dbContext.TblUidInfo

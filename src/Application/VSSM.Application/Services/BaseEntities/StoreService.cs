@@ -24,14 +24,14 @@ namespace VSSM.Application.Services.BaseEntities
         {
             var entity = await _db.TblStores
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.StoreId == id, token);
+                .FirstOrDefaultAsync(x => x.Id == id, token);
 
             if (entity == null)
                 throw new Exception("Record not found.");
 
             return new StoreEditDto
             {
-                StoreId = entity.StoreId,
+                Id = entity.Id,
                 Code = entity.Code,
                 Name = entity.Name,
                 TypeId = entity.TypeId ?? 0,
@@ -40,19 +40,7 @@ namespace VSSM.Application.Services.BaseEntities
                 Note = entity.Note,
                 IsActive = entity.IsActive ?? false,
                 RecipientId = entity.RecipientId,
-                GrossVol = entity.GrossVol,
                 Year = entity.Year,
-                Model = entity.Model,
-                Manufacturer = entity.Manufacturer,
-                Pqsno = entity.Pqsno,
-                CoolingUnitNo = entity.CoolingUnitNo,
-                RefrigerantGas = entity.RefrigerantGas,
-                RoomBox = entity.RoomBox,
-                PowerSource = entity.PoweSource,
-                Source = entity.Source,
-                Barcode = entity.Barcode,
-                PeriodNoteUse = entity.PeriodNotUse,
-                UnitCost = entity.UnitCost
             };
         }
 
@@ -68,32 +56,19 @@ namespace VSSM.Application.Services.BaseEntities
                 Note = dto.Note,
                 IsActive = dto.IsActive,
                 RecipientId = dto.RecipientId,
-                GrossVol = dto.GrossVol,
                 Year = dto.Year,
-                Model = dto.Model,
-                Manufacturer = dto.Manufacturer,
-                Pqsno = dto.Pqsno,
-                CoolingUnitNo = dto.CoolingUnitNo,
-                RefrigerantGas = dto.RefrigerantGas,
-                RoomBox = dto.RoomBox,
-                PoweSource = dto.PowerSource,
-                Source = dto.Source,
-                Barcode = dto.Barcode,
-                PeriodNotUse = dto.PeriodNoteUse,
-                UnitCost = dto.UnitCost,
-                EntryDate = DateTime.Now
             };
 
             _db.TblStores.Add(entity);
             await _db.SaveChangesAsync(token);
 
-            return entity.StoreId;
+            return entity.Id;
         }
 
         public async Task<bool> Update(StoreEditDto dto, CancellationToken token)
         {
             var entity = await _db.TblStores
-                .FirstOrDefaultAsync(x => x.StoreId == dto.StoreId, token);
+                .FirstOrDefaultAsync(x => x.Id == dto.Id, token);
 
             if (entity == null)
                 throw new Exception("Record not found.");
@@ -106,19 +81,8 @@ namespace VSSM.Application.Services.BaseEntities
             entity.Note = dto.Note;
             entity.IsActive = dto.IsActive;
             entity.RecipientId = dto.RecipientId;
-            entity.GrossVol = dto.GrossVol;
             entity.Year = dto.Year;
-            entity.Model = dto.Model;
-            entity.Manufacturer = dto.Manufacturer;
-            entity.Pqsno = dto.Pqsno;
-            entity.CoolingUnitNo = dto.CoolingUnitNo;
-            entity.RefrigerantGas = dto.RefrigerantGas;
-            entity.RoomBox = dto.RoomBox;
-            entity.PoweSource = dto.PowerSource;
-            entity.Source = dto.Source;
-            entity.Barcode = dto.Barcode;
-            entity.PeriodNotUse = dto.PeriodNoteUse;
-            entity.UnitCost = dto.UnitCost;
+
 
             await _db.SaveChangesAsync(token);
             return true;
@@ -151,12 +115,12 @@ namespace VSSM.Application.Services.BaseEntities
             paging.TotalItems = await query.CountAsync(token);
 
             var items = await query
-                .OrderBy(x => x.StoreId)
+                .OrderBy(x => x.Id)
                 .Skip(paging.Skip)
                 .Take(paging.PageSize)
                 .Select(x => new StoreListDto
                 {
-                    StoreId = x.StoreId,
+                    StoreId = x.Id,
                     Code = x.Code,
                     FullName = x.Name,
                     TypeId = x.TypeId ?? 0,
@@ -190,7 +154,7 @@ namespace VSSM.Application.Services.BaseEntities
                    new StoreListDto
                    {
                        RecipientId = x.RecipientId,
-                       StoreId = x.StoreId,
+                       StoreId = x.Id,
                        Code = x.Code,
                        TypeId= x.TypeId ?? 0,
                        FullName = x.Name,
@@ -207,7 +171,7 @@ namespace VSSM.Application.Services.BaseEntities
                 new StoreListDto
                 {
                     RecipientId = x.RecipientId,
-                    StoreId = x.StoreId,
+                    StoreId = x.Id,
                     Code = x.Code,
                     TypeId= x.TypeId ?? 0,
                     FullName = x.Name,
@@ -308,7 +272,7 @@ namespace VSSM.Application.Services.BaseEntities
 
         public async Task<string> GetStoreNamesAsync(List<int> storeIds)
         {
-            var stores = await _db.TblStores.Where(t => storeIds.Contains(t.StoreId)).Select(s => s.Name).ToListAsync();
+            var stores = await _db.TblStores.Where(t => storeIds.Contains(t.Id)).Select(s => s.Name).ToListAsync();
             return string.Join(" - ", stores);
         }
 

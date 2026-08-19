@@ -61,7 +61,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0)
                     on id.ItemDetailId equals ids.ItemDetailId
                 join s in storeQuery
-                    on ids.StoreId equals s.StoreId
+                    on ids.StoreId equals s.Id
                 join r in _context.TblRecipients
                     on s.RecipientId equals r.RecipientId
 
@@ -207,7 +207,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0)
                     on id.ItemDetailId equals ids.ItemDetailId
                 join s in storeQuery
-                    on ids.StoreId equals s.StoreId
+                    on ids.StoreId equals s.Id
                 join v in _context.TblBaseInfo
                     on id.DosePerVialId equals v.BaseInfoId
                 group new { i, ids, v, ic }
@@ -286,7 +286,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0)
                     on id.ItemDetailId equals ids.ItemDetailId
                 join s in storeQuery
-                    on ids.StoreId equals s.StoreId
+                    on ids.StoreId equals s.Id
                 group new { i, ids }
                 by new { i.FullName, i.Code }
                     into g
@@ -360,7 +360,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0)
                     on id.ItemDetailId equals ids.ItemDetailId
                 join s in storeQuery
-                    on ids.StoreId equals s.StoreId
+                    on ids.StoreId equals s.Id
                 join v in _context.TblBaseInfo
                     on id.DosePerVialId equals v.BaseInfoId
                 group new { i, ids, v }
@@ -479,7 +479,7 @@ namespace VSSM.Application.Services.BaseEntities
             var items = itemId is not null ? _context.TblItems.Where(item => item.FkClassId == itemClassId && item.ItemId == itemId)
                 : _context.TblItems.Where(item => item.FkClassId == itemClassId);
 
-            var stores = storeId is not null ? _context.TblStores.Where(t => t.RecipientId == recipientId && t.StoreId == storeId)
+            var stores = storeId is not null ? _context.TblStores.Where(t => t.RecipientId == recipientId && t.Id == storeId)
                 : _context.TblStores.Where(t => t.RecipientId == recipientId);
 
             var query =
@@ -487,7 +487,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join ic in _context.TblItemsClasses on i.FkClassId equals ic.ItemClassId
                 join id in _context.TblItemDetails on i.ItemId equals id.ItemId
                 join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
-                join s in stores on ids.StoreId equals s.StoreId
+                join s in stores on ids.StoreId equals s.Id
                 join m in _context.TblBaseInfo on id.ManufacturerId equals m.BaseInfoId
 
                 group new { ids, id, i, ic, s, m }
@@ -610,7 +610,7 @@ namespace VSSM.Application.Services.BaseEntities
                                 join dl in _context.TblDispatchLines on d.DispatchId equals dl.DispatchId
                                 join id in _context.TblItemDetails.Where(t => t.BatchNumber == batchNumber && t.ItemId == itemId) on dl.ItemId equals id.ItemId
                                 join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
-                                join s in _context.TblStores.Where(t => t.RecipientId == currentRecipientId) on ids.StoreId equals s.StoreId
+                                join s in _context.TblStores.Where(t => t.RecipientId == currentRecipientId) on ids.StoreId equals s.Id
                                 select new ItemIndicatorDto()
                                 {
                                     Arrival = 0,
@@ -629,7 +629,7 @@ namespace VSSM.Application.Services.BaseEntities
                                join al in _context.TblArrivalLines on a.Id equals al.ArrivalId
                                join id in _context.TblItemDetails.Where(t => t.BatchNumber == batchNumber && t.ItemId == itemId) on al.ItemId equals id.ItemId
                                join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
-                               join s in _context.TblStores.Where(t => t.RecipientId == currentRecipientId) on ids.StoreId equals s.StoreId
+                               join s in _context.TblStores.Where(t => t.RecipientId == currentRecipientId) on ids.StoreId equals s.Id
                                select new ItemIndicatorDto()
                                {
                                    RequestNum = d.RequestNum,
@@ -719,7 +719,7 @@ namespace VSSM.Application.Services.BaseEntities
             var nonZeroStockItems = from i in _context.TblItems.Where(t => t.IsActive != null && t.IsActive.Value && t.FkClassId == itemClassId)
                                     join id in _context.TblItemDetails on i.ItemId equals id.ItemId
                                     join ids in _context.TblItemDetailStores.Where(t => t.CurrentStock != 0) on id.ItemDetailId equals ids.ItemDetailId
-                                    join s in _context.TblStores.Where(t => t.RecipientId == currentRecipientId) on ids.StoreId equals s.StoreId
+                                    join s in _context.TblStores.Where(t => t.RecipientId == currentRecipientId) on ids.StoreId equals s.Id
                                     select new { i.ItemId, i.FullName };
 
             var allItems = _context.TblItems.Where(t => t.IsActive.HasValue && t.IsActive.Value && t.FkClassId == itemClassId)
@@ -801,7 +801,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0)
                     on id.ItemDetailId equals ids.ItemDetailId
                 join s in storeQuery
-                    on ids.StoreId equals s.StoreId
+                    on ids.StoreId equals s.Id
                 join r in _context.TblRecipients
                     on s.RecipientId equals r.RecipientId
 

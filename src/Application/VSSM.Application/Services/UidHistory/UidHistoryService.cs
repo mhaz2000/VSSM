@@ -130,7 +130,7 @@ public class UidHistoryService(
             {
                 var store = await db.TblStores
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(s => s.StoreId == arrivalLine.StoreId.Value, token);
+                    .FirstOrDefaultAsync(s => s.Id == arrivalLine.StoreId.Value, token);
                 storeName = store?.Name ?? "-";
             }
 

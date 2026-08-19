@@ -115,7 +115,7 @@ public sealed class UidInfoService(VSSMDbContext dbContext) : IUidInfoService
         // اول StoreId های متعلق به این recipientId رو بگیر
         var validStoreIds = await dbContext.TblStores
             .Where(s => s.RecipientId == recipientId)
-            .Select(s => s.StoreId)
+            .Select(s => s.Id)
             .ToListAsync(token);
 
         var list = await dbContext.TblUidInfo

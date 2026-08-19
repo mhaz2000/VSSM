@@ -658,7 +658,7 @@ public partial class VSSMDbContext(
                 .HasForeignKey(d => d.ManufacturerId)
                 .HasConstraintName("FK_tblDispatchLines_tblBaseInfo_manufacturers");
 
-            entity.HasOne(d => d.Store).WithMany(p => p.TblDispatchLines)
+            entity.HasOne(d => d.Store).WithMany(p => p.DispatchLines)
                 .HasForeignKey(d => d.StoreId)
                 .HasConstraintName("FK_tblDispatchLines_tblStores");
         });
@@ -799,7 +799,7 @@ public partial class VSSMDbContext(
                 .HasConstraintName("FK_tblItemDetailStores_tblItemDetails");
 
             entity.HasOne(d => d.Store)
-                .WithMany(p => p.TblItemDetailStores)
+                .WithMany(p => p.ItemDetailStores)
                 .HasForeignKey(d => d.StoreId)
                 .HasConstraintName("FK_tblItemDetailStores_tblStores");
 
@@ -1112,37 +1112,58 @@ public partial class VSSMDbContext(
             entity.Property(e => e.FullName).HasMaxLength(200);
         });
 
-        modelBuilder.Entity<TblStore>(entity =>
+        modelBuilder.Entity<TblStore>((Action<Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TblStore>>)(entity =>
         {
-            entity.HasKey(e => e.StoreId);
+            entity.HasKey((System.Linq.Expressions.Expression<Func<TblStore, object?>>)(e => e.Id))
+                .HasName("PK_TBL_STORES");
 
             entity.ToTable("tblStores");
 
-            entity.HasIndex(e => e.Name, "IX_tblStores");
+            entity.Property((System.Linq.Expressions.Expression<Func<TblStore, int>>)(e => (int)e.Id))
+                .HasColumnName("PK_STORE_ID");
 
-            entity.Property(e => e.StoreId).HasColumnName("StoreID");
-            entity.Property(e => e.Barcode).HasMaxLength(100);
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.Manufacturer).HasMaxLength(200);
-            entity.Property(e => e.Model).HasMaxLength(200);
-            entity.Property(e => e.Name).HasMaxLength(200);
-            entity.Property(e => e.Pqsno)
-                .HasMaxLength(100)
-                .HasColumnName("PQSNo");
-            entity.Property(e => e.RecipientId).HasColumnName("RecipientID");
-            entity.Property(e => e.RefrigerantGas).HasMaxLength(200);
-            entity.Property(e => e.RoomBox).HasMaxLength(100);
-            entity.Property(e => e.TypeId).HasColumnName("StoreTypeId");
+            entity.Property(e => e.Code)
+                .HasColumnName("CODE")
+                .HasMaxLength(50);
 
-            entity.HasOne(d => d.Recipient).WithMany(p => p.TblStores)
-                .HasForeignKey(d => d.RecipientId)
-                .HasConstraintName("FK_tblStores_tblRecipients");
+            entity.Property(e => e.Name)
+                .HasColumnName("NAME")
+                .HasMaxLength(200);
 
-            entity.HasOne(d => d.Type).WithMany()
-                .HasForeignKey(d => d.TypeId)
-                .HasConstraintName("FK_tblStores_tblBaseInfo_store");
-        });
+            entity.Property(e => e.TypeId)
+                .HasColumnName("FK_STORE_TYPE_ID");
+
+            entity.Property(e => e.FreeVolume)
+                .HasColumnName("FREE_VOLUME");
+
+            entity.Property(e => e.Volume)
+                .HasColumnName("VOLUME");
+
+            entity.Property(e => e.Note)
+                .HasColumnName("NOTE");
+
+            entity.Property(e => e.IsActive)
+                .HasColumnName("IS_ACTIVE");
+
+            entity.Property(e => e.RecipientId)
+                .HasColumnName("FK_STORE_RECIPIENT_ID");
+
+            entity.Property(e => e.Year)
+                .HasColumnName("YEAR");
+
+            entity.HasIndex(e => e.Name)
+                .HasDatabaseName("IX_TBL_STORES_NAME");
+
+            entity.HasOne(e => e.Recipient)
+                .WithMany(p => p.TblStores)
+                .HasForeignKey(e => e.RecipientId)
+                .HasConstraintName("FK_TBL_STORES_RECIPIENT");
+
+            entity.HasOne(e => e.Type)
+                .WithMany()
+                .HasForeignKey(e => e.TypeId)
+                .HasConstraintName("FK_TBL_STORES_TYPE");
+        }));
 
 
         modelBuilder.Entity<TblUser>(entity =>

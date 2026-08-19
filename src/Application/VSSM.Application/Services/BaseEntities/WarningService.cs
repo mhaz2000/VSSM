@@ -42,7 +42,7 @@ namespace VSSM.Application.Services.BaseEntities
                     on line.VvmStageId equals vvmStage.BaseInfoId
 
                 join store in _context.TblStores
-                    on line.StoreId equals store.StoreId
+                    on line.StoreId equals store.Id
 
                 where line.ExpiryDate != null
                       && today <= line.ExpiryDate.Value
@@ -88,7 +88,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join itmDtlStr in _context.TblItemDetailStores
                     on itmDtl.ItemDetailId equals itmDtlStr.ItemDetailId
                 join str in _context.TblStores.Where(s => s.RecipientId == recipientId)
-                    on itmDtlStr.StoreId equals str.StoreId
+                    on itmDtlStr.StoreId equals str.Id
                 join mmitm in _context.TblMinMaxItems.Where(m => m.RecipientId == recipientId)
                     on itm.ItemId equals mmitm.ItemId
                 group new { itm, itmDtlStr, mmitm } by new
@@ -137,7 +137,7 @@ namespace VSSM.Application.Services.BaseEntities
                 join itmDtlStr in _context.TblItemDetailStores
                     on itmDtl.ItemDetailId equals itmDtlStr.ItemDetailId
                 join str in _context.TblStores.Where(s => s.RecipientId == recipientId)
-                    on itmDtlStr.StoreId equals str.StoreId
+                    on itmDtlStr.StoreId equals str.Id
                 join mmitm in _context.TblMinMaxItems.Where(m => m.RecipientId == recipientId)
                     on itm.ItemId equals mmitm.ItemId
                 group new { itm, itmDtlStr, mmitm } by new

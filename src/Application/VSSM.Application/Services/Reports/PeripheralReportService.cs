@@ -38,7 +38,7 @@ namespace VSSM.Application.Services.Reports
             var query = from i in _context.TblItems
                         join id in itemDetails on i.ItemId equals id.ItemId
                         join ids in _context.TblItemDetailStores on id.ItemDetailId equals ids.ItemDetailId
-                        join s in stores on ids.StoreId equals s.StoreId
+                        join s in stores on ids.StoreId equals s.Id
                         join vs in _context.TblBaseInfo on ids.FkVvmStageId equals vs.BaseInfoId
                         join cn in _context.TblBaseInfo on id.CommercialNameId equals cn.BaseInfoId
                         join dpv in _context.TblBaseInfo on id.DosePerVialId equals dpv.BaseInfoId
@@ -48,7 +48,7 @@ namespace VSSM.Application.Services.Reports
                             i.FullName,
                             id.ItemDetailId,
                             id.BatchNumber,
-                            s.StoreId,
+                            s.Id,
                             s.Name,
                         } into g
                         select new ExpiredItemsReportDto
@@ -57,7 +57,7 @@ namespace VSSM.Application.Services.Reports
                             ItemName = g.Key.FullName,
                             ItemDetailId = g.Key.ItemDetailId,
                             BatchNumber = g.Key.BatchNumber,
-                            StoreId = g.Key.StoreId,
+                            StoreId = g.Key.Id,
                             StoreName = g.Key.Name,
 
                             TotalStock = g.Sum(t => t.ids.CurrentStock),

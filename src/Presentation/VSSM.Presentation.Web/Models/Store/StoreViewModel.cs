@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace VSSM.Presentation.Web.Models.Store;
+
 public class StoreViewModel
 {
     public int? StoreId { get; set; }
@@ -19,24 +19,13 @@ public class StoreViewModel
     public float? FreeVolume { get; set; }
 
     public float? Volume { get; set; }
+
     public string? Note { get; set; }
-    public bool IsActive { get; set; } = true; 
+
+    public bool IsActive { get; set; } = true;
 
     [Required(ErrorMessage = "گیرنده نمی‌تواند خالی باشد.")]
     public int? RecipientId { get; set; }
+
     public int? Year { get; set; }
-    public string? Model { get; set; }
-    public string? Manufacturer { get; set; }
-    public string? Pqsno { get; set; }
-    public int? CoolingUnitNo { get; set; }
-    public string? RefrigerantGas { get; set; }
-
-
-    public int? PowerSource { get; set; }
-    public int? Source { get; set; }
-
-    public string? Barcode { get; set; }
-    public int? PeriodNoteUse { get; set; }
-    public float? UnitCost { get; set; }
 }
- 

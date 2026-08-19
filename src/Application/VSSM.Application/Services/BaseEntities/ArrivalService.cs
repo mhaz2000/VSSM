@@ -365,7 +365,7 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
                 Line = l,
                 Item = db.TblItems.FirstOrDefault(i => i.ItemId == l.ItemId),
                 Manufacturer = db.TblBaseInfo.FirstOrDefault(m => m.BaseInfoId == l.ManufacturerId),
-                Store = db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
+                Store = db.TblStores.FirstOrDefault(s => s.Id == l.StoreId),
                 DoseVial = db.TblBaseInfo.FirstOrDefault(d => d.BaseInfoId == l.DosePerVialId)
             })
             .AsNoTracking()

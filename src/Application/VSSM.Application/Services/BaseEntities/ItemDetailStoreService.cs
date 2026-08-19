@@ -112,7 +112,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
                 Line = l,
                 Item = _db.TblItems.FirstOrDefault(i => i.ItemId == l.ItemId),
                 Manufacturer = _db.TblBaseInfo.FirstOrDefault(m => m.BaseInfoId == l.ManufacturerId),
-                Store = _db.TblStores.FirstOrDefault(s => s.StoreId == l.StoreId),
+                Store = _db.TblStores.FirstOrDefault(s => s.Id == l.StoreId),
                 DoseVial = _db.TblBaseInfo.FirstOrDefault(d => d.BaseInfoId == l.DosePerVialId),
                 ItemDetail = _db.TblItemDetails.FirstOrDefault(d => d.ItemDetailId == l.ItemDetailId)
             })
@@ -123,7 +123,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
             Where(c=>c.Store != null && c.Line.ItemDetailId != null)
             .Select(c => new
             {
-                StoreId = (int)c.Store.StoreId,
+                StoreId = (int)c.Store.Id,
                 ItemDetailId = (int)c.Line.ItemDetailId
             })
             .ToList();
@@ -139,7 +139,7 @@ public class ItemDetailStoreService : IItemDetailStoreService
         foreach (var itemDetailStore in itemDetailStores)
         {
             var arivalLine = lines.FirstOrDefault(c =>
-                c.Store.StoreId == itemDetailStore.StoreId &&
+                c.Store.Id == itemDetailStore.StoreId &&
                 c.ItemDetail.ItemDetailId == itemDetailStore.ItemDetailId);
 
             var line = arivalLine.Line;
@@ -154,13 +154,13 @@ public class ItemDetailStoreService : IItemDetailStoreService
                 ItemId = arivalLine.Item.ItemId,
                 DropDownText = string.Format(
                     "کالا: {0} | سازنده: {1} | تاریخ انقضا: {2} | سری ساخت: {3} | انبار: {4} | دوز بر ویال: {5} | مقدار موجود: {6}",
-                    arivalLine.Item != null ? arivalLine.Item.FullName : "",
-                    arivalLine.Manufacturer != null ? arivalLine.Manufacturer.Title : "",
-                    line.ExpiryDate != null ? line.ExpiryDate.Value.ToShamsi() : "",
-                    line.BatchNum,
+                    (string)(arivalLine.Item != null ? arivalLine.Item.FullName : ""),
+                    (string)(arivalLine.Manufacturer != null ? arivalLine.Manufacturer.Title : ""),
+                    line.ExpiryDate != null ? DateTimeHelper.ToShamsi(line.ExpiryDate.Value) : "",
+                    (string?)line.BatchNum,
                     arivalLine.Store != null ? arivalLine.Store.Name : "",
-                    arivalLine.DoseVial != null ? arivalLine.DoseVial.Title : "",
-                    line.Quantity
+                    (string)(arivalLine.DoseVial != null ? arivalLine.DoseVial.Title : ""),
+                    (int?)line.Quantity
                 )
             };
 

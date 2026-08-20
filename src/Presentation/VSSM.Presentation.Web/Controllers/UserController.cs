@@ -163,6 +163,26 @@ namespace VSSM.Presentation.Web.Controllers
         {
             await LoadDropDowns(token);
 
+            // فقط برای کاربر جدید اعتبارسنجی پسورد انجام می‌شود
+            if (model.UserId == null || model.UserId == 0)
+            {
+                if (string.IsNullOrWhiteSpace(model.Password))
+                {
+                    ModelState.AddModelError("Password", "کلمه عبور الزامی است.");
+                    TempData["ToastMessage"] = "کلمه عبور الزامی است.";
+                    TempData["ToastType"] = "error";
+                    return View("New", model);
+                }
+
+                if (model.Password != model.ConfirmPassword)
+                {
+                    ModelState.AddModelError("ConfirmPassword", "کلمه عبور و تکرار آن مطابقت ندارند.");
+                    TempData["ToastMessage"] = "کلمه عبور و تکرار آن مطابقت ندارند.";
+                    TempData["ToastType"] = "error";
+                    return View("New", model);
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 TempData["ToastMessage"] = "تمام فیلدهای اجباری باید پر شوند";
@@ -170,59 +190,65 @@ namespace VSSM.Presentation.Web.Controllers
                 return View("New", model);
             }
 
-
-            if (model.UserId == null || model.UserId == 0)
+            try
             {
-
-                var dto = new UserCreateDto
+                if (model.UserId == null || model.UserId == 0)
                 {
-                    UserName = model.UserName,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Email = model.Email,
-                    RecipientId = model.RecipientId,
-                    Phone1 = model.Phone1,
-                    Phone2 = model.Phone2,
-                    Idnumber = model.Idnumber,
-                    CodeEdu = model.CodeEdu,
-                    CodeJob = model.CodeJob,
-                    IsAdmin = model.IsAdmin,
-                    Course = model.Course,
-                    RoleId = model.RoleId
-                };
+                    var dto = new UserCreateDto
+                    {
+                        UserName = model.UserName,
+                        Password = model.Password, // پسورد فقط برای کاربر جدید ارسال می‌شود
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
+                        Email = model.Email,
+                        RecipientId = model.RecipientId,
+                        Phone1 = model.Phone1,
+                        Phone2 = model.Phone2,
+                        Idnumber = model.Idnumber,
+                        CodeEdu = model.CodeEdu,
+                        CodeJob = model.CodeJob,
+                        IsAdmin = model.IsAdmin,
+                        Course = model.Course,
+                        RoleId = model.RoleId
+                    };
 
-                await _userService.Create(dto, token);
+                    await _userService.Create(dto, token);
+                }
+                else
+                {
+                    var dto = new UserEditDto
+                    {
+                        UserId = model.UserId.Value,
+                        UserName = model.UserName,
+                        // Password را ارسال نمی‌کنیم چون در ویرایش نیازی نیست
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
+                        Email = model.Email,
+                        RecipientId = model.RecipientId,
+                        Phone1 = model.Phone1,
+                        Phone2 = model.Phone2,
+                        Idnumber = model.Idnumber,
+                        CodeEdu = model.CodeEdu,
+                        CodeJob = model.CodeJob,
+                        IsAdmin = model.IsAdmin,
+                        Course = model.Course,
+                        RoleId = model.RoleId
+                    };
+
+                    await _userService.Update(dto, token);
+                }
+
+                TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+                TempData["ToastType"] = "success";
+
+                return RedirectToAction("Index");
             }
-            else
+            catch (Exception ex)
             {
-                // ========= UPDATE =========
-                // For updates, only validate password if it's provided (not null/empty)
-                // This allows editing other user fields without changing the password
-                var dto = new UserEditDto
-                {
-                    UserId = model.UserId.Value,
-                    UserName = model.UserName,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Email = model.Email,
-                    RecipientId = model.RecipientId,
-                    Phone1 = model.Phone1,
-                    Phone2 = model.Phone2,
-                    Idnumber = model.Idnumber,
-                    CodeEdu = model.CodeEdu,
-                    CodeJob = model.CodeJob,
-                    IsAdmin = model.IsAdmin,
-                    Course = model.Course,
-                    RoleId = model.RoleId
-                };
-
-                await _userService.Update(dto, token);
+                TempData["ToastMessage"] = ex.Message;
+                TempData["ToastType"] = "error";
+                return View("New", model);
             }
-
-            TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
-            TempData["ToastType"] = "success";
-
-            return RedirectToAction("Index");
         }
 
         // ====================== DELETE ============================

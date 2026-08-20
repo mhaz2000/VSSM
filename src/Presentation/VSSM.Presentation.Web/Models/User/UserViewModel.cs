@@ -36,4 +36,8 @@ public class UserViewModel
 
     public string? Course { get; set; }
 
+    public string Password { get; set; }
+    public string ConfirmPassword { get; set; }
+
+
 }

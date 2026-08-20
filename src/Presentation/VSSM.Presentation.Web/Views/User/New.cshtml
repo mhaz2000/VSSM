@@ -1,4 +1,4 @@
-﻿@using VSSM.Presentation.Web.Models.Base
+﻿﻿@using VSSM.Presentation.Web.Models.Base
 @model UserViewModel
 
 @{
@@ -8,7 +8,7 @@
     TempData.Remove("ToastMessage");
     TempData.Remove("ToastType");
     var recipients = ViewBag.RecipientList as List<SelectListItem>;
-
+    var isNewUser = Model.UserId == null || Model.UserId == 0;
 }
 
 @section Styles {
@@ -26,16 +26,47 @@
             gap: 1rem;
         }
 
+        .password-hint {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .text-danger {
+            color: #dc2626;
+            font-size: 12px;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .field-validation-error {
+            color: #dc2626;
+            font-size: 12px;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .input-validation-error {
+            border-color: #dc2626 !important;
+        }
+
+            .input-validation-error:focus {
+                border-color: #dc2626 !important;
+                box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+            }
+
+        .f-group {
+            margin-bottom: 0.5rem;
+        }
     </style>
 }
-
-
 
 <div class="user-form-wrap">
     <div id="toastContainer"></div>
     <strong class="user-form-title">@formName</strong>
 
     <form asp-action="Create" method="post" style="margin-top: 1rem;" novalidate>
+        @Html.AntiForgeryToken()
         <input type="hidden" asp-for="UserId" />
 
         <!-- اطلاعات کاربری -->
@@ -49,18 +80,22 @@
                     <div class="f-group">
                         <label class="f-label">نام کاربری <span class="req-tag">اجباری</span></label>
                         <input asp-for="UserName" class="f-control" />
+                        <span asp-validation-for="UserName" class="field-validation-error"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">نام <span class="req-tag">اجباری</span></label>
                         <input asp-for="FirstName" class="f-control" />
+                        <span asp-validation-for="FirstName" class="field-validation-error"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">نام خانوادگی <span class="req-tag">اجباری</span></label>
                         <input asp-for="LastName" class="f-control" />
+                        <span asp-validation-for="LastName" class="field-validation-error"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">ایمیل</label>
                         <input asp-for="Email" class="f-control" />
+                        <span asp-validation-for="Email" class="field-validation-error"></span>
                     </div>
                 </div>
             </div>
@@ -77,18 +112,50 @@
                     <div class="f-group">
                         <label class="f-label">تلفن</label>
                         <input asp-for="Phone1" class="f-control" />
+                        <span asp-validation-for="Phone1" class="field-validation-error"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">فکس</label>
                         <input asp-for="Phone2" class="f-control" />
+                        <span asp-validation-for="Phone2" class="field-validation-error"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">شماره شناسنامه</label>
                         <input asp-for="Idnumber" class="f-control" />
+                        <span asp-validation-for="Idnumber" class="field-validation-error"></span>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- بخش پسورد - فقط برای کاربر جدید -->
+        @if (isNewUser)
+        {
+            <div class="a-card">
+                <div class="a-card-header">
+                    <i class="fa fa-lock" style="color:#dc2626;"></i>
+                    <h6>تنظیمات گذرواژه</h6>
+                </div>
+                <div class="a-card-body">
+                    <div class="fg-3">
+                        <div class="f-group">
+                            <label class="f-label">گذرواژه <span class="req-tag">اجباری</span></label>
+                            <input asp-for="Password" type="password" class="f-control" />
+                            <div class="password-hint">
+                                <i class="fa fa-info-circle"></i>
+                                حداقل ۸ کاراکتر، شامل حروف بزرگ، حروف کوچک، عدد و کاراکتر ویژه
+                            </div>
+                            <span asp-validation-for="Password" class="field-validation-error"></span>
+                        </div>
+                        <div class="f-group">
+                            <label class="f-label">تکرار گذرواژه <span class="req-tag">اجباری</span></label>
+                            <input asp-for="ConfirmPassword" type="password" class="f-control" />
+                            <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
 
         <!-- اطلاعات شغلی و دسترسی -->
         <div class="a-card">
@@ -104,41 +171,45 @@
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
                         {
                             Id = "RecipientId",
-                            Name = "RecipientId",
-                            DefaultText = "جستجوی گیرنده...",
-                            Label = "",
-                            IsRequired = true,
-                            SelectedValue = Model?.RecipientId?.ToString(),
-                            ValidationMessage = "گیرنده نمی‌تواند خالی باشد.",
-                            Options = recipients.Select(r => new SelectOption
-                            {
-                                Value = r.Value.ToString(),
-                                Text = r.Text
-                            }).ToList()
-                        })
-
+                                                Name = "RecipientId",
+                                                DefaultText = "جستجوی گیرنده...",
+                                                Label = "",
+                                                IsRequired = true,
+                                                SelectedValue = Model?.RecipientId?.ToString(),
+                                                ValidationMessage = "گیرنده نمی‌تواند خالی باشد.",
+                                                Options = recipients.Select(r => new SelectOption
+                                                {
+                                                    Value = r.Value.ToString(),
+                                                    Text = r.Text
+                                                }).ToList()
+                                                })
+                        <span asp-validation-for="RecipientId" class="field-validation-error"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">تحصیلات</label>
                         <select asp-for="CodeEdu" class="f-control" asp-items="ViewBag.EduList">
                             <option value="">انتخاب کنید...</option>
                         </select>
+                        <span asp-validation-for="CodeEdu" class="field-validation-error"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">شغل</label>
                         <select asp-for="CodeJob" class="f-control" asp-items="ViewBag.JobList">
                             <option value="">انتخاب کنید...</option>
                         </select>
+                        <span asp-validation-for="CodeJob" class="field-validation-error"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">نقش <span class="req-tag">اجباری</span></label>
                         <select asp-for="RoleId" class="f-control" asp-items="ViewBag.Roles">
                             <option value="">انتخاب کنید...</option>
                         </select>
+                        <span asp-validation-for="RoleId" class="field-validation-error"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">دوره آموزشی</label>
                         <input asp-for="Course" class="f-control" />
+                        <span asp-validation-for="Course" class="field-validation-error"></span>
                     </div>
                     <div class="admin-checkbox-wrapper">
                         <label class="f-label">مدیر سیستم</label>
@@ -168,8 +239,9 @@
 @section Scripts {
     <script src="~/js/shared/toast.js"></script>
     <script>
-        var serverMsg  = "@(serverMsg ?? "")";
+        var serverMsg = "@(serverMsg ?? "")";
         var serverType = "@(serverType ?? "info")";
+        var isNewUser = @(isNewUser ? "true" : "false");
 
         $(function () {
             if (serverMsg) {
@@ -209,6 +281,72 @@
                     if (caretPos === 0 || $(this).val().length === 0) {
                         e.preventDefault();
                     }
+                }
+            });
+
+            // اعتبارسنجی پسورد - فقط در حالت ایجاد کاربر جدید
+            if (isNewUser) {
+                function validatePassword() {
+                    var password = $('#Password').val();
+                    var confirm = $('#ConfirmPassword').val();
+                    var isValid = true;
+
+                    // Reset border colors
+                    $('#Password, #ConfirmPassword').css('border-color', '');
+
+                    // Validate password length
+                    if (password && password.length < 8) {
+                        $('#Password').css('border-color', '#dc2626');
+                        isValid = false;
+                    } else if (password && password.length >= 8) {
+                        $('#Password').css('border-color', '#22c55e');
+                    }
+
+                    // Validate password match
+                    if (confirm && password !== confirm) {
+                        $('#ConfirmPassword').css('border-color', '#dc2626');
+                        isValid = false;
+                    } else if (confirm && password === confirm && password.length >= 8) {
+                        $('#ConfirmPassword').css('border-color', '#22c55e');
+                    }
+
+                    return isValid;
+                }
+
+                $('#Password, #ConfirmPassword').on('input', validatePassword);
+
+                $('form').on('submit', function(e) {
+                    var password = $('#Password').val();
+                    var confirm = $('#ConfirmPassword').val();
+
+                    // Check if password is empty
+                    if (!password) {
+                        e.preventDefault();
+                        showToast('گذرواژه الزامی است.', 'error');
+                        return false;
+                    }
+
+                    // Check password length
+                    if (password.length < 8) {
+                        e.preventDefault();
+                        showToast('گذرواژه باید حداقل ۸ کاراکتر باشد.', 'error');
+                        return false;
+                    }
+
+                    // Check password match
+                    if (password !== confirm) {
+                        e.preventDefault();
+                        showToast('گذرواژه و تکرار آن مطابقت ندارند.', 'error');
+                        return false;
+                    }
+                });
+            }
+
+            // استایل‌دهی به فیلدهای دارای خطا
+            $('.field-validation-error').each(function() {
+                var parent = $(this).closest('.f-group');
+                if ($(this).text().trim() !== '') {
+                    parent.find('.f-control, select').addClass('input-validation-error');
                 }
             });
         });

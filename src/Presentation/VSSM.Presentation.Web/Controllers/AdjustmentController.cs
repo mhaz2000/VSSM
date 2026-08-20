@@ -3,32 +3,21 @@ using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Adjustments;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Services.BaseEntities;
+using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Models.Adjustment;
 
 namespace VSSM.Presentation.Web.Controllers;
 
 
-public class AdjustmentController : BaseController
+public class AdjustmentController(
+    IAdjustmentService adjustmentService,
+    IBaseInfoService baseInfoService,
+    IItemService itemService,
+    IArrivalService arrivalService, 
+    IBaseInfoService adjustReasonService, 
+    IItemDetailStoreService detailStoreService) : BaseController
 {
-    private readonly IAdjustmentService _adjustmentService;
-    private readonly IItemClassService _itemClassService;
-    private readonly IItemService _itemService;
-    private readonly IArrivalService _arrivalService;
-    private readonly IBaseInfoService _adjustReasonService;
-    private readonly IItemDetailStoreService _detailStoreService;
 
-    public AdjustmentController(IAdjustmentService adjustmentService, IItemClassService itemClassService,
-        IItemService itemService, IArrivalService arrivalService, IBaseInfoService adjustReasonService, IItemDetailStoreService detailStoreService)
-    {
-        _adjustmentService = adjustmentService;
-        _itemClassService = itemClassService;
-        _itemService = itemService;
-        _arrivalService = arrivalService;
-        _adjustReasonService = adjustReasonService;
-        _detailStoreService = detailStoreService;
-    }
-
-    // ---------- Index ----------
     public async Task<IActionResult> Index(
         CancellationToken cancellationToken,
         string? search = null,
@@ -37,7 +26,7 @@ public class AdjustmentController : BaseController
         string sortField = "AdjustmentId",
         string sortOrder = "asc")
     {
-        var adjustments = await _adjustmentService.GetPagedList(
+        var adjustments = await adjustmentService.GetPagedList(
             search,
             page,
             pageSize,
@@ -66,17 +55,17 @@ public class AdjustmentController : BaseController
     // ---------- Edit ----------
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
-        var adjustment = await _adjustmentService.GetById(id, cancellationToken);
+        var adjustment = await adjustmentService.GetById(id, cancellationToken);
         if (adjustment == null)
             return NotFound();
 
         await PrepareDropdown(cancellationToken);
 
-        var itemDetailStores = await _detailStoreService.GetById(adjustment.ItemDetailStoreId ?? -1);
+        var itemDetailStores = await detailStoreService.GetById(adjustment.ItemDetailStoreId ?? -1);
         var arrivalLine =
-            await _arrivalService.GetArrivalLineByStoreIdAndItemDetailId((long)itemDetailStores.StoreId.Value,
+            await arrivalService.GetArrivalLineByStoreIdAndItemDetailId((long)itemDetailStores.StoreId.Value,
                 (long)itemDetailStores.ItemDetailId);
-        var item = await _itemService.GetById(arrivalLine.ItemId.Value, cancellationToken);
+        var item = await itemService.GetById(arrivalLine.ItemId.Value, cancellationToken);
         var model = new AdjustmentViewModel
         {
             AdjustmentId = adjustment.AdjustmentId,
@@ -96,13 +85,12 @@ public class AdjustmentController : BaseController
 
     private async Task PrepareDropdown(CancellationToken cancellationToken)
     {
-        var list = await _itemClassService.GetActives(cancellationToken);
-        ViewBag.ItemClass = list;
-        var itemList = await _itemService.GetActives(cancellationToken);
+        ViewBag.ItemClass = await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId,cancellationToken); 
+        var itemList = await itemService.GetActives(cancellationToken);
         ViewBag.ItemGroups = itemList;
-        var itemDetailStores = await _detailStoreService.GetActives(CurrentUserRecipientId.Value);
+        var itemDetailStores = await detailStoreService.GetActives(CurrentUserRecipientId.GetValueOrDefault());
         ViewBag.ItemDetailStores = itemDetailStores;
-        var adjustReasons = await _adjustReasonService.GetByParentIdAsync(37 ,cancellationToken);
+        var adjustReasons = await adjustReasonService.GetByParentIdAsync(37 ,cancellationToken);
         ViewBag.AdjustReasons = adjustReasons;
     }
 
@@ -134,12 +122,12 @@ public class AdjustmentController : BaseController
         if (model.AdjustmentId == null || model.AdjustmentId == 0)
         {
             // Create
-            await _adjustmentService.Create(dto, cancellationToken);
+            await adjustmentService.Create(dto, cancellationToken);
         }
         else
         {
             // Update
-            await _adjustmentService.Update(dto, cancellationToken);
+            await adjustmentService.Update(dto, cancellationToken);
         }
 
         TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
@@ -155,7 +143,7 @@ public class AdjustmentController : BaseController
         int id,
         CancellationToken cancellationToken)
     {
-        var deleted = await _adjustmentService.Delete(id, cancellationToken);
+        var deleted = await adjustmentService.Delete(id, cancellationToken);
 
         if (deleted)
         {

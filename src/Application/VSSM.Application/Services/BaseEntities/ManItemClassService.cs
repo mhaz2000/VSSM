@@ -7,21 +7,14 @@ using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities;
 
-public class ManItemClassService : IManItemClassService
+public class ManItemClassService(
+    VSSMDbContext dbContext,
+    IBaseInfoService baseInfoService,
+    IValidator<ManItemClassDto> validator) : IManItemClassService
 {
-    private readonly VSSMDbContext _dbContext;
-    private readonly IValidator<ManItemClassDto> _validator;
-
-    public ManItemClassService(VSSMDbContext dbContext, IValidator<ManItemClassDto> validator)
-    {
-        _dbContext = dbContext;
-        _validator = validator;
-    }
-
-
     public async Task<long> Create(ManItemClassDto dto, CancellationToken cancellationToken)
     {
-        var validation = await _validator.ValidateAsync(dto, cancellationToken);
+        var validation = await validator.ValidateAsync(dto, cancellationToken);
         if (!validation.IsValid)
             throw new ValidationException(validation.Errors);
 
@@ -31,8 +24,8 @@ public class ManItemClassService : IManItemClassService
             ManufacturerId = dto.ManufacturerId   // Auto-selected = first of list
         };
 
-        await _dbContext.TblManItemClasses.AddAsync(entity, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.TblManItemClasses.AddAsync(entity, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return entity.ManItemClassId;
     }
@@ -48,7 +41,7 @@ public class ManItemClassService : IManItemClassService
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
-        IQueryable<TblManItemClass> query = _dbContext.TblManItemClasses.AsNoTracking();
+        IQueryable<TblManItemClass> query = dbContext.TblManItemClasses.AsNoTracking();
 
         // Search
         if (!string.IsNullOrWhiteSpace(search))
@@ -102,7 +95,7 @@ public class ManItemClassService : IManItemClassService
 
     public async Task<ManItemClassDto?> GetById(long id, CancellationToken cancellationToken)
     {
-        var entity = await _dbContext.TblManItemClasses
+        var entity = await dbContext.TblManItemClasses
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.ManItemClassId == id, cancellationToken);
 
@@ -122,27 +115,28 @@ public class ManItemClassService : IManItemClassService
     }
 
 
-    public async Task<List<ManufacturerDropDownDto>> ManufacturerDropDown(CancellationToken cancellationToken)
+    public async Task<List<ManufacturerDropDownDto>> ManufacturerDropDown(
+        CancellationToken cancellationToken)
     {
-        var entity = await _dbContext.TblItemsClasses
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+        var entity = await baseInfoService.GetByParentIdAsync(
+            48,
+            cancellationToken);
 
         return entity.Select(c => new ManufacturerDropDownDto
         {
-            ItemsClassId = c.ItemClassId,
-            Name = c.FullName
+            ItemsClassId = c.Id,
+            Name = c.Title
         }).ToList();
     }
 
 
     public async Task<bool> Update(ManItemClassDto dto, CancellationToken cancellationToken)
     {
-        var validation = await _validator.ValidateAsync(dto, cancellationToken);
+        var validation = await validator.ValidateAsync(dto, cancellationToken);
         if (!validation.IsValid)
             throw new ValidationException(validation.Errors);
 
-        var entity = await _dbContext.TblManItemClasses
+        var entity = await dbContext.TblManItemClasses
             .FirstOrDefaultAsync(x => x.ManItemClassId == dto.ManItemClassId, cancellationToken);
 
         if (entity == null)
@@ -150,21 +144,21 @@ public class ManItemClassService : IManItemClassService
 
         entity.ItemClassId = dto.ItemClassCode;
         entity.ManufacturerId = dto.ManufacturerId;
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
 
 
     public async Task<bool> Delete(long id, CancellationToken cancellationToken)
     {
-        var entity = await _dbContext.TblManItemClasses
+        var entity = await dbContext.TblManItemClasses
             .FirstOrDefaultAsync(x => x.ManItemClassId == id, cancellationToken);
 
         if (entity == null)
             return false;
 
-        _dbContext.TblManItemClasses.Remove(entity);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        dbContext.TblManItemClasses.Remove(entity);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
 }

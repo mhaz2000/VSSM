@@ -57,7 +57,6 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IDestroyUidService, DestroyUidService>();
             services.AddScoped<IUidInfoService, UidInfoService>();
             services.AddScoped<IConsumerService, ConsumerService>();
-            services.AddScoped<IItemClassService, ItemClassService>();
             services.AddScoped<ILevelService, LevelService>();
             services.AddScoped<IItemService, ItemService>();
             services.AddScoped<IManItemClassService, ManItemClassService>();
@@ -86,7 +85,6 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IValidator<DosePerVialCreateDto>, DosePerVialCreateValidator>();
             services.AddScoped<IValidator<ItemDoseAssignmentCreateDto>, ItemDoseAssignmentCreateValidator>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<ISourceService, SourceService>();
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IRecipientService, RecipientService>();
             services.AddScoped<IBaseInfoService, BaseInfoService>();

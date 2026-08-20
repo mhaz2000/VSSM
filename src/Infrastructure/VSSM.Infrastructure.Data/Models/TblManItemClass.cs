@@ -13,7 +13,7 @@ public partial class TblManItemClass
 
     public int? ManufacturerId { get; set; }
 
-    public virtual TblItemsClass ItemClass { get; set; }
+    public virtual TblBaseInfo ItemClass { get; set; }
 
     public virtual TblBaseInfo Manufacturer { get; set; }
 }

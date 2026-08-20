@@ -2,52 +2,73 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Adjustments;
+using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities;
 
-public class AdjustmentService : IAdjustmentService
+public class AdjustmentService(
+    VSSMDbContext dbContext,
+    IValidator<AdjustmentDto> validator) : IAdjustmentService
 {
-    private readonly VSSMDbContext _dbContext;
-    private readonly IValidator<AdjustmentDto> _validator;
-
-    public AdjustmentService(
-        VSSMDbContext dbContext,
-        IValidator<AdjustmentDto> validator)
-    {
-        _dbContext = dbContext;
-        _validator = validator;
-    }
-
     public async Task<int> Create(
         AdjustmentDto dto,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
+        var validationResult =
+            await validator.ValidateAsync(dto, cancellationToken);
+
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
-        var fiscalPeriod = await _dbContext.TblFiscalPeriods.FirstOrDefaultAsync(c => c.IsActive == true);
-        var itemDetailStore = await _dbContext.TblItemDetailStores.FirstOrDefaultAsync(c =>
-            c.PKItemDetailStoreId == dto.ItemDetailStoreId);
+        var fiscalPeriod =
+            await dbContext.TblFiscalPeriods
+                .FirstOrDefaultAsync(
+                    c => c.IsActive == true,
+                    cancellationToken);
+
+        var itemDetailStore =
+            await dbContext.TblItemDetailStores
+                .FirstOrDefaultAsync(
+                    c => c.PKItemDetailStoreId == dto.ItemDetailStoreId,
+                    cancellationToken);
 
         var entity = new TblAdjustment
         {
             AdjustmentreasonId = dto.AdjustmentreasonId,
-            FiscalPeriodId = fiscalPeriod is null ? -1 : fiscalPeriod.FiscalPeriodId,
+
+            FiscalPeriodId =
+                fiscalPeriod is null
+                    ? -1
+                    : fiscalPeriod.FiscalPeriodId,
+
             ArrivalLineId = -1,
             DispatchLineId = -1,
-            ItemDetailStoreId = itemDetailStore is null ? -1 : itemDetailStore.PKItemDetailStoreId,
-            OldQuantity = itemDetailStore is null ? 0 : Convert.ToInt32(itemDetailStore.CurrentStock ?? 0),
+
+            ItemDetailStoreId =
+                itemDetailStore is null
+                    ? -1
+                    : itemDetailStore.PKItemDetailStoreId,
+
+            OldQuantity =
+                itemDetailStore is null
+                    ? 0
+                    : Convert.ToInt32(itemDetailStore.CurrentStock ?? 0),
+
             NewQuantity = dto.NewQuantity,
+
             EntryDate = DateTime.Now,
             Date = DateTime.Now,
+
             EnteredById = dto.EnteredById,
-            Note = dto.Note,
+            Note = dto.Note
         };
 
-        await _dbContext.TblAdjustments.AddAsync(entity, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.TblAdjustments.AddAsync(
+            entity,
+            cancellationToken);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return entity.AdjustmentId;
     }
@@ -70,103 +91,201 @@ public class AdjustmentService : IAdjustmentService
             PageSize = pageSize
         };
 
-        var adjustmentsQuery = _dbContext.TblAdjustments
+        var adjustmentsQuery = dbContext.TblAdjustments
             .Where(a => a.EnteredById == userId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            adjustmentsQuery = adjustmentsQuery.Where(a => a.Note != null && a.Note.Contains(search));
+            adjustmentsQuery = adjustmentsQuery.Where(
+                a => a.Note != null &&
+                     a.Note.Contains(search));
         }
 
-        paging.TotalItems = await adjustmentsQuery.CountAsync(cancellationToken);
+        paging.TotalItems =
+            await adjustmentsQuery.CountAsync(cancellationToken);
 
-        adjustmentsQuery = (sortField?.ToLower(), sortOrder?.ToLower()) switch
-        {
-            ("date", "asc") => adjustmentsQuery.OrderBy(a => a.Date),
-            ("date", "desc") => adjustmentsQuery.OrderByDescending(a => a.Date),
-            ("entrydate", "asc") => adjustmentsQuery.OrderBy(a => a.EntryDate),
-            ("entrydate", "desc") => adjustmentsQuery.OrderByDescending(a => a.EntryDate),
-            _ => adjustmentsQuery.OrderByDescending(a => a.AdjustmentId)
-        };
-        
+        adjustmentsQuery =
+            (sortField?.ToLower(), sortOrder?.ToLower()) switch
+            {
+                ("date", "asc") =>
+                    adjustmentsQuery.OrderBy(a => a.Date),
+
+                ("date", "desc") =>
+                    adjustmentsQuery.OrderByDescending(a => a.Date),
+
+                ("entrydate", "asc") =>
+                    adjustmentsQuery.OrderBy(a => a.EntryDate),
+
+                ("entrydate", "desc") =>
+                    adjustmentsQuery.OrderByDescending(a => a.EntryDate),
+
+                _ =>
+                    adjustmentsQuery.OrderByDescending(
+                        a => a.AdjustmentId)
+            };
+
         var adjustments = await adjustmentsQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        var adjustreasonsId = adjustments.Select(c => c.AdjustmentreasonId);
-        var adjustreasons = await _dbContext.TblBaseInfo.Where(t=> t.ParentId == 37).ToListAsync(cancellationToken);
-        adjustreasons = adjustreasons.Where(c => adjustreasonsId.Contains(c.BaseInfoId)).ToList();
 
-        var itemDetailStoreIds = adjustments.Select(a => a.ItemDetailStoreId).Distinct().ToList();
-        var itemDetailStores = await _dbContext.TblItemDetailStores.ToListAsync(cancellationToken);
-        itemDetailStores = itemDetailStores.Where(c => itemDetailStoreIds.Contains(c.PKItemDetailStoreId)).ToList();
+        var adjustreasonsId = adjustments
+            .Select(c => c.AdjustmentreasonId)
+            .Distinct()
+            .ToList();
 
-        var itemDetailIds = itemDetailStores.Select(ids => ids.ItemDetailId).Distinct().ToList();
-        var itemDetails = await _dbContext.TblItemDetails.ToListAsync(cancellationToken);
-        itemDetails = itemDetails.Where(c => itemDetailIds.Contains(c.ItemDetailId)).ToList();
+        var adjustreasons = await dbContext.TblBaseInfo
+            .Where(t =>
+                t.ParentId == 37 &&
+                adjustreasonsId.Contains(t.BaseInfoId))
+            .ToListAsync(cancellationToken);
 
-        var itemIds = itemDetails.Select(id => id.ItemId).Distinct().ToList();
-        var items = await _dbContext.TblItems.ToListAsync(cancellationToken);
-        items = items.Where(c => itemIds.Contains(c.ItemId)).ToList();
+        var itemDetailStoreIds = adjustments
+            .Select(a => a.ItemDetailStoreId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
 
-        var itemClassIds = items.Select(i => i.FkClassId).Distinct().ToList();
-        var itemClasses = await _dbContext.TblItemsClasses.ToListAsync(cancellationToken);
-        itemClasses = itemClasses.Where(c => itemClassIds.Contains(c.ItemClassId)).ToList();
+        var itemDetailStores =
+            await dbContext.TblItemDetailStores
+                .Where(c =>
+                    itemDetailStoreIds.Contains(
+                        c.PKItemDetailStoreId))
+                .ToListAsync(cancellationToken);
 
-        var itemDetailStoreDict = itemDetailStores.ToDictionary(x => x.PKItemDetailStoreId);
-        var itemDetailDict = itemDetails.ToDictionary(x => x.ItemDetailId);
-        var itemDict = items.ToDictionary(x => x.ItemId);
-        var itemClassDict = itemClasses.ToDictionary(x => x.ItemClassId);
+ 
+        var itemDetailIds = itemDetailStores
+            .Select(ids => ids.ItemDetailId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
 
-        var adjustmentDtos = new List<AdjustmentDto>();
+        var itemDetails =
+            await dbContext.TblItemDetails
+                .Where(c =>
+                    itemDetailIds.Contains(c.ItemDetailId))
+                .ToListAsync(cancellationToken);
+
+
+        var itemIds = itemDetails
+            .Select(id => id.ItemId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        var items =
+            await dbContext.TblItems
+                .Where(c => itemIds.Contains(c.ItemId))
+                .ToListAsync(cancellationToken);
+
+        var itemClassIds = items
+            .Select(i => i.FkClassId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        var itemClasses =
+            await dbContext.TblBaseInfo
+                .Where(c =>
+                    c.ParentId == 53 &&
+                    itemClassIds.Contains(c.BaseInfoId))
+                .ToListAsync(cancellationToken);
+
+
+        var itemDetailStoreDict =
+            itemDetailStores.ToDictionary(
+                x => x.PKItemDetailStoreId);
+
+        var itemDetailDict =
+            itemDetails.ToDictionary(
+                x => x.ItemDetailId);
+
+        var itemDict =
+            items.ToDictionary(
+                x => x.ItemId);
+
+        var itemClassDict =
+            itemClasses.ToDictionary(
+                x => x.BaseInfoId);
+
+
+        var adjustmentDtos =
+            new List<AdjustmentDto>();
 
         foreach (var a in adjustments)
         {
-            try
+            TblItemDetailStore? ids = null;
+            TblItemDetail? id = null;
+            TblItem? i = null;
+            TblBaseInfo? ic = null;
+
+            if (a.ItemDetailStoreId.HasValue)
             {
-                TblItemDetailStore? ids = null;
-                TblItemDetail? id = null;
-                TblItem? i = null;
-                TblItemsClass? ic = null;
+                itemDetailStoreDict.TryGetValue(
+                    a.ItemDetailStoreId.Value,
+                    out ids);
+            }
 
-                if (a.ItemDetailStoreId != 0 && a.ItemDetailStoreId != null)
-                    itemDetailStoreDict.TryGetValue(a.ItemDetailStoreId.Value, out ids);
+            if (ids?.ItemDetailId.HasValue == true)
+            {
+                itemDetailDict.TryGetValue(
+                    ids.ItemDetailId.Value,
+                    out id);
+            }
 
-                if (ids != null)
-                    itemDetailDict.TryGetValue(ids.ItemDetailId.Value, out id);
+            if (id?.ItemId.HasValue == true)
+            {
+                itemDict.TryGetValue(
+                    id.ItemId.Value,
+                    out i);
+            }
 
-                if (id != null)
-                    itemDict.TryGetValue(id.ItemId.Value, out i);
+            if (i?.FkClassId.HasValue == true)
+            {
+                itemClassDict.TryGetValue(
+                    i.FkClassId.Value,
+                    out ic);
+            }
 
-                if (i != null)
-                    itemClassDict.TryGetValue(i.FkClassId.Value, out ic);
+            var adjustreason =
+                adjustreasons.FirstOrDefault(
+                    c => c.BaseInfoId == a.AdjustmentreasonId);
 
-                var adjustreason = adjustreasons.FirstOrDefault(c => c.BaseInfoId == a.AdjustmentreasonId);
-                
-                adjustmentDtos.Add(new AdjustmentDto
+            adjustmentDtos.Add(
+                new AdjustmentDto
                 {
                     AdjustmentId = a.AdjustmentId,
                     EntryDate = a.EntryDate,
                     Date = a.Date,
                     Note = a.Note,
-                    AdjustmentreasonId = a.AdjustmentreasonId,
+
+                    AdjustmentreasonId =
+                        a.AdjustmentreasonId,
+
                     NewQuantity = a.NewQuantity,
                     OldQuantity = a.OldQuantity,
+
                     ArrivalLineId = a.ArrivalLineId,
                     DispatchLineId = a.DispatchLineId,
+
                     EnteredById = a.EnteredById,
                     FiscalPeriodId = a.FiscalPeriodId,
                     ItemDetailStoreId = a.ItemDetailStoreId,
-                    ItemFullName = i?.FullName is null ? "" : i?.FullName,
-                    ItemClassFullName = ic?.FullName is null ? "" : ic?.FullName,
-                    AdjustreasonTitle = adjustreason?.Title?? "" 
+
+                    ItemFullName =
+                        i?.FullName ?? string.Empty,
+
+                    ItemClassFullName =
+                        ic?.Title ?? string.Empty,
+
+                    AdjustreasonTitle =
+                        adjustreason?.Title ?? string.Empty
                 });
-            }
-            catch (Exception e)
-            {
-                //ignore
-            }
         }
 
         return new PagingSearchOrderDto<AdjustmentDto>
@@ -179,16 +298,16 @@ public class AdjustmentService : IAdjustmentService
         };
     }
 
-
     public async Task<AdjustmentDto?> GetById(
         int id,
         CancellationToken cancellationToken)
     {
-        var entity = await _dbContext.TblAdjustments
-            .AsNoTracking()
-            .FirstOrDefaultAsync(
-                x => x.AdjustmentId == id,
-                cancellationToken);
+        var entity =
+            await dbContext.TblAdjustments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    x => x.AdjustmentId == id,
+                    cancellationToken);
 
         if (entity is null)
             return null;
@@ -199,11 +318,16 @@ public class AdjustmentService : IAdjustmentService
             EntryDate = entity.EntryDate,
             Date = entity.Date,
             Note = entity.Note,
-            AdjustmentreasonId = entity.AdjustmentreasonId,
+
+            AdjustmentreasonId =
+                entity.AdjustmentreasonId,
+
             NewQuantity = entity.NewQuantity,
             OldQuantity = entity.OldQuantity,
+
             ArrivalLineId = entity.ArrivalLineId,
             DispatchLineId = entity.DispatchLineId,
+
             EnteredById = entity.EnteredById,
             FiscalPeriodId = entity.FiscalPeriodId,
             ItemDetailStoreId = entity.ItemDetailStoreId
@@ -214,14 +338,17 @@ public class AdjustmentService : IAdjustmentService
         AdjustmentDto dto,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
+        var validationResult =
+            await validator.ValidateAsync(dto, cancellationToken);
+
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
-        var entity = await _dbContext.TblAdjustments
-            .FirstOrDefaultAsync(
-                x => x.AdjustmentId == dto.AdjustmentId,
-                cancellationToken);
+        var entity =
+            await dbContext.TblAdjustments
+                .FirstOrDefaultAsync(
+                    x => x.AdjustmentId == dto.AdjustmentId,
+                    cancellationToken);
 
         if (entity is null)
             return false;
@@ -237,7 +364,8 @@ public class AdjustmentService : IAdjustmentService
         entity.FiscalPeriodId = dto.FiscalPeriodId;
         entity.ItemDetailStoreId = dto.ItemDetailStoreId;
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
         return true;
     }
 
@@ -245,16 +373,18 @@ public class AdjustmentService : IAdjustmentService
         int id,
         CancellationToken cancellationToken)
     {
-        var entity = await _dbContext.TblAdjustments
-            .FirstOrDefaultAsync(
-                x => x.AdjustmentId == id,
-                cancellationToken);
+        var entity =
+            await dbContext.TblAdjustments
+                .FirstOrDefaultAsync(
+                    x => x.AdjustmentId == id,
+                    cancellationToken);
 
         if (entity is null)
             return false;
 
-        _dbContext.TblAdjustments.Remove(entity);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        dbContext.TblAdjustments.Remove(entity);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return true;
     }

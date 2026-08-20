@@ -27,7 +27,6 @@ public partial class VSSMDbContext(
     public virtual DbSet<TblItemDetail> TblItemDetails { get; set; }
     public virtual DbSet<TblItemDetailStore> TblItemDetailStores { get; set; }
     public virtual DbSet<TblItemDoseAssignment> TblItemDoseAssignments { get; set; }
-    public virtual DbSet<TblItemsClass> TblItemsClasses { get; set; }
     public virtual DbSet<TblLevel> TblLevels { get; set; }
     public virtual DbSet<TblManItemClass> TblManItemClasses { get; set; }
     public virtual DbSet<TblMinMaxItem> TblMinMaxItems { get; set; }
@@ -36,7 +35,6 @@ public partial class VSSMDbContext(
     public virtual DbSet<TblRecipientMaxItem> TblRecipientMaxItems { get; set; }
     public virtual DbSet<TblRequest> TblRequests { get; set; }
     public virtual DbSet<TblRequestLine> TblRequestLines { get; set; }
-    public virtual DbSet<TblSource> TblSources { get; set; }
     public virtual DbSet<TblStore> TblStores { get; set; }
     public virtual DbSet<TblDestroyUid> TblDestroyUids { get; set; }
     public virtual DbSet<TblUser> TblUsers { get; set; }
@@ -829,23 +827,7 @@ public partial class VSSMDbContext(
                 .HasConstraintName("FK_tblItemDoseAssignments_tblItems");
         });
 
-        modelBuilder.Entity<TblItemsClass>(entity =>
-        {
-            entity.HasKey(e => e.ItemClassId);
 
-            entity.ToTable("tblItemsClass");
-
-            entity.Property(e => e.ItemClassId).HasColumnName("ItemClassID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
-            entity.Property(e => e.ReqBatchNo).HasColumnName("Req_BatchNo");
-            entity.Property(e => e.ReqDosePerVial).HasColumnName("Req_DosePerVial");
-            entity.Property(e => e.ReqExpiryDate).HasColumnName("Req_ExpiryDate");
-            entity.Property(e => e.ReqManufacturer).HasColumnName("Req_Manufacturer");
-            entity.Property(e => e.ReqVvmtype).HasColumnName("Req_VVMType");
-            entity.Property(e => e.VolumeType).HasMaxLength(10);
-        });
 
         modelBuilder.Entity<TblBaseInfo>(entity =>
         {
@@ -915,7 +897,7 @@ public partial class VSSMDbContext(
             entity.Property(e => e.ItemClassId).HasColumnName("ItemClassID");
             entity.Property(e => e.ManufacturerId).HasColumnName("ManufacturerID");
 
-            entity.HasOne(d => d.ItemClass).WithMany(p => p.TblManItemClasses)
+            entity.HasOne(d => d.ItemClass).WithMany()
                 .HasForeignKey(d => d.ItemClassId)
                 .HasConstraintName("FK_tblManItemClass_tblItemsClass");
 
@@ -1100,17 +1082,7 @@ public partial class VSSMDbContext(
                 .HasConstraintName("FK_tblRequest_tblRecipients");
         });
 
-        modelBuilder.Entity<TblSource>(entity =>
-        {
-            entity.HasKey(e => e.SourceId);
-
-            entity.ToTable("tblSources");
-
-            entity.Property(e => e.SourceId).HasColumnName("SourceID");
-            entity.Property(e => e.Code).HasMaxLength(50);
-            entity.Property(e => e.EntryDate).HasColumnType("datetime");
-            entity.Property(e => e.FullName).HasMaxLength(200);
-        });
+  
 
         modelBuilder.Entity<TblStore>((Action<Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TblStore>>)(entity =>
         {

@@ -1084,14 +1084,14 @@ public partial class VSSMDbContext(
 
   
 
-        modelBuilder.Entity<TblStore>((Action<Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TblStore>>)(entity =>
+        modelBuilder.Entity<TblStore>(entity =>
         {
-            entity.HasKey((System.Linq.Expressions.Expression<Func<TblStore, object?>>)(e => e.Id))
+            entity.HasKey(e => e.Id)
                 .HasName("PK_TBL_STORES");
 
             entity.ToTable("tblStores");
 
-            entity.Property((System.Linq.Expressions.Expression<Func<TblStore, int>>)(e => (int)e.Id))
+            entity.Property(e => e.Id)
                 .HasColumnName("PK_STORE_ID");
 
             entity.Property(e => e.Code)
@@ -1118,7 +1118,7 @@ public partial class VSSMDbContext(
                 .HasColumnName("IS_ACTIVE");
 
             entity.Property(e => e.RecipientId)
-                .HasColumnName("FK_STORE_RECIPIENT_ID");
+                .HasColumnName("FK_RECIPIENT_ID");
 
             entity.Property(e => e.Year)
                 .HasColumnName("YEAR");
@@ -1135,7 +1135,7 @@ public partial class VSSMDbContext(
                 .WithMany()
                 .HasForeignKey(e => e.TypeId)
                 .HasConstraintName("FK_TBL_STORES_TYPE");
-        }));
+        });
 
 
         modelBuilder.Entity<TblUser>(entity =>

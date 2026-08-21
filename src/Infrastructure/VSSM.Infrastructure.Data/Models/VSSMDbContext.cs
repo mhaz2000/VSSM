@@ -40,6 +40,7 @@ public partial class VSSMDbContext(
     public virtual DbSet<TblUser> TblUsers { get; set; }
     public virtual DbSet<TblVoucherConfig> TblVoucherConfigs { get; set; }
     public virtual DbSet<TblReceiveDispatches> TblReceiveDispatches { get; set; }
+    public virtual DbSet<TblArrivalRepConfig> TblArrivalRepConfigs { get; set; }
 
 
     // Database naming convention:

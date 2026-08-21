@@ -53,6 +53,7 @@ namespace VSSM.Presentation.Web
             //});
             services.AddScoped<IUidHistoryService, UidHistoryService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IArrivalRepConfigService, ArrivalRepConfigService>();
 
             services.AddScoped<IDestroyUidService, DestroyUidService>();
             services.AddScoped<IUidInfoService, UidInfoService>();

@@ -1,0 +1,189 @@
+﻿@model VSSM.Application.DTOs.BaseEntities.ArrivalRepConfig.ArrivalRepConfigDto
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "تنظیمات گزارش ورود";
+    var successMessage = TempData["Success"]?.ToString();
+}
+
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
+    <link href="~/css/pages/settings/arrival-report-config.css" rel="stylesheet" />
+}
+
+<div class="settings-page-wrap">
+    <div id="toastContainer"></div>
+
+    <div class="settings-page-title">
+        <i class="fa fa-cog"></i>
+        @ViewData["Title"]
+    </div>
+
+    <form asp-action="Save" method="post" novalidate>
+        @Html.AntiForgeryToken()
+
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-sliders-h" style="color:#1d6fb8;"></i>
+                <h6>فیلدهای نمایش داده شده در گزارش</h6>
+            </div>
+
+            <div class="a-card-body">
+                <div class="settings-info-text">
+                    <i class="fa fa-info-circle"></i>
+                    فیلدهایی که انتخاب می‌کنید در گزارش ورود نمایش داده می‌شوند.
+                    فیلدهای <strong>قرمز</strong> اجباری هستند و قابل تغییر نمی‌باشند.
+                </div>
+
+                <div class="settings-wrapper">
+                    <div class="settings-section-title">
+                        <i class="fa fa-info"></i>
+                        اطلاعات پایه
+                    </div>
+                    <div class="settings-grid">
+                        <div class="settings-item required">
+                            <input type="checkbox" asp-for="ReportNumber" checked disabled />
+                            <input type="hidden" asp-for="ReportNumber" value="true" />
+                            <label asp-for="ReportNumber">شماره گزارش</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="Source" />
+                            <label asp-for="Source">منبع</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="OrderPurchaseNumber" />
+                            <label asp-for="OrderPurchaseNumber">شماره سفارش</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="ArrivalDate" />
+                            <label asp-for="ArrivalDate">تاریخ دریافت</label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section-title" style="margin-top: 1.25rem;">
+                        <i class="fa fa-box"></i>
+                        اطلاعات کالا
+                    </div>
+                    <div class="settings-grid">
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="ItemClass" />
+                            <label asp-for="ItemClass">نوع کالا</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="ItemCode" />
+                            <label asp-for="ItemCode">کد کالا</label>
+                        </div>
+
+                        <div class="settings-item required">
+                            <input type="checkbox" asp-for="ItemName" checked disabled />
+                            <input type="hidden" asp-for="ItemName" value="true" />
+                            <label asp-for="ItemName">نام کالا</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="Manufacturer" />
+                            <label asp-for="Manufacturer">سازنده</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="BatchNumber" />
+                            <label asp-for="BatchNumber">سری ساخت</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="ExpireDate" />
+                            <label asp-for="ExpireDate">تاریخ انقضا</label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section-title" style="margin-top: 1.25rem;">
+                        <i class="fa fa-calculator"></i>
+                        اطلاعات کمی و قیمت
+                    </div>
+                    <div class="settings-grid">
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="DosePerVial" />
+                            <label asp-for="DosePerVial">دوز به ویال</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="NumberOfVial" />
+                            <label asp-for="NumberOfVial">تعداد ویال</label>
+                        </div>
+
+                        <div class="settings-item required">
+                            <input type="checkbox" asp-for="Quantity" checked disabled />
+                            <input type="hidden" asp-for="Quantity" value="true" />
+                            <label asp-for="Quantity">تعداد</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="UnitPrice" />
+                            <label asp-for="UnitPrice">قیمت واحد</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="TotalPrice" />
+                            <label asp-for="TotalPrice">قیمت کل</label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section-title" style="margin-top: 1.25rem;">
+                        <i class="fa fa-flask"></i>
+                        اطلاعات حجم و فعالیت
+                    </div>
+                    <div class="settings-grid">
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="Activity" />
+                            <label asp-for="Activity">فعالیت</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="UnitVolume" />
+                            <label asp-for="UnitVolume">حجم واحد</label>
+                        </div>
+
+                        <div class="settings-item">
+                            <input type="checkbox" asp-for="TotalVolume" />
+                            <label asp-for="TotalVolume">حجم کل</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-footer" style="justify-content: flex-end;">
+                <button type="submit" class="btn-confirm">
+                    <i class="fa fa-save"></i> ذخیره تنظیمات
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/shared/toast.js"></script>
+    <script src="~/js/pages/settings/arrival-report-config.js"></script>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const successMessage = '@Html.Raw(successMessage ?? string.Empty)';
+
+            if (successMessage) {
+                if (typeof window.ArrivalReportConfig !== 'undefined') {
+                    window.ArrivalReportConfig.showToast(successMessage, 'success');
+                } else if (typeof window.showToast === 'function') {
+                    window.showToast(successMessage, 'success');
+                }
+            }
+        })();
+    </script>
+}

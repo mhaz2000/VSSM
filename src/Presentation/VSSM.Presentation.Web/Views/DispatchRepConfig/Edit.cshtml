@@ -155,7 +155,7 @@
         (function() {
             'use strict';
 
-            const successMessage = '@Html.Raw(successMessage ?? string.Empty)';
+            const successMessage = @System.Text.Json.JsonSerializer.Serialize(successMessage ?? string.Empty);
 
             if (successMessage) {
                 if (typeof window.DispatchReportConfig !== 'undefined') {

@@ -16,6 +16,7 @@ public abstract class BaseReportController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Generate([FromForm] ReportRequest request)
     {
         if (!ModelState.IsValid)

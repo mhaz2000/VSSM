@@ -25,6 +25,7 @@ public class DispatchRepConfigController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(DispatchRepConfigDto model)
     {
         if (!ModelState.IsValid)

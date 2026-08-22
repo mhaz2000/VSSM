@@ -136,6 +136,7 @@ public class ItemDoseAssignmentController(
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken token)
     {
         await itemDoseAssignmentService.Delete(id, token);

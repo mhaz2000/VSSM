@@ -56,7 +56,7 @@
 {
     <script>
         $(document).ready(function () {
-            showToast('@Html.Raw(TempData["ToastMessage"])', '@TempData["ToastType"]');
+            showToast(@System.Text.Json.JsonSerializer.Serialize(TempData["ToastMessage"]), @System.Text.Json.JsonSerializer.Serialize(TempData["ToastType"]));
         });
     </script>
 }

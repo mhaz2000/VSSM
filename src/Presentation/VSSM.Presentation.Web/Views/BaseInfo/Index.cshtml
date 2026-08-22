@@ -17,7 +17,7 @@
 {
     <script>
         $(document).ready(function() {
-            var message = '@Html.Raw(TempData["ToastMessage"])';
+            var message = @System.Text.Json.JsonSerializer.Serialize(TempData["ToastMessage"]);
             var type = '@TempData["ToastType"]';
 
             // Assuming your ToastService has a method like this

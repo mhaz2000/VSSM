@@ -90,7 +90,7 @@
         (function() {
             'use strict';
 
-            var successMessage = '@Html.Raw(successMessage ?? string.Empty)';
+            var successMessage = @System.Text.Json.JsonSerializer.Serialize(successMessage ?? string.Empty);
 
             if (successMessage) {
                 if (typeof window.FiscalPeriodForm !== 'undefined') {

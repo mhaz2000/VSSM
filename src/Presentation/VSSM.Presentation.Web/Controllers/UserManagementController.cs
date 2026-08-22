@@ -42,6 +42,7 @@ public class UserManagementController(IUserService userService, IRecipientServic
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangeRecipient([FromBody] ChangeRecipientDto model)
     {
         try

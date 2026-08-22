@@ -99,6 +99,7 @@ public class StoreController(
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(StoreViewModel storeView, CancellationToken cancellationToken)
     {
         await LoadDropDowns(cancellationToken);

@@ -22,6 +22,7 @@ public class ArrivalRepConfigController : Controller
     }
     
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(ArrivalRepConfigDto model)
     {
         if (!ModelState.IsValid)

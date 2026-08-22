@@ -23,6 +23,7 @@ public class DestroyUidController(
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> SearchByBatch(string batchNumber, CancellationToken token)
     {
         var (success, message, data) = await destroyUidService
@@ -32,6 +33,7 @@ public class DestroyUidController(
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> SearchByUid(string uid, CancellationToken token)
     {
         var (success, message, data) = await destroyUidService
@@ -40,6 +42,7 @@ public class DestroyUidController(
         return Json(new { success, message, data });
     }
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task SubmitDestroyProgress(
         [FromBody] List<DestroyUidSubmitDto> items, CancellationToken token)
     {

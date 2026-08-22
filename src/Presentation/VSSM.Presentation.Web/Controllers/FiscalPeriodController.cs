@@ -1,95 +1,151 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Presentation.Web.Models.Base;
 
-namespace VSSM.Presentation.Web.Controllers
+namespace VSSM.Presentation.Web.Controllers;
+
+public sealed class FiscalPeriodController(
+    IFiscalPeriodService fiscalPeriodService) : BaseController
 {
-    
-    public class FiscalPeriodController : BaseController
+
+    public async Task<IActionResult> Index(
+        CancellationToken cancellationToken,
+        string? search,
+        string? status = "all",
+        int page = 1,
+        int pageSize = 10,
+        string sort = "FullName",
+        string direction = "asc")
     {
-        private readonly IFiscalPeriodService _fiscalPeriodService;
+        var list = await fiscalPeriodService.GetPagedList(
+            search,
+            status,
+            page,
+            pageSize,
+            sort,
+            direction,
+            cancellationToken);
 
-        public FiscalPeriodController(IFiscalPeriodService fiscalPeriodService)
+        var model = new GridViewModel
         {
-            _fiscalPeriodService = fiscalPeriodService;
-        }
-
-        // GET: /FiscalPeriod
-        public async Task<IActionResult> Index(
-            CancellationToken cancellationToken,
-            string? search,
-            int page = 1,
-            int pageSize = 10,
-            string sortField = "FiscalPeriodId",
-            string sortOrder = "desc")
-        {
-            var listModel = await _fiscalPeriodService.GetPagedList(
-                search, page, pageSize, sortField, sortOrder, cancellationToken);
-
-            return View(listModel);
-        }
-
-        // GET: /FiscalPeriod/New
-        public IActionResult New()
-        {
-            var model = new FiscalPeriodDto();
-            var today = DateTime.Today;
-            var lastDayOfYear = new DateTime(today.Year, 12, 31);
-    
-            // تنظیم مقدار پیش‌فرض
-            model.SuggestedEndDate = lastDayOfYear.ToShamsi();
-            
-            return View(model);
-        }
-
-        // POST: /FiscalPeriod/New
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> New(FiscalPeriodDto dto, CancellationToken cancellationToken)
-        {
-            if (!ModelState.IsValid)
+            SearchTerm = search,
+            CurrentSort = sort,
+            CurrentDirection = direction,
+            Data = new PagedResult<object>
             {
-                return View(dto);
+                Items = list.Items.Cast<object>().ToList(),
+                PageNumber = list.Paging.Page,
+                PageSize = pageSize,
+                TotalCount = list.Paging.TotalItems
+            },
+            Columns = new List<GridColumn>
+        {
+            new() { Header = "نام کامل", PropertyName = nameof(FiscalPeriodDto.FullName), Sortable = true },
+            new() { Header = "تاریخ شروع", PropertyName = nameof(FiscalPeriodDto.StartDateShamsiDate), Sortable = true },
+            new() { Header = "تاریخ پایان", PropertyName = nameof(FiscalPeriodDto.EndTimeShamsiDate), Sortable = true },
+            new() { Header = "تاریخ پایان پیشنهادی", PropertyName = nameof(FiscalPeriodDto.SuggestedEndDate), Sortable = true },
+            new()
+            {
+                Header = "وضعیت",
+                PropertyName = nameof(FiscalPeriodDto.IsActive),
+                Sortable = true,
+                IsBadgeColumn = true,
+                BadgeMap = new Dictionary<string, (string Text, string CssClass)>
+                {
+                    ["true"] = ("فعال", "badge-success"),
+                    ["false"] = ("غیرفعال", "badge-danger")
+                }
+            },
+            new() { Header = "عملیات", IsActionColumn = true }
+        },
+            Actions = new List<GridAction>
+        {
+            new()
+            {
+                Title = "ویرایش",
+                Controller = "FiscalPeriod",
+                Action = "Edit",
+                RouteIdProperty = nameof(FiscalPeriodDto.FiscalPeriodId),
+                IconClass = "fa fa-edit"
+            },
+            new()
+            {
+                Title = "حذف",
+                Controller = "FiscalPeriod",
+                Action = "Delete",
+                RouteIdProperty = nameof(FiscalPeriodDto.FiscalPeriodId),
+                IconClass = "fa fa-trash",
+                DynamicTitle = item =>
+                {
+                    var dto = item as FiscalPeriodDto;
+                    return dto?.IsActive == true ? string.Empty : "حذف";
+                }
             }
+        }
+        };
 
-            await _fiscalPeriodService.Create(dto, cancellationToken);
-            return RedirectToAction(nameof(Index));
+        return View(model);
+    }
+    // GET: /FiscalPeriod/New
+    public IActionResult New()
+    {
+        var model = new FiscalPeriodDto();
+        var today = DateTime.Today;
+        var lastDayOfYear = new DateTime(today.Year, 12, 31);
+
+        // تنظیم مقدار پیش‌فرض
+        model.SuggestedEndDate = lastDayOfYear.ToShamsi();
+
+        return View(model);
+    }
+
+    // POST: /FiscalPeriod/New
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> New(FiscalPeriodDto dto, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(dto);
         }
 
-        // GET: /FiscalPeriod/Edit/5
-        public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
-        {
-            var dto = await _fiscalPeriodService.GetById(id, cancellationToken);
-            if (dto == null)
-                return NotFound();
+        await fiscalPeriodService.Create(dto, cancellationToken);
+        return RedirectToAction(nameof(Index));
+    }
 
+    // GET: /FiscalPeriod/Edit/5
+    public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
+    {
+        var dto = await fiscalPeriodService.GetById(id, cancellationToken);
+        if (dto == null)
+            return NotFound();
+
+        return View("New", dto);
+    }
+
+    // POST: /FiscalPeriod/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(FiscalPeriodDto dto, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
             return View("New", dto);
         }
 
-        // POST: /FiscalPeriod/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(FiscalPeriodDto dto, CancellationToken cancellationToken)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View("New", dto);
-            }
+        var updated = await fiscalPeriodService.Update(dto, cancellationToken);
+        if (!updated)
+            return NotFound();
 
-            var updated = await _fiscalPeriodService.Update(dto, cancellationToken);
-            if (!updated)
-                return NotFound();
+        return RedirectToAction(nameof(Index));
+    }
 
-            return RedirectToAction(nameof(Index));
-        }
-
-        // GET: /FiscalPeriod/Delete/5
-        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
-        {
-            await _fiscalPeriodService.Delete(id, cancellationToken);
-            return RedirectToAction(nameof(Index));
-        }
+    // GET: /FiscalPeriod/Delete/5
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        await fiscalPeriodService.Delete(id, cancellationToken);
+        return RedirectToAction(nameof(Index));
     }
 }

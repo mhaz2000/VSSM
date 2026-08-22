@@ -9,8 +9,15 @@ public interface IFiscalPeriodService
     Task<int> Create(FiscalPeriodDto dto, CancellationToken cancellationToken);
     Task<bool> Update(FiscalPeriodDto dto, CancellationToken cancellationToken);
     Task<FiscalPeriodDto?> GetById(int id, CancellationToken cancellationToken);
-    Task<PagingSearchOrderDto<FiscalPeriodDto>> GetPagedList(
-        string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);
     Task<bool> Delete(int id, CancellationToken cancellationToken);
     Task<List<FiscalPeriodDto>> GetAllAsListAsync(CancellationToken cancellationToken);
+
+    Task<PagingSearchOrderDto<FiscalPeriodDto>> GetPagedList(
+            string? search,
+            string? status,
+            int page,
+            int pageSize,
+            string sort,
+            string direction,
+            CancellationToken cancellationToken);
 }

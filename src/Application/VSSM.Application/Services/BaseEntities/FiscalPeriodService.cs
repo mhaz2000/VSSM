@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.FiscalPeriod;
@@ -84,32 +85,46 @@ namespace VSSM.Application.Services.BaseEntities
         }
 
         public async Task<PagingSearchOrderDto<FiscalPeriodDto>> GetPagedList(
-            string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken)
+            string? search,
+            string? status,
+            int page,
+            int pageSize,
+            string sort,
+            string direction,
+            CancellationToken cancellationToken)
         {
             var paging = new PagingModel { Page = page, PageSize = pageSize };
 
             IQueryable<TblFiscalPeriod> query = _dbContext.TblFiscalPeriods;
 
-            // 1) Search
-            if (!string.IsNullOrWhiteSpace(search))
+            if (!string.IsNullOrEmpty(status) && status != "all")
             {
-                query = query.Where(x => x.FullName.Contains(search));
+                bool isActive = string.Equals(status, "true", StringComparison.OrdinalIgnoreCase);
+                query = query.Where(x => x.IsActive == isActive);
             }
 
-            // 2) Sorting
-            query = sortField switch
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                "FullName" => sortOrder == "asc" ? query.OrderBy(x => x.FullName) : query.OrderByDescending(x => x.FullName),
-                "StartDate" => sortOrder == "asc" ? query.OrderBy(x => x.StartDate) : query.OrderByDescending(x => x.StartDate),
-                "EndTime" => sortOrder == "asc" ? query.OrderBy(x => x.EndTime) : query.OrderByDescending(x => x.EndTime),
-                _ => sortOrder == "asc" ? query.OrderBy(x => x.FiscalPeriodId) : query.OrderByDescending(x => x.FiscalPeriodId)
+                string searchTerm = search.Trim();
+                query = query.Where(x => x.FullName != null && x.FullName.Contains(searchTerm));
+            }
+
+            bool isAscending = string.Equals(direction, "asc", StringComparison.OrdinalIgnoreCase);
+            string sortLower = sort?.ToLowerInvariant() ?? string.Empty;
+
+            query = sortLower switch
+            {
+                "fullname" => isAscending ? query.OrderBy(x => x.FullName) : query.OrderByDescending(x => x.FullName),
+                "startdate" => isAscending ? query.OrderBy(x => x.StartDate) : query.OrderByDescending(x => x.StartDate),
+                "endtime" => isAscending ? query.OrderBy(x => x.EndTime) : query.OrderByDescending(x => x.EndTime),
+                "suggestedenddate" => isAscending ? query.OrderBy(x => x.SuggestedEndDate) : query.OrderByDescending(x => x.SuggestedEndDate),
+                "isactive" => isAscending ? query.OrderBy(x => x.IsActive) : query.OrderByDescending(x => x.IsActive),
+                _ => isAscending ? query.OrderBy(x => x.FiscalPeriodId) : query.OrderByDescending(x => x.FiscalPeriodId)
             };
 
-            // 3) Total count
             paging.TotalItems = await query.CountAsync(cancellationToken);
 
-            // 4) Apply paging
-            var items = await query
+            List<FiscalPeriodDto> items = await query
                 .Skip(paging.Skip)
                 .Take(paging.PageSize)
                 .Select(x => new FiscalPeriodDto
@@ -118,7 +133,9 @@ namespace VSSM.Application.Services.BaseEntities
                     FullName = x.FullName,
                     StartDate = x.StartDate,
                     EndTime = x.EndTime,
-                    SuggestedEndDate = x.SuggestedEndDate.HasValue ? x.SuggestedEndDate.Value.ToShamsi() : string.Empty,
+                    SuggestedEndDate = x.SuggestedEndDate.HasValue
+                        ? x.SuggestedEndDate.Value.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)
+                        : string.Empty,
                     EntryDate = x.EntryDate,
                     IsActive = x.IsActive ?? false
                 })
@@ -129,8 +146,8 @@ namespace VSSM.Application.Services.BaseEntities
                 Items = items,
                 Paging = paging,
                 SearchText = search,
-                SortField = sortField,
-                SortOrder = sortOrder
+                SortField = sort,
+                SortOrder = direction
             };
         }
 

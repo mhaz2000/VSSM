@@ -1,103 +1,45 @@
-﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
-@model PagingSearchOrderDto<VSSM.Application.DTOs.BaseEntities.FiscalPeriod.FiscalPeriodDto>
-@{
-ViewData["Title"] = "مدیریت دوره‌های مالی";
+﻿@using VSSM.Application.DTOs.BaseEntities.FiscalPeriod
+@using VSSM.Presentation.Web.Models.Base
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model GridViewModel
+
+@section Styles {
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
 }
 
-<div class="container-fluid">
-    <div class="animated fadeIn">
+@{
+    ViewData["Title"] = "مدیریت دوره‌های مالی";
+    var currentStatus = Context.Request.Query["status"].ToString() is { Length: > 0 } s ? s : "all";
+}
 
-        <div class="card">
-            <div class="card-block">
-                <div class="col-lg-3">
-                    <h5>مدیریت دوره‌های مالی</h5>
-                </div>
+<div class="grid-wrapper">
+    <div class="grid-header" style="direction:rtl;">
 
-                <form method="get" class="col-lg-8">
-                    <div class="input-group">
-                        <input type="text" name="search" value="@Model.SearchText" class="form-control" placeholder="جستجو...">
-                        <div class="input-group-btn">
-                            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> جستجو</button>
-                        </div>
-                    </div>
-                </form>
+        <strong style="font-size:1.4rem; font-weight:600; color:#111827;">
+            @ViewData["Title"]
+        </strong>
 
-                <div class="col-lg-1">
-                    <a class="btn btn-success" asp-action="New"><i class="fa fa-plus-circle"></i> جدید</a>
-                </div>
-            </div>
-        </div>
+        @await Component.InvokeAsync("SearchBar", new
+        {
+            searchTerm = Model.SearchTerm,
+                pageSize = Model.Data.PageSize,
+                sort = Model.CurrentSort,
+                direction = Model.CurrentDirection,
+                addController = "FiscalPeriod",
+                addAction = "New",
+                showAddButton = true,
+                filterName = "status",
+                filterValue = currentStatus,
+                filterOptions = new List<SelectListItem>
+                {
+                new SelectListItem("همه", "all", currentStatus == "all"),
+                new SelectListItem("فعال", "true", currentStatus == "true"),
+                new SelectListItem("غیرفعال", "false", currentStatus == "false"),
+                }
+                })
+    </div>
 
-        <div class="row mt-2">
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-block">
-                        <table class="table table-bordered table-striped table-condensed text-center">
-                            <thead>
-                            <tr>
-                                <th><a href="?sortField=FullName&sortOrder=@(Model.SortOrder=="asc" ? "desc" : "asc")">نام کامل</a></th>
-                                <th><a href="?sortField=StartDate&sortOrder=@(Model.SortOrder=="asc" ? "desc" : "asc")">تاریخ شروع</a></th>
-                                <th><a href="?sortField=EndTime&sortOrder=@(Model.SortOrder=="asc" ? "desc" : "asc")">تاریخ پایان</a></th>
-                                <th><a href="?sortField=SuggestedEndDate&sortOrder=@(Model.SortOrder=="asc" ? "desc" : "asc")">تاریخ پایان پیشنهادی</a></th>
-                                <th><a href="?sortField=IsActive&sortOrder=@(Model.SortOrder=="asc" ? "desc" : "asc")">وضعیت</a></th>
-                                <th>عملیات</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @if (Model.Items != null && Model.Items.Any())
-                            {
-                            foreach (var item in Model.Items)
-                            {
-                            <tr>
-                                <td>@item.FullName</td>
-                                <td>@item.StartDateShamsiDate</td>
-                                <td>@item.EndTimeShamsiDate</td>
-                                <td>@item.SuggestedEndDate</td>
-                                <td>@(item.IsActive == true ? "فعال" : "غیرفعال")</td>
-                                <td>
-                                    <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.FiscalPeriodId">ویرایش</a>
-                                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.FiscalPeriodId"
-                                       onclick="return confirm('آیا مطمئن هستید؟')">حذف</a>
-                                </td>
-                            </tr>
-                            }
-                            }
-                            else
-                            {
-                            <tr>
-                                <td colspan="6" class="text-center text-danger">داده‌ای یافت نشد</td>
-                            </tr>
-                            }
-                            </tbody>
-                        </table>
-
-                        <nav>
-                            <ul class="pagination">
-                                <li class="page-item @(Model.Paging.Page == 1 ? "disabled" : "")">
-                                    <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page-1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">قبلی</a>
-                                </li>
-
-                                @for (int i = 1; i <= Model.Paging.TotalPages; i++)
-                                {
-                                <li class="page-item @(Model.Paging.Page == i ? "active" : "")">
-                                    <a class="page-link" href="?search=@Model.SearchText&page=@i&sortField=@Model.SortField&sortOrder=@Model.SortOrder">@i</a>
-                                </li>
-                                }
-
-                                <li class="page-item @(Model.Paging.Page == Model.Paging.TotalPages ? "disabled" : "")">
-                                    <a class="page-link" href="?search=@Model.SearchText&page=@(Model.Paging.Page+1)&sortField=@Model.SortField&sortOrder=@Model.SortOrder">بعدی</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div>
+        @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
 </div>
-
-@section Scripts {
-<script>
-    // اسکریپت اضافی (در صورت نیاز)
-</script>
-}

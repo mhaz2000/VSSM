@@ -1,49 +1,93 @@
 ﻿(function () {
     'use strict';
 
+    const SELECTORS = {
+        fullName: '#FullName',
+        suggestedEndDate: '#SuggestedEndDate',
+        submitBtn: '.btn-confirm',
+        form: 'form'
+    };
+
+    const CLASSES = {
+        inputValidationError: 'input-validation-error'
+    };
+
+    const MESSAGES = {
+        fullNameRequired: 'لطفاً نام کامل را وارد کنید.',
+        fullNameEmpty: 'لطفاً نام کامل را وارد کنید.'
+    };
+
+    const TOAST_TYPE = {
+        error: 'error',
+        success: 'success'
+    };
+
+    function getElement(selector) {
+        return document.querySelector(selector);
+    }
+
+    function getElementById(id) {
+        return document.getElementById(id);
+    }
+
+    function querySelectorAll(selector, context) {
+        const targetContext = context || document;
+        return targetContext.querySelectorAll(selector);
+    }
+
+    function addClass(element, className) {
+        if (element) {
+            element.classList.add(className);
+        }
+    }
+
+    function removeClass(element, className) {
+        if (element) {
+            element.classList.remove(className);
+        }
+    }
+
     function showToast(message, type) {
         if (typeof window.showToast === 'function') {
             window.showToast(message, type);
-            return;
         }
-        console.warn('Toast function not available. Message:', message);
     }
 
     function initializeDatePicker() {
-        var input = document.getElementById('SuggestedEndDate');
+        const input = getElementById('SuggestedEndDate');
 
         if (!input) {
             return;
         }
 
-        if (typeof DatePicker !== 'undefined') {
+        if (typeof DatePicker !== 'undefined' && typeof $ === 'function') {
             DatePicker.attach($(input), 'jalali');
         }
     }
 
-    function validateForm() {
-        var fullName = document.getElementById('FullName');
-        var submitBtn = document.querySelector('.btn-confirm');
-        var errorSpan = document.getElementById('fullNameError');
+    function validateFullName() {
+        const fullName = getElement(SELECTORS.fullName);
+        const submitBtn = getElement(SELECTORS.submitBtn);
+        const errorSpan = getElementById('fullNameError');
 
         if (!fullName || !submitBtn) {
             return;
         }
 
         function validate() {
-            var value = fullName.value.trim();
-            var isValid = value.length > 0;
+            const value = fullName.value.trim();
+            const isValid = value.length > 0;
 
             if (isValid) {
-                fullName.classList.remove('input-validation-error');
+                removeClass(fullName, CLASSES.inputValidationError);
                 if (errorSpan) {
                     errorSpan.textContent = '';
                 }
                 submitBtn.disabled = false;
             } else {
-                fullName.classList.add('input-validation-error');
+                addClass(fullName, CLASSES.inputValidationError);
                 if (errorSpan) {
-                    errorSpan.textContent = 'لطفاً نام کامل را وارد کنید.';
+                    errorSpan.textContent = MESSAGES.fullNameRequired;
                 }
                 submitBtn.disabled = true;
             }
@@ -57,42 +101,49 @@
         validate();
     }
 
+    function handleFormSubmit(event) {
+        const fullName = getElement(SELECTORS.fullName);
+
+        if (!fullName || fullName.value.trim() === '') {
+            event.preventDefault();
+            showToast(MESSAGES.fullNameEmpty, TOAST_TYPE.error);
+            fullName.focus();
+            return false;
+        }
+
+        const inputs = querySelectorAll('input[type="text"]', event.target);
+        const length = inputs.length;
+
+        for (let index = 0; index < length; index++) {
+            const input = inputs[index];
+            if (input.value) {
+                input.value = input.value.trim();
+            }
+        }
+
+        return true;
+    }
+
     function initializeForm() {
-        var form = document.querySelector('form');
+        const form = getElement(SELECTORS.form);
 
         if (!form) {
             return;
         }
 
-        form.addEventListener('submit', function (e) {
-            var fullName = document.getElementById('FullName');
-
-            if (!fullName || fullName.value.trim() === '') {
-                e.preventDefault();
-                showToast('لطفاً نام کامل را وارد کنید.', 'error');
-                fullName.focus();
-                return false;
-            }
-
-            var inputs = form.querySelectorAll('input[type="text"]');
-            inputs.forEach(function (input) {
-                if (input.value) {
-                    input.value = input.value.trim();
-                }
-            });
-        });
+        form.addEventListener('submit', handleFormSubmit);
     }
 
     function init() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function () {
                 initializeDatePicker();
-                validateForm();
+                validateFullName();
                 initializeForm();
             });
         } else {
             initializeDatePicker();
-            validateForm();
+            validateFullName();
             initializeForm();
         }
     }

@@ -2,132 +2,168 @@
 
 @{
     ViewData["Title"] = "تنظیمات گزارش ارسال";
+    var successMessage = TempData["Success"]?.ToString();
 }
 
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">تنظیمات گزارش ارسال</h5>
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
+    <link href="~/css/pages/settings/dispatch-report-config.css" rel="stylesheet" />
+}
+
+<div class="dispatch-page-wrap">
+    <div id="toastContainer"></div>
+
+    <div class="dispatch-page-title">
+        <i class="fa fa-paper-plane"></i>
+        @ViewData["Title"]
     </div>
 
-    <div class="card-body">
-        <form asp-action="Save" method="post">
-            <div class="row">
+    <form asp-action="Save" method="post" novalidate>
+        @Html.AntiForgeryToken()
 
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="DispatchDate" checked disabled />
-                        <input type="hidden" asp-for="DispatchDate" value="true" />
-                        <label class="form-check-label" asp-for="DispatchDate">تاریخ ارسال</label>
-                    </div>
-                </div>
-                
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="Recipient" checked disabled />
-                        <input type="hidden" asp-for="Recipient" value="true" />
-                        <label class="form-check-label" asp-for="Recipient">گیرنده</label>
-                    </div>
-                </div>
-                
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="VoucherNumber" checked disabled />
-                        <input type="hidden" asp-for="VoucherNumber" value="true" />
-                        <label class="form-check-label" asp-for="VoucherNumber">شماره حواله</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="RequestNumber" />
-                        <label class="form-check-label" asp-for="RequestNumber">شماره درخواست</label>
-                    </div>
-                </div>
-
-                    
-                
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="ItemCode" />
-                        <label class="form-check-label" asp-for="ItemCode">کد کالا</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="ItemClass" />
-                        <label class="form-check-label" asp-for="ItemClass">کلاس کالا</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="ItemName" />
-                        <label class="form-check-label" asp-for="ItemName">نام کالا</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="BatchNumber" />
-                        <label class="form-check-label" asp-for="BatchNumber">سری ساخت</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="Quantity" />
-                        <label class="form-check-label" asp-for="Quantity">تعداد</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="DosePerVial" />
-                        <label class="form-check-label" asp-for="DosePerVial">دوز هر ویال</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="NumberOfVial" />
-                        <label class="form-check-label" asp-for="NumberOfVial">تعداد ویال</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="ExpDate" />
-                        <label class="form-check-label" asp-for="ExpDate">تاریخ انقضا</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="Store" />
-                        <label class="form-check-label" asp-for="Store">انبار</label>
-                    </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" asp-for="Activity" />
-                        <label class="form-check-label" asp-for="Activity">فعالیت</label>
-                    </div>
-                </div>
-
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-sliders-h" style="color:#1d6fb8;"></i>
+                <h6>فیلدهای نمایش داده شده در گزارش</h6>
             </div>
 
-            <div class="mt-3">
-                <button type="submit" class="btn btn-success">ذخیره</button>
-            </div>
-        </form>
+            <div class="a-card-body">
+                <div class="dispatch-info-text">
+                    <i class="fa fa-info-circle"></i>
+                    فیلدهایی که انتخاب می‌کنید در گزارش ارسال نمایش داده می‌شوند.
+                    فیلدهای <strong>قرمز</strong> اجباری هستند و قابل تغییر نمی‌باشند.
+                </div>
 
-        @if (TempData["Success"] != null)
-        {
-            <div class="alert alert-success mt-3">
-                @TempData["Success"]
+                <div class="dispatch-wrapper">
+                    <div class="dispatch-section-title">
+                        <i class="fa fa-info"></i>
+                        اطلاعات پایه
+                    </div>
+                    <div class="dispatch-grid">
+                        <div class="dispatch-item required">
+                            <input type="checkbox" asp-for="DispatchDate" checked disabled />
+                            <input type="hidden" asp-for="DispatchDate" value="true" />
+                            <label asp-for="DispatchDate">تاریخ ارسال</label>
+                        </div>
+
+                        <div class="dispatch-item required">
+                            <input type="checkbox" asp-for="Recipient" checked disabled />
+                            <input type="hidden" asp-for="Recipient" value="true" />
+                            <label asp-for="Recipient">گیرنده</label>
+                        </div>
+
+                        <div class="dispatch-item required">
+                            <input type="checkbox" asp-for="VoucherNumber" checked disabled />
+                            <input type="hidden" asp-for="VoucherNumber" value="true" />
+                            <label asp-for="VoucherNumber">شماره حواله</label>
+                        </div>
+
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="RequestNumber" />
+                            <label asp-for="RequestNumber">شماره درخواست</label>
+                        </div>
+
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="Store" />
+                            <label asp-for="Store">انبار</label>
+                        </div>
+                    </div>
+
+                    <div class="dispatch-section-title" style="margin-top: 1.25rem;">
+                        <i class="fa fa-box"></i>
+                        اطلاعات کالا
+                    </div>
+                    <div class="dispatch-grid">
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="ItemCode" />
+                            <label asp-for="ItemCode">کد کالا</label>
+                        </div>
+
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="ItemClass" />
+                            <label asp-for="ItemClass">کلاس کالا</label>
+                        </div>
+
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="ItemName" />
+                            <label asp-for="ItemName">نام کالا</label>
+                        </div>
+
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="BatchNumber" />
+                            <label asp-for="BatchNumber">سری ساخت</label>
+                        </div>
+
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="ExpDate" />
+                            <label asp-for="ExpDate">تاریخ انقضا</label>
+                        </div>
+                    </div>
+
+                    <div class="dispatch-section-title" style="margin-top: 1.25rem;">
+                        <i class="fa fa-calculator"></i>
+                        اطلاعات کمی
+                    </div>
+                    <div class="dispatch-grid">
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="Quantity" />
+                            <label asp-for="Quantity">تعداد</label>
+                        </div>
+
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="DosePerVial" />
+                            <label asp-for="DosePerVial">دوز هر ویال</label>
+                        </div>
+
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="NumberOfVial" />
+                            <label asp-for="NumberOfVial">تعداد ویال</label>
+                        </div>
+                    </div>
+
+                    <div class="dispatch-section-title" style="margin-top: 1.25rem;">
+                        <i class="fa fa-flask"></i>
+                        اطلاعات فعالیت
+                    </div>
+                    <div class="dispatch-grid">
+                        <div class="dispatch-item">
+                            <input type="checkbox" asp-for="Activity" />
+                            <label asp-for="Activity">فعالیت</label>
+                        </div>
+                    </div>
+                </div>
             </div>
-        }
-    </div>
+
+            <div class="form-footer">
+                <button type="submit" class="btn-confirm">
+                    <i class="fa fa-save"></i>
+                    ذخیره تنظیمات
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
+
+@section Scripts {
+    <script src="~/js/shared/toast.js"></script>
+    <script src="~/js/pages/settings/dispatch-report-config.js"></script>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const successMessage = '@Html.Raw(successMessage ?? string.Empty)';
+
+            if (successMessage) {
+                if (typeof window.DispatchReportConfig !== 'undefined') {
+                    window.DispatchReportConfig.showToast(successMessage, 'success');
+                } else if (typeof window.showToast === 'function') {
+                    window.showToast(successMessage, 'success');
+                }
+            }
+        })();
+    </script>
+}

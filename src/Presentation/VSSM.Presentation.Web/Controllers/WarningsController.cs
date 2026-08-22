@@ -9,20 +9,29 @@ namespace VSSM.Presentation.Web.Controllers
     
     public class WarningsController(IWarningService warningService) : BaseController
     {
-        public async Task<IActionResult> CloseToExirationItemsIndex(
+        public async Task<IActionResult> CloseToExpirationItemsIndex(
             int pageNumber = 1,
             int pageSize = 10,
-            string sort = "ItemName",
+            string sort = nameof(CloseToExpirationDto.ItemName),
             string direction = "asc",
-            string search = "", CancellationToken token = default)
+            string search = "",
+            CancellationToken cancellationToken = default)
         {
-            var (data, count) = await warningService.GetCloseToExpriationAsync(search, pageNumber, pageSize, sort, direction, CurrentUserRecipientId.Value, token);
+            var (data, count) = await warningService.GetCloseToExpirationAsync(
+                search,
+                pageNumber,
+                pageSize,
+                sort,
+                direction,
+                CurrentUserRecipientId.Value,
+                cancellationToken);
 
             var model = new GridViewModel
             {
                 SearchTerm = search,
                 CurrentSort = sort,
                 CurrentDirection = direction,
+
                 Data = new PagedResult<object>
                 {
                     Items = data.Cast<object>().ToList(),
@@ -30,33 +39,54 @@ namespace VSSM.Presentation.Web.Controllers
                     PageSize = pageSize,
                     TotalCount = count
                 },
+
                 Columns = new List<GridColumn>
-                {
-                    new() { Header = "کالا", PropertyName = nameof(CloseToExpirationDto.ItemName), Sortable = true },
-                    new() { Header = "تعداد", PropertyName = nameof(CloseToExpirationDto.Quantity),  IsAmount = true,Sortable = true },
-                    new() { Header = "تاریخ انقضا", PropertyName = nameof(CloseToExpirationDto.ExpiredDateString), Sortable = false },
-                    new() { Header = "مانده تا انقضا", PropertyName = nameof(CloseToExpirationDto.DaysToExpired), Sortable = false },
-                    new() { Header = "سازنده", PropertyName = nameof(CloseToExpirationDto.Manufacturer), Sortable = false },
-                    new() { Header = "سری ساخت", PropertyName = nameof(CloseToExpirationDto.BatchNumber), Sortable = false },
-                    new() { Header = "مرحله vvm", PropertyName = nameof(CloseToExpirationDto.VVMStage), Sortable = false },
-                    new() { Header = "انبار", PropertyName = nameof(CloseToExpirationDto.StockName), Sortable = false },
-                    //new() { Header = "عملیات", IsActionColumn = true}
-                },
-                //Actions = new List<GridAction>
-                //{
-                //    new()
-                //    {
-                //        Title = "مشاهده",
-                //        Controller = "ItemClass",
-                //        Action = "Index",
-                //        RouteIdProperty = "ItemName",
-                //        LinkClass = "",
-                //        IconClass = "fa fa-edit"
-                //    }
-                //}
-
+        {
+            new()
+            {
+                Header = "کالا",
+                PropertyName = nameof(CloseToExpirationDto.ItemName),
+                Sortable = true
+            },
+            new()
+            {
+                Header = "تعداد",
+                PropertyName = nameof(CloseToExpirationDto.Quantity),
+                IsAmount = true,
+                Sortable = true
+            },
+            new()
+            {
+                Header = "تاریخ انقضا",
+                PropertyName = nameof(CloseToExpirationDto.ExpiredDateString)
+            },
+            new()
+            {
+                Header = "مانده تا انقضا",
+                PropertyName = nameof(CloseToExpirationDto.DaysToExpired)
+            },
+            new()
+            {
+                Header = "سازنده",
+                PropertyName = nameof(CloseToExpirationDto.Manufacturer)
+            },
+            new()
+            {
+                Header = "سری ساخت",
+                PropertyName = nameof(CloseToExpirationDto.BatchNumber)
+            },
+            new()
+            {
+                Header = "مرحله VVM",
+                PropertyName = nameof(CloseToExpirationDto.VVMStage)
+            },
+            new()
+            {
+                Header = "انبار",
+                PropertyName = nameof(CloseToExpirationDto.StockName)
+            }
+        }
             };
-
 
             return View(model);
         }

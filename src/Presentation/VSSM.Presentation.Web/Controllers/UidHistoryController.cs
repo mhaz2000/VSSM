@@ -15,6 +15,7 @@ public class UidHistoryController(
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Search([FromBody] UidHistorySearchDto model, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(model.Uid))

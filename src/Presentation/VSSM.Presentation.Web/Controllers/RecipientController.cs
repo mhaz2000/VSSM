@@ -118,6 +118,7 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RecipientViewModel model, CancellationToken token)
         {
             await LoadDropDowns(token);

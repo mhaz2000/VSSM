@@ -159,6 +159,7 @@ namespace VSSM.Presentation.Web.Controllers
 
         // ====================== CREATE/UPDATE ============================
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserViewModel model, CancellationToken token)
         {
             await LoadDropDowns(token);
@@ -253,6 +254,7 @@ namespace VSSM.Presentation.Web.Controllers
 
         // ====================== DELETE ============================
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleActiveness(int id, CancellationToken token)
         {
             var active = await _userService.ToggleActiveness(id, token);
@@ -272,6 +274,7 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model, CancellationToken token)
         {
             if (!ModelState.IsValid)

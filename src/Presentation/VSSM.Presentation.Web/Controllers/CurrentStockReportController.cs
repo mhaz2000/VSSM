@@ -49,6 +49,7 @@ public class CurrentStockReportController(IReportService _reportService,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> AvailableQuantityReport(AvailableQuantityReportQuery inputModel, string reportType, int pageNumber = 1,
         int pageSize = 20,
         string sort = "ItemName",

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Consumer;
@@ -26,7 +26,7 @@ public class ConsumerController : ControllerBase
             return BadRequest(new ConsumeUidResponse
             {
                 StatusCode = "100",
-                StatusDesc = "پارامترهای ورودی نامعتبر است"
+                StatusDesc = "Ù¾Ø§Ø±Ø§Ù…ØªØ±Ù‡Ø§ÛŒ ÙˆØ±ÙˆØ¯ÛŒ Ù†Ø§Ù…Ø¹ØªØ¨Ø± Ø§Ø³Øª"
             });
         }
 

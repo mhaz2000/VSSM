@@ -62,7 +62,7 @@
 {
     <script>
         $(document).ready(function () {
-            showToast('@Html.Raw(toastMessage)', '@toastType');
+            showToast(@System.Text.Json.JsonSerializer.Serialize(toastMessage), @System.Text.Json.JsonSerializer.Serialize(toastType));
         });
     </script>
 }

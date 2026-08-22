@@ -73,6 +73,7 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RecipientConfigurationViewModel model, CancellationToken token)
         {
             await LoadRecipients(token);

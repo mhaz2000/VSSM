@@ -170,6 +170,7 @@ public class InputFilesController(
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<ActionResult> Upload(IFormFile xmlFile, int itemId, int dosePerVialId)
     {
         XDocument doc;
@@ -186,6 +187,7 @@ public class InputFilesController(
 
     [Authorize(Roles = "Admin")]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<ActionResult> Remove(int id, CancellationToken cancellationToken)
     {
         await _orderInfoService.RemoveAsync(id, cancellationToken);
@@ -194,6 +196,7 @@ public class InputFilesController(
 
     [Authorize(Roles = "Admin")]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<ActionResult> Confirm(int id, CancellationToken cancellationToken)
     {
         await _orderInfoService.ConfirmAsync(id, cancellationToken);

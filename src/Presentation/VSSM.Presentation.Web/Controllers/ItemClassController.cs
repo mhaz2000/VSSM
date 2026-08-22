@@ -68,6 +68,7 @@ public class ItemClassController(
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(
         BaseInfoInputDto model,
         CancellationToken cancellationToken)
@@ -86,6 +87,7 @@ public class ItemClassController(
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(
         int id,
         CancellationToken cancellationToken)

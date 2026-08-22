@@ -71,6 +71,7 @@ public class StoreTransferController : BaseController
 
     // ثبت انتقال
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Transfer(StoreTransferViewModel model)
     {
         var dto = new StoreTransfersDto()

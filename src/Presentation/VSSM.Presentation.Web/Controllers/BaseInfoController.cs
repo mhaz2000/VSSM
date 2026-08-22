@@ -116,6 +116,7 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Save(BaseInfoInputDto model)
         {
             if (!ModelState.IsValid)

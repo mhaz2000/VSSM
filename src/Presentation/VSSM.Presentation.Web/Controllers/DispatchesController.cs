@@ -429,6 +429,7 @@ public class DispatchesController(
 
 
     [HttpPost("AddUidToSession")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddUidToSession(
         string sessionId,
         int? dispatchLineId,
@@ -467,6 +468,7 @@ public class DispatchesController(
     }
 
     [HttpPost("RemoveScanUid")]
+    [ValidateAntiForgeryToken]
     public IActionResult RemoveScanUid(
     string sessionId,
     string uid)
@@ -506,6 +508,7 @@ public class DispatchesController(
     }
 
     [HttpPost("ConfirmDispatchUids")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ConfirmDispatchUids(
        string sessionId,
        int dispatchId)

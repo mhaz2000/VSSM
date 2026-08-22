@@ -1,0 +1,32 @@
+﻿.store-usage-wrap {
+    margin: 1.5rem;
+    direction: rtl;
+}
+
+.store-usage-info-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 1rem;
+    background-color: #f9fafb;
+    border-radius: 0.375rem;
+    border-right: 3px solid #1d6fb8;
+}
+
+    .store-usage-info-text i {
+        color: #1d6fb8;
+        margin-left: 0.5rem;
+    }
+
+.store-usage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.field-error {
+    color: #dc2626;
+    font-size: 0.75rem;
+    display: block;
+    margin-top: 4px;
+}

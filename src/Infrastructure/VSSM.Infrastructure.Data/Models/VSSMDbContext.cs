@@ -41,6 +41,7 @@ public partial class VSSMDbContext(
     public virtual DbSet<TblVoucherConfig> TblVoucherConfigs { get; set; }
     public virtual DbSet<TblReceiveDispatches> TblReceiveDispatches { get; set; }
     public virtual DbSet<TblArrivalRepConfig> TblArrivalRepConfigs { get; set; }
+    public virtual DbSet<TblStoreUsageWarning> TblStoreUsageWarning { get; set; }
 
 
     // Database naming convention:
@@ -55,6 +56,25 @@ public partial class VSSMDbContext(
     // each relationship must have one canonical FK and one clearly named constraint.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<TblStoreUsageWarning>(entity =>
+        {
+            entity.ToTable("tblStoreUsageWarning");
+
+            entity.HasKey(e => e.Id)
+                .HasName("PK_TBL_STORE_USAGE_WARNING");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("PK_STORE_USAGE_WARNING_ID");
+
+            entity.Property(e => e.Dry)
+                .HasColumnName("DRY");
+
+            entity.Property(e => e.Bz)
+                .HasColumnName("BZ");
+
+            entity.Property(e => e.Az)
+                .HasColumnName("AZ");
+        });
 
         modelBuilder.Entity<TblRequestLine>(entity =>
         {

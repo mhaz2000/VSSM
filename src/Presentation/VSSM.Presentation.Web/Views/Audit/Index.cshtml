@@ -1,0 +1,55 @@
+@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@section Styles {
+    <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
+    <link href="~/css/components/shared/grid-header.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+}
+
+@{
+    ViewData["Title"] = "لاگ بازرسی (Audit)";
+}
+
+<div class="grid-wrapper">
+    <div class="grid-header" style="direction:rtl;">
+
+        <strong style="font-size:1.4rem; font-weight:600; color:#111827;">
+            @ViewData["Title"]
+        </strong>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <form method="get" class="m-0 d-flex align-items-center gap-2 flex-wrap">
+
+                <input type="hidden" name="sort" value="@Model.CurrentSort" />
+                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
+                <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
+
+                <input type="text" name="userName" class="form-control" style="width:150px;"
+                       placeholder="نام کاربر" value="@ViewBag.UserName" />
+                <input type="text" name="level" class="form-control" style="width:120px;"
+                       placeholder="سطح" value="@ViewBag.Level" />
+                <input type="date" name="from" class="form-control" style="width:150px;"
+                       value="@ViewBag.From" />
+                <input type="date" name="to" class="form-control" style="width:150px;"
+                       value="@ViewBag.To" />
+
+                <div class="search-wrap">
+                    <div class="search-divider"></div>
+                    <input type="text" name="message" class="search-input"
+                           value="@Model.SearchTerm" placeholder="جستجو در پیام..." />
+                    <button type="submit" class="search-btn" title="جستجو">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+
+                <a asp-action="Index" class="btn-add" style="text-decoration:none;">پاکسازی</a>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        @await Html.PartialAsync("_DynamicGrid", Model)
+    </div>
+</div>

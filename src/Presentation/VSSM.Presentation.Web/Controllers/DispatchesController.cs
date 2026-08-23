@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
+using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
@@ -8,12 +9,13 @@ using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class DispatchesController(
-    IStoreService storeService,
-    IRecipientService recipientService,
-    IDispatchService dispatchService,
-    IBaseInfoService baseInfoService,
-    DispatchScanSessionService dispatchScan) : BaseController
+    public class DispatchesController(
+        IStoreService storeService,
+        IRecipientService recipientService,
+        IDispatchService dispatchService,
+        IBaseInfoService baseInfoService,
+        DispatchScanSessionService dispatchScan,
+        IAuditService audit) : BaseController
 {
 
     [HttpGet]
@@ -222,6 +224,7 @@ public class DispatchesController(
 
         TempData["ToastMessage"] = "ارسال با موفقیت حذف شد.";
         TempData["ToastType"] = "success";
+        await audit.LogAsync("Warning", $"Dispatch deleted: id={id}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
 
         return RedirectToAction("Index");
     }
@@ -379,6 +382,7 @@ public class DispatchesController(
     public async Task<IActionResult> Confirm(int id, CancellationToken token)
     {
         await dispatchService.ConfirmDispatchAsync(id, token);
+        await audit.LogAsync("Information", $"Dispatch confirmed: id={id}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
 
         return RedirectToAction("Index");
 

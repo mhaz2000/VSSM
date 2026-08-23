@@ -5,6 +5,7 @@ using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
+using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
@@ -13,14 +14,15 @@ using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-public class ArrivalController(
-    IArrivalService arrivalService,
-    IFiscalPeriodService fiscalService,
-    IItemService itemService,
-    IStoreService storeService,
-    IBaseInfoService baseInfoService,
-    IOrderInfoService orderInfoService,
-    IUidInfoService uidInfoService) : BaseController
+    public class ArrivalController(
+        IArrivalService arrivalService,
+        IFiscalPeriodService fiscalService,
+        IItemService itemService,
+        IStoreService storeService,
+        IBaseInfoService baseInfoService,
+        IOrderInfoService orderInfoService,
+        IUidInfoService uidInfoService,
+        IAuditService audit) : BaseController
 {
     public async Task<IActionResult> Index(
         string? search,
@@ -178,6 +180,7 @@ public class ArrivalController(
 
         TempData["ToastMessage"] = "ورود حذف شد";
         TempData["ToastType"] = "success";
+        await audit.LogAsync("Warning", $"Arrival deleted: id={id}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
         return RedirectToAction(nameof(Index));
     }
 
@@ -392,6 +395,7 @@ public class ArrivalController(
 
         var dto = await BuildCreateDtoAsync(model, token);
         await arrivalService.Confirm(model.ArrivalId.Value, dto, token);
+        await audit.LogAsync("Information", $"Arrival confirmed: id={model.ArrivalId.Value}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
 
         var confirmed = await arrivalService.GetById(model.ArrivalId.Value, token);
 
@@ -426,6 +430,7 @@ public class ArrivalController(
 
         TempData["ToastMessage"] = "کل ورود حذف شد";
         TempData["ToastType"] = "success";
+        await audit.LogAsync("Warning", $"Arrival deleted (all): id={model.ArrivalId.Value}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
         return RedirectToAction("Index");
     }
 

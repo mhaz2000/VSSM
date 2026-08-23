@@ -1,4 +1,4 @@
-﻿﻿@{
+﻿@{
 ViewBag.Title = "امحا UID";
 Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -145,7 +145,7 @@ Layout = "~/Views/Shared/_Layout.cshtml";
     var todayShamsi              = '@ViewBag.TodayShamsi';
 
     var reasonList = @Html.Raw(
-        Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ReasonList ?? new object[0])
+        System.Text.Json.JsonSerializer.Serialize(ViewBag.ReasonList ?? new object[0])
     );
 </script>
 

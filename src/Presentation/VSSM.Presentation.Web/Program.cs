@@ -9,6 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddServiceCollectionExtension(builder.Configuration, builder.Environment);
 
+// [SECURITY - A02/A05]: HSTS policy (applied via UseHsts in non-dev). 1-year max-age, covers subdomains.
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+    options.Preload = false;
+});
+
 builder.Services.AddHostedService<OrdersInquiryBackgroundService>();
 
 
@@ -59,8 +67,8 @@ app.UseGlobalException();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    //app.UseHsts();
+    // [SECURITY - A02/A05]: enforce HSTS in non-dev so the browser only ever talks to us over TLS.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();

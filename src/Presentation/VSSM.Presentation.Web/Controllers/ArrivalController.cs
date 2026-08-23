@@ -183,14 +183,11 @@ public class ArrivalController(
 
 
     [HttpPost]
-    [IgnoreAntiforgeryToken]  //  موقتاً
+    [ValidateAntiForgeryToken]  
     public async Task<IActionResult> Create(ArrivalViewModel model, string command, CancellationToken token)
     {
         try
         {
-
-            //await HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-            //         .ValidateRequestAsync(HttpContext);
 
             await PopulateLookupViewBagsAsync(token);
 

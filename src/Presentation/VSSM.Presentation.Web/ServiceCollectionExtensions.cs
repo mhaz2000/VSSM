@@ -141,9 +141,11 @@ namespace VSSM.Presentation.Web
                     // - SlidingExpiration=false + ExpireTimeSpan=30min: انقضای مطلق نشست
                     //   طبق الزامات افتا (حداکثر ۳۰ دقیقه)
                     options.Cookie.HttpOnly = true;
-                    options.Cookie.SecurePolicy = environment.IsDevelopment()
-                        ? CookieSecurePolicy.SameAsRequest
-                        : CookieSecurePolicy.Always;
+                    // TEMP: Secure=SameAsRequest for local HTTP testing. Restore CookieSecurePolicy.Always before deploy.
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                    //options.Cookie.SecurePolicy = environment.IsDevelopment()
+                    //    ? CookieSecurePolicy.SameAsRequest
+                    //    : CookieSecurePolicy.Always;
                     options.Cookie.SameSite = SameSiteMode.Lax;
                     options.SlidingExpiration = false;
                     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);

@@ -56,23 +56,14 @@ namespace VSSM.Presentation.Web.Authentication
                     .FirstOrDefaultAsync(u => u.UserName == username && u.IsDeleted != true);
 
                 if (user == null)
+                {
+                    // [SECURITY - A07]: هش ساختگی برای یکسان‌سازی زمان پاسخ (جلوگیری از enum)
+                    PasswordHasher.Verify(password, PasswordHasher.DummyHash);
                     return AuthenticateResult.Fail("Invalid username or password");
+                }
 
-                bool passwordOk;
-                if (PasswordHasher.LooksHashed(user.Password))
-                {
-                    passwordOk = PasswordHasher.Verify(password, user.Password);
-                }
-                else
-                {
-                    // Legacy plaintext value: accept on exact match, then upgrade to a hash.
-                    passwordOk = user.Password == password;
-                    if (passwordOk)
-                    {
-                        user.Password = PasswordHasher.Hash(password);
-                        await _db.SaveChangesAsync();
-                    }
-                }
+                // [SECURITY - A07]: فقط PBKDF2 (constant-time)؛ رمزهای متنی در راه‌اندازی هش شدند.
+                bool passwordOk = PasswordHasher.Verify(password, user.Password);
 
                 if (!passwordOk)
                     return AuthenticateResult.Fail("Invalid username or password");

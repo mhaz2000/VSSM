@@ -82,8 +82,50 @@
             }
         </div>
 
+        @* کد امنیتی (captcha) *@
+        <div class="field-group">
+            <label class="field-label" for="Captcha">کد امنیتی</label>
+            <div class="field-wrap" style="align-items:center; gap:10px;">
+                <div id="captchaImage" style="border:1px solid #cfd8e3; border-radius:8px; overflow:hidden; line-height:0;">
+                    @Html.Raw(Model.CaptchaSvg)
+                </div>
+                <button type="button" class="toggle-password" onclick="reloadCaptcha()"
+                        aria-label="تغییر کد امنیتی" tabindex="-1" title="تغییر کد">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M23 4v6h-6" />
+                        <path d="M1 20v-6h6" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                </button>
+                <input type="text" id="Captcha" asp-for="Captcha"
+                       class="field-input" placeholder="کد را وارد کنید"
+                       autocomplete="off" maxlength="5" style="flex:1;"
+                       aria-required="true" />
+            </div>
+            @if (hasError)
+            {
+                <p class="error-text" role="alert" aria-live="assertive">@ViewBag.Error</p>
+            }
+        </div>
+
+        <input type="hidden" asp-for="CaptchaToken" />
+
         <button type="submit" class="btn-login">ورود</button>
     </form>
+
+    <script>
+        function reloadCaptcha() {
+            fetch('@Url.Action("Captcha", "Account")')
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    document.getElementById('captchaImage').innerHTML = d.svg;
+                    document.getElementById('CaptchaToken').value = d.token;
+                    document.getElementById('Captcha').value = '';
+                });
+        }
+    </script>
 
     <p class="auth-footer">
         با ورود به <a asp-controller="Info" asp-action="About">سامانه</a>، شما شرایط استفاده و

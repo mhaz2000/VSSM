@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.Common.Authorization;
 using VSSM.Application.Common.Interfaces;
@@ -35,12 +37,13 @@ using VSSM.Infrastructure.Data.Models;
 using VSSM.Infrastructure.Services.BaseEntities;
 using VSSM.Presentation.Web.Authentication;
 using VSSM.Presentation.Web.Authorization;
+using VSSM.Presentation.Web.Services;
 
 namespace VSSM.Presentation.Web
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddServiceCollectionExtension(this IServiceCollection services, IConfiguration configuration)
+        public static void AddServiceCollectionExtension(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
 
             services.AddDbContext<VSSMDbContext>(options =>
@@ -107,6 +110,10 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IReportExcelGenerator, ReportExcelGenerator>();
             services.AddScoped<IGs1BarcodeParser, Gs1BarcodeParser>();
 
+            // [SECURITY]: کپچای داخلی (مشخصه‌های نویز) و محدودیت نرخ ورود — هر دو از IMemoryCache استفاده می‌کنند.
+            services.AddScoped<ICaptchaService, CaptchaService>();
+            services.AddScoped<IRateLimitService, RateLimitService>();
+
             services.AddSingleton<DispatchScanSessionService>();
 
             /*reports services DI*/
@@ -125,6 +132,21 @@ namespace VSSM.Presentation.Web
                 {
                     options.LoginPath = "/Account/Login";
                     options.AccessDeniedPath = "/Account/AccessDenied";
+
+                    // [SECURITY - افتا]: سخت‌سازی کوکی احراز هویت
+                    // - HttpOnly: جلوگیری از دسترسی اسکریپت‌ها به کوکی (XSS)
+                    // - Secure=Always در Production: کوکی فقط روی HTTPS ارسال می‌شود
+                    //   (در Development همانند درخواست تا پروفایل http قابل استفاده بماند)
+                    // - SameSite=Lax: کاهش ریسک CSRF همراه با حفظ ناوبری عادی
+                    // - SlidingExpiration=false + ExpireTimeSpan=30min: انقضای مطلق نشست
+                    //   طبق الزامات افتا (حداکثر ۳۰ دقیقه)
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SecurePolicy = environment.IsDevelopment()
+                        ? CookieSecurePolicy.SameAsRequest
+                        : CookieSecurePolicy.Always;
+                    options.Cookie.SameSite = SameSiteMode.Lax;
+                    options.SlidingExpiration = false;
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
                 })
                 .AddScheme<BasicAuthenticationOptions, BasicAuthenticationHandler>("Basic", null);
             services.AddScoped<IMenuPermissionService, MenuPermissionService>();

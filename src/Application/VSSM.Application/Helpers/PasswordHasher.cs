@@ -15,6 +15,13 @@ public static class PasswordHasher
     private const int HashBytes = 32;       // 256-bit derived key
     private const int Iterations = 100_000; // OWASP-recommended ballpark for HMAC-SHA256
 
+    /// <summary>
+    /// Precomputed PBKDF2 hash used only to burn CPU time when a user does NOT exist,
+    /// so the response time matches the "wrong password" path and prevents username
+    /// enumeration via timing (OWASP A07).
+    /// </summary>
+    public static readonly string DummyHash = Hash("__timing_dummy__");
+
     /// <summary>Hashes a plaintext password into the self-describing storage format.</summary>
     public static string Hash(string password)
     {

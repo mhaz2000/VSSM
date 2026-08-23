@@ -20,6 +20,29 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="9.0.10" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    <!-- [SECURITY - A06]: see VSSM.Infrastructure.Data.csproj (ClosedXML → Cryptography.Xml High). -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- [SECURITY - A06]: Pin transitive build-time deps to patched versions
+         (see VSSM.Infrastructure.Data.csproj for rationale). -->
+    <PackageReference Include="Microsoft.Build" Version="17.12.50">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.12.50">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NuGet.Packaging" Version="6.12.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NuGet.Protocol" Version="6.12.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

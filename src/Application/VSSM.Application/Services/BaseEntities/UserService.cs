@@ -258,6 +258,26 @@ public class UserService(VSSMDbContext db) : IUserService
         return PasswordHasher.Verify(password, x.Password);
     }
 
+    // ---------------- UPGRADE ALL LEGACY PLAINTEXT PASSWORDS ----------------
+    // [SECURITY - A07]: هش کردن یک‌باره تمام رمزهای ذخیره‌شده به صورت متنی (plaintext)
+    // در هنگام راه‌اندازی. پس از این، مسیر مقایسه‌ی plaintext حذف می‌شود و رمزها فقط
+    // از طریق PBKDF2 (مقایسه constant-time) بررسی می‌گردند. این متد idempotent است.
+    public async Task UpgradeAllPlaintextPasswordsAsync(CancellationToken token)
+    {
+        var legacy = await db.TblUsers
+            .Where(u => u.IsDeleted != true && !PasswordHasher.LooksHashed(u.Password))
+            .ToListAsync(token);
+
+        foreach (var u in legacy)
+        {
+            // مقدار متنیِ فعلی را هش می‌کنیم (همان رمز کاربر، صرفاً به صورت هش‌شده ذخیره می‌شود).
+            u.Password = PasswordHasher.Hash(u.Password);
+        }
+
+        if (legacy.Count > 0)
+            await db.SaveChangesAsync(token);
+    }
+
     // ---------------- UPGRADE PLAINTEXT TO HASH ----------------
     // Re-hashes and persists a password that was stored as plaintext. Used by the login
     // path to migrate legacy users transparently on their first successful login.

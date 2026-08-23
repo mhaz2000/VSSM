@@ -102,10 +102,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// TEMP: HTTPS redirection disabled for local testing. Re-enable before deploy.
+// app.UseHttpsRedirection();
 
 // [SECURITY - A05]: baseline hardening response headers (CSP, nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy).
-app.UseMiddleware<SecurityHeadersMiddleware>();
+//app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseRouting();
 

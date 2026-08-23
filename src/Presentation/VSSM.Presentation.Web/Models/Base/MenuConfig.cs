@@ -208,7 +208,7 @@ public static class MenuConfig
                 {
                     new MenuItem { Title = "کالا‌های بالای حداکثر", Controller = "Warnings", Action = "HighItemsMaxIndex" },
                     new MenuItem { Title = "کالا‌های زیر حداقل", Controller = "Warnings", Action = "LowItemsMinIndex" },
-                    new MenuItem { Title = "کالاهای نزدیک به انقضا", Controller = "Warnings", Action = "CloseToExirationItemsIndex" },
+                    new MenuItem { Title = "کالاهای نزدیک به انقضا", Controller = "Warnings", Action = "NearExpirationItemsIndex" },
                     new MenuItem { Title = "امحا UID", Controller = "DestroyUid", Action = "Index" }
                 }
             },

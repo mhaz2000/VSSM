@@ -7,7 +7,7 @@ namespace VSSM.Presentation.Web.Controllers;
 
 public class WarningsController(IWarningService warningService) : BaseController
 {
-    public async Task<IActionResult> CloseToExpirationItemsIndex(
+    public async Task<IActionResult> NearExpirationItemsIndex(
         int pageNumber = 1,
         int pageSize = 10,
         string sort = nameof(CloseToExpirationDto.ItemName),

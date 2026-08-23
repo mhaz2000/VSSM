@@ -24,6 +24,7 @@ public interface IUserService
     Task<UserEditDto> GetByUsername(string username, CancellationToken token);
 
     Task<bool> ChangePassword(int userId, string newPassword, CancellationToken token);
+    Task SetMustChangePasswordAsync(int userId, bool value, CancellationToken token);
 
     /// <summary>True when the plaintext password matches the stored PBKDF2 hash.</summary>
     Task<bool> VerifyPassword(int userId, string password, CancellationToken token);

@@ -61,7 +61,8 @@ public class UserService(VSSMDbContext db) : IUserService
             Course = dto.Course,
             CourseDate = dto.CourseDate,
             EntryDate = DateTime.Now,
-            RoleId = dto.RoleId
+            RoleId = dto.RoleId,
+            MustChangePassword = true
         };
 
         db.TblUsers.Add(model);
@@ -125,6 +126,16 @@ public class UserService(VSSMDbContext db) : IUserService
         x.Password = PasswordHasher.Hash(newPassword);
         await db.SaveChangesAsync(token);
         return true;
+    }
+
+    // [SECURITY - A07]: clears/sets the forced-password-change flag (used by the first-login flow).
+    public async Task SetMustChangePasswordAsync(int userId, bool value, CancellationToken token)
+    {
+        var x = await db.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);
+        if (x == null) throw new Exception("User not found");
+
+        x.MustChangePassword = value;
+        await db.SaveChangesAsync(token);
     }
 
     // ---------------- SOFT DELETE ----------------
@@ -243,7 +254,8 @@ public class UserService(VSSMDbContext db) : IUserService
             CodeJob = x.JobId,
             IsAdmin = x.IsAdmin ?? false,
             Course = x.Course,
-            CourseDate = x.CourseDate
+            CourseDate = x.CourseDate,
+            MustChangePassword = x.MustChangePassword
         };
     }
 

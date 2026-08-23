@@ -11,14 +11,13 @@ using VSSM.Presentation.Web.Services;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-[AllowAnonymous]
-    public class AccountController(
-        IUserService userService,
-        IRecipientService recipientService,
-        ICaptchaService captcha,
-        IRateLimitService rateLimit,
-        IAuditService audit) : Controller
-    {
+public class AccountController(
+    IUserService userService,
+    IRecipientService recipientService,
+    ICaptchaService captcha,
+    IRateLimitService rateLimit,
+    IAuditService audit) : Controller
+{
     [HttpGet]
     public IActionResult Login()
     {

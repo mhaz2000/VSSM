@@ -173,6 +173,8 @@ namespace VSSM.Presentation.Web.Controllers;
         return View(model);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken token)
     {
         await uidInfoService.ClearArrivalFkByArrivalId(id, token);

@@ -198,6 +198,18 @@ namespace VSSM.Presentation.Web.Controllers
                     TempData["ToastType"] = "error";
                     return View("New", model);
                 }
+
+                // [SECURITY - A07]: enforce password strength on creation
+                var pwdErrors = PasswordHasher.ValidateStrength(model.Password);
+                if (pwdErrors.Count > 0)
+                {
+                    foreach (var e in pwdErrors)
+                        ModelState.AddModelError("Password", e);
+
+                    TempData["ToastMessage"] = string.Join(" ", pwdErrors);
+                    TempData["ToastType"] = "error";
+                    return View("New", model);
+                }
             }
 
             if (!ModelState.IsValid)
@@ -322,6 +334,16 @@ namespace VSSM.Presentation.Web.Controllers
 
             if (!ModelState.IsValid)
                 return PartialView("_ChangePassword", model);
+
+            // [SECURITY - A07]: enforce password strength on admin password change
+            var pwdErrors = PasswordHasher.ValidateStrength(model.NewPassword);
+            if (pwdErrors.Count > 0)
+            {
+                foreach (var e in pwdErrors)
+                    ModelState.AddModelError("NewPassword", e);
+
+                return PartialView("_ChangePassword", model);
+            }
 
             await _userService.ChangePassword(model.UserId, model.NewPassword, token);
 

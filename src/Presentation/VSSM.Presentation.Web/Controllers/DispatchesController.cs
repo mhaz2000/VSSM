@@ -216,7 +216,8 @@ namespace VSSM.Presentation.Web.Controllers;
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpGet]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken token)
     {
         await dispatchService.RestoreStockAsync(id, token);
@@ -310,6 +311,7 @@ namespace VSSM.Presentation.Web.Controllers;
                 Title = "حذف",
                 Controller = "Dispatches",
                 Action = "Delete",
+                Method = "Post",
                 RouteIdProperty = nameof(DispatchListDto.Id),
                 IconClass = "fa fa-trash",
                 LinkClass = "text-danger",
@@ -379,6 +381,8 @@ namespace VSSM.Presentation.Web.Controllers;
         return View(model);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Confirm(int id, CancellationToken token)
     {
         await dispatchService.ConfirmDispatchAsync(id, token);

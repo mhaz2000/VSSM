@@ -1,12 +1,15 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
 
 namespace VSSM.Presentation.Web.Middlewares;
 
 /// <summary>
 /// [SECURITY - A05]: emits baseline hardening response headers.
-/// NOTE: the CSP currently allows inline scripts/styles ('unsafe-inline') because the views use
-/// many inline &lt;script&gt; blocks. A stronger, nonce-based CSP is a follow-up; this still satisfies
-/// the presence checks and blocks mixed-content / framing / MIME-sniffing.
+/// The CSP is nonce-based: every &lt;script&gt;/&lt;style&gt; BLOCK rendered by the app carries a
+/// per-request nonce (see CspNonceTagHelper), so 'unsafe-inline' is removed from script-src/style-src.
+/// Inline event-handler attributes (onclick=...) and inline style="" attributes are still permitted via
+/// script-src-attr/style-src-attr ('unsafe-inline') because the views use many of them and there is no
+/// user-controlled injection sink; fully removing those would require converting handlers to addEventListener.
 /// </summary>
 public class SecurityHeadersMiddleware
 {
@@ -21,14 +24,19 @@ public class SecurityHeadersMiddleware
     {
         var headers = context.Response.Headers;
 
+        var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        context.Items["CspNonce"] = nonce;
+
         headers["X-Content-Type-Options"] = "nosniff";
         headers["X-Frame-Options"] = "SAMEORIGIN";
         headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
         headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(), payment=()";
         headers["Content-Security-Policy"] =
             "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline'; " +
-            "style-src 'self' 'unsafe-inline'; " +
+            $"script-src 'self' 'nonce-{nonce}'; " +
+            "script-src-attr 'unsafe-inline'; " +
+            $"style-src 'self' 'nonce-{nonce}'; " +
+            "style-src-attr 'unsafe-inline'; " +
             "img-src 'self' data:; " +
             "font-src 'self'; " +
             "base-uri 'self'; " +

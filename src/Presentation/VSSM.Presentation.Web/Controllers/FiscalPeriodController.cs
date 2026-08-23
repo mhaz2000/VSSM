@@ -75,6 +75,7 @@ public sealed class FiscalPeriodController(
                 Title = "حذف",
                 Controller = "FiscalPeriod",
                 Action = "Delete",
+                Method = "Post",
                 RouteIdProperty = nameof(FiscalPeriodDto.FiscalPeriodId),
                 IconClass = "fa fa-trash",
                 DynamicTitle = item =>
@@ -142,7 +143,9 @@ public sealed class FiscalPeriodController(
         return RedirectToAction(nameof(Index));
     }
 
-    // GET: /FiscalPeriod/Delete/5
+    // POST: /FiscalPeriod/Delete/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         await fiscalPeriodService.Delete(id, cancellationToken);

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
+using System.Xml;
 using System.Xml.Linq;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.DosePerVial;
@@ -173,11 +175,49 @@ public class InputFilesController(
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Upload(IFormFile xmlFile, int itemId, int dosePerVialId)
     {
-        XDocument doc;
-
-        using (var stream = xmlFile.OpenReadStream())
+        // [SECURITY - A09/upload]: validate the upload — no type/size checks before meant an
+        // arbitrary or oversized file could be posted. Only XML is accepted; XXE is explicitly
+        // prohibited via the XmlReader settings.
+        if (xmlFile == null || xmlFile.Length == 0)
         {
-            doc = XDocument.Load(stream);
+            TempData["ToastMessage"] = "فایلی انتخاب نشده است.";
+            TempData["ToastType"] = "error";
+            return RedirectToAction(nameof(Index));
+        }
+
+        const long MaxBytes = 10 * 1024 * 1024; // 10 MB
+        if (xmlFile.Length > MaxBytes)
+        {
+            TempData["ToastMessage"] = "حجم فایل بیش از حد مجاز (۱۰ مگابایت) است.";
+            TempData["ToastType"] = "error";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!string.Equals(Path.GetExtension(xmlFile.FileName), ".xml", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["ToastMessage"] = "فقط فایل‌های XML مجاز هستند.";
+            TempData["ToastType"] = "error";
+            return RedirectToAction(nameof(Index));
+        }
+
+        XDocument doc;
+        try
+        {
+            var settings = new XmlReaderSettings
+            {
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null
+            };
+
+            using var stream = xmlFile.OpenReadStream();
+            using var reader = XmlReader.Create(stream, settings);
+            doc = XDocument.Load(reader);
+        }
+        catch (Exception)
+        {
+            TempData["ToastMessage"] = "فایل XML معتبر نیست.";
+            TempData["ToastType"] = "error";
+            return RedirectToAction(nameof(Index));
         }
 
         await _orderInfoService.UploadAsync(doc, xmlFile.FileName, itemId, dosePerVialId, CurrentUserId.Value);

@@ -283,6 +283,8 @@ public class RequestController(
 
         return RedirectToAction("New", new { id = model.Id });
     }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteRequest(int id, CancellationToken token)
     {
         if (id > 0)

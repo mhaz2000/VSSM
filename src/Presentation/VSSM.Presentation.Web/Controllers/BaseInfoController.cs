@@ -75,6 +75,7 @@ namespace VSSM.Presentation.Web.Controllers
                         Title = "حذف",
                         Controller = "BaseInfo",
                         Action = "Remove",
+                        Method = "Post",
                         RouteIdProperty = nameof(BaseInfoDto.Id),
                         LinkClass = "",
                         IconClass = "fa fa-trash"
@@ -87,7 +88,8 @@ namespace VSSM.Presentation.Web.Controllers
 
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult?> Remove(int id)
         {
             await baseInfoService.RemoveAsync(id);

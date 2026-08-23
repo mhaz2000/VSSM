@@ -71,4 +71,34 @@ public static class PasswordHasher
     /// </summary>
     public static bool LooksHashed(string stored)
         => stored != null && stored.StartsWith(Marker + ".", StringComparison.Ordinal);
+
+    /// <summary>
+    /// [SECURITY - A07]: minimum password-strength rules (OWASP-aligned). Returns a list of
+    /// human-readable (Persian) violations; empty means the password is acceptable. Enforced at
+    /// user creation and on admin password change.
+    /// </summary>
+    public static List<string> ValidateStrength(string password)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrEmpty(password) || password.Length < 8)
+            errors.Add("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+
+        if (password.Length > 64)
+            errors.Add("رمز عبور نباید بیش از ۶۴ کاراکتر باشد.");
+
+        if (!password.Any(char.IsUpper))
+            errors.Add("رمز عبور باید شامل حداقل یک حرف بزرگ باشد.");
+
+        if (!password.Any(char.IsLower))
+            errors.Add("رمز عبور باید شامل حداقل یک حرف کوچک باشد.");
+
+        if (!password.Any(char.IsDigit))
+            errors.Add("رمز عبور باید شامل حداقل یک عدد باشد.");
+
+        if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
+            errors.Add("رمز عبور باید شامل حداقل یک نویسه ویژه (مانند !@#$%) باشد.");
+
+        return errors;
+    }
 }

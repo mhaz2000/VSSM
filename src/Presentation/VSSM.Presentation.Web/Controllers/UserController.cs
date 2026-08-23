@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
+using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Presentation.Web.Models.Base;
 using VSSM.Presentation.Web.Models.User;
@@ -14,17 +15,20 @@ namespace VSSM.Presentation.Web.Controllers
         private readonly IRecipientService _recipientService;
         private readonly IRoleService _roleService;
         private readonly IBaseInfoService _baseInfoService;
+        private readonly IAuditService _audit;
 
         public UserController(
             IUserService userService,
             IRecipientService recipientService,
             IBaseInfoService baseInfoService,
-            IRoleService roleService)
+            IRoleService roleService,
+            IAuditService audit)
         {
             _userService = userService;
             _recipientService = recipientService;
             _roleService = roleService;
             _baseInfoService = baseInfoService;
+            _audit = audit;
         }
 
         // ====================== INDEX ============================
@@ -241,6 +245,9 @@ namespace VSSM.Presentation.Web.Controllers
 
                 TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
                 TempData["ToastType"] = "success";
+                await _audit.LogAsync("Information",
+                    model.UserId == null || model.UserId == 0 ? $"User created: {model.UserName}" : $"User updated: {model.UserName}",
+                    User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
 
                 return RedirectToAction("Index");
             }
@@ -248,6 +255,7 @@ namespace VSSM.Presentation.Web.Controllers
             {
                 TempData["ToastMessage"] = ex.Message;
                 TempData["ToastType"] = "error";
+                await _audit.LogAsync("Error", $"User create/update failed: {ex.Message}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method, exception: ex.Message);
                 return View("New", model);
             }
         }
@@ -261,6 +269,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             TempData["ToastMessage"] = active ? "با موفقیت فعال شد." : "با موفقیت حذف شد.";
             TempData["ToastType"] = "success";
+            await _audit.LogAsync("Information", $"User {(active ? "activated" : "deactivated")}: id={id}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
 
             return RedirectToAction("Index");
         }
@@ -284,6 +293,7 @@ namespace VSSM.Presentation.Web.Controllers
 
             TempData["ToastMessage"] = "رمز عبور با موفقیت تغییر یافت";
             TempData["ToastType"] = "success";
+            await _audit.LogAsync("Information", $"Password changed: userId={model.UserId}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
 
             return RedirectToAction("Index");
         }

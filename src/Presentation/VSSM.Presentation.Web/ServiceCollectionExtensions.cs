@@ -156,6 +156,7 @@ namespace VSSM.Presentation.Web
                     policy => policy.Requirements.Add(new MenuPermissionRequirement()));
             });
             services.AddScoped<IAuthorizationHandler, MenuPermissionHandler>();
+            services.AddScoped<VSSM.Application.Interfaces.IAuditService, VSSM.Application.Services.AuditService>();
         }
     }
 }

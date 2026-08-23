@@ -5,18 +5,20 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Interfaces;
 using VSSM.Presentation.Web.Models.Account;
 using VSSM.Presentation.Web.Services;
 
 namespace VSSM.Presentation.Web.Controllers;
 
 [AllowAnonymous]
-public class AccountController(
-    IUserService userService,
-    IRecipientService recipientService,
-    ICaptchaService captcha,
-    IRateLimitService rateLimit) : Controller
-{
+    public class AccountController(
+        IUserService userService,
+        IRecipientService recipientService,
+        ICaptchaService captcha,
+        IRateLimitService rateLimit,
+        IAuditService audit) : Controller
+    {
     [HttpGet]
     public IActionResult Login()
     {
@@ -63,6 +65,7 @@ public class AccountController(
         if (blocked)
         {
             ViewBag.Error = $"تلاش‌های ناموفق زیاد بود. لطفاً {remaining} ثانیه صبر کنید.";
+            await audit.LogAsync("Warning", "Login blocked: too many failed attempts", model.UserName, ip, "/Account/Login", "POST");
             AttachCaptcha(model);
             return View(model);
         }
@@ -73,6 +76,7 @@ public class AccountController(
             rateLimit.RegisterFailure(ip);
             rateLimit.RegisterFailure(userKey);
             ViewBag.Error = "کد امنیتی نادرست است.";
+            await audit.LogAsync("Warning", "Login failed: captcha mismatch", model.UserName, ip, "/Account/Login", "POST");
             AttachCaptcha(model);
             return View(model);
         }
@@ -105,6 +109,7 @@ public class AccountController(
             rateLimit.RegisterFailure(ip);
             rateLimit.RegisterFailure(userKey);
             ViewBag.Error = genericError;
+            await audit.LogAsync("Warning", "Login failed: unknown username", model.UserName, ip, "/Account/Login", "POST");
             AttachCaptcha(model);
             return View(model);
         }
@@ -120,6 +125,7 @@ public class AccountController(
             rateLimit.RegisterFailure(ip);
             rateLimit.RegisterFailure(userKey);
             ViewBag.Error = genericError;
+            await audit.LogAsync("Warning", "Login failed: wrong password", model.UserName, ip, "/Account/Login", "POST");
             AttachCaptcha(model);
             return View(model);
         }
@@ -166,6 +172,8 @@ public class AccountController(
             principal,
             authProps);
 
+        await audit.LogAsync("Information", "Login success", user.FullName, ip, "/Account/Login", "POST");
+
         if (user.RoleId == 3)
         {
             return RedirectToAction("Index", "InputFiles");
@@ -182,6 +190,9 @@ public class AccountController(
     // لینک‌های GET قدیمی دیگر پاسخ نمی‌گیرند (405) و باید از دکمه/فرم خروج استفاده شود.
     public async Task<IActionResult> Logout()
     {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        await audit.LogAsync("Information", "Logout", User.Identity?.Name, ip,
+            HttpContext.Request.Path, HttpContext.Request.Method);
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Login");
     }

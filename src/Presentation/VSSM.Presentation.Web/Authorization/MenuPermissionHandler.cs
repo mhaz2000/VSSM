@@ -2,17 +2,21 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using VSSM.Application.Common.Authorization;
 using VSSM.Application.Common.Interfaces;
+using VSSM.Application.Interfaces;
 
 namespace VSSM.Presentation.Web.Authorization
 {
     public class MenuPermissionHandler : AuthorizationHandler<MenuPermissionRequirement>
     {
         private readonly IMenuPermissionService _permissionService;
+        private readonly IAuditService _audit;
 
         public MenuPermissionHandler(
-            IMenuPermissionService permissionService)
+            IMenuPermissionService permissionService,
+            IAuditService audit)
         {
             _permissionService = permissionService;
+            _audit = audit;
         }
 
         protected override async Task HandleRequirementAsync(
@@ -47,6 +51,20 @@ namespace VSSM.Presentation.Web.Authorization
 
             if (hasAccess)
                 context.Succeed(requirement);
+            else
+            {
+                // [AUDIT - FAU_GEN]: record authorization failures (tamper/enumeration signal).
+                try
+                {
+                    var ip = httpContext.Connection.RemoteIpAddress?.ToString();
+                    await _audit.LogAsync("Warning", $"Access denied: controller={controller}",
+                        context.User.Identity?.Name, ip, httpContext.Request.Path, httpContext.Request.Method);
+                }
+                catch
+                {
+                    // audit logging must never break the authorization decision
+                }
+            }
         }
     }
 

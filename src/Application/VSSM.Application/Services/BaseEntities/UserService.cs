@@ -264,14 +264,20 @@ public class UserService(VSSMDbContext db) : IUserService
     // از طریق PBKDF2 (مقایسه constant-time) بررسی می‌گردند. این متد idempotent است.
     public async Task UpgradeAllPlaintextPasswordsAsync(CancellationToken token)
     {
-        var legacy = await db.TblUsers
-            .Where(u => u.IsDeleted != true && !PasswordHasher.LooksHashed(u.Password))
+        // [SECURITY - A07]: materialize first (IsDeleted is SQL-translatable), then apply the
+        // C#-only hash check in memory — EF cannot translate PasswordHasher.LooksHashed to SQL.
+        var candidates = await db.TblUsers
+            .Where(u => u.IsDeleted != true)
             .ToListAsync(token);
+
+        var legacy = candidates
+            .Where(u => u.Password != null && !PasswordHasher.LooksHashed(u.Password))
+            .ToList();
 
         foreach (var u in legacy)
         {
             // مقدار متنیِ فعلی را هش می‌کنیم (همان رمز کاربر، صرفاً به صورت هش‌شده ذخیره می‌شود).
-            u.Password = PasswordHasher.Hash(u.Password);
+            u.Password = PasswordHasher.Hash(u.Password!);
         }
 
         if (legacy.Count > 0)

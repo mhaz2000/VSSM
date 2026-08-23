@@ -172,7 +172,7 @@ namespace VSSM.Presentation.Web.Controllers;
             principal,
             authProps);
 
-        await audit.LogAsync("Information", "Login success", user.FullName, ip, "/Account/Login", "POST");
+        await audit.LogAsync("Information", "Login success", user.UserName, ip, "/Account/Login", "POST");
 
         if (user.RoleId == 3)
         {

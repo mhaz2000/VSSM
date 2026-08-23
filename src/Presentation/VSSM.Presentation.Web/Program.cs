@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
+using System.Security.Authentication;
 using VSSM.Application.Services.BackgroundServices;
 using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web;
@@ -17,7 +20,18 @@ builder.Services.AddHsts(options =>
     options.Preload = false;
 });
 
+// [SECURITY - A05/FCS_ITC]: disable legacy TLS at the Kestrel/TLS endpoint (defense-in-depth).
+// When hosted in-process on IIS, TLS is terminated by IIS — also disable TLS 1.0/1.1 in IIS/SChannel.
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureHttpsDefaults(https =>
+    {
+        https.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+    });
+});
+
 builder.Services.AddHostedService<OrdersInquiryBackgroundService>();
+builder.Services.AddHostedService<AuditRetentionBackgroundService>();
 
 
 builder.Services.AddMemoryCache();
@@ -63,6 +77,22 @@ catch (Exception ex)
 
 app.UseGlobalException();
 
+// [SECURITY - A05/A09]: trust the real client IP from the upstream proxy/IIS so audit records
+// reflect the actual client (not the proxy). For a remote LB/ARR, list its IPs in
+// "Security:KnownProxies" (semicolon-separated); loopback is trusted by default (IIS in-process).
+var forwardedOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    ForwardLimit = 1
+};
+var knownProxies = builder.Configuration["Security:KnownProxies"];
+if (!string.IsNullOrWhiteSpace(knownProxies))
+{
+    foreach (var p in knownProxies.Split(';', StringSplitOptions.RemoveEmptyEntries))
+        forwardedOptions.KnownProxies.Add(IPAddress.Parse(p.Trim()));
+}
+app.UseForwardedHeaders(forwardedOptions);
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -72,6 +102,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// [SECURITY - A05]: baseline hardening response headers (CSP, nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy).
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
 app.UseRouting();
 
 app.UseAuthentication();

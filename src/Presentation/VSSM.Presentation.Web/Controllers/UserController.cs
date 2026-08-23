@@ -128,8 +128,12 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         // ====================== NEW / EDIT ============================
+        // [SECURITY - A01]: user management (create/edit) is admin-only — same IDOR/role
+        // reasoning as ChangePassword. Gate the GET editor too so non-admins cannot reach it.
         public async Task<IActionResult> New(int? id, CancellationToken token)
         {
+            if (!IsAdmin()) return Forbid();
+
             await LoadDropDowns(token);
 
             if (id == null)
@@ -166,6 +170,14 @@ namespace VSSM.Presentation.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserViewModel model, CancellationToken token)
         {
+            if (!IsAdmin())
+            {
+                await _audit.LogAsync("Warning",
+                    $"Unauthorized user create/update attempt: actor={User.Identity?.Name}, target user={model.UserName}",
+                    User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
+                return Forbid();
+            }
+
             await LoadDropDowns(token);
 
             // فقط برای کاربر جدید اعتبارسنجی پسورد انجام می‌شود
@@ -265,6 +277,14 @@ namespace VSSM.Presentation.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleActiveness(int id, CancellationToken token)
         {
+            if (!IsAdmin())
+            {
+                await _audit.LogAsync("Warning",
+                    $"Unauthorized user activation/deletion attempt: actor={User.Identity?.Name}, target userId={id}",
+                    User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
+                return Forbid();
+            }
+
             var active = await _userService.ToggleActiveness(id, token);
 
             TempData["ToastMessage"] = active ? "با موفقیت فعال شد." : "با موفقیت حذف شد.";
@@ -275,9 +295,15 @@ namespace VSSM.Presentation.Web.Controllers
         }
 
         // ====================== CHANGE PASSWORD ============================
+        // [SECURITY - A01]: admin-only. Without a server-side role check any user with the
+        // "User" menu could change ANY user's password by posting an arbitrary UserId (IDOR /
+        // account-takeover). The controller-level MenuPermission policy only gates menu access,
+        // not this specific privileged operation.
         [HttpGet]
         public IActionResult ChangePassword(int id)
         {
+            if (!IsAdmin()) return Forbid();
+
             var model = new ChangePasswordViewModel { UserId = id };
             return PartialView("_ChangePassword", model);
         }
@@ -286,6 +312,14 @@ namespace VSSM.Presentation.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model, CancellationToken token)
         {
+            if (!IsAdmin())
+            {
+                await _audit.LogAsync("Warning",
+                    $"Unauthorized password-change attempt: actor={User.Identity?.Name}, target userId={model.UserId}",
+                    User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
+                return Forbid();
+            }
+
             if (!ModelState.IsValid)
                 return PartialView("_ChangePassword", model);
 
@@ -297,6 +331,9 @@ namespace VSSM.Presentation.Web.Controllers
 
             return RedirectToAction("Index");
         }
+
+        private bool IsAdmin() =>
+            string.Equals(CurrentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
 
         // ====================== LOAD DROPDOWNS ============================
         private async Task LoadDropDowns(CancellationToken cancellationToken)

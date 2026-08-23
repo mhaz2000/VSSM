@@ -722,6 +722,7 @@ public class DispatchService(
             TransportMode = dispatch.TransportMode,
             ReceivingMode = dispatch.ReceivingMode,
             Note = dispatch.Note,
+            SenderId = dispatch.SenderId ?? 0,
             Items = items.Select(i => new DispatchLineDto
             {
                 DispatchLineId = i.line.DispatchLineId,
@@ -735,7 +736,7 @@ public class DispatchService(
                 VvmstageId = i.line.FkVvmStageBaseInfo ?? 0,
                 Note = i.line.Note,
                 BatchNumber = i.line.BatchNumber,
-                StoreId = i.line.StoreId
+                StoreId = i.line.StoreId,
 
             }).ToList()
         };

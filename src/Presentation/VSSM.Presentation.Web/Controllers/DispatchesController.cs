@@ -3,19 +3,22 @@ using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Interfaces.BaseEntities.Dispatch;
+using VSSM.Application.Security;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-    public class DispatchesController(
-        IStoreService storeService,
-        IRecipientService recipientService,
-        IDispatchService dispatchService,
-        IBaseInfoService baseInfoService,
-        DispatchScanSessionService dispatchScan,
-        IAuditService audit) : BaseController
+public class DispatchesController(
+    IStoreService storeService,
+    IRecipientService recipientService,
+    IDispatchService dispatchService,
+    IBaseInfoService baseInfoService,
+    DispatchScanSessionService dispatchScan,
+    IAuditService audit,
+    IDispatchAccessPolicy dispatchAccessPolicy) : BaseController
 {
 
     [HttpGet]
@@ -132,8 +135,34 @@ namespace VSSM.Presentation.Web.Controllers;
         string? scanSessionId,
         CancellationToken cancellationToken)
     {
-        updateDispatcheDto.SenderId = CurrentUserRecipientId.Value;
-        updateDispatcheDto.EnteredById = CurrentUserId.Value;
+
+        var existingDispatch =
+       await dispatchService.GetByIdAsync(updateDispatcheDto.Id);
+
+        if (existingDispatch == null)
+            return NotFound();
+
+        var subject = new AuthorizationSubject(
+            CurrentUserId.GetValueOrDefault(),
+            CurrentUserRecipientId,
+            Array.Empty<string>());
+
+        var canEdit = await dispatchAccessPolicy.CanAsync(
+            subject,
+            existingDispatch.SenderId,
+            existingDispatch.ReceiverId,
+            existingDispatch.IsConfirmed,
+            ResourceOperation.Edit,
+            cancellationToken);
+
+        if (!canEdit)
+            return View("_Forbidden");
+
+        updateDispatcheDto.SenderId =
+            CurrentUserRecipientId.GetValueOrDefault();
+
+        updateDispatcheDto.EnteredById =
+            CurrentUserId.GetValueOrDefault();
 
         try
         {
@@ -230,6 +259,36 @@ namespace VSSM.Presentation.Web.Controllers;
         return RedirectToAction("Index");
     }
 
+    public async Task<IActionResult> Details(
+    int id,
+    CancellationToken cancellationToken)
+    {
+        var dispatch = await dispatchService.GetByIdAsync(id);
+
+        if (dispatch == null)
+            return NotFound();
+
+        var subject = new AuthorizationSubject(
+            CurrentUserId.GetValueOrDefault(),
+            CurrentUserRecipientId,
+            Array.Empty<string>());
+
+        var canRead = await dispatchAccessPolicy.CanAsync(
+            subject,
+            dispatch.SenderId,
+            dispatch.ReceiverId,
+            dispatch.IsConfirmed,
+            ResourceOperation.Read,
+            cancellationToken);
+
+        if (!canRead)
+            return View("_Forbidden");
+
+        await PopulateLookupViewBagsAsync(cancellationToken);
+
+        return View("Edit", dispatch);
+    }
+
     public async Task<IActionResult> Index(CancellationToken cancellationToken, string? search,
                                           int pageNumber = 1,
                                           int pageSize = 10,
@@ -282,7 +341,7 @@ namespace VSSM.Presentation.Web.Controllers;
             {
                 Title = "مشاهده",
                 Controller = "Dispatches",
-                Action = "Edit",
+                Action = "Details",
                 RouteIdProperty = nameof(DispatchListDto.Id),
                 IconClass = "fa fa-eye",
                 DynamicSkip = item =>
@@ -328,11 +387,35 @@ namespace VSSM.Presentation.Web.Controllers;
     }
 
 
-    public async Task<IActionResult> Print(int id)
+    public async Task<IActionResult> Print(
+      int id,
+      CancellationToken cancellationToken)
     {
-        var dispatch = await dispatchService.GetDispatchPrintDataAsync(id);
+        var dispatch = await dispatchService.GetByIdAsync(id);
 
-        return View(dispatch);
+        if (dispatch == null)
+            return NotFound();
+
+        var subject = new AuthorizationSubject(
+            CurrentUserId.GetValueOrDefault(),
+            CurrentUserRecipientId,
+            Array.Empty<string>());
+
+        var canPrint = await dispatchAccessPolicy.CanAsync(
+            subject,
+            dispatch.SenderId,
+            dispatch.ReceiverId,
+            dispatch.IsConfirmed,
+            ResourceOperation.Print,
+            cancellationToken);
+
+        if (!canPrint)
+            return View("_Forbidden");
+
+        var printData =
+            await dispatchService.GetDispatchPrintDataAsync(id);
+
+        return View(printData);
     }
     public async Task<IActionResult> ToBeArrivedIndex(CancellationToken cancellationToken, string? search,
                                     int pageNumber = 1,
@@ -424,11 +507,30 @@ namespace VSSM.Presentation.Web.Controllers;
         return RedirectToAction("ToBeArrivedIndex");
     }
 
-    public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Edit(
+        int id,
+        CancellationToken cancellationToken)
     {
         var dispatch = await dispatchService.GetByIdAsync(id);
+
         if (dispatch == null)
             return NotFound();
+
+        var subject = new AuthorizationSubject(
+            CurrentUserId.GetValueOrDefault(),
+            CurrentUserRecipientId,
+            Array.Empty<string>());
+
+        var canEdit = await dispatchAccessPolicy.CanAsync(
+            subject,
+            dispatch.SenderId,
+            dispatch.ReceiverId,
+            dispatch.IsConfirmed,
+            ResourceOperation.Edit,
+            cancellationToken);
+
+        if (!canEdit)
+            return Forbid();
 
         await PopulateLookupViewBagsAsync(cancellationToken);
 

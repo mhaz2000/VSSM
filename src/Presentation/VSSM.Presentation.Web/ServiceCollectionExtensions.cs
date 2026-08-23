@@ -24,6 +24,7 @@ using VSSM.Application.DTOs.BaseEntities.StoreUsageWarning;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
 using VSSM.Application.DTOs.BaseEntities.Vvmtype;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Interfaces.BaseEntities.Dispatch;
 using VSSM.Application.Interfaces.RequestEntities;
 using VSSM.Application.Services;
 using VSSM.Application.Services.Barcode;
@@ -34,6 +35,7 @@ using VSSM.Application.Services.RequestEntities;
 using VSSM.Application.Services.UidHistory;
 using VSSM.Infrastructure.Data.Dapper;
 using VSSM.Infrastructure.Data.Models;
+using VSSM.Infrastructure.Security;
 using VSSM.Infrastructure.Services.BaseEntities;
 using VSSM.Presentation.Web.Authentication;
 using VSSM.Presentation.Web.Authorization;
@@ -116,6 +118,8 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IRateLimitService, RateLimitService>();
 
             services.AddSingleton<DispatchScanSessionService>();
+
+            services.AddScoped<IDispatchAccessPolicy, DispatchAccessPolicy>();
 
             /*reports services DI*/
             #region reports services DI

@@ -5,6 +5,7 @@ using System.Security.Authentication;
 using VSSM.Application.Services.BackgroundServices;
 using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web;
+using VSSM.Presentation.Web.Filters;
 using VSSM.Presentation.Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,11 +39,11 @@ builder.Services.AddMemoryCache();
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+    builder.Services.AddControllersWithViews(options => options.Filters.Add<ForcePasswordChangeFilter>()).AddRazorRuntimeCompilation();
 }
 else
 {
-    builder.Services.AddControllersWithViews();
+    builder.Services.AddControllersWithViews(options => options.Filters.Add<ForcePasswordChangeFilter>());
 }
 
 var app = builder.Build();

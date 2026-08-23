@@ -19,6 +19,10 @@ public class UserCreateDto
     public int? CodeJob { get; set; }
     public bool IsAdmin { get; set; }
 
+    // [SECURITY - A07]: surfaced so the login path (GetByUsername -> UserEditDto) can detect
+    // that the user must change their password on first login.
+    public bool MustChangePassword { get; set; }
+
     public string Course { get; set; }
     public DateTime? CourseDate { get; set; }
 

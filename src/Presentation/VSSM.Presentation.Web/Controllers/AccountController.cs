@@ -7,6 +7,7 @@ using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces;
 using VSSM.Presentation.Web.Models.Account;
+using VSSM.Presentation.Web.Models.User;
 using VSSM.Presentation.Web.Services;
 
 namespace VSSM.Presentation.Web.Controllers;
@@ -155,6 +156,11 @@ public class AccountController(
             new Claim("RecipientParentId", recipient?.ParentId.GetValueOrDefault().ToString() ?? "0"),
         };
 
+        // [SECURITY - A07]: carry the forced-password-change flag as a claim so the
+        // ForcePasswordChangeFilter can keep the user on the change screen until done.
+        if (user.MustChangePassword)
+            claims.Add(new Claim("MustChangePassword", "true"));
+
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
 
@@ -172,6 +178,10 @@ public class AccountController(
             authProps);
 
         await audit.LogAsync("Information", "Login success", user.UserName, ip, "/Account/Login", "POST");
+
+        // [SECURITY - A07]: force a password change on first login before anything else.
+        if (user.MustChangePassword)
+            return RedirectToAction("ForceChangePassword", "Account");
 
         if (user.RoleId == 3)
         {
@@ -194,5 +204,73 @@ public class AccountController(
             HttpContext.Request.Path, HttpContext.Request.Method);
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Login");
+    }
+
+    // ====================== FORCED PASSWORD CHANGE (first login) ======================
+    // [SECURITY - A07/FIA_PMG]: a user flagged with MustChangePassword must set a new password
+    // before using the app. The ForcePasswordChangeFilter redirects any authenticated request
+    // here until the flag is cleared. This is strictly self-service (userId is taken from the
+    // authenticated identity, never the posted form).
+    [Authorize]
+    [HttpGet]
+    public IActionResult ForceChangePassword()
+    {
+        if (!User.HasClaim("MustChangePassword", "true"))
+            return RedirectToAction("Index", "Home");
+
+        var model = new ChangePasswordViewModel { UserId = GetCurrentUserId() };
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ForceChangePassword(ChangePasswordViewModel model)
+    {
+        var userId = GetCurrentUserId();
+        model.UserId = userId; // ignore any client-supplied id
+
+        if (!ModelState.IsValid)
+            return View(model);
+
+        if (string.IsNullOrEmpty(model.NewPassword) || model.NewPassword != model.ConfirmPassword)
+        {
+            ModelState.AddModelError("ConfirmPassword", "کلمه عبور و تکرار آن مطابقت ندارند.");
+            return View(model);
+        }
+
+        var pwdErrors = PasswordHasher.ValidateStrength(model.NewPassword);
+        if (pwdErrors.Count > 0)
+        {
+            foreach (var e in pwdErrors)
+                ModelState.AddModelError("NewPassword", e);
+            return View(model);
+        }
+
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        await userService.ChangePassword(userId, model.NewPassword, CancellationToken.None);
+        await userService.SetMustChangePasswordAsync(userId, false, CancellationToken.None);
+
+        // Drop the forced-change claim by re-issuing the auth cookie without it.
+        var identity = (ClaimsIdentity)User.Identity!;
+        var mc = identity.FindFirst("MustChangePassword");
+        if (mc != null) identity.RemoveClaim(mc);
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(identity),
+            new AuthenticationProperties { IsPersistent = false, ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) });
+
+        await audit.LogAsync("Information", "Password changed (forced first login)", User.Identity?.Name, ip,
+            HttpContext.Request.Path, HttpContext.Request.Method);
+
+        TempData["ToastMessage"] = "رمز عبور با موفقیت تغییر یافت.";
+        TempData["ToastType"] = "success";
+        return RedirectToAction("Index", "Home");
+    }
+
+    private int GetCurrentUserId()
+    {
+        var v = User.FindFirst("UserId")?.Value;
+        return int.TryParse(v, out var id) ? id : 0;
     }
 }

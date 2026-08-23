@@ -51,6 +51,8 @@ public partial class TblUser
 
     public int? RoleId { get; set; }
 
+    public bool MustChangePassword { get; set; } = false;
+
     public virtual TblBaseInfo CodeJobNavigation { get; set; }
     public virtual TblBaseInfo CodeEduNavigation { get; set; }
 

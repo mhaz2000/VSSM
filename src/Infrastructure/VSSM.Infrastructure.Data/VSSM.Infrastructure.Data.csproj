@@ -18,6 +18,33 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    <!-- [SECURITY - A06]: ClosedXML (via VSSM.Application) transitively pulls
+         System.Security.Cryptography.Xml 8.0.0 (High, CVE-2026-33116). Pin to the
+         patched 9.0 line so it flows to output and overrides the transitive 8.0.0. -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- [SECURITY - A06]: Pin transitive build-time deps to patched versions.
+         Microsoft.Build 17.12.50 and NuGet 6.12.5 are the versions shipped with the
+         .NET 9 SDK, so they are fully compatible with net9.0 and the rest of the stack.
+         (CodeGeneration.Design 9.0.0 otherwise pulls vulnerable Microsoft.Build 17.10.4 / NuGet 6.11.0.) -->
+    <PackageReference Include="Microsoft.Build" Version="17.12.50">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.12.50">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NuGet.Packaging" Version="6.12.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NuGet.Protocol" Version="6.12.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

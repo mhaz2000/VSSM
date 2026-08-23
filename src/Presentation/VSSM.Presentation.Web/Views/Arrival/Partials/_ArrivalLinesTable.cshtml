@@ -38,17 +38,19 @@
                             <td>@line.StoreName</td>
                             <td>@line.ExpiryDate?.ToShamsi()</td>
                             <td style="white-space:nowrap;">
-                                <form asp-action="Create" method="post" style="display:inline;">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="ArrivalId" value="@Model?.ArrivalId" />
-                                    <input type="hidden" name="command" value="deleteLine_@line.ArrivalLineId" />
-                                    <button type="submit"
-                                            class="btn-action btn-action-del"
-                                            title="حذف"
-                                            formnovalidate>
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </form>
+                                @* [SECURITY - A01/CSRF]: a nested <form> here duplicated the
+                                   __RequestVerificationToken field, which made ASP.NET Core's
+                                   antiforgery validation receive a comma-joined (invalid) token and
+                                   reject the POST with 400. This button lives inside the outer form,
+                                   so it submits with the single, correct token. *@
+                                <button type="submit"
+                                        class="btn-action btn-action-del"
+                                        title="حذف"
+                                        formnovalidate
+                                        name="command"
+                                        value="deleteLine_@line.ArrivalLineId">
+                                    <i class="fa fa-trash"></i>
+                                </button>
                             </td>
                         </tr>
                     }

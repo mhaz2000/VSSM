@@ -12,8 +12,6 @@
 
 <div class="arrival-wrap">
     <form asp-action="Create" method="post" id="arrivalForm" novalidate>
-        @Html.AntiForgeryToken()  
-
         <partial name="Partials/_ArrivalHiddenFields" model="Model" />
         <partial name="Partials/_ArrivalMainInfo" model="Model" />
         <partial name="Partials/_ArrivalItemDetails" model="Model" />

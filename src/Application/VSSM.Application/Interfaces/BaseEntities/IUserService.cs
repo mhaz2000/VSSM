@@ -31,6 +31,9 @@ public interface IUserService
     /// <summary>Re-hashes a legacy plaintext password on first successful login.</summary>
     Task<bool> UpgradePasswordToHash(int userId, string plaintextPassword, CancellationToken token);
 
+    /// <summary>Hashes all remaining plaintext passwords in the database at startup (idempotent).</summary>
+    Task UpgradeAllPlaintextPasswordsAsync(CancellationToken token);
+
     Task<UserSearchResultDto> SearchUsersWithRecipientAsync(string searchTerm, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<bool> ChangeRecipientAsync(int userId, int newRecipientId, CancellationToken cancellationToken = default);
     Task<UserWithRecipientDto> GetUserWithRecipientAsync(int userId, CancellationToken cancellationToken = default);

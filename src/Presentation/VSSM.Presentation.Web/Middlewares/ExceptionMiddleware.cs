@@ -32,15 +32,17 @@ public class ExceptionMiddleware
                 var response = new
                 {
                     Message = "خطای غیرمنتظره‌ای رخ داده است.",
-                    Error = ex.Message
+                    // [SECURITY - A05/A09]: never leak raw exception text to the client in production.
+                    Error = _env.IsDevelopment() ? ex.Message : (string?)null
                 };
 
                 await context.Response.WriteAsync(JsonSerializer.Serialize(response));
                 return;
             }
 
-            // اگر صفحه MVC بود ری‌دایرکت به صفحه خطا
-            context.Response.Redirect("/Error/500?message=" + Uri.EscapeDataString(ex.Message));
+            // [SECURITY - A05/A09]: redirect to the generic error page WITHOUT echoing the
+            // exception message (avoids leaking internals via URL / logs / Referer).
+            context.Response.Redirect("/Error/500");
         }
     }
 }

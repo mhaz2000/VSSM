@@ -103,6 +103,7 @@ namespace VSSM.Presentation.Web
             services.AddScoped<IRequestService, RequestService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IMenuService, MenuService>();
+            services.AddScoped<IStoreUsageWarningService, StoreUsageWarningService>();
 
             services.AddScoped<IReportExcelGenerator, ReportExcelGenerator>();
             services.AddScoped<IGs1BarcodeParser, Gs1BarcodeParser>();

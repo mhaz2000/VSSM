@@ -41,6 +41,15 @@
     <div>
         @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
+
+    <div class="d-flex align-items-center gap-2 mt-3 flex-wrap">
+        @Html.AntiForgeryToken()
+        <button id="syncSiyamBtn" class="btn-add" type="button">همگام‌سازی دریافت‌کنندگان سیام</button>
+        <span id="syncStatus" class="sync-status"></span>
+        <div class="progress" style="height:8px; width:220px;">
+            <div id="syncProgress" class="progress-bar" role="progressbar" style="width:0%"></div>
+        </div>
+    </div>
 </div>
 
 @if (TempData["ToastMessage"] != null)
@@ -50,6 +59,76 @@
             var message = @System.Text.Json.JsonSerializer.Serialize(TempData["ToastMessage"]);
             var type    = '@TempData["ToastType"]';
             showToast(message, type);
+        });
+    </script>
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            var $btn = $('#syncSiyamBtn');
+            var $status = $('#syncStatus');
+            var $bar = $('#syncProgress');
+            var timer = null;
+
+            function fmtDate(d) {
+                if (!d) return '';
+                return new Date(d).toLocaleString('fa-IR');
+            }
+
+            function render(s) {
+                if (s.state === 'Syncing') {
+                    $status.text('در حال همگام‌سازی... ' + (s.percent || 0) + '%');
+                    $bar.css('width', (s.percent || 0) + '%');
+                    $btn.prop('disabled', true);
+                } else if (s.state === 'Completed') {
+                    $status.text('همگام‌سازی انجام شد' + (s.lastSyncDate ? ' — ' + fmtDate(s.lastSyncDate) : ''));
+                    $bar.css('width', '100%');
+                    $btn.prop('disabled', false);
+                } else if (s.state === 'Failed') {
+                    $status.text('خطا در همگام‌سازی: ' + (s.message || ''));
+                    $bar.css('width', '0%');
+                    $btn.prop('disabled', false);
+                } else {
+                    $status.text('همگام‌سازی انجام نشده است');
+                    $bar.css('width', '0%');
+                    $btn.prop('disabled', false);
+                }
+            }
+
+            function poll() {
+                fetch('@Url.Action("Status", "SiyamRecipients")', { method: 'GET', headers: { 'Accept': 'application/json' } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (s) {
+                        render(s);
+                        if (s.state === 'Syncing') {
+                            timer = setTimeout(poll, 2000);
+                        } else {
+                            clearTimeout(timer);
+                        }
+                    })
+                    .catch(function () { clearTimeout(timer); });
+            }
+
+            $btn.on('click', function () {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                $btn.prop('disabled', true);
+                fetch('@Url.Action("Sync", "SiyamRecipients")', {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': token, 'Accept': 'application/json' }
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (s) {
+                        render(s);
+                        if (s.state === 'Syncing') poll();
+                    })
+                    .catch(function () {
+                        $status.text('خطا در شروع همگام‌سازی');
+                        $btn.prop('disabled', false);
+                    });
+            });
+
+            poll();
         });
     </script>
 }

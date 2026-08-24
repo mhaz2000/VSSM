@@ -133,6 +133,7 @@ namespace VSSM.Presentation.Web
             services.Configure<BehdashtApiOptions>(configuration.GetSection("BehdashtApi"));
             services.AddHttpClient("BehdashtApi");
             services.AddSingleton<BehdashtApiClient>();
+            services.AddSingleton<SiyamSyncStatusService>();
 
             services.AddAuthentication("Cookies")
                 .AddCookie("Cookies", options =>

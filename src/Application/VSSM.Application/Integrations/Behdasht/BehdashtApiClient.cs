@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using VSSM.Domain.ValueObjects;
 
 namespace VSSM.Application.Integrations.Behdasht;
 
@@ -26,47 +27,76 @@ public class BehdashtApiClient
 
     public async Task<bool> ValidateUidAsync(string secUid, CancellationToken ct)
     {
+        BehdashtCatalogResponse? response;
+        try
+        {
+            response = await PostBearerAsync<BehdashtCatalogRequest, BehdashtCatalogResponse>(
+                _options.CatalogUrl, new BehdashtCatalogRequest { BarcodeUid = secUid }, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Behdasht catalog validation failed for UID {Uid}", secUid);
+            return false;
+        }
+
+        return response?.Status == null || response.Status.StatusCode == 200;
+    }
+
+    public async Task<BehdashtSearchOrganizationsResponse?> SearchOrganizationsAsync(int pageNumber, int pageSize, CancellationToken ct)
+    {
+        return await PostBearerAsync<BehdashtSearchOrganizationsRequest, BehdashtSearchOrganizationsResponse>(
+            _options.SearchOrganizationsUrl,
+            new BehdashtSearchOrganizationsRequest { Data = new SearchPageData { PageNumber = pageNumber, PageSize = pageSize } },
+            ct);
+    }
+
+    public async Task<BehdashtGetOrganizationResponse?> GetOrganizationAsync(string id, CancellationToken ct)
+    {
+        return await PostBearerAsync<BehdashtGetOrganizationRequest, BehdashtGetOrganizationResponse>(
+            _options.GetOrganizationUrl,
+            new BehdashtGetOrganizationRequest { Data = new GetOrgIdentifierData { Identifier = new OrgRef { Id = id } } },
+            ct);
+    }
+
+    private async Task<TResponse> PostBearerAsync<TRequest, TResponse>(string url, TRequest request, CancellationToken ct)
+        where TResponse : class
+    {
         var token = await GetValidTokenAsync(ct);
         var client = _httpClientFactory.CreateClient("BehdashtApi");
 
-        var response = await SendCatalogAsync(client, token, secUid, ct);
-
+        var response = await SendBearerAsync(client, token, url, request, ct);
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            _logger.LogWarning("Behdasht token rejected (401). Refreshing token and retrying UID {Uid}", secUid);
+            _logger.LogWarning("Behdasht token rejected (401) for {Url}. Refreshing token and retrying", url);
             token = await RefreshTokenAsync(ct);
-            response = await SendCatalogAsync(client, token, secUid, ct);
+            response = await SendBearerAsync(client, token, url, request, ct);
         }
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogError("Behdasht catalog API returned HTTP {StatusCode} for UID {Uid}", (int)response.StatusCode, secUid);
-            return false;
+            var body = await response.Content.ReadAsStringAsync(ct);
+            _logger.LogError("Behdasht API {Url} returned HTTP {StatusCode}: {Body}", url, (int)response.StatusCode, body);
+            throw new InvalidOperationException($"Behdasht API {url} returned HTTP {(int)response.StatusCode}");
         }
 
-        var payload = await DeserializeAsync<BehdashtCatalogResponse>(response, ct);
-        if (payload?.Status != null && payload.Status.StatusCode != 200)
-        {
-            _logger.LogError("Behdasht catalog API body status {StatusCode} ({Message}) for UID {Uid}", payload.Status.StatusCode, payload.Status.Message, secUid);
-            return false;
-        }
+        var raw = await response.Content.ReadAsStringAsync(ct);
+        var deserialized = JsonSerializer.Deserialize<TResponse>(raw, JsonOptions);
+        if (deserialized == null)
+            throw new InvalidOperationException($"Behdasht API {url} returned an empty/non-deserializable body");
 
-        return true;
+        return deserialized;
     }
 
-    private async Task<HttpResponseMessage> SendCatalogAsync(HttpClient client, string token, string secUid, CancellationToken ct)
+    private async Task<HttpResponseMessage> SendBearerAsync(HttpClient client, string token, string url, object request, CancellationToken ct)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, _options.CatalogUrl)
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, url)
         {
-            Content = new StringContent(
-                JsonSerializer.Serialize(new BehdashtCatalogRequest { BarcodeUid = secUid }, JsonOptions),
-                Encoding.UTF8,
-                "application/json")
+            Content = new StringContent(JsonSerializer.Serialize(request, JsonOptions), Encoding.UTF8, "application/json")
         };
-        request.Headers.TryAddWithoutValidation("pid", _options.Pid);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        httpRequest.Headers.TryAddWithoutValidation("pid", _options.Pid);
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        return await client.SendAsync(request, ct);
+        return await client.SendAsync(httpRequest, ct);
     }
 
     private async Task<string> GetValidTokenAsync(CancellationToken ct)
@@ -105,7 +135,7 @@ public class BehdashtApiClient
             throw new InvalidOperationException($"Failed to obtain Behdasht access token (HTTP {(int)response.StatusCode})");
         }
 
-        var token = await DeserializeAsync<BehdashtTokenResponse>(response, ct);
+        var token = JsonSerializer.Deserialize<BehdashtTokenResponse>(await response.Content.ReadAsStringAsync(ct), JsonOptions);
         if (token == null || string.IsNullOrEmpty(token.AccessToken))
         {
             _logger.LogError("Behdasht token response missing access_token");
@@ -120,14 +150,5 @@ public class BehdashtApiClient
 
         _logger.LogInformation("Behdasht access token obtained (expires in {ExpiresIn}s)", token.ExpiresIn);
         return _accessToken;
-    }
-
-    private static async Task<T?> DeserializeAsync<T>(HttpResponseMessage response, CancellationToken ct)
-    {
-        var body = await response.Content.ReadAsStringAsync(ct);
-        if (string.IsNullOrWhiteSpace(body))
-            return default;
-
-        return JsonSerializer.Deserialize<T>(body, JsonOptions);
     }
 }

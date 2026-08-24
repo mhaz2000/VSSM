@@ -4,6 +4,8 @@ public class BehdashtApiOptions
 {
     public string TokenUrl { get; set; } = string.Empty;
     public string CatalogUrl { get; set; } = string.Empty;
+    public string SearchOrganizationsUrl { get; set; } = string.Empty;
+    public string GetOrganizationUrl { get; set; } = string.Empty;
     public string BasicAuthorization { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;

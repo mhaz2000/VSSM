@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using VSSM.Domain.Enums;
 using VSSM.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using VSSM.Application.Integrations.Behdasht;
 
 namespace VSSM.Application.Services.BackgroundServices
 {
@@ -11,13 +12,16 @@ namespace VSSM.Application.Services.BackgroundServices
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<OrdersInquiryBackgroundService> _logger;
+        private readonly BehdashtApiClient _behdashtClient;
 
         public OrdersInquiryBackgroundService(
             IServiceScopeFactory scopeFactory,
-            ILogger<OrdersInquiryBackgroundService> logger)
+            ILogger<OrdersInquiryBackgroundService> logger,
+            BehdashtApiClient behdashtClient)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _behdashtClient = behdashtClient;
         }
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -52,29 +56,56 @@ namespace VSSM.Application.Services.BackgroundServices
 
         private async Task ProcessUnprocessedOrders(VSSMDbContext context, CancellationToken stoppingToken)
         {
-            var unprocessedOrders = await (from o in context.TblOrderInfo
-                                           where o.Status == OrderInfoStatus.READ.ToString()
-                                           join u in context.TblUidInfo on o.PkOrderInfo equals u.FkOrderInfo
-                                           select new
-                                           {
-                                               Order = o,
-                                               UidInfo = u
-                                           }).ToListAsync(stoppingToken);
+            var orders = await context.TblOrderInfo
+                .Where(o => o.Status == OrderInfoStatus.READ.ToString())
+                .ToListAsync(stoppingToken);
 
-            if (!unprocessedOrders.Any())
+            if (!orders.Any())
             {
                 _logger.LogInformation("No unprocessed orders found");
                 return;
             }
 
-            _logger.LogInformation("Found {Count} unprocessed orders", unprocessedOrders.Count);
+            _logger.LogInformation("Found {Count} unprocessed orders", orders.Count);
 
-            foreach (var item in unprocessedOrders)
+            foreach (var order in orders)
             {
-                _logger.LogInformation("Processing order {OrderId}", item.Order.PkOrderInfo);
-            }
+                var uids = await context.TblUidInfo
+                    .Where(u => u.FkOrderInfo == order.PkOrderInfo)
+                    .ToListAsync(stoppingToken);
 
-            await context.SaveChangesAsync(stoppingToken);
+                if (!uids.Any())
+                {
+                    _logger.LogInformation("Order {OrderId} has no UIDs; skipping", order.PkOrderInfo);
+                    continue;
+                }
+
+                order.Status = OrderInfoStatus.PROCESS_VALIDATING.ToString();
+                await context.SaveChangesAsync(stoppingToken);
+
+                var hasError = false;
+                foreach (var uid in uids)
+                {
+                    try
+                    {
+                        var ok = await _behdashtClient.ValidateUidAsync(uid.SecLevelUid, stoppingToken);
+                        if (!ok)
+                        {
+                            hasError = true;
+                            _logger.LogWarning("UID {Uid} validation failed for order {OrderId}", uid.SecLevelUid, order.PkOrderInfo);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        hasError = true;
+                        _logger.LogError(ex, "Error validating UID {Uid} for order {OrderId}", uid.SecLevelUid, order.PkOrderInfo);
+                    }
+                }
+
+                order.Status = hasError ? OrderInfoStatus.HAS_ERROR.ToString() : OrderInfoStatus.IS_VALID.ToString();
+                await context.SaveChangesAsync(stoppingToken);
+                _logger.LogInformation("Order {OrderId} processed. Status set to {Status}", order.PkOrderInfo, order.Status);
+            }
         }
     }
 }

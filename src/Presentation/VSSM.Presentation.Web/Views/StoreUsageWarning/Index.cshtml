@@ -4,73 +4,77 @@
     ViewData["Title"] = "اخطار میزان مصرف انبار";
 }
 
-<div class="card mt-3 shadow-sm">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">اخطار میزان مصرف انبار</h5>
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
+    <link href="~/css/pages/store-usage-warning/store-usage-warning.css" rel="stylesheet" />
+}
+
+<div class="store-usage-wrap">
+    <div class="item-page-title">
+        <i class="fa fa-exclamation-triangle" style="color:#dc2626;"></i>
+        @ViewData["Title"]
     </div>
 
-    <div class="card-body">
-        <form asp-action="Index" method="post" novalidate>
-            
-            <div class="row">
-                
-                <div class="col-md-4 mb-3">
-                    <label class="form-label fw-bold" for="Dry">Dry (%)</label>
-                    <input asp-for="Dry" class="form-control form-control-sm" type="number" min="0" max="100" />
-                    <span asp-validation-for="Dry" class="text-danger small"></span>
+    <form asp-action="Index" method="post" novalidate>
+        @Html.AntiForgeryToken()
+
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-sliders-h" style="color:#1d6fb8;"></i>
+                <h6>تنظیمات درصد هشدار مصرف انبار</h6>
+            </div>
+
+            <div class="a-card-body">
+                <div class="store-usage-info-text">
+                    <i class="fa fa-info-circle"></i>
+                    درصدهای مصرف انبار را وارد کنید. در صورت تجاوز از این درصدها، هشدار نمایش داده می‌شود.
                 </div>
 
-                <div class="col-md-4 mb-3">
-                    <label class="form-label fw-bold" for="Bz">Bz (%)</label>
-                    <input asp-for="Bz" class="form-control form-control-sm" type="number" min="0" max="100" />
-                    <span asp-validation-for="Bz" class="text-danger small"></span>
+                <div class="store-usage-grid">
+                    <div class="f-group">
+                        <label asp-for="Dry" class="f-label">Dry (%)</label>
+                        <input asp-for="Dry" class="f-control" type="number" min="0" max="100" placeholder="مثلاً ۸۰" />
+                        <span asp-validation-for="Dry" class="field-error"></span>
+                    </div>
+
+                    <div class="f-group">
+                        <label asp-for="Bz" class="f-label">Bz (%)</label>
+                        <input asp-for="Bz" class="f-control" type="number" min="0" max="100" placeholder="مثلاً ۷۰" />
+                        <span asp-validation-for="Bz" class="field-error"></span>
+                    </div>
+
+                    <div class="f-group">
+                        <label asp-for="Az" class="f-label">Az (%)</label>
+                        <input asp-for="Az" class="f-control" type="number" min="0" max="100" placeholder="مثلاً ۶۰" />
+                        <span asp-validation-for="Az" class="field-error"></span>
+                    </div>
                 </div>
-
-                <div class="col-md-4 mb-3">
-                    <label class="form-label fw-bold" for="Az">Az (%)</label>
-                    <input asp-for="Az" class="form-control form-control-sm" type="number" min="0" max="100" />
-                    <span asp-validation-for="Az" class="text-danger small"></span>
-                </div>
-
             </div>
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-success mt-2">ذخیره</button>
-            </div>
-        </form>
 
-        @if (ViewBag.Message != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show mt-4" role="alert">
-                @ViewBag.Message
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="form-footer" style="justify-content:flex-end;">
+                <button type="submit" class="btn-confirm">
+                    <i class="fa fa-save"></i>
+                    ذخیره تنظیمات
+                </button>
             </div>
-        }
-    </div>
+        </div>
+    </form>
 </div>
 
-<!-- Validation Scripts و JS جمع درصد -->
+<div id="toastContainer"></div>
+
 <partial name="_ValidationScriptsPartial" />
 
-<script>
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function (e) {
-        const dry = parseInt(document.querySelector('[name="Dry"]').value) || 0;
-        const bz = parseInt(document.querySelector('[name="Bz"]').value) || 0;
-        const az = parseInt(document.querySelector('[name="Az"]').value) || 0;
-
-        if (dry > 100) {
-            alert("dry نباید بیشتر از 100 باشد");
-            e.preventDefault();
-        }
-
-        if (bz > 100) {
-            alert("bz نباید بیشتر از 100 باشد");
-            e.preventDefault();
-        }
-
-        if (az > 100) {
-            alert("az نباید بیشتر از 100 باشد");
-            e.preventDefault();
-        }
-    });
-</script>
+@section Scripts {
+    <script src="~/js/components/shared/toast.js"></script>
+    <script src="~/js/pages/store-usage-warning/store-usage-warning.js"></script>
+    @if (ViewBag.Message != null)
+    {
+        <script>
+            showToast('@ViewBag.Message', 'success');
+        </script>
+    }
+}

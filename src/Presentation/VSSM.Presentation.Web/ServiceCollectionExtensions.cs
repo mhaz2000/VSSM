@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Options;
+using VSSM.Application.Integrations.Behdasht;
 using VSSM.Application.Common.Authorization;
 using VSSM.Application.Common.Interfaces;
 using VSSM.Application.DTOs.BaseEntities.Adjustments;
@@ -127,6 +130,11 @@ namespace VSSM.Presentation.Web
 
 
 
+
+            services.Configure<BehdashtApiOptions>(configuration.GetSection("BehdashtApi"));
+            services.AddHttpClient("BehdashtApi");
+            services.AddSingleton<BehdashtApiClient>();
+            services.AddSingleton<SiyamSyncStatusService>();
 
             services.AddAuthentication("Cookies")
                 .AddCookie("Cookies", options =>

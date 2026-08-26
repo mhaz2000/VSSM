@@ -22,51 +22,50 @@ public class DispatchesController(
 {
 
     [HttpGet]
-    public async Task<IActionResult> GetItemsByClassAsync(int classId, CancellationToken ct)
+    public async Task<IActionResult> GetItemsByClassAsync(int classId, CancellationToken cancellationToken)
     {
-        var items = await dispatchService.GetItemsByClassAsync(classId, ct);
+        var items = await dispatchService.GetItemsByClassAsync(classId, cancellationToken);
         return Json(items.Select(i => new { i.ItemId, i.FullName }));
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetDispatchLines(int id, CancellationToken ct)
+    public async Task<IActionResult> GetDispatchLines(int id, CancellationToken cancellationToken)
     {
-        var lines = await dispatchService.GetDispatchLinesForEditAsync(id, ct);
+        var lines = await dispatchService.GetDispatchLinesForEditAsync(id, cancellationToken);
         return Json(lines);
     }
 
-
     [HttpGet]
-    public async Task<IActionResult> GetBatchesByItem(int itemId, CancellationToken ct)
+    public async Task<IActionResult> GetBatchesByItem(int itemId, CancellationToken cancellationToken)
     {
-        var rows = await dispatchService.GetBatchesByItemAsync(itemId, CurrentUserRecipientId.GetValueOrDefault(), ct);
+        var rows = await dispatchService.GetBatchesByItemAsync(
+            itemId,
+            CurrentUserRecipientId.GetValueOrDefault(),
+            cancellationToken);
         return Json(rows);
     }
-
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
-        CreateDispatchDto createDispatcheDto,
+        CreateDispatchDto createDispatchDto,
         string submitType,
         string? scanSessionId,
         CancellationToken cancellationToken)
     {
-        createDispatcheDto.SenderId = CurrentUserRecipientId.GetValueOrDefault();
-        createDispatcheDto.EnteredById = CurrentUserId.GetValueOrDefault();
+        createDispatchDto.SenderId = CurrentUserRecipientId.GetValueOrDefault();
+        createDispatchDto.EnteredById = CurrentUserId.GetValueOrDefault();
 
-        if (createDispatcheDto.Items.Any(i => i.DoseCount <= 0))
+        if (createDispatchDto.Items.Any(i => i.DoseCount <= 0))
         {
             TempData["ToastMessage"] = "برای کلیه کالاهای ارسالی تعداد را مشخص نمایید";
             TempData["ToastType"] = "error";
             await PopulateLookupViewBagsAsync(cancellationToken);
-            return View("New", createDispatcheDto);
+            return View("New", createDispatchDto);
         }
 
         var (dispatchId, seqPreview) = await dispatchService.CreateDispatchAsync(
-            createDispatcheDto, "draft", cancellationToken);
-
-
+            createDispatchDto, "draft", cancellationToken);
 
         if (submitType == "final" && !string.IsNullOrEmpty(scanSessionId))
         {
@@ -76,11 +75,11 @@ public class DispatchesController(
             {
                 TempData["ToastMessage"] = "هیچ UID معتبری اسکن نشده است.";
                 TempData["ToastType"] = "error";
-                return RedirectToAction("Edit", new { id = dispatchId });
+                return RedirectToAction(nameof(Edit), new { id = dispatchId });
             }
 
             var mismatchItems = new List<string>();
-            foreach (var item in createDispatcheDto.Items)
+            foreach (var item in createDispatchDto.Items)
             {
                 var scannedCount = session.Items
                     .Where(x => x.ItemId == item.ItemId && x.BatchNumber == item.BatchNumber)
@@ -94,23 +93,24 @@ public class DispatchesController(
 
             if (mismatchItems.Any())
             {
-                TempData["ToastMessage"] = $"تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد: {string.Join(" - ", mismatchItems)}";
+                TempData["ToastMessage"] =
+                    $"تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد: " +
+                    $"{string.Join(" - ", mismatchItems)}";
                 TempData["ToastType"] = "error";
-                return RedirectToAction("Edit", new { id = dispatchId });
+                return RedirectToAction(nameof(Edit), new { id = dispatchId });
             }
-
 
             var confirmResult = await dispatchService.ConfirmDispatchUidAsync(scanSessionId, dispatchId);
             if (!confirmResult.success)
             {
                 TempData["ToastMessage"] = confirmResult.message;
                 TempData["ToastType"] = "error";
-                return RedirectToAction("Edit", new { id = dispatchId });
+                return RedirectToAction(nameof(Edit), new { id = dispatchId });
             }
 
             await dispatchService.ConfirmDispatchAsync(dispatchId, cancellationToken);
 
-            await dispatchService.DecrementStockOnFinalAsync(createDispatcheDto.Items, cancellationToken);
+            await dispatchService.DecrementStockOnFinalAsync(createDispatchDto.Items, cancellationToken);
 
             await dispatchService.LinkUidsToDispatchUidAsync(dispatchId, cancellationToken);
 
@@ -123,21 +123,20 @@ public class DispatchesController(
             TempData["ToastType"] = "success";
         }
 
-        return RedirectToAction("Index");
+        return RedirectToAction(nameof(Index));
     }
-
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(
-        UpdateDispatchDto updateDispatcheDto,
+        UpdateDispatchDto updateDispatchDto,
         string submitType,
         string? scanSessionId,
         CancellationToken cancellationToken)
     {
 
         var existingDispatch =
-       await dispatchService.GetByIdAsync(updateDispatcheDto.Id);
+       await dispatchService.GetByIdAsync(updateDispatchDto.Id);
 
         if (existingDispatch == null)
             return NotFound();
@@ -158,10 +157,10 @@ public class DispatchesController(
         if (!canEdit)
             return View("_Forbidden");
 
-        updateDispatcheDto.SenderId =
+        updateDispatchDto.SenderId =
             CurrentUserRecipientId.GetValueOrDefault();
 
-        updateDispatcheDto.EnteredById =
+        updateDispatchDto.EnteredById =
             CurrentUserId.GetValueOrDefault();
 
         try
@@ -173,7 +172,7 @@ public class DispatchesController(
                     TempData["ToastMessage"] = "برای ثبت نهایی باید حداقل یک UID اسکن شود.";
                     TempData["ToastType"] = "error";
                     await PopulateLookupViewBagsAsync(cancellationToken);
-                    return View("Edit", updateDispatcheDto);
+                    return View("Edit", updateDispatchDto);
                 }
 
                 var session = dispatchScan.GetSession(scanSessionId);
@@ -182,11 +181,11 @@ public class DispatchesController(
                     TempData["ToastMessage"] = "هیچ UID معتبری اسکن نشده است.";
                     TempData["ToastType"] = "error";
                     await PopulateLookupViewBagsAsync(cancellationToken);
-                    return View("Edit", updateDispatcheDto);
+                    return View("Edit", updateDispatchDto);
                 }
 
                 var mismatchItems = new List<string>();
-                foreach (var item in updateDispatcheDto.Items)
+                foreach (var item in updateDispatchDto.Items)
                 {
                     var scannedCount =
                          session.Items
@@ -194,7 +193,6 @@ public class DispatchesController(
                              x.ItemId == item.ItemId &&
                              x.BatchNumber == item.BatchNumber)
                          .Sum(x => x.Count);
-
 
                     if (scannedCount != item.DoseCount)
                     {
@@ -210,25 +208,27 @@ public class DispatchesController(
 
                 if (mismatchItems.Any())
                 {
-                    TempData["ToastMessage"] = $"تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد: {string.Join(" - ", mismatchItems)}";
+                    TempData["ToastMessage"] =
+                    $"تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد: " +
+                    $"{string.Join(" - ", mismatchItems)}";
                     TempData["ToastType"] = "error";
                     await PopulateLookupViewBagsAsync(cancellationToken);
-                    return View("Edit", updateDispatcheDto);
+                    return View("Edit", updateDispatchDto);
                 }
             }
 
-            updateDispatcheDto.IsDrafted = true;
-            await dispatchService.UpdateDispatchAsync(updateDispatcheDto, submitType, cancellationToken);
+            updateDispatchDto.IsDrafted = true;
+            await dispatchService.UpdateDispatchAsync(updateDispatchDto, submitType, cancellationToken);
 
             if (submitType == "final" && !string.IsNullOrEmpty(scanSessionId))
             {
-                var confirmResult = await dispatchService.ConfirmDispatchUidAsync(scanSessionId, updateDispatcheDto.Id);
+                var confirmResult = await dispatchService.ConfirmDispatchUidAsync(scanSessionId, updateDispatchDto.Id);
                 if (!confirmResult.success)
                 {
                     TempData["ToastMessage"] = confirmResult.message;
                     TempData["ToastType"] = "error";
                     await PopulateLookupViewBagsAsync(cancellationToken);
-                    return View("Edit", updateDispatcheDto);
+                    return View("Edit", updateDispatchDto);
                 }
             }
 
@@ -239,7 +239,7 @@ public class DispatchesController(
         {
             await PopulateLookupViewBagsAsync(cancellationToken);
             ViewBag.ErrorMessage = ex.Message;
-            return View("Edit", updateDispatcheDto);
+            return View("Edit", updateDispatchDto);
         }
 
         return RedirectToAction(nameof(Index));
@@ -247,21 +247,27 @@ public class DispatchesController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id, CancellationToken token)
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        await dispatchService.RestoreStockAsync(id, token);
-        await dispatchService.DeleteDispatchAsync(id, token);
+        await dispatchService.RestoreStockAsync(id, cancellationToken);
+        await dispatchService.DeleteDispatchAsync(id, cancellationToken);
 
         TempData["ToastMessage"] = "ارسال با موفقیت حذف شد.";
         TempData["ToastType"] = "success";
-        await audit.LogAsync("Warning", $"Dispatch deleted: id={id}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
+        await audit.LogAsync(
+            "Warning",
+            $"Dispatch deleted: id={id}",
+            User.Identity?.Name,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            HttpContext.Request.Path,
+            HttpContext.Request.Method);
 
-        return RedirectToAction("Index");
+        return RedirectToAction(nameof(Index));
     }
 
     public async Task<IActionResult> Details(
-    int id,
-    CancellationToken cancellationToken)
+        int id,
+        CancellationToken cancellationToken)
     {
         var dispatch = await dispatchService.GetByIdAsync(id);
 
@@ -289,15 +295,17 @@ public class DispatchesController(
         return View("Edit", dispatch);
     }
 
-    public async Task<IActionResult> Index(CancellationToken cancellationToken, string? search,
-                                          int pageNumber = 1,
-                                          int pageSize = 10,
-                                          string? status = null,
-                                          string sort = "Orders",
-                                          string direction = "desc")
+    public async Task<IActionResult> Index(
+        CancellationToken cancellationToken,
+        string? search,
+        int pageNumber = 1,
+        int pageSize = 10,
+        string? status = null,
+        string sort = "Orders",
+        string direction = "desc")
     {
         var (data, count) = await dispatchService.GetPagedDispatchesAsync(
-            search, pageNumber, pageSize, sort, direction, status, CurrentUserRecipientId.Value, cancellationToken);
+            search, pageNumber, pageSize, sort, direction, status, CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
 
         var model = new GridViewModel
         {
@@ -313,16 +321,44 @@ public class DispatchesController(
             },
             Columns = new List<GridColumn>
         {
-            new() { Header = "تاریخ", PropertyName = nameof(DispatchListDto.DateText), Sortable = false },
-            new() { Header = "گیرنده", PropertyName = nameof(DispatchListDto.ReceiverName), Sortable = false },
-            new() { Header = "شماره فاکتور", PropertyName = nameof(DispatchListDto.DispatchVoucherNumber), Sortable = false },
-            new() { Header = "پیش فاکتور", PropertyName = nameof(DispatchListDto.IsDraftedText), Sortable = false },
-            new() { Header = "وضعیت گیرنده", PropertyName = nameof(DispatchListDto.ReceiverStatusText), Sortable = false },
-            new() { Header = "عملیات", IsActionColumn = true }
+            new()
+            {
+                Header = "تاریخ",
+                PropertyName = nameof(DispatchListDto.DateText),
+                Sortable = false
+            },
+            new()
+            {
+                Header = "گیرنده",
+                PropertyName = nameof(DispatchListDto.ReceiverName),
+                Sortable = false
+            },
+            new()
+            {
+                Header = "شماره فاکتور",
+                PropertyName = nameof(DispatchListDto.DispatchVoucherNumber),
+                Sortable = false
+            },
+            new()
+            {
+                Header = "پیش فاکتور",
+                PropertyName = nameof(DispatchListDto.IsDraftedText),
+                Sortable = false
+            },
+            new()
+            {
+                Header = "وضعیت گیرنده",
+                PropertyName = nameof(DispatchListDto.ReceiverStatusText),
+                Sortable = false
+            },
+            new()
+            {
+                Header = "عملیات",
+                IsActionColumn = true
+            }
         },
             Actions = new List<GridAction>
         {
-            // ── دکمه ویرایش (فقط برای مواردی که تایید نشده‌اند) ──
             new()
             {
                 Title = "ویرایش",
@@ -336,7 +372,6 @@ public class DispatchesController(
                     return (row.IsConfirmed.HasValue && row.IsConfirmed.Value).ToString();
                 }
             },
-            // ── دکمه مشاهده (فقط برای مواردی که تایید شده‌اند) ──
             new()
             {
                 Title = "مشاهده",
@@ -360,7 +395,7 @@ public class DispatchesController(
                 DynamicSkip = item =>
                 {
                     var row = (DispatchListDto)item;
-                    if(row.IsConfirmed.HasValue && row.IsConfirmed.Value)
+                    if (row.IsConfirmed.HasValue && row.IsConfirmed.Value)
                             return false.ToString();
                     return (!(row.IsDrafted.HasValue && row.IsDrafted.Value)).ToString();
                 }
@@ -386,10 +421,9 @@ public class DispatchesController(
         return View(model);
     }
 
-
     public async Task<IActionResult> Print(
-      int id,
-      CancellationToken cancellationToken)
+        int id,
+        CancellationToken cancellationToken)
     {
         var dispatch = await dispatchService.GetByIdAsync(id);
 
@@ -417,13 +451,22 @@ public class DispatchesController(
 
         return View(printData);
     }
-    public async Task<IActionResult> ToBeArrivedIndex(CancellationToken cancellationToken, string? search,
-                                    int pageNumber = 1,
-                                    int pageSize = 10,
-                                    string sort = "Orders",
-                                    string direction = "desc")
+    public async Task<IActionResult> ToBeArrivedIndex(
+        CancellationToken cancellationToken,
+        string? search,
+        int pageNumber = 1,
+        int pageSize = 10,
+        string sort = "Orders",
+        string direction = "desc")
     {
-        var (data, count) = await dispatchService.GetPagedToBeArrivedDispatchesAsync(search, pageNumber, pageSize, sort, direction, CurrentUserRecipientId.Value, cancellationToken);
+        var (data, count) = await dispatchService.GetPagedToBeArrivedDispatchesAsync(
+            search,
+            pageNumber,
+            pageSize,
+            sort,
+            direction,
+            CurrentUserRecipientId.GetValueOrDefault(),
+            cancellationToken);
 
         var model = new GridViewModel
         {
@@ -439,12 +482,41 @@ public class DispatchesController(
             },
             Columns = new List<GridColumn>
             {
-                new() { Header = "فرستنده", PropertyName = nameof(ToBeArrivedDispatchListDto.SenderName),  Sortable = false },
-                new() { Header = "تاریخ", PropertyName = nameof(ToBeArrivedDispatchListDto.DateText), Sortable = false },
-                new() { Header = "شماره درخواست", PropertyName = nameof(ToBeArrivedDispatchListDto.RequestNum),  Sortable = false },
-                new() { Header = "شماره فاکتور", PropertyName = nameof(ToBeArrivedDispatchListDto.DispatchVoucherNumber),  Sortable = false },
-                new() { Header = "تاریخ ورود", PropertyName = nameof(ToBeArrivedDispatchListDto.EntryDateText),  Sortable = false },
-                new() { Header = "عملیات", IsActionColumn = true}
+                new()
+                {
+                    Header = "فرستنده",
+                    PropertyName = nameof(ToBeArrivedDispatchListDto.SenderName),
+                    Sortable = false
+                },
+                new()
+                {
+                    Header = "تاریخ",
+                    PropertyName = nameof(ToBeArrivedDispatchListDto.DateText),
+                    Sortable = false
+                },
+                new()
+                {
+                    Header = "شماره درخواست",
+                    PropertyName = nameof(ToBeArrivedDispatchListDto.RequestNum),
+                    Sortable = false
+                },
+                new()
+                {
+                    Header = "شماره فاکتور",
+                    PropertyName = nameof(ToBeArrivedDispatchListDto.DispatchVoucherNumber),
+                    Sortable = false
+                },
+                new()
+                {
+                    Header = "تاریخ ورود",
+                    PropertyName = nameof(ToBeArrivedDispatchListDto.EntryDateText),
+                    Sortable = false
+                },
+                new()
+                {
+                    Header = "عملیات",
+                    IsActionColumn = true
+                }
             },
             Actions = new List<GridAction>
             {
@@ -460,21 +532,25 @@ public class DispatchesController(
             }
         };
 
-
         return View(model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Confirm(int id, CancellationToken token)
+    public async Task<IActionResult> Confirm(int id, CancellationToken cancellationToken)
     {
-        await dispatchService.ConfirmDispatchAsync(id, token);
-        await audit.LogAsync("Information", $"Dispatch confirmed: id={id}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
+        await dispatchService.ConfirmDispatchAsync(id, cancellationToken);
+        await audit.LogAsync(
+            "Information",
+            $"Dispatch confirmed: id={id}",
+            User.Identity?.Name,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            HttpContext.Request.Path,
+            HttpContext.Request.Method);
 
-        return RedirectToAction("Index");
+        return RedirectToAction(nameof(Index));
 
     }
-
 
     public async Task<IActionResult> New(CancellationToken cancellationToken)
     {
@@ -491,20 +567,24 @@ public class DispatchesController(
         return View(model);
     }
 
-
     public async Task<IActionResult> Arrive(long id, CancellationToken cancellationToken)
     {
         ViewBag.DispatchLines = await dispatchService.GetDispatchLinesAsync(id, cancellationToken);
-        ViewBag.Stores = ((await storeService.GetAll(cancellationToken)).Where(store => store.RecipientId == CurrentUserRecipientId)).ToList();
+        ViewBag.Stores = (await storeService.GetAll(cancellationToken))
+            .Where(store => store.RecipientId == CurrentUserRecipientId)
+            .ToList();
 
         return View();
     }
 
-
     public async Task<IActionResult> ArriveSubmit(DispatchArrivedDto arrivedDto, CancellationToken cancellationToken)
     {
-        await dispatchService.DispatchArrivedAsync(arrivedDto, CurrentUserId.Value, CurrentUserRecipientId.Value, cancellationToken);
-        return RedirectToAction("ToBeArrivedIndex");
+        await dispatchService.DispatchArrivedAsync(
+            arrivedDto,
+            CurrentUserId.GetValueOrDefault(),
+            CurrentUserRecipientId.GetValueOrDefault(),
+            cancellationToken);
+        return RedirectToAction(nameof(ToBeArrivedIndex));
     }
 
     public async Task<IActionResult> Edit(
@@ -537,7 +617,6 @@ public class DispatchesController(
         return View(dispatch);
     }
 
-
     [HttpPost("AddUidToSession")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddUidToSession(
@@ -569,7 +648,6 @@ public class DispatchesController(
         var session =
             dispatchScan.GetSession(sessionId);
 
-
         return Ok(new
         {
             Success = true,
@@ -589,32 +667,33 @@ public class DispatchesController(
                 sessionId,
                 uid);
 
-
         return Ok(new
         {
             Success = result
         });
     }
 
-    private async Task PopulateLookupViewBagsAsync(CancellationToken ct)
+    private async Task PopulateLookupViewBagsAsync(CancellationToken cancellationToken)
     {
         ViewBag.TransportModes =
-            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.TransportModes, ct))
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.TransportModes, cancellationToken))
             .ToSelectList(x => x.Id, x => x.Title);
 
         ViewBag.ReceivingMethods =
-            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ReceivingModes, ct))
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ReceivingModes, cancellationToken))
             .ToSelectList(x => x.Id, x => x.Title);
 
         ViewBag.ItemTypes =
-            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, ct))
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, cancellationToken))
             .ToSelectList(x => x.Id, x => x.Title);
 
         ViewBag.VvmStages =
-            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.VvmStages, ct))
+            (await baseInfoService.GetByParentIdAsync(BaseInfoIds.VvmStages, cancellationToken))
             .ToSelectList(x => x.Id, x => x.Title);
 
-        ViewBag.Recipients = await recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.GetValueOrDefault(), ct);
+        ViewBag.Recipients = await recipientService.GetActiveRecipientChildren(
+            CurrentUserRecipientId.GetValueOrDefault(),
+            cancellationToken);
     }
 
     [HttpPost("ConfirmDispatchUids")]

@@ -144,7 +144,7 @@ namespace VSSM.Presentation.Web
                 .AddCookie("Cookies", options =>
                 {
                     options.LoginPath = "/Account/Login";
-                    options.AccessDeniedPath = "/Account/AccessDenied";
+                    options.AccessDeniedPath = "/Error/Forbidden";
 
                     // [SECURITY - افتا]: سخت‌سازی کوکی احراز هویت
                     // - HttpOnly: جلوگیری از دسترسی اسکریپت‌ها به کوکی (XSS)

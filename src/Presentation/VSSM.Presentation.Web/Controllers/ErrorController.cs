@@ -8,4 +8,10 @@ public class ErrorController : Controller
         ViewBag.ErrorMessage = message;
         return View("~/Views/Shared/Error.cshtml");
     }
+
+    [HttpGet]
+    public IActionResult Forbidden()
+    {
+        return View("_Forbidden");
+    }
 }

@@ -24,24 +24,17 @@ public sealed class DispatchAccessPolicy : IDispatchAccessPolicy
 
         var allowed = operation switch
         {
-            // مشاهده فقط رکوردهای تاییدشده‌ای که
-            // متعلق به فرستنده فعلی هستند
             ResourceOperation.Read =>
                 isSender && isConfirmedDispatch,
 
-            // ویرایش فقط پیش‌فاکتورهای خود کاربر
-            // که هنوز تایید نشده‌اند
             ResourceOperation.Edit =>
                 isSender && !isConfirmedDispatch,
 
-            // حذف فقط رکوردهای خود کاربر
-            // که هنوز تایید نشده‌اند
             ResourceOperation.Delete =>
                 isSender && !isConfirmedDispatch,
 
-            // چاپ برای فرستنده یا گیرنده
             ResourceOperation.Print =>
-                (isSender || isReceiver) && isConfirmedDispatch,
+                isSender && isConfirmedDispatch,
 
             ResourceOperation.Confirm =>
                 isSender && !isConfirmedDispatch,

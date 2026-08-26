@@ -21,6 +21,10 @@ public class DispatchService(
     IGs1BarcodeParser barcodeParser) : IDispatchService
 {
 
+    public async Task<TblDispatch?> GetEntityByIdAsync(int id)
+    {
+        return await context.TblDispatches.FindAsync(id);
+    }
     private async Task<List<int>> GetUserStoreIdsAsync(int recipientId)
     {
         var storeIds = await context.TblStores

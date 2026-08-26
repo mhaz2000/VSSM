@@ -1,50 +1,71 @@
-﻿using VSSM.Application.Interfaces.BaseEntities.Dispatch;
+﻿using System.Security.Claims;
+using VSSM.Application.Interfaces;
 using VSSM.Application.Security;
+using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Infrastructure.Security;
 
-public sealed class DispatchAccessPolicy : IDispatchAccessPolicy
+public sealed class DispatchAccessPolicy : IResourceAccessPolicy<TblDispatch>
 {
     public Task<bool> CanAsync(
-        AuthorizationSubject subject,
-        int? senderId,
-        int? receiverId,
-        bool? isConfirmed,
+        TblDispatch dispatch,
         ResourceOperation operation,
-        CancellationToken cancellationToken = default)
+        ClaimsPrincipal user)
     {
-        if (subject.RecipientId is null)
+        var currentRecipientId = GetCurrentRecipientId(user);
+
+        if (currentRecipientId is null)
             return Task.FromResult(false);
 
-        var currentRecipientId = subject.RecipientId.Value;
-
-        var isSender = senderId == currentRecipientId;
-        var isReceiver = receiverId == currentRecipientId;
-        var isConfirmedDispatch = isConfirmed == true;
+        var isSender = dispatch.SenderId == currentRecipientId.Value;
+        var isReceiver = dispatch.ReceiverId == currentRecipientId.Value;
+        var isConfirmed = dispatch.IsConfirmed == true;
 
         var allowed = operation switch
         {
             ResourceOperation.Read =>
-                isSender && isConfirmedDispatch,
+                isSender,
 
             ResourceOperation.Edit =>
-                isSender && !isConfirmedDispatch,
+                isSender && !isConfirmed,
 
             ResourceOperation.Delete =>
-                isSender && !isConfirmedDispatch,
+                isSender && !isConfirmed,
 
             ResourceOperation.Print =>
-                isSender && isConfirmedDispatch,
+                isSender,
 
             ResourceOperation.Confirm =>
-                isSender && !isConfirmedDispatch,
+                isSender && !isConfirmed,
 
             ResourceOperation.Receive =>
-                isReceiver && !isConfirmedDispatch,
+                isReceiver && !isConfirmed,
 
             _ => false
         };
 
         return Task.FromResult(allowed);
+    }
+
+    public IQueryable<TblDispatch> ApplyReadFilter(
+        IQueryable<TblDispatch> query,
+        ClaimsPrincipal user)
+    {
+        var currentRecipientId = GetCurrentRecipientId(user);
+
+        if (currentRecipientId is null)
+            return query.Where(x => false);
+
+        return query.Where(x =>
+            x.SenderId == currentRecipientId.Value);
+    }
+
+    private static int? GetCurrentRecipientId(ClaimsPrincipal user)
+    {
+        var recipientId = user.FindFirst("RecipientId")?.Value;
+
+        return int.TryParse(recipientId, out var id)
+            ? id
+            : null;
     }
 }

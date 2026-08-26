@@ -1,5 +1,6 @@
 ﻿using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.DTOs.BaseEntities.Dispatches.Scan;
+using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
@@ -17,6 +18,7 @@ public interface IDispatchService
     Task<List<ToBeArrivedDispatchLineDto>> GetDispatchLinesAsync(long id, CancellationToken cancellationToken);
     Task DispatchArrivedAsync(DispatchArrivedDto arrivedDto, int userId, int recipientId, CancellationToken cancellationToken);
     Task<UpdateDispatchDto?> GetByIdAsync(int id);
+    Task<TblDispatch?> GetEntityByIdAsync(int id);
     Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken);
     Task<List<ItemLookupDto>> GetItemsByClassAsync(int classId, CancellationToken ct = default);
     Task<List<BatchRowDto>> GetBatchesByItemAsync(

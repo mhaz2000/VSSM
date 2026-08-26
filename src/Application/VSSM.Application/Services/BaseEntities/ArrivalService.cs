@@ -522,20 +522,11 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
     }
 
 
-    private static int GetNextNumber(string? lastReportNumber)
+    public async Task<TblArrival?> GetEntityByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(lastReportNumber))
-            return 1;
-
-
-        var numberPart = lastReportNumber
-            .Split('-')
-            .FirstOrDefault();
-
-
-        return int.TryParse(numberPart, out var number)
-            ? number + 1
-            : 1;
+        return await db.TblArrivals
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
     }
 
 }

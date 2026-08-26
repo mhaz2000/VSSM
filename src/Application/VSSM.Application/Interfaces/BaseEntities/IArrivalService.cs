@@ -1,5 +1,6 @@
 ﻿using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
+using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
 
@@ -22,4 +23,7 @@ public interface IArrivalService
     Task<ArrivalLineDto> GetArrivalLineByStoreIdAndItemDetailId(long storeId, long itemDetailId);
     public Task<bool> DoesHaveArrivalLineByArrivalId(int id);
     Task<string> Generate();
+
+    Task<TblArrival?> GetEntityByIdAsync(int id, CancellationToken cancellationToken = default);
+
 }

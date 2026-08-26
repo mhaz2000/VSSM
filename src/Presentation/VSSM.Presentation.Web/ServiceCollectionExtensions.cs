@@ -1,11 +1,6 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Http;
-using Microsoft.Extensions.Options;
-using VSSM.Application.Integrations.Behdasht;
 using VSSM.Application.Common.Authorization;
 using VSSM.Application.Common.Interfaces;
 using VSSM.Application.DTOs.BaseEntities.Adjustments;
@@ -26,8 +21,9 @@ using VSSM.Application.DTOs.BaseEntities.StoreType;
 using VSSM.Application.DTOs.BaseEntities.StoreUsageWarning;
 using VSSM.Application.DTOs.BaseEntities.Vvmstage;
 using VSSM.Application.DTOs.BaseEntities.Vvmtype;
+using VSSM.Application.Integrations.Behdasht;
+using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Interfaces.BaseEntities.Dispatch;
 using VSSM.Application.Interfaces.RequestEntities;
 using VSSM.Application.Services;
 using VSSM.Application.Services.Barcode;
@@ -122,7 +118,10 @@ namespace VSSM.Presentation.Web
 
             services.AddSingleton<DispatchScanSessionService>();
 
-            services.AddScoped<IDispatchAccessPolicy, DispatchAccessPolicy>();
+            services.AddScoped<IResourceAccessPolicy<TblArrival>, ArrivalAccessPolicy>();
+            services.AddScoped<IResourceAccessPolicy<TblDispatch>, DispatchAccessPolicy>();
+
+
 
             /*reports services DI*/
             #region reports services DI

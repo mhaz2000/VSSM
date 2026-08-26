@@ -1,12 +1,11 @@
-﻿using DocumentFormat.OpenXml.Validation;
-using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using VSSM.Application.DTOs.BaseEntities.Arrival;
-using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Security;
+using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Arrival;
@@ -14,15 +13,16 @@ using VSSM.Presentation.Web.Models.Base;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-    public class ArrivalController(
-        IArrivalService arrivalService,
-        IFiscalPeriodService fiscalService,
-        IItemService itemService,
-        IStoreService storeService,
-        IBaseInfoService baseInfoService,
-        IOrderInfoService orderInfoService,
-        IUidInfoService uidInfoService,
-        IAuditService audit) : BaseController
+public class ArrivalController(
+    IArrivalService arrivalService,
+    IFiscalPeriodService fiscalService,
+    IItemService itemService,
+    IStoreService storeService,
+    IBaseInfoService baseInfoService,
+    IOrderInfoService orderInfoService,
+    IUidInfoService uidInfoService,
+    IAuditService audit,
+    IResourceAccessPolicy<TblArrival> arrivalAccessPolicy) : BaseController
 {
     public async Task<IActionResult> Index(
         string? search,
@@ -116,8 +116,15 @@ namespace VSSM.Presentation.Web.Controllers;
         return View(model);
     }
 
-    public IActionResult Print(int id)
+    public async Task<IActionResult> Print(int id, CancellationToken token)
     {
+        //var arrival = await arrivalService.GetEntityByIdAsync(id, token);
+        //if (arrival == null)
+        //    return NotFound();
+
+        //if (!await arrivalAccessPolicy.CanAsync(arrival, ResourceOperation.Print, User))
+        //    return Forbid();
+
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
         {
             return PartialView("~/Views/Shared/UnderConstructionModal.cshtml");
@@ -146,12 +153,19 @@ namespace VSSM.Presentation.Web.Controllers;
             });
         }
 
+        var arrivalEntity = await arrivalService.GetEntityByIdAsync(id.Value, token);
+        if (arrivalEntity == null)
+            return NotFound();
+
+        if (!await arrivalAccessPolicy.CanAsync(arrivalEntity, ResourceOperation.Edit, User))
+            return Forbid();
+
         var dto = await arrivalService.GetById(id.Value, token);
         if (dto == null) return NotFound();
 
         var lineViewModels = await MapLinesToViewModelAsync(dto.Lines, token);
 
-         var arrivalType = !string.IsNullOrEmpty(tab) ? tab : dto.ArrivalType;
+        var arrivalType = !string.IsNullOrEmpty(tab) ? tab : dto.ArrivalType;
 
         var model = new ArrivalViewModel
         {
@@ -164,7 +178,7 @@ namespace VSSM.Presentation.Web.Controllers;
             IsDrafted = dto.IsDrafted ?? false,
             IsCancelled = dto.IsCancelled ?? false,
             Note = dto.Note,
-            ArrivalType = arrivalType,  
+            ArrivalType = arrivalType,
             Lines = lineViewModels,
             NewLine = new ArrivalLineViewModel()
         };
@@ -177,23 +191,27 @@ namespace VSSM.Presentation.Web.Controllers;
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken token)
     {
+        var arrival = await arrivalService.GetEntityByIdAsync(id, token);
+        if (arrival == null)
+            return NotFound();
+
+        if (!await arrivalAccessPolicy.CanAsync(arrival, ResourceOperation.Delete, User))
+            return Forbid();
+
         await uidInfoService.ClearArrivalFkByArrivalId(id, token);
         await arrivalService.Delete(id);
 
-        TempData["ToastMessage"] = "ورود حذف شد";
-        TempData["ToastType"] = "success";
+        SetToastMessage("ورود حذف شد", "success");
         await audit.LogAsync("Warning", $"Arrival deleted: id={id}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
         return RedirectToAction(nameof(Index));
     }
 
-
     [HttpPost]
-    [ValidateAntiForgeryToken]  
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ArrivalViewModel model, string command, CancellationToken token)
     {
         try
         {
-
             await PopulateLookupViewBagsAsync(token);
 
             if (command is not null && (
@@ -206,13 +224,28 @@ namespace VSSM.Presentation.Web.Controllers;
 
             if (model.ArrivalId.HasValue)
             {
-                var existing = await arrivalService.GetById(model.ArrivalId.Value, token);
-                if (existing?.IsConfirmed == true)
+                var existingEntity = await arrivalService.GetEntityByIdAsync(model.ArrivalId.Value, token);
+                if (existingEntity == null)
+                    return NotFound();
+
+                if (!await arrivalAccessPolicy.CanAsync(existingEntity, ResourceOperation.Edit, User))
+                    return Forbid();
+
+                if (existingEntity.IsConfirmed == true)
                 {
-                    TempData["ToastMessage"] = "این ورود تایید شده است و امکان ویرایش ندارد";
-                    TempData["ToastType"] = "error";
+                    SetToastMessage("این ورود تایید شده است و امکان ویرایش ندارد", "error");
                     return RedirectToAction("New", new { id = model.ArrivalId.Value });
                 }
+            }
+
+            if (command == "confirm" && model.ArrivalId.HasValue)
+            {
+                var arrivalEntity = await arrivalService.GetEntityByIdAsync(model.ArrivalId.Value, token);
+                if (arrivalEntity == null)
+                    return NotFound();
+
+                if (!await arrivalAccessPolicy.CanAsync(arrivalEntity, ResourceOperation.Confirm, User))
+                    return Forbid();
             }
 
             return command switch
@@ -230,247 +263,9 @@ namespace VSSM.Presentation.Web.Controllers;
         }
         catch (Exception ex)
         {
-            TempData["ToastMessage"] = ex.Message;
-            TempData["ToastType"] = "error";
+            SetToastMessage(ex.Message, "error");
             return View("New", model);
         }
-    }
-
-
-    private async Task<IActionResult> AddLine(ArrivalViewModel model, CancellationToken token)
-    {
-        if (string.IsNullOrWhiteSpace(model.Date))
-            return ToastView("فیلد تاریخ ورود اجباری است", model);
-
-        if (!model.NewLine.StoreId.HasValue)
-            return ToastView("فیلد انبار اجباری است", model);
-
-        var isHalal = string.Equals(model.ArrivalType, "halal", StringComparison.OrdinalIgnoreCase);
-
-        return isHalal
-            ? await AddHalalLine(model, token)
-            : await AddVaccineLine(model, token);
-    }
-
-    private async Task<IActionResult> AddVaccineLine(ArrivalViewModel model, CancellationToken token)
-    {
-        if (string.IsNullOrWhiteSpace(model.NewLine?.BatchNum))
-            return ToastView("فیلد سری ساخت اجباری است", model);
-
-
-        if (!model.NewLine.ItemId.HasValue && model.NewLine.ItemId.HasValue)
-            model.NewLine.ItemId = model.NewLine.ItemId;
-
-        if (!model.NewLine.ItemId.HasValue)
-            return ToastView("فیلد کالا اجباری است", model);
-
-        if (!model.NewLine.DosePerVialId.HasValue)
-            return ToastView("فیلد دوز بر ویال اجباری است", model);
-
-        var batchNum = model.NewLine.BatchNum.Trim();
-
-        if (model.Lines?.Any(l => string.Equals(l.BatchNum, batchNum, StringComparison.OrdinalIgnoreCase)) == true)
-            return ToastView("سری ساخت تکراری است", model);
-
-        var orderInfo = await orderInfoService.GetConfirmedByBatchNum(batchNum, token);
-        if (orderInfo == null)
-            return ToastView("فایل مربوط به سری ساخت مورد نظر آپلود نشده است", model);
-
-        var availableUids = await uidInfoService.GetAvailableByBatchNum(
-            batchNum, CurrentUserRecipientId ?? 0, token);
-
-        if (!availableUids.Any())
-            return ToastView("کلیه ویال‌های مربوط به سری ساخت وارد شده ورود خورده‌اند", model);
-
-        model.NewLine.ExpiryDate = orderInfo.ExpirationDate;
-        model.NewLine.ProductionDate = orderInfo.ManufactureDate;
-        model.NewLine.Quantity = availableUids.Count;
-
-        await EnsureArrivalCreatedAsync(model, token);
-
-        var lineDto = MapNewLineToDto(model);
-        await arrivalService.AddLine(model.ArrivalId!.Value, lineDto, token);
-
-        var itemInfo = await itemService.GetById(model.NewLine.ItemId!.Value, token);
-        if (itemInfo?.RequiresDiluent == true && itemInfo.DiluentId.HasValue)
-        {
-            await arrivalService.AddLine(model.ArrivalId.Value, new ArrivalLineDto
-            {
-                ArrivalId = model.ArrivalId.Value,
-                BatchNum = model.NewLine.BatchNum,
-                StoreId = model.NewLine.StoreId,
-                ItemId = itemInfo.DiluentId.Value,
-                DosePerVialId = model.NewLine.DosePerVialId,
-                Quantity = model.NewLine.Quantity,
-                ExpiryDate = model.NewLine.ExpiryDate,
-                ProductionDate = model.NewLine.ProductionDate,
-                Note = "حلال خودکار",
-            }, token);
-        }
-
-        return RedirectToAction("New", new { id = model.ArrivalId.Value });
-    }
-
-
-    private async Task<IActionResult> AddHalalLine(ArrivalViewModel model, CancellationToken token)
-    {
-        if (!model.NewLine.ItemId.HasValue)
-            return ToastView("آیتم را انتخاب کنید", model);
-
-        if (!model.NewLine.DosePerVial.HasValue || model.NewLine.DosePerVial <= 0)
-            return ToastView("مقدار دوز باید بیشتر از صفر باشد", model);
-
-        if (!model.NewLine.Quantity.HasValue || model.NewLine.Quantity <= 0)
-            return ToastView("تعداد باید بیشتر از صفر باشد", model);
-
-        if (string.IsNullOrWhiteSpace(model.NewLine.ProductionDateShamsi))
-            return ToastView("تاریخ تولید را وارد کنید", model);
-
-        if (string.IsNullOrWhiteSpace(model.NewLine.ExpiryDateShamsi))
-            return ToastView("تاریخ انقضا را وارد کنید", model);
-
-
-        if (model.NewLine.ProductionDateMode == "jalali")
-        {
-            model.NewLine.ProductionDate = DateTimeHelper.ToMiladi(model.NewLine.ProductionDateShamsi);
-        }
-        else
-        {
-            model.NewLine.ProductionDate = DateTime.ParseExact(
-                model.NewLine.ProductionDateShamsi,
-                "yyyy/MM/dd",
-                CultureInfo.InvariantCulture
-            );
-        }
-        if (model.NewLine.ExpiryDateMode == "jalali")
-        {
-            model.NewLine.ExpiryDate = DateTimeHelper.ToMiladi(model.NewLine.ExpiryDateShamsi);
-        }
-        else
-        {
-            model.NewLine.ExpiryDate = DateTime.ParseExact(
-                model.NewLine.ExpiryDateShamsi,
-                "yyyy/MM/dd",
-                CultureInfo.InvariantCulture
-            );
-        }
-
-        model.NewLine.NumVials = model.NewLine.Quantity / model.NewLine.DosePerVial;
-
-        model.NewLine.DosePerVialId = model.NewLine.DosePerVialId;
-
-        await EnsureArrivalCreatedAsync(model, token);
-        var lineDto = MapNewLineToDto(model);
-        await arrivalService.AddLine(model.ArrivalId!.Value, lineDto, token);
-
-        return RedirectToAction("New", new { id = model.ArrivalId.Value, tab = "halal" });
-    }
-
-
-    private async Task<IActionResult> SaveDraft(ArrivalViewModel model, CancellationToken token)
-    {
-        if (!model.ArrivalId.HasValue || model.ArrivalId == 0 ||
-            !await arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
-        {
-            TempData["ToastMessage"] = "ابتدا یک کالا اضافه کنید تا ورود ساخته شود";
-            TempData["ToastType"] = "error";
-            return View("New", model);
-        }
-
-        var dto = await BuildCreateDtoAsync(model, token);
-        await arrivalService.SetDraft(model.ArrivalId.Value, dto, token);
-
-        TempData["ToastMessage"] = "به عنوان پیش‌نویس ذخیره شد";
-        TempData["ToastType"] = "info";
-        return RedirectToAction("Index");
-    }
-
-    private async Task<IActionResult> Confirm(ArrivalViewModel model, CancellationToken token)
-    {
-        if (!model.ArrivalId.HasValue || model.ArrivalId == 0 ||
-            !await arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
-        {
-            TempData["ToastMessage"] = "ابتدا یک کالا اضافه کنید";
-            TempData["ToastType"] = "error";
-            return View("New", model);
-        }
-
-        var dto = await BuildCreateDtoAsync(model, token);
-        await arrivalService.Confirm(model.ArrivalId.Value, dto, token);
-        await audit.LogAsync("Information", $"Arrival confirmed: id={model.ArrivalId.Value}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
-
-        var confirmed = await arrivalService.GetById(model.ArrivalId.Value, token);
-
-        bool isHalal = string.Equals(model.ArrivalType, "halal", StringComparison.OrdinalIgnoreCase);
-
-        foreach (var line in confirmed?.Lines ?? new List<ArrivalLineDto>())
-        {
-            if (string.IsNullOrWhiteSpace(line.BatchNum)) continue; 
-
-            await uidInfoService.SetArrivalFkForBatchNums(
-                new List<string> { line.BatchNum! },
-                model.ArrivalId.Value,
-                line.DosePerVialId,
-                line.StoreId,
-                line.ItemId,
-                isHalal, 
-                token);
-        }
-
-        TempData["ToastMessage"] = "ورود تایید شد";
-        TempData["ToastType"] = "success";
-        return RedirectToAction("Index");
-    }
-
-    private async Task<IActionResult> DeleteAll(ArrivalViewModel model, CancellationToken token)
-    {
-        if (!model.ArrivalId.HasValue || model.ArrivalId == 0)
-            return RedirectToAction("Index");
-
-        await uidInfoService.ClearArrivalFkByArrivalId(model.ArrivalId.Value, token);
-        await arrivalService.Cancel(model.ArrivalId.Value, token);
-
-        TempData["ToastMessage"] = "کل ورود حذف شد";
-        TempData["ToastType"] = "success";
-        await audit.LogAsync("Warning", $"Arrival deleted (all): id={model.ArrivalId.Value}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
-        return RedirectToAction("Index");
-    }
-
-    private async Task<IActionResult> HandleEditLine(string command, ArrivalViewModel model, CancellationToken token)
-    {
-        if (!TryParseLineId(command, out var lineId))
-            return ToastView("شناسه سطر معتبر نیست", model);
-
-        if (!model.ArrivalId.HasValue || model.ArrivalId.Value == 0)
-            return ToastView("شناسه ورود معتبر نیست", model);
-
-        var dto = await arrivalService.GetById(model.ArrivalId.Value, token);
-        var line = dto?.Lines.FirstOrDefault(l => l.ArrivalLineId == lineId);
-
-        if (line == null)
-            return ToastView("سطر مورد نظر یافت نشد", model);
-
-        await uidInfoService.ClearArrivalFkByLineId(lineId, token);
-        await arrivalService.CancelLine(lineId, token);
-        await PopulateLookupViewBagsAsync(token);
-
-        var updated = await arrivalService.GetById(model.ArrivalId.Value, token);
-        model.Lines = await MapLinesToViewModelAsync(updated?.Lines ?? new List<ArrivalLineDto>(), token);
-        model.NewLine = MapLineToViewModel(line, null, null, null);
-        model.EditingLineId = lineId;
-
-        return View("New", model);
-    }
-
-    private async Task<IActionResult> HandleDeleteLine(string command, ArrivalViewModel model, CancellationToken token)
-    {
-        if (!TryParseLineId(command, out var lineId))
-            return ToastView("شناسه سطر معتبر نیست", model);
-
-        if (!model.ArrivalId.HasValue || model.ArrivalId.Value == 0)
-            return ToastView("شناسه ورود معتبر نیست", model);
-
-        return await DeleteLine(lineId, model.ArrivalId.Value, token);
     }
 
     [HttpPost]
@@ -480,11 +275,9 @@ namespace VSSM.Presentation.Web.Controllers;
         await uidInfoService.ClearArrivalFkByLineId(id, token);
         await arrivalService.CancelLine(id, token);
 
-        TempData["ToastMessage"] = "سطر حذف شد";
-        TempData["ToastType"] = "success";
+        SetToastMessage("سطر حذف شد", "success");
         return RedirectToAction("New", new { id = arrivalId });
     }
-
 
     [HttpGet]
     public async Task<IActionResult> GetBatchInfo(string batchNum, int? arrivalId, CancellationToken token)
@@ -546,7 +339,6 @@ namespace VSSM.Presentation.Web.Controllers;
         return Json(list);
     }
 
-
     [HttpGet]
     public async Task<IActionResult> GetVvmStages(int vvmTypeId, CancellationToken token)
     {
@@ -572,6 +364,244 @@ namespace VSSM.Presentation.Web.Controllers;
         return Json(list);
     }
 
+    public async Task<IActionResult> Details(int id, CancellationToken token)
+    {
+        var arrival = await arrivalService.GetEntityByIdAsync(id, token);
+        if (arrival == null)
+            return NotFound();
+
+        if (!await arrivalAccessPolicy.CanAsync(arrival, ResourceOperation.Read, User))
+            return Forbid();
+
+        var dto = await arrivalService.GetById(id, token);
+        if (dto == null) return NotFound();
+
+        var lineViewModels = await MapLinesToViewModelAsync(dto.Lines, token);
+
+        var fiscalPeriod = (await fiscalService.GetActives(token)).FirstOrDefault();
+
+        var model = new ArrivalViewModel
+        {
+            ArrivalId = dto.ArrivalId,
+            Date = dto.Date.HasValue ? DateTimeHelper.ToShamsi(dto.Date.Value) : "",
+            ReportNumber = dto.ReportNumber,
+            FiscalPeriodName = fiscalPeriod?.FullName,
+            EntryDate = dto.EntryDate,
+            IsConfirmed = dto.IsConfirmed ?? false,
+            IsDrafted = dto.IsDrafted ?? false,
+            IsCancelled = dto.IsCancelled ?? false,
+            Note = dto.Note,
+            ArrivalType = dto.ArrivalType ?? "vaccine",
+            Lines = lineViewModels,
+            NewLine = new ArrivalLineViewModel()
+        };
+
+        ViewBag.IsReadOnly = true;
+
+        return View(model);
+    }
+
+    private async Task<IActionResult> AddLine(ArrivalViewModel model, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(model.Date))
+            return ToastView("فیلد تاریخ ورود اجباری است", model);
+
+        if (!model.NewLine.StoreId.HasValue)
+            return ToastView("فیلد انبار اجباری است", model);
+
+        var isHalal = string.Equals(model.ArrivalType, "halal", StringComparison.OrdinalIgnoreCase);
+
+        return isHalal
+            ? await AddHalalLine(model, token)
+            : await AddVaccineLine(model, token);
+    }
+
+    private async Task<IActionResult> AddVaccineLine(ArrivalViewModel model, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(model.NewLine?.BatchNum))
+            return ToastView("فیلد سری ساخت اجباری است", model);
+
+        if (!model.NewLine.ItemId.HasValue)
+            return ToastView("فیلد کالا اجباری است", model);
+
+        if (!model.NewLine.DosePerVialId.HasValue)
+            return ToastView("فیلد دوز بر ویال اجباری است", model);
+
+        var batchNum = model.NewLine.BatchNum.Trim();
+
+        if (model.Lines?.Any(l => string.Equals(l.BatchNum, batchNum, StringComparison.OrdinalIgnoreCase)) == true)
+            return ToastView("سری ساخت تکراری است", model);
+
+        var orderInfo = await orderInfoService.GetConfirmedByBatchNum(batchNum, token);
+        if (orderInfo == null)
+            return ToastView("فایل مربوط به سری ساخت مورد نظر آپلود نشده است", model);
+
+        var availableUids = await uidInfoService.GetAvailableByBatchNum(
+            batchNum, CurrentUserRecipientId ?? 0, token);
+
+        if (!availableUids.Any())
+            return ToastView("کلیه ویال‌های مربوط به سری ساخت وارد شده ورود خورده‌اند", model);
+
+        model.NewLine.ExpiryDate = orderInfo.ExpirationDate;
+        model.NewLine.ProductionDate = orderInfo.ManufactureDate;
+        model.NewLine.Quantity = availableUids.Count;
+
+        await EnsureArrivalCreatedAsync(model, token);
+
+        var lineDto = MapNewLineToDto(model);
+        await arrivalService.AddLine(model.ArrivalId!.Value, lineDto, token);
+
+        var itemInfo = await itemService.GetById(model.NewLine.ItemId!.Value, token);
+        if (itemInfo?.RequiresDiluent == true && itemInfo.DiluentId.HasValue)
+        {
+            await arrivalService.AddLine(model.ArrivalId.Value, new ArrivalLineDto
+            {
+                ArrivalId = model.ArrivalId.Value,
+                BatchNum = model.NewLine.BatchNum,
+                StoreId = model.NewLine.StoreId,
+                ItemId = itemInfo.DiluentId.Value,
+                DosePerVialId = model.NewLine.DosePerVialId,
+                Quantity = model.NewLine.Quantity,
+                ExpiryDate = model.NewLine.ExpiryDate,
+                ProductionDate = model.NewLine.ProductionDate,
+                Note = "حلال خودکار",
+            }, token);
+        }
+
+        return RedirectToAction("New", new { id = model.ArrivalId.Value });
+    }
+
+    private async Task<IActionResult> AddHalalLine(ArrivalViewModel model, CancellationToken token)
+    {
+        if (!model.NewLine.ItemId.HasValue)
+            return ToastView("آیتم را انتخاب کنید", model);
+
+        if (!model.NewLine.DosePerVial.HasValue || model.NewLine.DosePerVial <= 0)
+            return ToastView("مقدار دوز باید بیشتر از صفر باشد", model);
+
+        if (!model.NewLine.Quantity.HasValue || model.NewLine.Quantity <= 0)
+            return ToastView("تعداد باید بیشتر از صفر باشد", model);
+
+        if (string.IsNullOrWhiteSpace(model.NewLine.ProductionDateShamsi))
+            return ToastView("تاریخ تولید را وارد کنید", model);
+
+        if (string.IsNullOrWhiteSpace(model.NewLine.ExpiryDateShamsi))
+            return ToastView("تاریخ انقضا را وارد کنید", model);
+
+        model.NewLine.ProductionDate = ConvertShamsiToMiladi(model.NewLine.ProductionDateShamsi, model.NewLine.ProductionDateMode);
+        model.NewLine.ExpiryDate = ConvertShamsiToMiladi(model.NewLine.ExpiryDateShamsi, model.NewLine.ExpiryDateMode);
+
+        model.NewLine.NumVials = model.NewLine.Quantity / model.NewLine.DosePerVial;
+
+        model.NewLine.DosePerVialId = model.NewLine.DosePerVialId;
+
+        await EnsureArrivalCreatedAsync(model, token);
+        var lineDto = MapNewLineToDto(model);
+        await arrivalService.AddLine(model.ArrivalId!.Value, lineDto, token);
+
+        return RedirectToAction("New", new { id = model.ArrivalId.Value, tab = "halal" });
+    }
+
+    private async Task<IActionResult> SaveDraft(ArrivalViewModel model, CancellationToken token)
+    {
+        if (!model.ArrivalId.HasValue || model.ArrivalId == 0 ||
+            !await arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
+        {
+            SetToastMessage("ابتدا یک کالا اضافه کنید تا ورود ساخته شود", "error");
+            return View("New", model);
+        }
+
+        var dto = await BuildCreateDtoAsync(model, token);
+        await arrivalService.SetDraft(model.ArrivalId.Value, dto, token);
+
+        SetToastMessage("به عنوان پیش‌نویس ذخیره شد", "info");
+        return RedirectToAction("Index");
+    }
+
+    private async Task<IActionResult> Confirm(ArrivalViewModel model, CancellationToken token)
+    {
+        if (!model.ArrivalId.HasValue || model.ArrivalId == 0 ||
+            !await arrivalService.DoesHaveArrivalLineByArrivalId(model.ArrivalId.Value))
+        {
+            SetToastMessage("ابتدا یک کالا اضافه کنید", "error");
+            return View("New", model);
+        }
+
+        var dto = await BuildCreateDtoAsync(model, token);
+        await arrivalService.Confirm(model.ArrivalId.Value, dto, token);
+        await audit.LogAsync("Information", $"Arrival confirmed: id={model.ArrivalId.Value}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
+
+        var confirmed = await arrivalService.GetById(model.ArrivalId.Value, token);
+
+        bool isHalal = string.Equals(model.ArrivalType, "halal", StringComparison.OrdinalIgnoreCase);
+
+        foreach (var line in confirmed?.Lines ?? new List<ArrivalLineDto>())
+        {
+            if (string.IsNullOrWhiteSpace(line.BatchNum)) continue;
+
+            await uidInfoService.SetArrivalFkForBatchNums(
+                new List<string> { line.BatchNum! },
+                model.ArrivalId.Value,
+                line.DosePerVialId,
+                line.StoreId,
+                line.ItemId,
+                isHalal,
+                token);
+        }
+
+        SetToastMessage("ورود تایید شد", "success");
+        return RedirectToAction("Index");
+    }
+
+    private async Task<IActionResult> DeleteAll(ArrivalViewModel model, CancellationToken token)
+    {
+        if (!model.ArrivalId.HasValue || model.ArrivalId == 0)
+            return RedirectToAction("Index");
+
+        await uidInfoService.ClearArrivalFkByArrivalId(model.ArrivalId.Value, token);
+        await arrivalService.Cancel(model.ArrivalId.Value, token);
+
+        SetToastMessage("کل ورود حذف شد", "success");
+        await audit.LogAsync("Warning", $"Arrival deleted (all): id={model.ArrivalId.Value}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
+        return RedirectToAction("Index");
+    }
+
+    private async Task<IActionResult> HandleEditLine(string command, ArrivalViewModel model, CancellationToken token)
+    {
+        if (!TryParseLineId(command, out var lineId))
+            return ToastView("شناسه سطر معتبر نیست", model);
+
+        if (!model.ArrivalId.HasValue || model.ArrivalId.Value == 0)
+            return ToastView("شناسه ورود معتبر نیست", model);
+
+        var dto = await arrivalService.GetById(model.ArrivalId.Value, token);
+        var line = dto?.Lines.FirstOrDefault(l => l.ArrivalLineId == lineId);
+
+        if (line == null)
+            return ToastView("سطر مورد نظر یافت نشد", model);
+
+        await uidInfoService.ClearArrivalFkByLineId(lineId, token);
+        await arrivalService.CancelLine(lineId, token);
+        await PopulateLookupViewBagsAsync(token);
+
+        var updated = await arrivalService.GetById(model.ArrivalId.Value, token);
+        model.Lines = await MapLinesToViewModelAsync(updated?.Lines ?? new List<ArrivalLineDto>(), token);
+        model.NewLine = MapLineToViewModel(line, null, null, null);
+        model.EditingLineId = lineId;
+
+        return View("New", model);
+    }
+
+    private async Task<IActionResult> HandleDeleteLine(string command, ArrivalViewModel model, CancellationToken token)
+    {
+        if (!TryParseLineId(command, out var lineId))
+            return ToastView("شناسه سطر معتبر نیست", model);
+
+        if (!model.ArrivalId.HasValue || model.ArrivalId.Value == 0)
+            return ToastView("شناسه ورود معتبر نیست", model);
+
+        return await DeleteLine(lineId, model.ArrivalId.Value, token);
+    }
 
     private async Task EnsureArrivalCreatedAsync(ArrivalViewModel model, CancellationToken token)
     {
@@ -717,41 +747,35 @@ namespace VSSM.Presentation.Web.Controllers;
 
     private IActionResult ToastView(string message, ArrivalViewModel model)
     {
-        TempData["ToastMessage"] = message;
-        TempData["ToastType"] = "error";
+        SetToastMessage(message, "error");
         return View("New", model);
+    }
+
+    private void SetToastMessage(string message, string type)
+    {
+        TempData["ToastMessage"] = message;
+        TempData["ToastType"] = type;
     }
 
     private static bool TryParseLineId(string command, out int lineId) =>
         int.TryParse(command.Split('_').Last(), out lineId);
 
-    public async Task<IActionResult> Details(int id, CancellationToken token)
+    private static DateTime? ConvertShamsiToMiladi(string shamsiDate, string? mode)
     {
-        var dto = await arrivalService.GetById(id, token);
-        if (dto == null) return NotFound();
+        if (string.IsNullOrWhiteSpace(shamsiDate))
+            return null;
 
-        var lineViewModels = await MapLinesToViewModelAsync(dto.Lines, token);
-
-        var fiscalPeriod = (await fiscalService.GetActives(token)).FirstOrDefault();
-
-        var model = new ArrivalViewModel
+        if (mode == "jalali")
         {
-            ArrivalId = dto.ArrivalId,
-            Date = dto.Date.HasValue ? DateTimeHelper.ToShamsi(dto.Date.Value) : "",
-            ReportNumber = dto.ReportNumber,
-            FiscalPeriodName = fiscalPeriod?.FullName,
-            EntryDate = dto.EntryDate,
-            IsConfirmed = dto.IsConfirmed ?? false,
-            IsDrafted = dto.IsDrafted ?? false,
-            IsCancelled = dto.IsCancelled ?? false,
-            Note = dto.Note,
-            ArrivalType = dto.ArrivalType ?? "vaccine",
-            Lines = lineViewModels,
-            NewLine = new ArrivalLineViewModel()
-        };
-
-        ViewBag.IsReadOnly = true; 
-
-        return View(model);
+            return DateTimeHelper.ToMiladi(shamsiDate);
+        }
+        else
+        {
+            return DateTime.ParseExact(
+                shamsiDate,
+                "yyyy/MM/dd",
+                CultureInfo.InvariantCulture
+            );
+        }
     }
 }

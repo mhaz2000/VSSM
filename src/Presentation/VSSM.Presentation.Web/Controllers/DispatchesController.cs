@@ -3,8 +3,8 @@ using VSSM.Application.DTOs.BaseEntities.Dispatches;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Application.Interfaces.BaseEntities.Dispatch;
 using VSSM.Application.Security;
+using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Base;
@@ -18,7 +18,7 @@ public class DispatchesController(
     IBaseInfoService baseInfoService,
     DispatchScanSessionService dispatchScan,
     IAuditService audit,
-    IDispatchAccessPolicy dispatchAccessPolicy) : BaseController
+    IResourceAccessPolicy<TblDispatch> accessPolicy) : BaseController
 {
 
     [HttpGet]
@@ -135,27 +135,17 @@ public class DispatchesController(
         CancellationToken cancellationToken)
     {
 
-        var existingDispatch =
-       await dispatchService.GetByIdAsync(updateDispatchDto.Id);
+        var dispatch = await dispatchService.GetEntityByIdAsync(updateDispatchDto.Id);
+        if (dispatch == null)
+            return NotFound();
+
+        if (!await accessPolicy.CanAsync(dispatch, ResourceOperation.Edit, User))
+            return Forbid();
+
+        var existingDispatch = await dispatchService.GetByIdAsync(updateDispatchDto.Id);
 
         if (existingDispatch == null)
             return NotFound();
-
-        var subject = new AuthorizationSubject(
-            CurrentUserId.GetValueOrDefault(),
-            CurrentUserRecipientId,
-            Array.Empty<string>());
-
-        var canEdit = await dispatchAccessPolicy.CanAsync(
-            subject,
-            existingDispatch.SenderId,
-            existingDispatch.ReceiverId,
-            existingDispatch.IsConfirmed,
-            ResourceOperation.Edit,
-            cancellationToken);
-
-        if (!canEdit)
-            return View("_Forbidden");
 
         updateDispatchDto.SenderId =
             CurrentUserRecipientId.GetValueOrDefault();
@@ -265,34 +255,21 @@ public class DispatchesController(
         return RedirectToAction(nameof(Index));
     }
 
-    public async Task<IActionResult> Details(
-        int id,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
     {
-        var dispatch = await dispatchService.GetByIdAsync(id);
-
+        var dispatch = await dispatchService.GetEntityByIdAsync(id);
         if (dispatch == null)
             return NotFound();
 
-        var subject = new AuthorizationSubject(
-            CurrentUserId.GetValueOrDefault(),
-            CurrentUserRecipientId,
-            Array.Empty<string>());
+        if (!await accessPolicy.CanAsync(dispatch, ResourceOperation.Read, User))
+            return Forbid();
 
-        var canRead = await dispatchAccessPolicy.CanAsync(
-            subject,
-            dispatch.SenderId,
-            dispatch.ReceiverId,
-            dispatch.IsConfirmed,
-            ResourceOperation.Read,
-            cancellationToken);
-
-        if (!canRead)
-            return View("_Forbidden");
+        var dto = await dispatchService.GetByIdAsync(id);
+        if (dto == null)
+            return NotFound();
 
         await PopulateLookupViewBagsAsync(cancellationToken);
-
-        return View("Edit", dispatch);
+        return View("Edit", dto);
     }
 
     public async Task<IActionResult> Index(
@@ -425,30 +402,14 @@ public class DispatchesController(
         int id,
         CancellationToken cancellationToken)
     {
-        var dispatch = await dispatchService.GetByIdAsync(id);
-
+        var dispatch = await dispatchService.GetEntityByIdAsync(id);
         if (dispatch == null)
             return NotFound();
 
-        var subject = new AuthorizationSubject(
-            CurrentUserId.GetValueOrDefault(),
-            CurrentUserRecipientId,
-            Array.Empty<string>());
+        if (!await accessPolicy.CanAsync(dispatch, ResourceOperation.Print, User))
+            return Forbid();
 
-        var canPrint = await dispatchAccessPolicy.CanAsync(
-            subject,
-            dispatch.SenderId,
-            dispatch.ReceiverId,
-            dispatch.IsConfirmed,
-            ResourceOperation.Print,
-            cancellationToken);
-
-        if (!canPrint)
-            return View("_Forbidden");
-
-        var printData =
-            await dispatchService.GetDispatchPrintDataAsync(id);
-
+        var printData = await dispatchService.GetDispatchPrintDataAsync(id);
         return View(printData);
     }
     public async Task<IActionResult> ToBeArrivedIndex(
@@ -567,7 +528,9 @@ public class DispatchesController(
         return View(model);
     }
 
-    public async Task<IActionResult> Arrive(long id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Arrive(
+        long id, 
+        CancellationToken cancellationToken)
     {
         ViewBag.DispatchLines = await dispatchService.GetDispatchLinesAsync(id, cancellationToken);
         ViewBag.Stores = (await storeService.GetAll(cancellationToken))
@@ -577,7 +540,9 @@ public class DispatchesController(
         return View();
     }
 
-    public async Task<IActionResult> ArriveSubmit(DispatchArrivedDto arrivedDto, CancellationToken cancellationToken)
+    public async Task<IActionResult> ArriveSubmit(
+        DispatchArrivedDto arrivedDto, 
+        CancellationToken cancellationToken)
     {
         await dispatchService.DispatchArrivedAsync(
             arrivedDto,
@@ -591,30 +556,19 @@ public class DispatchesController(
         int id,
         CancellationToken cancellationToken)
     {
-        var dispatch = await dispatchService.GetByIdAsync(id);
-
-        if (dispatch == null)
+        var dispatchEntity = await dispatchService.GetEntityByIdAsync(id);
+        if (dispatchEntity == null)
             return NotFound();
 
-        var subject = new AuthorizationSubject(
-            CurrentUserId.GetValueOrDefault(),
-            CurrentUserRecipientId,
-            Array.Empty<string>());
-
-        var canEdit = await dispatchAccessPolicy.CanAsync(
-            subject,
-            dispatch.SenderId,
-            dispatch.ReceiverId,
-            dispatch.IsConfirmed,
-            ResourceOperation.Edit,
-            cancellationToken);
-
-        if (!canEdit)
+        if (!await accessPolicy.CanAsync(dispatchEntity, ResourceOperation.Edit, User))
             return Forbid();
 
-        await PopulateLookupViewBagsAsync(cancellationToken);
+        var dispatchDto = await dispatchService.GetByIdAsync(id);
+        if (dispatchDto == null)
+            return NotFound();
 
-        return View(dispatch);
+        await PopulateLookupViewBagsAsync(cancellationToken);
+        return View(dispatchDto);
     }
 
     [HttpPost("AddUidToSession")]

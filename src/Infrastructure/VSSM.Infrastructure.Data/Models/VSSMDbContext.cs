@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using VSSM.Infrastructure.Data.Converters;
 
 namespace VSSM.Infrastructure.Data.Models;
 
@@ -39,8 +40,9 @@ public partial class VSSMDbContext(
     public virtual DbSet<TblDestroyUid> TblDestroyUids { get; set; }
     public virtual DbSet<TblUser> TblUsers { get; set; }
     public virtual DbSet<TblVoucherConfig> TblVoucherConfigs { get; set; }
-    public virtual DbSet<TblReceiveDispatches> TblReceiveDispatches { get; set; }
-    public virtual DbSet<TblArrivalRepConfig> TblArrivalRepConfigs { get; set; }
+        public virtual DbSet<TblReceiveDispatches> TblReceiveDispatches { get; set; }
+        public virtual DbSet<TblArrivalRepConfig> TblArrivalRepConfigs { get; set; }
+        public virtual DbSet<TblSiyamRecipient> TblSiyamRecipients { get; set; }
     public virtual DbSet<TblStoreUsageWarning> TblStoreUsageWarning { get; set; }
 
 
@@ -1553,6 +1555,49 @@ public partial class VSSMDbContext(
 
 
 
+
+        modelBuilder.Entity<TblSiyamRecipient>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("tblSiyamRecipients");
+
+            entity.Property(e => e.Id).HasMaxLength(64);
+            entity.Property(e => e.HierarchicalOrganizationId).HasMaxLength(64);
+            entity.Property(e => e.Name).HasMaxLength(300);
+            entity.Property(e => e.PostalCode).HasMaxLength(50);
+
+            entity.Property(e => e.OrganizationId).HasColumnType("nvarchar(500)").HasConversion(new OrgRefConverter());
+            entity.Property(e => e.OwnerOrganization).HasColumnType("nvarchar(500)").HasConversion(new OrgRefConverter());
+            entity.Property(e => e.ObserverOrganization).HasColumnType("nvarchar(500)").HasConversion(new OrgRefConverter());
+
+            entity.Property(e => e.Type).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.DependencyType).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.AllegianceType).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.OwnershipStatus).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.Specialty).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.ActivityStatus).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.NationalAreaCode).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.Country).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.Province).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.Town).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.District).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.RuralArea).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.City).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+            entity.Property(e => e.Village).HasColumnType("nvarchar(500)").HasConversion(new CodedValueConverter());
+
+            entity.Property(e => e.SpecialtyTypeJson).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.OtherIdentityInfoJson).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.ExtendedPropertyJson).HasColumnType("nvarchar(max)");
+
+            entity.Property(e => e.EstablishmentDate).HasColumnType("nvarchar(20)").HasConversion(new PartialDateConverter());
+            entity.Property(e => e.ActivationDate).HasColumnType("nvarchar(20)").HasConversion(new PartialDateConverter());
+
+            entity.HasOne(d => d.HierarchicalOrganization)
+                  .WithMany(p => p.ChildOrganizations)
+                  .HasForeignKey(d => d.HierarchicalOrganizationId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }

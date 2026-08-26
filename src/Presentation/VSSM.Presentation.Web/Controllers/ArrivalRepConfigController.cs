@@ -6,7 +6,7 @@ using VSSM.Application.Interfaces.BaseEntities;
 namespace VSSM.Presentation.Web.Controllers;
 
 
-public class ArrivalRepConfigController : Controller
+public class ArrivalRepConfigController : BaseController
 {
     private readonly IArrivalRepConfigService _arrivalRepConfigService;
 

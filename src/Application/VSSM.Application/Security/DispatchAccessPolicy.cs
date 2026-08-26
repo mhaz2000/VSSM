@@ -39,7 +39,9 @@ public sealed class DispatchAccessPolicy : IResourceAccessPolicy<TblDispatch>
                 isSender && !isConfirmed,
 
             ResourceOperation.Receive =>
-                isReceiver && !isConfirmed,
+                isReceiver &&
+                isConfirmed &&
+                dispatch.ReceiverStatus == 0,
 
             _ => false
         };

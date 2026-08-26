@@ -5,6 +5,7 @@ using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Security;
 using VSSM.Infrastructure.Data.Models;
+using VSSM.Infrastructure.Security;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Base;
@@ -529,9 +530,17 @@ public class DispatchesController(
     }
 
     public async Task<IActionResult> Arrive(
-        long id, 
+        int id, 
         CancellationToken cancellationToken)
     {
+
+        var dispatch = await dispatchService.GetEntityByIdAsync(id);
+        if (dispatch == null)
+            return NotFound();
+
+        if (!await accessPolicy.CanAsync(dispatch, ResourceOperation.Receive, User))
+            return Forbid();
+
         ViewBag.DispatchLines = await dispatchService.GetDispatchLinesAsync(id, cancellationToken);
         ViewBag.Stores = (await storeService.GetAll(cancellationToken))
             .Where(store => store.RecipientId == CurrentUserRecipientId)

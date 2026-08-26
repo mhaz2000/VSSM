@@ -23,6 +23,7 @@ public class StoreUsageWarningController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Index(StoreUsageWarningDto model)
     {
         if (!ModelState.IsValid)

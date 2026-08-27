@@ -2,7 +2,6 @@
 using VSSM.Application.DTOs.BaseEntities.DestroyUid;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
-using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Presentation.Web.Controllers;
 
@@ -13,11 +12,8 @@ public class DestroyUidController(
     {
         var reasons = await destroyUidService.GetDestroyReasonsAsync(token);
 
-        ViewBag.ReasonList = reasons
-            .Select(r => new { id = r.Id, title = r.Title })
-            .ToList();
-
-        ViewBag.TodayShamsi = DateTime.Now.ToShamsi(); 
+        ViewBag.ReasonList = reasons.Select(r => new { id = r.Id, title = r.Title }).ToList();
+        ViewBag.TodayShamsi = DateTime.Now.ToShamsi();
 
         return View();
     }
@@ -41,6 +37,7 @@ public class DestroyUidController(
 
         return Json(new { success, message, data });
     }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task SubmitDestroyProgress(
@@ -61,15 +58,16 @@ public class DestroyUidController(
             await Response.Body.FlushAsync(token);
         }
 
-        var total = await destroyUidService
-            .CountDestroyableUidsAsync(items, CurrentUserRecipientId ?? 0, token);
+        int recipientId = CurrentUserRecipientId ?? 0;
+
+        var total = await destroyUidService.CountDestroyableUidsAsync(items, recipientId, token);
 
         await Send("start", new { total });
 
         var (success, message) = await destroyUidService.SubmitDestroyAsync(
             items,
             CurrentUserId ?? 0,
-            CurrentUserRecipientId ?? 0,
+            recipientId,
             token,
             onProgress: async (done) =>
                 await Send("progress", new { done, total })

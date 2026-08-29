@@ -89,7 +89,7 @@ public static class DateTimeHelper
         input = input.Trim();
 
         // Accept / or -
-        var match = Regex.Match(input, @"^(?<y>\d{4})[-/](?<m>\d{1,2})[-/](?<d>\d{1,2})$");
+        var match = Regex.Match(input, @"^(?<y>\d{4})[-/](?<m>\d{1,2})[-/](?<d>\d{1,2})$", RegexOptions.None, TimeSpan.FromMilliseconds(100));
 
         if (!match.Success)
             throw new FormatException("Invalid date format.");

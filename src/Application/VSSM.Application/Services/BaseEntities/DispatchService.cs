@@ -1390,7 +1390,7 @@ public class DispatchService(
             return "UNKNOWN";
 
 
-        var match = Regex.Match(fullName, @"\d{4}");
+        var match = Regex.Match(fullName, @"\d{4}", RegexOptions.None, TimeSpan.FromMilliseconds(100));
 
 
         return match.Success

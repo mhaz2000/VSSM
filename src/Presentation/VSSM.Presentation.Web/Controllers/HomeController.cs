@@ -52,12 +52,11 @@ public class HomeController(
         return View();
     }
 
-    public IActionResult ExpiredItemsReport(int id)
+    public IActionResult ExpiredItemsReport(int id, [FromHeader(Name = "X-Requested-With")] string? requestedWith = null)
     {
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-        {
+
+        if (requestedWith == "XMLHttpRequest")
             return PartialView("~/Views/Shared/UnderConstructionModal.cshtml");
-        }
 
         return View("~/Views/Shared/UnderConstruction.cshtml");
     }

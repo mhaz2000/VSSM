@@ -116,7 +116,8 @@ public class ArrivalController(
         return View(model);
     }
 
-    public async Task<IActionResult> Print(int id, CancellationToken token)
+    public async Task<IActionResult> Print(int id, CancellationToken token,
+            [FromHeader(Name = "X-Requested-With")] string? requestedWith = null)
     {
         //var arrival = await arrivalService.GetEntityByIdAsync(id, token);
         //if (arrival == null)
@@ -125,10 +126,9 @@ public class ArrivalController(
         //if (!await arrivalAccessPolicy.CanAsync(arrival, ResourceOperation.Print, User))
         //    return Forbid();
 
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-        {
+        if (requestedWith == "XMLHttpRequest")
             return PartialView("~/Views/Shared/UnderConstructionModal.cshtml");
-        }
+
 
         return View("~/Views/Shared/UnderConstruction.cshtml");
     }

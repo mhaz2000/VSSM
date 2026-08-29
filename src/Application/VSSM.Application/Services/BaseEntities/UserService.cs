@@ -110,7 +110,7 @@ public class UserService(VSSMDbContext db) : IUserService
             return;
 
         var pattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$";
-        if (!Regex.IsMatch(password, pattern))
+        if (!Regex.IsMatch(password, pattern, RegexOptions.None, TimeSpan.FromMilliseconds(100)))
         {
             throw new Exception($"{fieldName} باید حداقل ۸ کاراکتر و شامل حروف بزرگ، حروف کوچک، عدد و کاراکتر ویژه باشد.");
         }

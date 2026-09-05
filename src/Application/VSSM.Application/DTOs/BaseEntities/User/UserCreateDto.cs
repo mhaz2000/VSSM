@@ -23,6 +23,8 @@ public class UserCreateDto
     // that the user must change their password on first login.
     public bool MustChangePassword { get; set; }
 
+    public bool IsActive { get; set; }
+
     public string Course { get; set; }
     public DateTime? CourseDate { get; set; }
 

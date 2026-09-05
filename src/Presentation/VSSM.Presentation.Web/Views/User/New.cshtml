@@ -1,4 +1,4 @@
-﻿﻿@using VSSM.Presentation.Web.Models.Base
+﻿﻿﻿@using VSSM.Presentation.Web.Models.Base
 @model UserViewModel
 
 @{
@@ -69,6 +69,9 @@
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="UserId" />
 
+        <!-- ===== تغییر (تسک e): نمایش خلاصه خطاها ===== -->
+        <div asp-validation-summary="All" class="text-danger" style="margin-bottom:1rem;"></div>
+        <!-- ============================================= -->
         <!-- اطلاعات کاربری -->
         <div class="a-card">
             <div class="a-card-header">
@@ -211,14 +214,9 @@
                         <input asp-for="Course" class="f-control" />
                         <span asp-validation-for="Course" class="field-validation-error"></span>
                     </div>
-                    <div class="admin-checkbox-wrapper">
-                        <label class="f-label">مدیر سیستم</label>
-                        <div>
-                            <label class="checkbox-label">
-                                <input type="checkbox" asp-for="IsAdmin" />
-                                فعال
-                            </label>
-                        </div>
+                    <div class="settings-item">
+                        <input type="checkbox" asp-for="IsAdmin" id="IsAdmin" />
+                        <label for="IsAdmin">مدیر سیستم</label>
                     </div>
                 </div>
             </div>

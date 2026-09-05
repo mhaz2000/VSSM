@@ -1,4 +1,4 @@
-﻿@using VSSM.Presentation.Web.Models.Base
+﻿﻿@using VSSM.Presentation.Web.Models.Base
 @model GridViewModel
 
 @section Styles {
@@ -100,6 +100,15 @@
         $(function () {
             var pendingDeleteForm = null;
 
+            // ===== تغییر (تسک d) =====
+            // دریافت توکن ضد جعل از صفحه
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            // اگر توکن وجود نداشت، آن را از فرم‌های موجود استخراج کنیم
+            if (!token) {
+                token = $('form').first().find('input[name="__RequestVerificationToken"]').val();
+            }
+            // ===========================
+
             $(document).on("click", ".open-modal", function (e) {
                 e.preventDefault();
                 const url = $(this).data("url");
@@ -116,7 +125,21 @@
 
             $(document).on("click", ".delete-user", function (e) {
                 e.preventDefault();
-                pendingDeleteForm = $(this).closest("form");
+                var form = $(this).closest("form");
+                if (form.length === 0) {
+                    // اگر فرم وجود نداشت، یک فرم ساخته و به آن متصل می‌شویم
+                    // اما بهتر است _DynamicGrid فرم داشته باشد.
+                    // راه حل: از AJAX استفاده کنیم اما برای کمترین تغییر، یک hidden input به فرم اضافه می‌کنیم.
+                }
+
+                // ===== تغییر (تسک d) =====
+                // اضافه کردن توکن به فرم اگر موجود نبود
+                if (form.find('input[name="__RequestVerificationToken"]').length === 0 && token) {
+                    form.append('<input type="hidden" name="__RequestVerificationToken" value="' + token + '" />');
+                }
+                // ===========================
+
+                pendingDeleteForm = form;
 
                 var isActivation = $(this).find(".fa-check").length > 0;
 

@@ -5,8 +5,8 @@ namespace VSSM.Application.Interfaces.BaseEntities
 {
     public interface IItemDoseAssignmentService
     {
-        Task<int> Create(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken);
-        Task<bool> Update(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken);
+        Task<(bool Success, string Message, int Id)> Create(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken);
+        Task<(bool Success, string Message)> Update(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken);
         Task<List<ItemDoseAssignmentListDto>> GetAll(CancellationToken cancellationToken);
         Task<ItemDoseAssignmentSelectDto> GetById(int id, CancellationToken cancellationToken);
         Task<PagingSearchOrderDto<ItemDoseAssignmentListDto>> GetPagedList(string? search, int page, int pageSize, string sortField, string sortOrder, CancellationToken cancellationToken);

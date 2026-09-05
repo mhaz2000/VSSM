@@ -78,13 +78,14 @@ public class ItemDoseAssignmentController(
         return View();
     }
 
-    public async Task<IActionResult> Create(ItemDoseAssignmentViewModel model, CancellationToken cancellationTOken)
+    [HttpPost]
+    public async Task<IActionResult> Create(ItemDoseAssignmentViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
             TempData["ToastMessage"] = "تمام فیلدهای اجباری باید پر شوند";
             TempData["ToastType"] = "error";
-            await PrepareDropdown(cancellationTOken);
+            await PrepareDropdown(cancellationToken);
             return View("New", model);
         }
 
@@ -98,13 +99,27 @@ public class ItemDoseAssignmentController(
 
         if (model.ItemDoseAssignmentId == null || model.ItemDoseAssignmentId == 0)
         {
-            // ---------- Create ----------
-            var res = await itemDoseAssignmentService.Create(dto, cancellationTOken);
+            var (success, message, id) = await itemDoseAssignmentService.Create(dto, cancellationToken);
+
+            if (!success)
+            {
+                TempData["ToastMessage"] = message;
+                TempData["ToastType"] = "error";
+                await PrepareDropdown(cancellationToken);
+                return View("New", model);
+            }
         }
         else
         {
-            // ---------- Update ----------
-            var res = await itemDoseAssignmentService.Update(dto, cancellationTOken);
+            var (success, message) = await itemDoseAssignmentService.Update(dto, cancellationToken);
+
+            if (!success)
+            {
+                TempData["ToastMessage"] = message;
+                TempData["ToastType"] = "error";
+                await PrepareDropdown(cancellationToken);
+                return View("New", model);
+            }
         }
 
         TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";

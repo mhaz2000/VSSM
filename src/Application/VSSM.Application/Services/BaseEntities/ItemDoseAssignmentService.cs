@@ -17,14 +17,18 @@ namespace VSSM.Application.Services.BaseEntities
             _validator = validator;
         }
 
-        public async Task<int> Create(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken)
+        public async Task<(bool Success, string Message, int Id)> Create(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken)
         {
-            /* application layer validate*/
             var result = await _validator.ValidateAsync(dto);
             if (!result.IsValid)
                 throw new ValidationException(result.Errors);
 
-            /* dto to model*/
+            var exists = await _dbContext.TblItemDoseAssignments
+                .AnyAsync(x => x.ItemId == dto.ItemId && x.DoseId == dto.DoseId, cancellationToken);
+
+            if (exists)
+                return (false, "کالای مورد نظر دارای این دوز میباشد", 0);
+
             var model = new TblItemDoseAssignment
             {
                 ItemId = dto.ItemId,
@@ -33,9 +37,10 @@ namespace VSSM.Application.Services.BaseEntities
                 EntryDate = DateTime.Now
             };
 
-            await _dbContext.TblItemDoseAssignments.AddAsync(model);
-            await _dbContext.SaveChangesAsync();
-            return model.ItemDoseAssignmentId;
+            await _dbContext.TblItemDoseAssignments.AddAsync(model, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return (true, "عملیات با موفقیت انجام شد", model.ItemDoseAssignmentId);
         }
 
         public Task<List<ItemDoseAssignmentListDto>> GetAll(CancellationToken cancellationToken)
@@ -113,27 +118,33 @@ namespace VSSM.Application.Services.BaseEntities
             return true;
         }
 
-        public async Task<bool> Update(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken)
+        public async Task<(bool Success, string Message)> Update(ItemDoseAssignmentCreateDto dto, CancellationToken cancellationToken)
         {
-            /* application layer validate*/
             var result = await _validator.ValidateAsync(dto);
             if (!result.IsValid)
                 throw new ValidationException(result.Errors);
 
-
             var entity = await _dbContext.TblItemDoseAssignments
-                                .Where(x => x.ItemDoseAssignmentId == dto.ItemDoseAssignmentId)
-                                .FirstOrDefaultAsync(cancellationToken);
+                .FirstOrDefaultAsync(x => x.ItemDoseAssignmentId == dto.ItemDoseAssignmentId, cancellationToken);
 
-            if (entity != null)
-            {
-                entity.ItemId = dto.ItemId;
-                entity.DoseId = dto.DoseId;
-                entity.VialPerDoseCm3 = dto.VialPerDoseCm3;
-            }
+            if (entity == null)
+                return (false, "رکورد مورد نظر یافت نشد");
 
-            await _dbContext.SaveChangesAsync();
-            return true;
+            var exists = await _dbContext.TblItemDoseAssignments
+                .AnyAsync(x => x.ItemId == dto.ItemId &&
+                               x.DoseId == dto.DoseId &&
+                               x.ItemDoseAssignmentId != dto.ItemDoseAssignmentId, cancellationToken);
+
+            if (exists)
+                return (false, "کالای مورد نظر دارای این دوز میباشد");
+
+            entity.ItemId = dto.ItemId;
+            entity.DoseId = dto.DoseId;
+            entity.VialPerDoseCm3 = dto.VialPerDoseCm3;
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return (true, "عملیات با موفقیت انجام شد");
         }
     }
 }

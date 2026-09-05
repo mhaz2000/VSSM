@@ -18,6 +18,7 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
         if (!result.IsValid)
             throw new ValidationException(result.Errors);
 
+
         var model = new TblItem
         {
             ItemId = dto.ItemId,
@@ -41,6 +42,38 @@ public class ItemService(VSSMDbContext dbContext, IValidator<ItemCreateDto> vali
         await dbContext.TblItems.AddAsync(model);
         await dbContext.SaveChangesAsync();
         return model.ItemId;
+    }
+
+    public async Task<(bool Success, string Message)> Delete(int id, CancellationToken cancellationToken)
+    {
+        var item = await dbContext.TblItems
+            .FirstOrDefaultAsync(x => x.ItemId == id, cancellationToken);
+
+        if (item == null)
+            return (false, $"کالا با شناسه {id} یافت نشد");
+
+        var hasRequestLine = await dbContext.TblRequestLines
+            .AnyAsync(x => x.ItemId == id, cancellationToken);
+
+        if (hasRequestLine)
+            return (false, "این کالا در درخواست‌ها استفاده شده است و قابل حذف نیست");
+
+        var hasDispatchLine = await dbContext.TblDispatchLines
+            .AnyAsync(x => x.ItemId == id, cancellationToken);
+
+        if (hasDispatchLine)
+            return (false, "این کالا در ارسال‌ها استفاده شده است و قابل حذف نیست");
+
+        var hasDoseAssignment = await dbContext.TblItemDoseAssignments
+            .AnyAsync(x => x.ItemId == id, cancellationToken);
+
+        if (hasDoseAssignment)
+            return (false, "این کالا دارای دوز اختصاص داده شده است و قابل حذف نیست");
+
+        dbContext.TblItems.Remove(item);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return (true, "کالا با موفقیت حذف شد");
     }
 
     public async Task<IEnumerable<DosePerVialListDto>> GetItemDoesPerVialsAsync(int itemId, CancellationToken token)

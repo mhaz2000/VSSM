@@ -21,7 +21,7 @@
         @formName کالا
     </div>
 
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" id="itemForm">
         <input type="hidden" asp-for="ItemId" />
 
         <div class="a-card">
@@ -43,24 +43,30 @@
                                 </option>
                             }
                         </select>
-                        <div class="field-error">نوع کالا را انتخاب کنید</div>
+                        <span asp-validation-for="ItemClassId" class="field-error"></span>
                     </div>
 
                     <div class="f-group required-field">
-                        <label class="f-label">کد <span class="opt">(اختیاری)</span></label>
-                        <input class="f-control" asp-for="Code" placeholder="کد کالا را وارد کنید" />
+                        <label class="f-label">کد <span class="req-tag">اجباری</span></label>
+                        <input class="f-control" asp-for="Code" id="Code" placeholder="کد کالا را وارد کنید" />
+                        <span asp-validation-for="Code" class="field-error"></span>
                     </div>
 
                     <div class="f-group required-field">
                         <label class="f-label">نام کامل <span class="req-tag">اجباری</span></label>
                         <input class="f-control" asp-for="FullName" id="FullName" placeholder="نام کامل کالا" />
-                        <div class="field-error">نام کامل کالا را وارد کنید</div>
+                        <span asp-validation-for="FullName" class="field-error"></span>
                     </div>
 
                     <div class="f-group required-field">
-                        <label class="f-label">روزهای قبل از تاریخ انقضا <span class="req-tag">اجباری</span></label>
-                        <input type="number" class="f-control" asp-for="DayToWarmExpire" id="DayToWarmExpire" min="0" placeholder="مثلاً ۳۰" />
-                        <div class="field-error">روزهای قبل از تاریخ انقضا را وارد کنید</div>
+                        <label class="f-label">هشدار تعداد روز مانده به انقضا <span class="req-tag">اجباری</span></label>
+                        <input type="number"
+                               class="f-control"
+                               asp-for="DayToWarmExpire"
+                               id="DayToWarmExpire"
+                               min="0"
+                               placeholder="فقط عدد وارد نمایید" />
+                        <span asp-validation-for="DayToWarmExpire" class="field-error"></span>
                     </div>
                 </div>
 
@@ -100,8 +106,12 @@
                 <div class="section-divider"></div>
 
                 <div class="diluent-wrap">
-                    <div class="f-group">
-                        <label class="f-label">حلال <span class="opt">(اختیاری)</span></label>
+                    <div class="f-group required-field" id="diluentGroup">
+                        <label class="f-label" id="diluentLabel">
+                            حلال
+                            <span class="req-tag" id="diluentRequiredTag" style="display:none;">اجباری</span>
+                            <span class="opt" id="diluentOptionalTag">(اختیاری)</span>
+                        </label>
                         @{
                             bool diluentEnabled = Model?.RequiresDiluent == true;
                         }
@@ -118,6 +128,7 @@
                                 }
                             }
                         </select>
+                        <span asp-validation-for="DiluentId" class="field-error"></span>
                     </div>
                 </div>
 
@@ -132,7 +143,7 @@
             <a asp-action="Index" class="btn-back">
                 <i class="fa fa-arrow-right"></i> بازگشت
             </a>
-            <button type="submit" class="btn-confirm">
+            <button type="submit" class="btn-confirm" id="submitBtn">
                 <i class="fa fa-save"></i> @formName
             </button>
         </div>

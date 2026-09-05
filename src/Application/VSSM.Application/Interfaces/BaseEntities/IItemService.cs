@@ -6,6 +6,7 @@ namespace VSSM.Application.Interfaces.BaseEntities;
 
 public interface IItemService
 {
+    Task<(bool Success, string Message)> Delete(int id, CancellationToken cancellationToken);
     Task<int> Create(ItemCreateDto dto, CancellationToken cancellationToken);
     Task<bool> Update(ItemCreateDto dto, CancellationToken cancellationToken);
     Task<List<ItemListDto>> GetAll(CancellationToken cancellationToken);

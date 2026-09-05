@@ -29,20 +29,7 @@ public class UserManagementController(
         }
     }
 
-    [HttpGet]
-    public async Task<IActionResult> SearchRecipients(string searchTerm)
-    {
-        try
-        {
-            var recipients = await recipientService.SearchActiveRecipientsAsync(searchTerm);
-            return Json(new { success = true, data = recipients });
-        }
-        catch (Exception ex)
-        {
-            return Json(new { success = false, message = ex.Message });
-        }
-    }
-
+  
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangeRecipient([FromBody] ChangeRecipientDto model)
@@ -52,7 +39,7 @@ public class UserManagementController(
             if (!ModelState.IsValid)
                 return Json(new { success = false, message = "اطلاعات نامعتبر" });
 
-            if (!User.IsInRole("Admin"))
+            if (!User.IsInRole("Admin")) 
                 return Json(new { success = false, message = "شما دسترسی لازم را ندارید" });
 
             var result = await userService.ChangeRecipientAsync(model.UserId, model.NewRecipientId);

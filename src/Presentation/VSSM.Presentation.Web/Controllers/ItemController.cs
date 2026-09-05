@@ -25,7 +25,7 @@ public class ItemController(
         int pageSize = 10,
         string sort = "Id",
         string direction = "desc",
-        string? status = null)  
+        string? status = null)
     {
         var paged = await itemService.GetPagedList(
             search, page, pageSize, sort, direction, status, cancellationToken);
@@ -43,7 +43,7 @@ public class ItemController(
                 TotalCount = paged.Paging.TotalPages * pageSize
             },
             Columns = new List<GridColumn>
-        {
+            {
             new() { Header = "کد",           PropertyName = nameof(ItemListDto.Code),        Sortable = true  },
             new() { Header = "نام کامل",      PropertyName = nameof(ItemListDto.FullName),    Sortable = true  },
             new() { Header = "حلال",          PropertyName = nameof(ItemListDto.DiluentName), Sortable = false },
@@ -55,9 +55,9 @@ public class ItemController(
                         ["False"] = ("غیرفعال", "badge-danger"),
                     }},
             new() { Header = "عملیات", IsActionColumn = true }
-        },
+            },
             Actions = new List<GridAction>
-        {
+            {
             new()
             {
                 Title           = "ویرایش",
@@ -65,8 +65,17 @@ public class ItemController(
                 Action          = "Edit",
                 RouteIdProperty = nameof(ItemListDto.ItemId),
                 IconClass       = "fa fa-edit",
+            },
+            new()
+            {
+                   Title           = "حذف",
+                   Controller      = "Item",
+                   Action          = "Delete",
+                   RouteIdProperty = nameof(ItemListDto.ItemId),
+                   IconClass       = "fa fa-trash",
+                   Method          = "Post"
             }
-        }
+            }
         };
 
         return View(model);
@@ -78,13 +87,35 @@ public class ItemController(
         return View(new ItemViewModel { IsActive = true });
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var (success, message) = await itemService.Delete(id, cancellationToken);
+
+            TempData["ToastMessage"] = message;
+            TempData["ToastType"] = success ? "success" : "error";
+        }
+        catch (Exception ex)
+        {
+            TempData["ToastMessage"] = "خطا در حذف کالا: " + ex.Message;
+            TempData["ToastType"] = "error";
+        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
     public async Task<IActionResult> Create(ItemViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
-            TempData["ToastMessage"] = "کد و نام اجباری هستند";
+            TempData["ToastMessage"] = "لطفاً تمام فیلدهای اجباری را پر کنید";
             TempData["ToastType"] = "error";
-            return Redirect("New");
+
+            await PrepareDropdown(cancellationToken);
+            return View("New", model);  
         }
 
         var dto = MapToDto(model);

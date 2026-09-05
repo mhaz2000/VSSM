@@ -20,6 +20,19 @@
         cancelButton: '#cancelChangeRecipientModal'
     };
 
+    const getAntiForgeryToken = () => {
+        return $('input[name="__RequestVerificationToken"]').val();
+    };
+
+    $(document).ajaxSend(function (event, jqXHR, settings) {
+        if (settings.type === 'POST' && !settings.headers?.RequestVerificationToken) {
+            const token = getAntiForgeryToken();
+            if (token) {
+                jqXHR.setRequestHeader('RequestVerificationToken', token);
+            }
+        }
+    });
+
     const init = () => {
         bindEvents();
         updateSearchButtonState();
@@ -28,58 +41,38 @@
 
     const bindEvents = () => {
         $(selectors.searchInput).on('input', updateSearchButtonState);
-
         $(selectors.searchInput).on('keydown', handleSearchKeyDown);
-
         $(selectors.searchButton).on('click', handleSearch);
-
         $(document).on('click', '.btn-change-recipient', handleChangeRecipient);
-
         $(document).on('input', '.ss-search', handleRecipientSearch);
-
         $(document).on('click', '.ss-option', handleRecipientSelect);
-
         $(selectors.saveButton).on('click', saveRecipient);
-
         $(selectors.closeButton).on('click', closeModal);
-
         $(selectors.cancelButton).on('click', closeModal);
-
         $(selectors.modal).on('click', handleModalOverlayClick);
     };
 
     const updateSearchButtonState = () => {
         const value = $(selectors.searchInput).val().trim();
-
         $(selectors.searchButton).prop('disabled', value.length === 0);
     };
 
     const handleSearchKeyDown = (event) => {
-        if (event.key !== 'Enter') {
-            return;
-        }
-
+        if (event.key !== 'Enter') return;
         event.preventDefault();
-
         handleSearch();
     };
 
     const handleSearch = () => {
         const value = $(selectors.searchInput).val().trim();
-
-        if (!value) {
-            return;
-        }
-
+        if (!value) return;
         searchTerm = value;
         currentPage = 1;
-
         searchUsers();
     };
 
     const searchUsers = () => {
         const url = '/UserManagement/SearchUsers';
-
         setTableLoading();
 
         $.ajax({
@@ -97,19 +90,13 @@
 
     const handleSearchSuccess = (response) => {
         if (!response.success) {
-            showToast(
-                response.message || 'خطا در جستجوی کاربران',
-                'error'
-            );
-
+            showToast(response.message || 'خطا در جستجوی کاربران', 'error');
             renderUsers([]);
             renderPagination(0);
-
             return;
         }
 
         const users = response.data || [];
-
         totalCount = response.totalCount || 0;
         totalPages = Math.ceil(totalCount / pageSize) || 1;
 
@@ -119,12 +106,7 @@
 
     const handleSearchError = (xhr) => {
         console.error('Search users error:', xhr);
-
-        showToast(
-            xhr.responseJSON?.message || 'خطا در ارتباط با سرور',
-            'error'
-        );
-
+        showToast(xhr.responseJSON?.message || 'خطا در ارتباط با سرور', 'error');
         renderUsers([]);
         renderPagination(0);
     };
@@ -151,7 +133,6 @@
                     </td>
                 </tr>
             `);
-
             return;
         }
 
@@ -159,42 +140,22 @@
 
         const rows = users.map((user, index) => {
             const rowNumber = startIndex + index + 1;
-
-            const fullName = getFullName(
-                user.firstName,
-                user.lastName
-            );
-
-            const recipientFullName =
-                user.recipientFullName || 'بدون محل خدمت';
-
-            const recipientCode =
-                user.recipientCode || '-';
-
-            const province =
-                user.recipientProvince || '-';
-
-            const city =
-                user.recipientCity || '-';
+            const fullName = getFullName(user.firstName, user.lastName);
+            const recipientFullName = user.recipientFullName || 'بدون محل خدمت';
+            const recipientCode = user.recipientCode || '-';
+            const province = user.recipientProvince || '-';
+            const city = user.recipientCity || '-';
 
             return `
                 <tr>
                     <td>${rowNumber}</td>
-
                     <td>${escapeHtml(user.userName)}</td>
-
                     <td>${escapeHtml(user.firstName || '-')}</td>
-
                     <td>${escapeHtml(user.lastName || '-')}</td>
-
                     <td>${escapeHtml(recipientFullName)}</td>
-
                     <td>${escapeHtml(recipientCode)}</td>
-
                     <td>${escapeHtml(province)}</td>
-
                     <td>${escapeHtml(city)}</td>
-
                     <td>
                         <button
                             type="button"
@@ -204,7 +165,6 @@
                             data-first-name="${escapeHtml(user.firstName || '')}"
                             data-last-name="${escapeHtml(user.lastName || '')}"
                             data-current-recipient="${escapeHtml(recipientFullName)}">
-
                             <i class="fa fa-exchange"></i>
                             تغییر
                         </button>
@@ -222,7 +182,6 @@
 
     const renderPagination = (total) => {
         const $container = $(selectors.pagination);
-
         totalPages = Math.ceil(total / pageSize) || 1;
 
         if (totalPages <= 1) {
@@ -235,33 +194,22 @@
         const html = `
             <div class="pager-wrap justify-content-center">
                 <ul class="cpageination pager-modern">
-
                     ${buildPreviousButton()}
-
                     ${pages.map(buildPageItem).join('')}
-
                     ${buildNextButton()}
-
                 </ul>
             </div>
         `;
 
         $container.html(html);
-
-        $container
-            .find('.page-link[data-page]')
-            .on('click', handlePaginationClick);
+        $container.find('.page-link[data-page]').on('click', handlePaginationClick);
     };
 
     const buildPreviousButton = () => {
         const disabled = currentPage <= 1 ? 'disabled' : '';
-
         return `
             <li class="page-item ${disabled}">
-                <a
-                    class="page-link"
-                    href="#"
-                    data-page="${currentPage - 1}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}">
                     <i class="fa fa-chevron-right"></i>
                 </a>
             </li>
@@ -270,13 +218,9 @@
 
     const buildNextButton = () => {
         const disabled = currentPage >= totalPages ? 'disabled' : '';
-
         return `
             <li class="page-item ${disabled}">
-                <a
-                    class="page-link"
-                    href="#"
-                    data-page="${currentPage + 1}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}">
                     <i class="fa fa-chevron-left"></i>
                 </a>
             </li>
@@ -295,7 +239,6 @@
 
         if (startPage > 1) {
             pages.push(1);
-
             if (startPage > 2) {
                 pages.push('...');
             }
@@ -309,7 +252,6 @@
             if (endPage < totalPages - 1) {
                 pages.push('...');
             }
-
             pages.push(totalPages);
         }
 
@@ -326,15 +268,9 @@
         }
 
         const active = page === currentPage ? 'active' : '';
-
         return `
             <li class="page-item ${active}">
-                <a
-                    class="page-link"
-                    href="#"
-                    data-page="${page}">
-                    ${page}
-                </a>
+                <a class="page-link" href="#" data-page="${page}">${page}</a>
             </li>
         `;
     };
@@ -344,17 +280,11 @@
 
         const page = Number($(event.currentTarget).data('page'));
 
-        if (
-            !page ||
-            page === currentPage ||
-            page < 1 ||
-            page > totalPages
-        ) {
+        if (!page || page === currentPage || page < 1 || page > totalPages) {
             return;
         }
 
         currentPage = page;
-
         searchUsers();
     };
 
@@ -367,15 +297,10 @@
         const userName = $button.data('user-name') || '';
         const firstName = $button.data('first-name') || '';
         const lastName = $button.data('last-name') || '';
-        const currentRecipient =
-            $button.data('current-recipient') || 'بدون محل خدمت';
+        const currentRecipient = $button.data('current-recipient') || 'بدون محل خدمت';
 
         if (!userId) {
-            showToast(
-                'شناسه کاربر نامعتبر است',
-                'error'
-            );
-
+            showToast('شناسه کاربر نامعتبر است', 'error');
             return;
         }
 
@@ -396,22 +321,13 @@
 
     const resetRecipientSelect = () => {
         const $select = $(selectors.recipientSelect);
-
         $select.val('');
 
         const $wrapper = $select.closest('.ss-wrapper');
+        if (!$wrapper.length) return;
 
-        if (!$wrapper.length) {
-            return;
-        }
-
-        $wrapper
-            .find('.ss-text')
-            .text('جستجوی محل خدمت...');
-
-        $wrapper
-            .find('.ss-options')
-            .empty();
+        $wrapper.find('.ss-text').text('جستجوی محل خدمت...');
+        $wrapper.find('.ss-options').empty();
     };
 
     const openModal = () => {
@@ -438,7 +354,6 @@
 
     const handleRecipientSearch = (event) => {
         const $input = $(event.currentTarget);
-
         const value = $input.val().trim();
 
         const $wrapper = $input.closest('.ss-wrapper');
@@ -450,7 +365,6 @@
                     حداقل ۲ کاراکتر وارد کنید
                 </div>
             `);
-
             return;
         }
 
@@ -464,27 +378,18 @@
         $.ajax({
             url: '/UserManagement/SearchRecipients',
             type: 'GET',
-            data: {
-                searchTerm: value
-            },
+            data: { searchTerm: value },
             success: (response) => {
                 if (!response.success) {
                     $options.html(`
                         <div class="ss-option-empty">
-                            ${escapeHtml(
-                        response.message ||
-                        'خطا در جستجوی محل خدمت'
-                    )}
+                            ${escapeHtml(response.message || 'خطا در جستجوی محل خدمت')}
                         </div>
                     `);
-
                     return;
                 }
 
-                renderRecipientOptions(
-                    $wrapper,
-                    response.data || []
-                );
+                renderRecipientOptions($wrapper, response.data || []);
             },
             error: () => {
                 $options.html(`
@@ -505,7 +410,6 @@
                     محل خدمتی یافت نشد
                 </div>
             `);
-
             return;
         }
 
@@ -536,7 +440,6 @@
 
     const handleRecipientSelect = (event) => {
         const $option = $(event.currentTarget);
-
         const $wrapper = $option.closest('.ss-wrapper');
 
         const value = $option.data('value');
@@ -555,34 +458,22 @@
             .find('.ss-dropdown')
             .hide();
 
-        $(selectors.saveButton).prop(
-            'disabled',
-            !value
-        );
+        $(selectors.saveButton).prop('disabled', !value);
     };
 
     const saveRecipient = () => {
         const $button = $(selectors.saveButton);
 
         const userId = $button.data('user-id');
-        const newRecipientId =
-            $(selectors.recipientSelect).val();
+        const newRecipientId = $(selectors.recipientSelect).val();
 
-        if (!userId) {
-            showToast(
-                'کاربر انتخاب نشده است',
-                'error'
-            );
-
+        if (!userId || isNaN(userId) || userId <= 0) {
+            showToast('شناسه کاربر نامعتبر است', 'error');
             return;
         }
 
-        if (!newRecipientId) {
-            showToast(
-                'لطفاً محل خدمت جدید را انتخاب کنید',
-                'error'
-            );
-
+        if (!newRecipientId || isNaN(newRecipientId) || newRecipientId <= 0) {
+            showToast('لطفاً محل خدمت جدید را انتخاب کنید', 'error');
             return;
         }
 
@@ -606,34 +497,31 @@
 
     const handleSaveSuccess = (response) => {
         if (!response.success) {
-            showToast(
-                response.message ||
-                'خطا در تغییر محل خدمت',
-                'error'
-            );
-
+            showToast(response.message || 'خطا در تغییر محل خدمت', 'error');
+            closeModal();
             return;
         }
 
-        showToast(
-            response.message ||
-            'محل خدمت با موفقیت تغییر یافت',
-            'success'
-        );
-
+        showToast(response.message || 'محل خدمت با موفقیت تغییر یافت', 'success');
         closeModal();
-
         searchUsers();
     };
 
     const handleSaveError = (xhr) => {
         console.error('Change recipient error:', xhr);
 
-        showToast(
-            xhr.responseJSON?.message ||
-            'خطا در ارتباط با سرور',
-            'error'
-        );
+        let errorMessage = 'خطا در ارتباط با سرور';
+
+        if (xhr.responseJSON?.message) {
+            errorMessage = xhr.responseJSON.message;
+        } else if (xhr.status === 400) {
+            errorMessage = 'درخواست نامعتبر (احتمالاً توکن امنیتی)';
+        } else if (xhr.status === 401 || xhr.status === 403) {
+            errorMessage = 'شما دسترسی لازم را ندارید';
+        }
+
+        showToast(errorMessage, 'error');
+        closeModal();
     };
 
     const setSaveButtonLoading = (isLoading) => {
@@ -646,7 +534,6 @@
                     <i class="fa fa-spinner fa-spin"></i>
                     در حال ذخیره...
                 `);
-
             return;
         }
 

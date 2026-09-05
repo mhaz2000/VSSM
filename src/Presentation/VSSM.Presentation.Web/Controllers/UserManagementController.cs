@@ -6,7 +6,9 @@ using VSSM.Application.Interfaces.BaseEntities;
 namespace VSSM.Presentation.Web.Controllers;
 
 [Authorize(Roles = "Admin")]
-public class UserManagementController(IUserService userService, IRecipientService recipientService) : BaseController
+public class UserManagementController(
+    IUserService userService, 
+    IRecipientService recipientService) : BaseController
 {
     public IActionResult ManageRecipient()
     {

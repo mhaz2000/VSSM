@@ -1,4 +1,4 @@
-﻿﻿@using VSSM.Presentation.Web.Models.Base
+﻿﻿﻿@using VSSM.Presentation.Web.Models.Base
 @model VSSM.Presentation.Web.Models.Store.StoreViewModel
 
 @{
@@ -16,9 +16,8 @@
 <div class="store-form-wrap">
     <strong class="store-form-title">@formName</strong>
 
-    <form asp-action="Create" asp-controller="Store" method="post">
+    <form asp-action="Create" asp-controller="Store" method="post" id="storeForm">
         @Html.AntiForgeryToken()
-
         <input type="hidden" asp-for="StoreId" />
 
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -52,31 +51,26 @@
 
                 <div class="fg-3" style="margin-bottom:14px;">
                     <div class="f-group">
-                        <label class="f-label">گیرنده <span class="req-tag">اجباری</span></label>
-                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect", new SearchableSelectModel
-                        {
-                            Id = "RecipientId",
-                                                Name = "RecipientId",
-                                                DefaultText = "جستجوی گیرنده...",
-                                                Label = "",
-                                                IsRequired = true,
-                                                SelectedValue = Model?.RecipientId?.ToString(),
-                                                ValidationMessage = "گیرنده نمی‌تواند خالی باشد.",
-                                                Options = recipients.Select(r => new SelectOption
-                                                {
-                                                    Value = r.Value.ToString(),
-                                                    Text = r.Text
-                                                }).ToList()
-                                                })
+                        <label class="f-label">مالک <span class="req-tag">اجباری</span></label>
+                        <select asp-for="RecipientId" class="f-control" id="RecipientId">
+                            <option value="">انتخاب کنید...</option>
+                            @foreach (var recipient in recipients)
+                            {
+                                <option value="@recipient.Value" selected="@(Model?.RecipientId?.ToString() == recipient.Value)">
+                                    @recipient.Text
+                                </option>
+                            }
+                        </select>
                         <span class="text-danger" asp-validation-for="RecipientId"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">حجم کلی فضا (لیتر)</label>
-                        <input asp-for="Volume" placeholder="لیتر را وارد کنید" class="f-control" />
+                        <input asp-for="Volume" placeholder="فقط عدد وارد نمایید" class="f-control" type="number" min="0" />
+                        <span class="text-danger" asp-validation-for="Volume"></span>
                     </div>
                     <div class="f-group">
                         <label class="f-label">حجم مفید</label>
-                        <input asp-for="FreeVolume" placeholder="حجم مفید را وارد کنید" class="f-control" />
+                        <input asp-for="FreeVolume" placeholder="فقط عدد وارد نمایید" class="f-control" type="number" min="0" />
                         <span class="text-danger" asp-validation-for="FreeVolume"></span>
                     </div>
                 </div>
@@ -84,104 +78,53 @@
                 <div class="fg-3" style="margin-bottom:0;">
                     <div class="f-group">
                         <label class="f-label">سال نصب</label>
-                        <input asp-for="Year" placeholder="سال نصب را وارد کنید" class="f-control" />
+                        <input asp-for="Year" placeholder="فقط عدد وارد نمایید" class="f-control" type="number" min="1300" max="1500" />
+                        <span class="text-danger" asp-validation-for="Year"></span>
                     </div>
-
-                    <div class="f-group">
-                        <label class="f-label">وضعیت</label>
-                        <div class="row-checkbox" style="margin-top:0;">
-                            <label>
-                                <input type="checkbox" asp-for="IsActive" checked="@(Model?.IsActive ?? true)" />
-                                <span style="margin-right:8px; font-size:0.9rem; font-weight:500; color:#374151;">
-                                    @(Model?.IsActive ?? true ? "فعال" : "غیرفعال")
-                                </span>
-                            </label>
-                            <span class="text-danger" asp-validation-for="IsActive" style="margin-right:8px;"></span>
-                        </div>
-                    </div>
-
                     <div class="f-group">
                         <label class="f-label">ملاحظات</label>
                         <textarea asp-for="Note" placeholder="ملاحظات را وارد کنید" class="f-control" style="height:38px;"></textarea>
                     </div>
-
+                    <div class="f-group">
+                        <!-- فضای خالی برای هم‌ترازی -->
+                    </div>
                 </div>
 
             </div>
         </div>
 
         <div class="form-footer">
-            <button type="submit" class="btn-confirm">
-                <i class="fa fa-save"></i> ثبت
-            </button>
             <a asp-action="Index" class="btn-back">
                 <i class="fa fa-arrow-right"></i> بازگشت
             </a>
+            <button type="submit" class="btn-confirm">
+                <i class="fa fa-save"></i> ثبت
+            </button>
         </div>
     </form>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
     <script>
-        $(function() {
-            $('.ss-wrapper').each(function() {
-                var $form = $(this).closest('form');
-                if ($form.length && $form.data('validator')) {
-                    $form.data('validator').settings.ignore = '';
+        $(document).ready(function () {
+            $('input[type="number"]').on('keypress', function (e) {
+                var charCode = e.which ? e.which : e.keyCode;
+                if (charCode < 48 || charCode > 57) {
+                    e.preventDefault();
+                    return false;
+                }
+                return true;
+            });
+
+            $('input[type="number"]').on('paste', function (e) {
+                var pastedText = (e.originalEvent || e).clipboardData.getData('text');
+                if (!/^\d+$/.test(pastedText)) {
+                    e.preventDefault();
+                    return false;
                 }
             });
-        });
-
-        $(document).ready(function() {
-
-            $('.ss-wrapper .ss-display').on('click', function(e) {
-                e.stopPropagation();
-                var $wrapper = $(this).closest('.ss-wrapper');
-                $('.ss-wrapper.open').not($wrapper).removeClass('open');
-                $wrapper.toggleClass('open');
-            });
-
-            $('.ss-wrapper .ss-option').on('click', function() {
-                var $wrapper = $(this).closest('.ss-wrapper');
-                var value = $(this).data('value');
-                var text = $(this).text().trim();
-                var $hidden = $wrapper.find('input[type="hidden"]');
-                var $displayText = $wrapper.find('.ss-text');
-
-                $hidden.val(value);
-                $displayText.text(text);
-                $wrapper.removeClass('open');
-            });
-
-            $('.ss-wrapper .ss-search').on('keyup', function() {
-                var searchText = $(this).val().toLowerCase();
-                var $options = $(this).closest('.ss-dropdown').find('.ss-option');
-                $options.each(function() {
-                    var text = $(this).text().toLowerCase();
-                    if (text.indexOf(searchText) > -1) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                });
-            });
-
-            $(document).on('click', function(e) {
-                if (!$(e.target).closest('.ss-wrapper').length) {
-                    $('.ss-wrapper.open').removeClass('open');
-                }
-            });
-
-            $('.row-checkbox input[type="checkbox"]').on('change', function() {
-                var $statusText = $(this).closest('label').find('span');
-                if ($(this).is(':checked')) {
-                    $statusText.text('فعال');
-                } else {
-                    $statusText.text('غیرفعال');
-                }
-            });
-
         });
     </script>
 }

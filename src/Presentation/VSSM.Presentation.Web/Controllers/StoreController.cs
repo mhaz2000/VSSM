@@ -7,30 +7,24 @@ using VSSM.Presentation.Web.Models.Store;
 
 namespace VSSM.Presentation.Web.Controllers;
 
-
 public class StoreController(
     IStoreService storeService,
     IRecipientService recipientService,
     IBaseInfoService baseInfoService) : BaseController
 {
+    #region Index
+
     public async Task<IActionResult> Index(
-     string? search,
-     int? typeId,
-     int page = 1,
-     int pageSize = 10,
-     CancellationToken token = default)
+        string? search,
+        string? recipientId,
+        int? typeId,
+        int page = 1,
+        int pageSize = 10,
+        CancellationToken token = default)
     {
-        var storeTypes = await baseInfoService.GetByParentIdAsync(56, token);
+        await LoadDropDowns(token);
 
-        ViewBag.StoreTypeList = storeTypes is null ? [] : storeTypes
-            .Select(x => new SelectListItem
-            {
-                Text = x.Title,
-                Value = x.Id.ToString()
-            })
-            .ToList();
-
-        var list = await storeService.GetPagedList(search, typeId, page, pageSize, token);
+        var list = await storeService.GetPagedList(search, recipientId, typeId, page, pageSize, token);
 
         var model = new GridViewModel
         {
@@ -43,43 +37,68 @@ public class StoreController(
                 TotalCount = list.Paging.TotalPages
             },
             Columns = new List<GridColumn>
-        {
-            new() { Header = "نام", PropertyName = nameof(StoreListDto.FullName),  Sortable = false },
-            new() { Header = "نوع انبار", PropertyName = nameof(StoreListDto.TypeName), Sortable = false },
-            new() { Header = "حجم کلی فضا (لیتر)", PropertyName = nameof(StoreListDto.Volume), Sortable = false },
-            new() { Header = "حجم مفید (لیتر)", PropertyName = nameof(StoreListDto.FreeVolume),  Sortable = false },
-            new() { Header = "وضعیت", PropertyName = nameof(StoreListDto.Code),  Sortable = false },
-            new() { Header = "عملیات", IsActionColumn = true}
-        },
-            Actions = new List<GridAction>
-        {
-            new()
             {
-                Title = "ویرایش",
-                Controller = "Store",
-                Action = "New",
-                RouteIdProperty = nameof(StoreListDto.StoreId),
-                LinkClass = "",
-                IconClass = "fa fa-edit",
+                new() { Header = "کد", PropertyName = nameof(StoreListDto.Code), Sortable = true },
+                new() { Header = "نام انبار", PropertyName = nameof(StoreListDto.FullName), Sortable = true },
+                new() { Header = "نوع انبار", PropertyName = nameof(StoreListDto.TypeName), Sortable = false },
+                new() { Header = "مالک", PropertyName = nameof(StoreListDto.RecipientName), Sortable = false },
+                new() { Header = "وضعیت", PropertyName = nameof(StoreListDto.IsActive), Sortable = false, IsBadgeColumn = true,
+                    BadgeMap = new Dictionary<string, (string Text, string CssClass)>
+                    {
+                        ["True"]  = ("فعال",    "badge-success"),
+                        ["False"] = ("غیرفعال", "badge-danger"),
+                    }},
+                new() { Header = "عملیات", IsActionColumn = true }
+            },
+            Actions = new List<GridAction>
+            {
+                new()
+                {
+                    Title = "ویرایش",
+                    Controller = "Store",
+                    Action = "New",
+                    RouteIdProperty = nameof(StoreListDto.StoreId),
+                    IconClass = "fa fa-edit",
+                },
+                new()
+                {
+                    Title = "تغییر وضعیت",
+                    Controller = "Store",
+                    Action = "ToggleActive",
+                    RouteIdProperty = nameof(StoreListDto.StoreId),
+                    IconClass = "fa fa-exchange",
+                    Method = "POST"
+                }
             }
-        }
         };
-
 
         return View(model);
     }
+
+    #endregion
+
+    #region Create / Edit
 
     public async Task<IActionResult> New(int? id, CancellationToken cancellationToken)
     {
         await LoadDropDowns(cancellationToken);
 
-        StoreViewModel models = new StoreViewModel();
+        var model = new StoreViewModel
+        {
+            IsActive = true
+        };
 
         if (id.HasValue && id.Value > 0)
         {
             var dto = await storeService.GetById(id.Value, cancellationToken);
+            if (dto == null)
+            {
+                TempData["ToastMessage"] = "انبار مورد نظر یافت نشد";
+                TempData["ToastType"] = "error";
+                return RedirectToAction(nameof(Index));
+            }
 
-            models = new StoreViewModel
+            model = new StoreViewModel
             {
                 StoreId = dto.Id,
                 Code = dto.Code,
@@ -90,68 +109,74 @@ public class StoreController(
                 Note = dto.Note,
                 IsActive = dto.IsActive,
                 RecipientId = dto.RecipientId,
-
                 Year = dto.Year,
             };
         }
 
-        return View(models);
+        return View(model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(StoreViewModel storeView, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(StoreViewModel model, CancellationToken cancellationToken)
     {
         await LoadDropDowns(cancellationToken);
+
         if (!ModelState.IsValid)
         {
-
-            return View("New", storeView);
+            TempData["ToastMessage"] = "تمام فیلدهای اجباری باید پر شوند";
+            TempData["ToastType"] = "error";
+            return View("New", model);
         }
 
-        if (storeView.StoreId == null || storeView.StoreId == 0)
+        try
         {
-            var dto = new StoreCreateDto
+            if (model.StoreId == null || model.StoreId == 0)
             {
-                Code = storeView.Code,
-                Name = storeView.Name,
-                TypeId = storeView.TypeId.Value,
-                FreeVolume = storeView.FreeVolume.Value,
-                Volume = storeView.Volume,
-                Note = storeView.Note,
-                IsActive = storeView.IsActive,
-                RecipientId = storeView.RecipientId,
+                var dto = new StoreCreateDto
+                {
+                    Code = model.Code,
+                    Name = model.Name,
+                    TypeId = model.TypeId,
+                    FreeVolume = model.FreeVolume ?? 0,
+                    Volume = model.Volume ?? 0,
+                    Note = model.Note,
+                    IsActive = true,
+                    RecipientId = model.RecipientId,
+                    Year = (int)model.Year
+                };
 
-                Year = storeView.Year,
+                await storeService.Create(dto, cancellationToken);
+            }
+            else
+            {
+                var dto = new StoreEditDto
+                {
+                    Id = model.StoreId.Value,
+                    Code = model.Code,
+                    Name = model.Name,
+                    TypeId = model.TypeId,
+                    FreeVolume = model.FreeVolume ?? 0,
+                    Volume = model.Volume ?? 0,
+                    Note = model.Note,
+                    IsActive = model.IsActive,
+                    RecipientId = model.RecipientId,
+                    Year = (int) model.Year
+                };
 
-            };
+                await storeService.Update(dto, cancellationToken);
+            }
 
-            await storeService.Create(dto, cancellationToken);
+            TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
+            TempData["ToastType"] = "success";
+            return RedirectToAction(nameof(Index));
         }
-        else
+        catch (Exception ex)
         {
-            var dto = new StoreEditDto
-            {
-                Id = storeView.StoreId.Value,
-                Code = storeView.Code,
-                Name = storeView.Name,
-                TypeId = storeView.TypeId.Value,
-                FreeVolume = storeView.FreeVolume.Value,
-                Volume = storeView.Volume,
-                Note = storeView.Note,
-                IsActive = storeView.IsActive,
-                RecipientId = storeView.RecipientId,
-
-                Year = storeView.Year,
-            };
-
-            await storeService.Update(dto, cancellationToken);
+            TempData["ToastMessage"] = "خطا در انجام عملیات: " + ex.Message;
+            TempData["ToastType"] = "error";
+            return View("New", model);
         }
-
-        TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
-        TempData["ToastType"] = "success";
-
-        return RedirectToAction("Index");
     }
 
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
@@ -159,11 +184,37 @@ public class StoreController(
         return await New(id, cancellationToken);
     }
 
+    #endregion
+
+    #region Toggle Active
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleActive(int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await storeService.ToggleActive(id, cancellationToken);
+            TempData["ToastMessage"] = "وضعیت انبار با موفقیت تغییر یافت";
+            TempData["ToastType"] = "success";
+        }
+        catch (Exception ex)
+        {
+            TempData["ToastMessage"] = "خطا در تغییر وضعیت: " + ex.Message;
+            TempData["ToastType"] = "error";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    #endregion
+
+    #region Private Methods
+
     private async Task LoadDropDowns(CancellationToken cancellationToken)
     {
         var storeTypes = await baseInfoService.GetByParentIdAsync(56, cancellationToken);
         var recipients = await recipientService.GetActiveRecipients(cancellationToken);
-        var powerSources = await baseInfoService.GetByParentIdAsync(75, cancellationToken);
 
         ViewBag.StoreTypeList = storeTypes is null ? [] : storeTypes
             .Select(x => new SelectListItem
@@ -173,7 +224,7 @@ public class StoreController(
             })
             .ToList();
 
-        ViewBag.RecipientList = recipients
+        ViewBag.RecipientList = recipients is null ? [] : recipients
             .Select(x => new SelectListItem
             {
                 Text = x.FullName,
@@ -181,12 +232,15 @@ public class StoreController(
             })
             .ToList();
 
-        ViewBag.PowerSourceList = powerSources
+        ViewBag.RecipientListForFilter = recipients is null ? [] : recipients
             .Select(x => new SelectListItem
             {
-                Text = x.Title,
-                Value = x.Id.ToString()
+                Text = x.FullName,
+                Value = x.RecipientId.ToString()
             })
+            .Prepend(new SelectListItem { Text = "همه", Value = "" })
             .ToList();
     }
+
+    #endregion
 }

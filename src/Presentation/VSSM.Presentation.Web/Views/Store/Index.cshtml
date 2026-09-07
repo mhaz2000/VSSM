@@ -1,18 +1,21 @@
-﻿@using VSSM.Presentation.Web.Models.Base
+﻿﻿@using VSSM.Presentation.Web.Models.Base
+@using Microsoft.AspNetCore.Mvc.Rendering
 @model GridViewModel
 
 @section Styles {
     <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
     <link href="~/css/components/shared/grid-header.css" rel="stylesheet" />
-
 }
+
 @{
     ViewData["Title"] = "مدیریت انبار‌ها";
+
     var currentType = Context.Request.Query["typeId"].ToString();
-    var storeTypeList = ViewBag.StoreTypeList as List<SelectListItem>;
+    var currentRecipient = Context.Request.Query["recipientId"].ToString();
 
+    var storeTypeList = ViewBag.StoreTypeList as List<SelectListItem> ?? new List<SelectListItem>();
+    var recipientList = ViewBag.RecipientListForFilter as List<SelectListItem> ?? new List<SelectListItem>();
 }
-
 
 <div class="grid-wrapper">
     <div class="grid-header" style="direction:rtl;">
@@ -21,39 +24,39 @@
             @ViewData["Title"]
         </strong>
 
-        <div class="d-flex align-items-center gap-2">
+        @await Component.InvokeAsync("SearchBar", new
+        {
+            searchTerm = Model.SearchTerm,
+                pageSize = Model.Data.PageSize,
+                sort = Model.CurrentSort,
+                direction = Model.CurrentDirection,
+                addController = "Store",
+                addAction = "New",
+                showAddButton = true,
+                filterName = "typeId",
+                filterValue = currentType,
+                filterOptions = storeTypeList.Count > 0
+                ? storeTypeList.Prepend(new SelectListItem("همه", "", currentType == "")).ToList()
+                : new List<SelectListItem> { new SelectListItem("همه", "", currentType == "") },
+                filterName2 = "recipientId",
+                filterValue2 = currentRecipient,
+                filterOptions2 = recipientList.Count > 0
+                ? recipientList.Prepend(new SelectListItem("همه", "", currentRecipient == "")).ToList()
+                : new List<SelectListItem> { new SelectListItem("همه", "", currentRecipient == "") }
+                })
 
-            <form method="get" class="m-0">
-                <input type="hidden" name="sort" value="@Model.CurrentSort" />
-                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
-                <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
-
-                <div class="search-wrap">
-                    <select name="typeId" class="search-select" onchange="this.form.submit()">
-                        <option value="" selected="@(currentType == "")">همه</option>
-                        @foreach (var storeType in storeTypeList)
-                        {
-                            <option value="@(storeType.Value)" selected="@(currentType == storeType.Value)">@storeType.Text</option>
-                        }
-                    </select>
-                    <div class="search-divider"></div>
-                    <input type="text" name="search" class="search-input"
-                           value="@Model.SearchTerm" placeholder="جستجو..." />
-                    <button type="submit" class="search-btn" title="جستجو">
-                        <i class="fa fa-search"></i>
-                    </button>
-                </div>
-            </form>
-
-            <a asp-action="New" class="btn-add">
-                <span class="plus-circle">+</span>
-                افزودن انبار
-            </a>
-
-        </div>
     </div>
 
     <div>
         @await Html.PartialAsync("_DynamicGrid", Model)
     </div>
 </div>
+
+@* @if (TempData["ToastMessage"] != null)
+{
+    <script>
+        $(document).ready(function () {
+            showToast('@TempData["ToastMessage"]', '@TempData["ToastType"]');
+        });
+    </script>
+} *@

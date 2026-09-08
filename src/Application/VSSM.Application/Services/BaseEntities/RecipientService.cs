@@ -41,6 +41,7 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
 
     public async Task<PagingSearchOrderDto<RecipientGetDto>> GetPagedList(
         string? search,
+        int? levelId,
         int page,
         int pageSize,
         string sortField,
@@ -49,9 +50,13 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
-        IQueryable<TblRecipient> query = db.TblRecipients.Include(t => t.TransportMode).Include(t => t.ReceivingMode);
+        IQueryable<TblRecipient> query = db.TblRecipients
+            .Include(t => t.TransportMode)
+            .Include(t => t.ReceivingMode);
 
-        // SEARCH by Code or FullName
+        if (levelId.HasValue && levelId.Value > 0)
+            query = query.Where(x => x.ChainLevel == levelId.Value);
+
         if (!string.IsNullOrWhiteSpace(search))
         {
             search = search.Trim();
@@ -60,12 +65,11 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
                 x.FullName.Contains(search));
         }
 
-        // SORT
         query = sortField switch
         {
             "Code" => sortOrder == "asc" ? query.OrderBy(x => x.Code) : query.OrderByDescending(x => x.Code),
             "FullName" => sortOrder == "asc" ? query.OrderBy(x => x.FullName) : query.OrderByDescending(x => x.FullName),
-            _ => query.OrderBy(x => x.RecipientId)
+            _ => query.OrderBy(x => x.RecipientId) 
         };
 
         paging.TotalItems = await query.CountAsync(token);
@@ -83,10 +87,14 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
                 Year = x.Year,
                 Population = x.Population,
                 ChainLevel = x.ChainLevel,
+                LevelName = db.TblLevels
+                    .Where(l => l.LevelId == x.ChainLevel)
+                    .Select(l => l.ShipCount.ToString())
+                    .FirstOrDefault() ?? string.Empty,
                 StartUp = x.StartUp.HasValue ? Helpers.DateTimeHelper.ToShamsi(x.StartUp.Value) : string.Empty,
                 ParentId = x.ParentId,
-                TransportModeName = x.TransportMode.Title,
-                ReceivingModeName = x.ReceivingMode.Title
+                TransportModeName = x.TransportMode != null ? x.TransportMode.Title : string.Empty,
+                ReceivingModeName = x.ReceivingMode != null ? x.ReceivingMode.Title : string.Empty
             })
             .ToListAsync(token);
 
@@ -100,14 +108,14 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
         };
     }
 
-    public async Task<RecipientEditDto> GetById(int id, CancellationToken token)
+    public async Task<RecipientEditDto?> GetById(int id, CancellationToken token)
     {
         var x = await db.TblRecipients
             .AsNoTracking()
             .FirstOrDefaultAsync(r => r.RecipientId == id, token);
 
         if (x == null)
-            throw new Exception("Recipient not found.");
+            return null;
 
         return new RecipientEditDto
         {
@@ -150,7 +158,7 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
             Code = dto.Code,
             FullName = dto.FullName,
             EntryDate = DateTime.Now,
-            IsActive = dto.IsActive,
+            IsActive = true,
             TransportModeId = dto.TransportModeId,
             Distance = dto.Distance,
             Population = dto.Population,
@@ -177,7 +185,7 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
             DistanceTime = dto.DistanceTime
         };
 
-        db.TblRecipients.Add(entity);
+        await db.TblRecipients.AddAsync(entity, token);
         await db.SaveChangesAsync(token);
         return entity.RecipientId;
     }
@@ -188,7 +196,7 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
             .FirstOrDefaultAsync(x => x.RecipientId == dto.RecipientId, token);
 
         if (entity == null)
-            throw new Exception("Recipient not found.");
+            return false;
 
         entity.Code = dto.Code;
         entity.FullName = dto.FullName;
@@ -222,20 +230,44 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
         return true;
     }
 
+    public async Task<bool> ToggleActive(int id, CancellationToken token)
+    {
+        var entity = await db.TblRecipients
+            .FirstOrDefaultAsync(x => x.RecipientId == id, token);
+
+        if (entity == null)
+            throw new Exception("Record not found.");
+
+        entity.IsActive = !entity.IsActive;
+        await db.SaveChangesAsync(token);
+
+        return entity.IsActive ?? false;
+    }
+
+    public async Task<bool> ExistsByCode(string? code, int? excludeId, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            return false;
+
+        var query = db.TblRecipients
+            .Where(x => x.Code == code.Trim());
+
+        if (excludeId.HasValue && excludeId.Value > 0)
+            query = query.Where(x => x.RecipientId != excludeId.Value);
+
+        return await query.AnyAsync(token);
+    }
+
     public async Task<List<RecipientGetDto>> GetAll(CancellationToken cancellationToken)
     {
-
         var query = db.TblRecipients;
-        return await query.Select(x =>
-               new RecipientGetDto
-               {
-                   RecipientId = x.RecipientId,
-                   Code = x.Code,
-                   FullName = x.FullName,
-                   IsActive = x.IsActive ?? false,
-
-               }
-            ).ToListAsync(cancellationToken);
+        return await query.Select(x => new RecipientGetDto
+        {
+            RecipientId = x.RecipientId,
+            Code = x.Code,
+            FullName = x.FullName,
+            IsActive = x.IsActive ?? false,
+        }).ToListAsync(cancellationToken);
     }
 
     public async Task<int?> GetChainLevelById(int id, CancellationToken token)
@@ -255,7 +287,7 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
         var recipients = await db.TblRecipients
             .AsNoTracking()
             .Where(recipient => recipient.IsActive == true)
-            .Select(recipient => new RecipientGetDto()
+            .Select(recipient => new RecipientGetDto
             {
                 RecipientId = recipient.RecipientId,
                 Code = recipient.Code,
@@ -271,7 +303,7 @@ public class RecipientService(VSSMDbContext db) : IRecipientService
         var recipients = await db.TblRecipients
             .AsNoTracking()
             .Where(recipient => currentRecipientId == recipient.ParentId && recipient.IsActive == true)
-            .Select(recipient => new RecipientGetDto()
+            .Select(recipient => new RecipientGetDto
             {
                 ChainLevel = recipient.ChainLevel,
                 RecipientId = recipient.RecipientId,

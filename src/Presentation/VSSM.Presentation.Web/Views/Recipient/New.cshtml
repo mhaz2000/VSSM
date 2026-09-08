@@ -1,4 +1,4 @@
-﻿@using VSSM.Presentation.Web.Models.Base
+﻿﻿@using VSSM.Presentation.Web.Models.Base
 @model VSSM.Presentation.Web.Models.Recipient.RecipientViewModel
 
 @{
@@ -16,14 +16,11 @@
 <div class="recipient-form-wrap">
     <strong class="recipient-form-title">@formName</strong>
 
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" id="recipientForm">
         @Html.AntiForgeryToken()
-
         <input type="hidden" asp-for="RecipientId" />
-
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <!-- اطلاعات اصلی -->
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-user" style="color:#1d6fb8;"></i>
@@ -33,43 +30,44 @@
                 <div class="fg-3" style="margin-bottom:14px;">
                     <div class="f-group">
                         <label class="f-label">کد <span class="req-tag">اجباری</span></label>
-                        <input asp-for="Code" class="f-control" />
-                        <span class="text-danger" asp-validation-for="Code"></span>
+                        <input asp-for="Code" class="f-control" placeholder="کد را وارد کنید" />
                     </div>
                     <div class="f-group">
                         <label class="f-label">نام کامل <span class="req-tag">اجباری</span></label>
-                        <input asp-for="FullName" class="f-control" />
-                        <span class="text-danger" asp-validation-for="FullName"></span>
+                        <input asp-for="FullName" class="f-control" placeholder="نام کامل را وارد کنید" />
                     </div>
                     <div class="f-group">
                         <label class="f-label">جمعیت</label>
-                        <input asp-for="Population" class="f-control" />
+                        <input asp-for="Population" class="f-control" type="number" min="0" placeholder="فقط عدد وارد نمایید" />
                     </div>
                 </div>
                 <div class="fg-3" style="margin-bottom:14px;">
                     <div class="f-group">
                         <label class="f-label">سال</label>
-                        <input asp-for="Year" class="f-control" />
+                        <input asp-for="Year" class="f-control" type="number" min="1300" max="1500" placeholder="فقط عدد وارد نمایید" />
                     </div>
                     <div class="f-group">
                         <label class="f-label">فاصله</label>
-                        <input asp-for="Distance" class="f-control" />
+                        <input asp-for="Distance" class="f-control" type="number" min="0" placeholder="فقط عدد وارد نمایید" />
                     </div>
                     <div class="f-group">
                         <label class="f-label">آدرس ۱</label>
-                        <input asp-for="Address1" class="f-control" />
+                        <input asp-for="Address1" class="f-control" placeholder="آدرس را وارد کنید" />
                     </div>
                 </div>
                 <div class="fg-3" style="margin-bottom:14px;">
                     <div class="f-group">
                         <label class="f-label">آدرس ۲</label>
-                        <input asp-for="Address2" class="f-control" />
+                        <input asp-for="Address2" class="f-control" placeholder="آدرس دوم را وارد کنید" />
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">فاصله زمانی (دقیقه)</label>
+                        <input asp-for="DistanceTime" class="f-control" type="number" min="0" placeholder="فقط عدد وارد نمایید" />
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- اطلاعات تماس و موقعیت -->
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-phone" style="color:#16a34a;"></i>
@@ -79,51 +77,43 @@
                 <div class="fg-3" style="margin-bottom:14px;">
                     <div class="f-group">
                         <label class="f-label">کد پستی</label>
-                        <input asp-for="PostalCode" class="f-control" />
-                        <span class="text-danger" asp-validation-for="PostalCode"></span>
+                        <input asp-for="PostalCode" class="f-control" placeholder="کد پستی را وارد کنید" />
                     </div>
                     <div class="f-group">
                         <label class="f-label">استان</label>
-                        <input asp-for="Province" class="f-control" />
+                        <input asp-for="Province" class="f-control" placeholder="استان را وارد کنید" />
                     </div>
                     <div class="f-group">
                         <label class="f-label">شهر</label>
-                        <input asp-for="City" class="f-control" />
+                        <input asp-for="City" class="f-control" placeholder="شهر را وارد کنید" />
                     </div>
                 </div>
                 <div class="fg-3" style="margin-bottom:14px;">
                     <div class="f-group">
                         <label class="f-label">تلفن</label>
-                        <input asp-for="Phone" class="f-control" />
+                        <input asp-for="Phone" class="f-control" placeholder="تلفن را وارد کنید" />
                     </div>
                     <div class="f-group">
                         <label class="f-label">پست الکترونیکی</label>
-                        <input asp-for="Email" class="f-control" />
+                        <input asp-for="Email" class="f-control" type="email" placeholder="ایمیل را وارد کنید" />
                     </div>
                     <div class="f-group">
                         <label class="f-label">زمان بین درخواست و ورود محموله</label>
-                        <input asp-for="LeadTime" class="f-control" />
-                    </div>
-                </div>
-                <div class="fg-3" style="margin-bottom:14px;">
-                    <div class="f-group">
-                        <label class="f-label">فاصله زمانی (دقیقه)</label>
-                        <input asp-for="DistanceTime" class="f-control" />
+                        <input asp-for="LeadTime" class="f-control" type="number" min="0" placeholder="فقط عدد وارد نمایید" />
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- تنظیمات عملیاتی -->
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-cog" style="color:#8b5cf6;"></i>
-                <h6>تنظیمات عملیاتی</h6>
+                <h6>تنظیمات عملیاتی <span class="req-tag">همه اجباری</span></h6>
             </div>
             <div class="a-card-body">
                 <div class="fg-3" style="margin-bottom:14px;">
                     <div class="f-group">
-                        <label class="f-label">طریقه حمل و نقل</label>
+                        <label class="f-label">طریقه حمل و نقل <span class="req-tag">اجباری</span></label>
                         <select asp-for="TransportModeId" asp-items="ViewBag.TransportList" class="f-control">
                             <option value="">انتخاب کنید...</option>
                         </select>
@@ -133,10 +123,9 @@
                         <select asp-for="ChainLevel" asp-items="ViewBag.LevelList" class="f-control">
                             <option value="">انتخاب کنید...</option>
                         </select>
-                        <span class="text-danger" asp-validation-for="ChainLevel"></span>
                     </div>
                     <div class="f-group">
-                        <label class="f-label">روش دریافت</label>
+                        <label class="f-label">روش دریافت <span class="req-tag">اجباری</span></label>
                         <select asp-for="ReceivingModeId" asp-items="ViewBag.ReceivingList" class="f-control">
                             <option value="">انتخاب کنید...</option>
                         </select>
@@ -150,13 +139,13 @@
                         </select>
                     </div>
                     <div class="f-group">
-                        <label class="f-label">شرایط اقلیمی</label>
+                        <label class="f-label">شرایط اقلیمی <span class="req-tag">اجباری</span></label>
                         <select asp-for="ClimateId" asp-items="ViewBag.ClimateList" class="f-control">
                             <option value="">انتخاب کنید...</option>
                         </select>
                     </div>
                     <div class="f-group">
-                        <label class="f-label">نوع مالکیت</label>
+                        <label class="f-label">نوع مالکیت <span class="req-tag">اجباری</span></label>
                         <select asp-for="OwnershipId" asp-items="ViewBag.OwnershipList" class="f-control">
                             <option value="">انتخاب کنید...</option>
                         </select>
@@ -164,13 +153,13 @@
                 </div>
                 <div class="fg-3" style="margin-bottom:14px;">
                     <div class="f-group">
-                        <label class="f-label">منبع انرژی</label>
+                        <label class="f-label">منبع انرژی <span class="req-tag">اجباری</span></label>
                         <select asp-for="PowerSourceId" asp-items="ViewBag.PowerSourceList" class="f-control">
                             <option value="">انتخاب کنید...</option>
                         </select>
                     </div>
                     <div class="f-group">
-                        <label class="f-label">نوع راه</label>
+                        <label class="f-label">نوع راه <span class="req-tag">اجباری</span></label>
                         <select asp-for="TypeOfRoadId" asp-items="ViewBag.RoadTypeList" class="f-control">
                             <option value="">انتخاب کنید...</option>
                         </select>
@@ -179,7 +168,6 @@
             </div>
         </div>
 
-        <!-- سایر تنظیمات -->
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-check-square" style="color:#f59e0b;"></i>
@@ -205,28 +193,17 @@
                             </label>
                         </div>
                     </div>
-                    <div class="f-group">
-                        <label class="f-label">وضعیت</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" asp-for="IsActive" />
-                                فعال
-                            </label>
-                        </div>
-                    </div>
                 </div>
                 <div class="f-group" style="margin-bottom:14px;">
                     <label class="f-label">ملاحظات</label>
                     <textarea asp-for="Note" class="f-control" placeholder="ملاحظات را وارد کنید"></textarea>
                 </div>
                 <div class="alert alert-info recipient-help-text">
-                    وقتی شما دکمه ثبت را فشار دهید، گیرنده تعریف می‌گردد و شما می‌توانید هر کالایی را به آن گیرنده ارسال دارید. وقتی این گیرنده هنوز فرد سیستم نشده و نمی‌تواند با سیستم کار کند تا شما دکمه "شروع فعالیت" را فعال نکرده باشید. برای فعال کردن شروع فعالیت به اطلاعات پایه ➜ گیرندگان رفته و گزینه  مدیریت را انتخاب کرده و در جعبه مقابل "شروع فعالیت" علامت بگذارید.
-                    پس از این گیرنده به سیستم‌آمده می‌گردد. این عمل وقتی باید انجام شود که گزارش این گیرنده آموزش لازم را دیده و آمادگی شروع فعالیت را داشته باشند. برای اطلاعات بیشتر به قسمت کمک مربوط به گیرندگان مراجعه نمایید. تعریف اقلا  یک کاربر را برای این گیرنده فراموش نکنید!
+                    وقتی شما دکمه ثبت را فشار دهید، گیرنده تعریف می‌گردد و شما می‌توانید هر کالایی را به آن گیرنده ارسال دارید. وقتی این گیرنده هنوز فرد سیستم نشده و نمی‌تواند با سیستم کار کند تا شما دکمه "شروع فعالیت" را فعال نکرده باشید. برای فعال کردن شروع فعالیت به اطلاعات پایه ➜ گیرندگان رفته و گزینه مدیریت را انتخاب کرده و در جعبه مقابل "شروع فعالیت" علامت بگذارید. پس از این گیرنده به سیستم‌آمده می‌گردد. این عمل وقتی باید انجام شود که گزارش این گیرنده آموزش لازم را دیده و آمادگی شروع فعالیت را داشته باشند. برای اطلاعات بیشتر به قسمت کمک مربوط به گیرندگان مراجعه نمایید. تعریف اقلا یک کاربر را برای این گیرنده فراموش نکنید!
                 </div>
             </div>
         </div>
 
-        <!-- فوتر -->
         <div class="form-footer">
             <a asp-action="Index" class="btn-back">
                 <i class="fa fa-arrow-right"></i> بازگشت
@@ -240,4 +217,24 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            $('input[type="number"]').on('keypress', function (e) {
+                var charCode = e.which ? e.which : e.keyCode;
+                if (charCode < 48 || charCode > 57) {
+                    e.preventDefault();
+                    return false;
+                }
+                return true;
+            });
+
+            $('input[type="number"]').on('paste', function (e) {
+                var pastedText = (e.originalEvent || e).clipboardData.getData('text');
+                if (!/^\d+$/.test(pastedText)) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
 }

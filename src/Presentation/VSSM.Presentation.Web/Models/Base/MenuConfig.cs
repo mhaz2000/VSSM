@@ -125,7 +125,7 @@ public static class MenuConfig
                 Title = "اطلاعات پایه 2",
                 Children =
                 {
-                    new MenuItem { Title = "تنظیمات", Controller = "RecipientConfiguration", Action = "Index" },
+                    //new MenuItem { Title = "تنظیمات", Controller = "RecipientConfiguration", Action = "Index" },
                     new MenuItem { Title = "گیرندگان", Controller = "Recipient", Action = "Index" },
                     new MenuItem { Title = "مقدار حداقل و حداثر برای کالاها", Controller = "MinMaxItem", Action = "Index" }
                 }

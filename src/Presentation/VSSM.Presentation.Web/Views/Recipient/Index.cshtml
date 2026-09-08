@@ -1,10 +1,16 @@
-﻿@using VSSM.Presentation.Web.Models.Base
+﻿﻿@using VSSM.Presentation.Web.Models.Base
+@using Microsoft.AspNetCore.Mvc.Rendering
 @model GridViewModel
 
 @section Styles {
     <link href="~/css/components/shared/grid-wrapper.css" rel="stylesheet" />
     <link href="~/css/components/shared/grid-header.css" rel="stylesheet" />
+}
 
+@{
+    ViewData["Title"] = "مدیریت گیرندگان";
+    var currentLevel = Context.Request.Query["levelId"].ToString();
+    var levelList = ViewBag.LevelListForFilter as List<SelectListItem>;
 }
 
 <div class="grid-wrapper">
@@ -14,28 +20,21 @@
             @ViewData["Title"]
         </strong>
 
-        <div class="d-flex align-items-center gap-2">
+        @await Component.InvokeAsync("SearchBar", new
+        {
+            searchTerm = Model.SearchTerm,
+                pageSize = Model.Data.PageSize,
+                sort = Model.CurrentSort,
+                direction = Model.CurrentDirection,
+                addController = "Recipient",
+                addAction = "New",
+                showAddButton = true,
+                addButtonText = "افزودن",
+                filterName = "levelId",
+                filterValue = currentLevel,
+                filterOptions = levelList ?? new List<SelectListItem> { new SelectListItem("همه", "", currentLevel == "") }
+                })
 
-            <form method="get" class="m-0">
-                <input type="hidden" name="sort" value="@Model.CurrentSort" />
-                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
-                <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
-
-                <div class="search-wrap">
-                    <input type="text" name="search" class="search-input"
-                           value="@Model.SearchTerm" placeholder="جستجو..." />
-                    <button type="submit" class="search-btn" title="جستجو">
-                        <i class="fa fa-search"></i>
-                    </button>
-                </div>
-            </form>
-
-            <a asp-action="New" class="btn-add">
-                <span class="plus-circle">+</span>
-                افزودن گیرنده
-            </a>
-
-        </div>
     </div>
 
     <div>
@@ -51,17 +50,6 @@
         </div>
     </div>
 </div>
-
-@if (TempData["ToastMessage"] != null)
-{
-    <script>
-        $(document).ready(function () {
-            var message = @System.Text.Json.JsonSerializer.Serialize(TempData["ToastMessage"]);
-            var type    = '@TempData["ToastType"]';
-            showToast(message, type);
-        });
-    </script>
-}
 
 @section Scripts {
     <script>
@@ -97,7 +85,10 @@
             }
 
             function poll() {
-                fetch('@Url.Action("Status", "SiyamRecipients")', { method: 'GET', headers: { 'Accept': 'application/json' } })
+                fetch('@Url.Action("Status", "SiyamRecipients")', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                })
                     .then(function (r) { return r.json(); })
                     .then(function (s) {
                         render(s);
@@ -115,7 +106,10 @@
                 $btn.prop('disabled', true);
                 fetch('@Url.Action("Sync", "SiyamRecipients")', {
                     method: 'POST',
-                    headers: { 'RequestVerificationToken': token, 'Accept': 'application/json' }
+                    headers: {
+                        'RequestVerificationToken': token,
+                        'Accept': 'application/json'
+                    }
                 })
                     .then(function (r) { return r.json(); })
                     .then(function (s) {

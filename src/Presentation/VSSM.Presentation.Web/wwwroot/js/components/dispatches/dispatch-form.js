@@ -3,6 +3,17 @@ var batchTable = null;
 
 $(function () {
 
+    var csrfToken = $('input[name="__RequestVerificationToken"]').val();
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            var method = (settings.type || 'GET').toUpperCase();
+            if (method !== 'GET' && csrfToken) {
+                xhr.setRequestHeader('RequestVerificationToken', csrfToken);
+            }
+        }
+    });
+
     if (typeof dispatchServerMsg !== 'undefined' && dispatchServerMsg) {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
@@ -56,10 +67,6 @@ $(function () {
             $('#dispatchForm').removeAttr('data-has-item');
         }
     });
-
-    // =========================================================
-    // SearchableSelect - راه‌اندازی با mousedown
-    // =========================================================
 
     function bindSSOptionClick($wrapper) {
         $wrapper.find('.ss-option').off('click.ss').on('click.ss', function (e) {
@@ -145,10 +152,6 @@ $(function () {
         }
     });
 
-    // =========================================================
-    // Cascade: نوع کالا ← کالا ← سری ساخت
-    // =========================================================
-
     $('#itemClassSelect').on('change', function () {
         var classId = $(this).val();
         if (batchTable) batchTable.setData([]);
@@ -191,10 +194,6 @@ $(function () {
             }
         });
     });
-
-    // =========================================================
-    // افزودن آیتم به لیست
-    // =========================================================
 
     window.addSelectedItem = function () {
         var $checked = $('.batch-chk:checked');
@@ -283,10 +282,6 @@ $(function () {
         $('#doseCountInput').val('');
     };
 
-    // =========================================================
-    // حذف آیتم
-    // =========================================================
-
     window.removeItem = function (idx) {
         var item = addedItems[idx];
         var $stockCell = $('.stock-cell-' + item.itemDetailStoreId);
@@ -298,10 +293,6 @@ $(function () {
         $.each(addedItems, function (i, it) { it.idx = i; });
         renderAddedItems();
     };
-
-    // =========================================================
-    // رندر جدول کالاهای افزوده‌شده
-    // =========================================================
 
     function renderAddedItems() {
         var tbody = $('#addedItemsTbody');
@@ -346,9 +337,6 @@ $(function () {
         rebuildHiddenInputs();
     }
 
-    // =========================================================
-    // 🔔 گوش‌دادن به رویداد به‌روزرسانی UID
-    // =========================================================
     $(document).on('uids-updated', function () {
         renderAddedItems();
     });
@@ -364,6 +352,7 @@ $(function () {
             }
             add('ItemDetailStoreId', item.itemDetailStoreId);
             add('ItemId', item.itemId);
+            add('ItemName', item.itemName);
             add('StoreId', item.storeId);
             add('DoseCount', item.doseCount);
             add('VvmstageId', item.vvmStageId);
@@ -379,10 +368,6 @@ $(function () {
             });
         });
     }
-
-    // =========================================================
-    // دکمه‌های footer
-    // =========================================================
 
     $('.js-footer-btn').on('click', function () {
         var submitType = $(this).data('submit');

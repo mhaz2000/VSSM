@@ -62,7 +62,8 @@ public class UserService(VSSMDbContext db) : IUserService
             CourseDate = dto.CourseDate,
             EntryDate = DateTime.Now,
             RoleId = dto.RoleId,
-            MustChangePassword = true
+            MustChangePassword = true,
+            IsDeleted = false
         };
 
         db.TblUsers.Add(model);
@@ -98,6 +99,8 @@ public class UserService(VSSMDbContext db) : IUserService
         x.IsAdmin = dto.IsAdmin;
         x.Course = dto.Course;
         x.CourseDate = dto.CourseDate;
+        x.IsDeleted = false;
+
 
         await db.SaveChangesAsync(token);
         return true;
@@ -141,13 +144,17 @@ public class UserService(VSSMDbContext db) : IUserService
     // ---------------- SOFT DELETE ----------------
     public async Task<bool> ToggleActiveness(int id, CancellationToken token)
     {
-        var x = await db.TblUsers.FirstOrDefaultAsync(u => u.UserId == id, token);
-        if (x == null) throw new Exception("User not found");
+        var user = await db.TblUsers
+            .FirstOrDefaultAsync(u => u.UserId == id, token);
 
-        x.IsDeleted = !x.IsDeleted;
+        if (user == null)
+            throw new Exception("User not found");
+
+        user.IsDeleted = !(user.IsDeleted ?? false);
+
         await db.SaveChangesAsync(token);
 
-        return x.IsDeleted.Value;
+        return user.IsDeleted ?? false;
     }
 
     // ---------------- PAGED LIST ----------------
@@ -213,7 +220,7 @@ public class UserService(VSSMDbContext db) : IUserService
                 LastName = x.User.LastName,
                 Phone1 = x.User.Phone1,
                 Phone2 = x.User.Phone2,
-                IsActive = x.User.IsDeleted ?? false,
+                IsActive = !(x.User.IsDeleted ?? false),
                 JobName = x.User.CodeJobNavigation.Title,
                 RecipientName = x.Recipient != null ? x.Recipient.FullName : ""
             })

@@ -135,7 +135,7 @@ public class UserController(
             CodeJob = dto.CodeJob,
             IsAdmin = dto.IsAdmin,
             Course = dto.Course?.Trim(),
-            RoleId = dto.RoleId
+            RoleId = dto.RoleId,
         };
 
         return View(model);
@@ -208,7 +208,7 @@ public class UserController(
                     RoleId = model.RoleId
                 };
 
-                dto.IsActive = false; // در صورت وجود خاصیت IsActive در DTO
+                dto.IsActive = true; 
 
                 await userService.Create(dto, token);
             }
@@ -231,6 +231,9 @@ public class UserController(
                     Course = model.Course,
                     RoleId = model.RoleId
                 };
+
+                dto.IsActive = true;
+
 
                 await userService.Update(dto, token);
             }

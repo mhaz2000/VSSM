@@ -1,9 +1,8 @@
 ﻿using System.Security.Claims;
 using VSSM.Application.Interfaces;
-using VSSM.Application.Security;
 using VSSM.Infrastructure.Data.Models;
 
-namespace VSSM.Infrastructure.Security;
+namespace VSSM.Application.Security;
 
 public sealed class DispatchAccessPolicy : IResourceAccessPolicy<TblDispatch>
 {

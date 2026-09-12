@@ -25,6 +25,7 @@ using VSSM.Application.Integrations.Behdasht;
 using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces.RequestEntities;
+using VSSM.Application.Security;
 using VSSM.Application.Services;
 using VSSM.Application.Services.Barcode;
 using VSSM.Application.Services.BaseEntities;
@@ -120,6 +121,8 @@ namespace VSSM.Presentation.Web
 
             services.AddScoped<IResourceAccessPolicy<TblArrival>, ArrivalAccessPolicy>();
             services.AddScoped<IResourceAccessPolicy<TblDispatch>, DispatchAccessPolicy>();
+            services.AddScoped<IResourceAccessPolicy<TblRequest>, RequestAccessPolicy>();
+
 
 
 

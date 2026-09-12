@@ -13,8 +13,6 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
 {
     public async Task AddLine(int requestId, RequestLineDto dto, CancellationToken token)
     {
-        // بند ۲ جدول tblRequestLine: Anncount/Forperiod/Offercount دیگر از فرم نمی‌آیند (حذف شدند)
-        // ستون‌ها در DB می‌مانند (بدون migration) ولی اپلیکیشن دیگر مقداردهی‌شان نمی‌کند
         var line = new TblRequestLine
         {
             RequestId = requestId,
@@ -47,10 +45,6 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
 
     public async Task<int> Create(RequestCreateDto dto, CancellationToken token)
     {
-        // بند ۶: شماره درخواست = «سال جاری شمسی - سکوئنس ۳ رقمی» (مثل 1405-001)
-        // تولید شماره داخل سرویس و در یک تراکنش انجام می‌شود تا منطق در کنترلر تکرار نشود.
-        // توجه: بدون یک Unique Index روی RequestNumber، تحت بار همزمان بالا احتمال (کم) تکرار شماره وجود دارد.
-        // پیشنهاد: یک Unique Constraint روی این ستون اضافه شود (اگر و وقتی migration ممکن شد).
         await using var transaction = await dbContext.Database.BeginTransactionAsync(token);
 
         var shamsiYear = new PersianCalendar().GetYear(DateTime.Now);
@@ -144,10 +138,10 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
     }
 
     public async Task<PagingSearchOrderDto<RequestListDto>> GetPagedList(
-        string? search, 
+        string? search,
         int page,
         int pageSize,
-        string sortField, 
+        string sortField,
         string sortOrder,
         int currentRecipientId, CancellationToken cancellationToken)
     {
@@ -199,7 +193,7 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
 
     public async Task<PagingSearchOrderDto<RequestListDto>> GetReceivedRequestsPagedList(
         string? search,
-        int page, 
+        int page,
         int pageSize,
         string sortField,
         string sortOrder,
@@ -285,5 +279,12 @@ public class RequestService(VSSMDbContext dbContext) : IRequestService
     public Task<int> GetRequestCountByShamsiYearAsync(int shamsiYear, CancellationToken token)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<TblRequest?> GetEntityById(int id, CancellationToken token)
+    {
+        return await dbContext.TblRequests
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, token);
     }
 }

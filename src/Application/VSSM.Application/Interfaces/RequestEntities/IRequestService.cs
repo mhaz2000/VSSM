@@ -1,6 +1,7 @@
 ﻿using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.RequestEntities;
 using VSSM.Domain.Enums;
+using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Interfaces.RequestEntities;
 
@@ -30,5 +31,7 @@ public interface IRequestService
     Task<int> GetRequestCountByShamsiYearAsync(int shamsiYear, CancellationToken token);
 
     Task<ItemAvailabilityDto> GetItemAvailabilityAsync(int itemId, int recipientId, CancellationToken token);
+
+    Task<TblRequest?> GetEntityById(int id, CancellationToken token);
 
 }

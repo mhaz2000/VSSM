@@ -8,5 +8,6 @@ public enum ResourceOperation
     Print,
     Confirm,
     Receive,
-    Create
+    Create,
+    Reject
 }

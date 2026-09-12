@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 using VSSM.Application.DTOs.RequestEntities;
+using VSSM.Application.Interfaces;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Interfaces.RequestEntities;
+using VSSM.Application.Security;
 using VSSM.Domain.Enums;
+using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web.Const;
 using VSSM.Presentation.Web.Extensions;
 using VSSM.Presentation.Web.Models.Base;
@@ -14,8 +18,27 @@ public class RequestController(
     IRequestService requestService,
     IBaseInfoService baseInfoService,
     IItemService itemService,
-    IFiscalPeriodService fiscalPeriodService) : BaseController
+    IFiscalPeriodService fiscalPeriodService,
+    IResourceAccessPolicy<TblRequest> requestAccessPolicy) : BaseController
 {
+    private const string ToastMessageKey = "ToastMessage";
+    private const string ToastTypeKey = "ToastType";
+    private const string ToastSuccess = "success";
+    private const string ToastError = "error";
+    private const string ToastWarning = "warning";
+    private const string SuccessMessage = "عملیات با موفقیت انجام شد";
+    private const string DeleteLineMarker = "deleteLine";
+    private const string DeleteLinePrefix = "deleteLine_";
+
+    private static readonly Dictionary<string, (string Text, string CssClass)> StatusBadgeMap = new()
+    {
+        ["Label"] = ("در حال ثبت", "badge-warning"),
+        ["Draft"] = ("پیش‌نویس", "badge-secondary"),
+        ["Sent"] = ("ارسال شده", "badge-info"),
+        ["Confirmed"] = ("تایید شده", "badge-success"),
+        ["Rejected"] = ("رد شده", "badge-danger"),
+    };
+
     public async Task<IActionResult> Index(
         CancellationToken cancellationToken,
         string? search = null,
@@ -44,22 +67,19 @@ public class RequestController(
             },
             Columns =
             [
-                new() { Header = "شماره درخواست", PropertyName = nameof(RequestListDto.RequestNumber), Sortable = true  },
-                new() { Header = "تاریخ",       PropertyName = nameof(RequestListDto.SendDateShamsi),    Sortable = true },
-                new() { Header = "وضعیت",          PropertyName = nameof(RequestListDto.Status),        Sortable = true,
+                new() { Header = "شماره درخواست", PropertyName = nameof(RequestListDto.RequestNumber),     Sortable = true },
+                new() { Header = "تاریخ",         PropertyName = nameof(RequestListDto.SendDateShamsi),    Sortable = true },
+                new()
+                {
+                    Header        = "وضعیت",
+                    PropertyName  = nameof(RequestListDto.Status),
+                    Sortable      = true,
                     IsBadgeColumn = true,
-                    BadgeMap = new Dictionary<string, (string Text, string CssClass)>
-                    {
-                        ["Label"]     = ("در حال ثبت",  "badge-warning"),
-                        ["Draft"]     = ("پیش‌نویس",    "badge-secondary"),
-                        ["Sent"]      = ("ارسال شده",   "badge-info"),
-                        ["Confirmed"] = ("تایید شده",   "badge-success"),
-                        ["Rejected"]  = ("رد شده",      "badge-danger"),
-
-                    }},
-                new() { Header = "ثبت شده توسط",  PropertyName = nameof(RequestListDto.EnteredByName), Sortable = false },
-                new() { Header = "تاریخ تایید", PropertyName = nameof(RequestListDto.ConfirmDateShamsi), Sortable = true },
-                new() { Header = "عملیات", IsActionColumn = true }
+                    BadgeMap      = StatusBadgeMap
+                },
+                new() { Header = "ثبت شده توسط",  PropertyName = nameof(RequestListDto.EnteredByName),     Sortable = false },
+                new() { Header = "تاریخ تایید",   PropertyName = nameof(RequestListDto.ConfirmDateShamsi), Sortable = true },
+                new() { Header = "عملیات",        IsActionColumn = true }
             ],
             Actions =
             [
@@ -70,7 +90,7 @@ public class RequestController(
                     Action          = "View",
                     RouteIdProperty = nameof(RequestListDto.Id),
                     IconClass       = "fa fa-eye",
-                    LinkClass       = "btn-outline-primary",
+                    LinkClass       = "btn-outline-primary"
                 },
                 new()
                 {
@@ -84,7 +104,7 @@ public class RequestController(
                     {
                         var prop = item.GetType().GetProperty(nameof(RequestListDto.RequestStatus));
                         var val  = prop?.GetValue(item)?.ToString();
-                        return (val == ((int)RequestStatusEnum.Confirmed).ToString()).ToString().ToLower();
+                        return (val == ((int)RequestStatusEnum.Confirmed).ToString()).ToString().ToLowerInvariant();
                     }
                 }
             ]
@@ -95,25 +115,36 @@ public class RequestController(
 
     public async Task<IActionResult> New(int? id, CancellationToken token)
     {
-        if (id == null || id == 0)
+        if (id is null or 0)
         {
             if (CurrentUserLevel == 1)
             {
-                TempData["ToastMessage"] = "عدم امکان ثبت درخواست برای این سطح کاربری";
-                TempData["ToastType"] = "warning";
+                SetToast("عدم امکان ثبت درخواست برای این سطح کاربری", ToastWarning);
                 return RedirectToAction("Index");
             }
-            var vm = new RequestViewModel
-            {
-                RequestLines = new List<RequestLinesViewModel>(),
-                NewLine = new RequestLinesViewModel()
-            };
+
             await PopulateLookupViewBagsAsync(token);
-            return View(vm);
+
+            return View(new RequestViewModel
+            {
+                RequestLines = [],
+                NewLine = new RequestLinesViewModel()
+            });
         }
+
+        if (!await CanAccessAsync(id.Value, ResourceOperation.Read, token))
+        {
+            return Forbid();
+        }
+
         var dto = await requestService.GetById(id.Value, token);
-        if (dto == null) return NotFound();
+        if (dto is null)
+        {
+            return NotFound();
+        }
+
         await PopulateLookupViewBagsAsync(token);
+
         var model = new RequestViewModel
         {
             ConfirmDate = dto.ConfirmDate,
@@ -139,13 +170,22 @@ public class RequestController(
             }).ToList(),
             NewLine = new RequestLinesViewModel()
         };
+
         return View(model);
     }
 
     public async Task<IActionResult> View(int id, CancellationToken token)
     {
+        if (!await CanAccessAsync(id, ResourceOperation.Read, token))
+        {
+            return Forbid();
+        }
+
         var dto = await requestService.GetById(id, token);
-        if (dto == null) return NotFound();
+        if (dto is null)
+        {
+            return NotFound();
+        }
 
         var model = new RequestViewModel
         {
@@ -176,131 +216,88 @@ public class RequestController(
         return View(model);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(RequestViewModel model, string command, CancellationToken token)
     {
         await PopulateLookupViewBagsAsync(token);
 
         if (model.Id.HasValue)
         {
+            var operation = command == "StatusDelete"
+                ? ResourceOperation.Delete
+                : ResourceOperation.Edit;
+
+            if (!await CanAccessAsync(model.Id.Value, operation, token))
+            {
+                return Forbid();
+            }
+
             var existing = await requestService.GetById(model.Id.Value, token);
-            if (existing == null) return RedirectToAction("New");
+            if (existing is null)
+            {
+                return RedirectToAction("New");
+            }
 
             if (existing.RequestStatus == (int)RequestStatusEnum.Confirmed)
             {
-                TempData["ToastMessage"] = "این درخواست تایید شده است و امکان انجام عملیات روی آن وجود ندارد";
-                TempData["ToastType"] = "error";
+                SetToast("این درخواست تایید شده است و امکان انجام عملیات روی آن وجود ندارد", ToastError);
                 return RedirectToAction("New", new { id = model.Id.Value });
             }
 
             if (command == "StatusSent")
             {
-                await requestService.ChangeStatus(model.Id.Value, RequestStatusEnum.Sent, "", token);
-                TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
-                TempData["ToastType"] = "success";
+                await requestService.ChangeStatus(model.Id.Value, RequestStatusEnum.Sent, string.Empty, token);
+                SetSuccessToast();
                 return RedirectToAction("Index");
             }
+
             if (command == "StatusDraft")
             {
-                await requestService.ChangeStatus(model.Id.Value, RequestStatusEnum.Draft, "", token);
-                TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
-                TempData["ToastType"] = "success";
+                await requestService.ChangeStatus(model.Id.Value, RequestStatusEnum.Draft, string.Empty, token);
+                SetSuccessToast();
                 return RedirectToAction("Index");
             }
+
             if (command == "StatusDelete")
             {
-                await DeleteRequest(model.Id.Value, token);
-                TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
-                TempData["ToastType"] = "success";
+                await DeleteRequestCore(model.Id.Value, token);
+                SetSuccessToast();
                 return RedirectToAction("Index");
             }
-            if (command.Contains("deleteLine"))
+
+            if (command.Contains(DeleteLineMarker, StringComparison.Ordinal))
             {
-                var lineId = command.Replace("deleteLine_", "");
-                await DeleteLine(Convert.ToInt32(lineId), model.Id.GetValueOrDefault(), token);
-                TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
-                TempData["ToastType"] = "success";
-                return RedirectToAction("Index");
+                var rawLineId = command.Replace(DeleteLinePrefix, string.Empty, StringComparison.Ordinal);
+                if (int.TryParse(rawLineId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lineId))
+                {
+                    await DeleteLineCore(lineId, model.Id.GetValueOrDefault(), token);
+                    SetSuccessToast();
+                    return RedirectToAction("Index");
+                }
             }
         }
 
         return await AddLine(model, token);
     }
 
-    private async Task<IActionResult> AddLine(RequestViewModel model, CancellationToken token)
-    {
-        if (!model.Id.HasValue || model.Id == 0)
-        {
-            if (model.NewLine.ItemClassId == null || model.NewLine.ItemClassId == 0)
-            {
-                TempData["ToastMessage"] = "انتخاب نوع کالا اجباری است";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("New", new { id = model.Id });
-            }
-            if (model.NewLine.ItemId == null || model.NewLine.ItemId == 0)
-            {
-                TempData["ToastMessage"] = "انتخاب کالا اجباری است";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("New", new { id = model.Id });
-            }
-
-            var activeFiscalPeriod = (await fiscalPeriodService.GetActives(token)).FirstOrDefault();
-
-            var createDto = new RequestCreateDto
-            {
-                Status = RequestStatusEnum.Label,
-                SenderId = CurrentUserRecipientId,
-                EnteredBy = CurrentUserId,
-                ConfirmDate = null,
-                RequestNumber = "", // شماره واقعی داخل RequestService.Create ساخته می‌شود (سال-سکوئنس)
-                ReceiverId = CurrentUserRecipientParentId,
-                SendDate = DateOnly.FromDateTime(DateTime.Now),
-                FiscalPeriodId = activeFiscalPeriod?.FiscalPeriodId,
-                Lines = new List<RequestLineDto>()
-            };
-
-            var newId = await requestService.Create(createDto, token);
-            model.Id = newId;
-        }
-
-        var lineDto = new RequestLineDto
-        {
-            ArriveCount = model.NewLine.ArivCount,
-            ReqCount = model.NewLine.ReqCount,
-            CurrentCount = model.NewLine.CurrentCount,
-            UsedCount = model.NewLine.UsedCount,
-            ItemClassId = model.NewLine.ItemClassId,
-            ItemId = model.NewLine.ItemId,
-            ConfirmCount = null,
-            DosePerVialId = model.NewLine.DosePerVialId,
-            Note = model.NewLine.Note,
-            RequestId = model.Id,
-        };
-
-        await requestService.AddLine(model.Id.Value, lineDto, token);
-
-        TempData["ToastMessage"] = "کالا اضافه شد";
-        TempData["ToastType"] = "success";
-
-        return RedirectToAction("New", new { id = model.Id });
-    }
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteRequest(int id, CancellationToken token)
     {
-        if (id > 0)
+        if (!await CanAccessAsync(id, ResourceOperation.Delete, token))
         {
-            var existing = await requestService.GetById(id, token);
-            if (existing != null && existing.RequestStatus != (int)RequestStatusEnum.Confirmed)
-            {
-                await requestService.Delete(id);
-                TempData["ToastMessage"] = "عملیات حذف با موفقیت انجام شد";
-                TempData["ToastType"] = "success";
-                return RedirectToAction("Index");
-            }
+            return Forbid();
         }
 
-        TempData["ToastMessage"] = "خطایی اتفاق افتاده است";
-        TempData["ToastType"] = "error";
+        var deleted = await DeleteRequestCore(id, token);
+        if (deleted)
+        {
+            SetToast("عملیات حذف با موفقیت انجام شد", ToastSuccess);
+            return RedirectToAction("Index");
+        }
+
+        SetToast("خطایی اتفاق افتاده است", ToastError);
         return RedirectToAction("Index");
     }
 
@@ -308,29 +305,27 @@ public class RequestController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteLine(int id, int requestId, CancellationToken token)
     {
-        await requestService.DeleteLine(id, token);
+        if (!await CanAccessAsync(requestId, ResourceOperation.Edit, token))
+        {
+            return Forbid();
+        }
 
-        TempData["ToastMessage"] = "سطر حذف شد";
-        TempData["ToastType"] = "success";
+        await DeleteLineCore(id, requestId, token);
+
+        SetToast("سطر حذف شد", ToastSuccess);
 
         return RedirectToAction("New", new { id = requestId });
     }
 
-    private async Task PopulateLookupViewBagsAsync(CancellationToken token)
-    {
-        ViewBag.ItemClassList = (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, token))
-           .ToSelectList(x => x.Id, x => x.Title);
-    }
-
     [HttpGet]
-    public async Task<IActionResult> GetItemsByClassAsync(int classId, CancellationToken token)
+    public async Task<IActionResult> GetItemsByClassAsync(int classId)
     {
-        var list = (await itemService.GetItemsByClassAsync(classId));
+        var list = await itemService.GetItemsByClassAsync(classId);
 
         return Json(list.Select(x => new
         {
             id = x.ItemId,
-            text = x.FullName,
+            text = x.FullName
         }));
     }
 
@@ -342,16 +337,15 @@ public class RequestController(
 
         if (availability.CurrentCount <= 0)
         {
-            TempData["ToastMessage"] = "موجودی این کالا صفر است و امکان ثبت درخواست برای آن وجود ندارد.";
-            TempData["ToastType"] = "error";
+            SetToast("موجودی این کالا صفر است و امکان ثبت درخواست برای آن وجود ندارد.", ToastError);
         }
+
         return Json(new
         {
             arivCount = availability.ArivCount,
             currentCount = availability.CurrentCount,
             usedCount = availability.UsedCount
         });
-
     }
 
     public async Task<IActionResult> ReceivedRequests(
@@ -363,10 +357,10 @@ public class RequestController(
         string direction = "desc")
     {
         var paged = await requestService.GetReceivedRequestsPagedList(
-            search, 
-            page, 
+            search,
+            page,
             pageSize,
-            sort, 
+            sort,
             direction,
             CurrentUserRecipientParentId.GetValueOrDefault(),
             CurrentUserRecipientId.GetValueOrDefault(),
@@ -386,22 +380,19 @@ public class RequestController(
             },
             Columns =
             [
-                new() { Header = "شماره درخواست", PropertyName = nameof(RequestListDto.RequestNumber),   Sortable = true  },
-                new() { Header = "تاریخ",          PropertyName = nameof(RequestListDto.SendDateShamsi),  Sortable = true },
-                new() { Header = "وضعیت",          PropertyName = nameof(RequestListDto.Status),          Sortable = true,
+                new() { Header = "شماره درخواست", PropertyName = nameof(RequestListDto.RequestNumber),      Sortable = true },
+                new() { Header = "تاریخ",         PropertyName = nameof(RequestListDto.SendDateShamsi),     Sortable = true },
+                new()
+                {
+                    Header        = "وضعیت",
+                    PropertyName  = nameof(RequestListDto.Status),
+                    Sortable      = true,
                     IsBadgeColumn = true,
-                    BadgeMap = new Dictionary<string, (string Text, string CssClass)>
-                    {
-                        ["Label"]     = ("در حال ثبت",  "badge-warning"),
-                        ["Draft"]     = ("پیش‌نویس",    "badge-secondary"),
-                        ["Sent"]      = ("ارسال شده",   "badge-info"),
-                        ["Confirmed"] = ("تایید شده",   "badge-success"),
-                        ["Rejected"]  = ("رد شده",      "badge-danger"),
-
-                    }},
-                new() { Header = "ثبت شده توسط",  PropertyName = nameof(RequestListDto.EnteredByName),   Sortable = true },
-                new() { Header = "تاریخ تایید",    PropertyName = nameof(RequestListDto.ConfirmDateShamsi), Sortable = true },
-                new() { Header = "عملیات", IsActionColumn = true }
+                    BadgeMap      = StatusBadgeMap
+                },
+                new() { Header = "ثبت شده توسط",  PropertyName = nameof(RequestListDto.EnteredByName),      Sortable = true },
+                new() { Header = "تاریخ تایید",   PropertyName = nameof(RequestListDto.ConfirmDateShamsi),  Sortable = true },
+                new() { Header = "عملیات",        IsActionColumn = true }
             ],
             Actions =
             [
@@ -412,7 +403,7 @@ public class RequestController(
                     Action          = "ReceivedRequestLines",
                     RouteIdProperty = nameof(RequestListDto.Id),
                     IconClass       = "fa fa-eye",
-                    LinkClass       = "btn-outline-primary",
+                    LinkClass       = "btn-outline-primary"
                 }
             ]
         };
@@ -422,8 +413,21 @@ public class RequestController(
 
     public async Task<IActionResult> ReceivedRequestLines(int? id, CancellationToken token)
     {
+        if (id is null or 0)
+        {
+            return NotFound();
+        }
+
+        if (!await CanAccessAsync(id.Value, ResourceOperation.Read, token))
+        {
+            return Forbid();
+        }
+
         var dto = await requestService.GetById(id.Value, token);
-        if (dto == null) return NotFound();
+        if (dto is null)
+        {
+            return NotFound();
+        }
 
         var model = new RequestViewModel
         {
@@ -448,7 +452,6 @@ public class RequestController(
                 ReqCount = r.ReqCount,
                 UsedCount = r.UsedCount
             }).ToList(),
-
             NewLine = new RequestLinesViewModel()
         };
 
@@ -459,43 +462,152 @@ public class RequestController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ConfirmReceivedRequest(int id, CancellationToken token)
     {
-        var existing = await requestService.GetById(id, token);
-        if (existing == null) return NotFound();
+        if (!await CanAccessAsync(id, ResourceOperation.Confirm, token))
+        {
+            return Forbid();
+        }
 
-        // فقط درخواست‌های ارسال‌شده قابل تاییدن (دفاع سمت سرور، مستقل از UI)
+        var existing = await requestService.GetById(id, token);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
         if (existing.RequestStatus != (int)RequestStatusEnum.Sent)
         {
-            TempData["ToastMessage"] = "فقط درخواست‌های ارسال‌شده قابل تایید هستند";
-            TempData["ToastType"] = "error";
+            SetToast("فقط درخواست‌های ارسال‌شده قابل تایید هستند", ToastError);
             return RedirectToAction("ReceivedRequestLines", new { id });
         }
 
-        await requestService.ChangeStatus(id, RequestStatusEnum.Confirmed, "", token);
+        await requestService.ChangeStatus(id, RequestStatusEnum.Confirmed, string.Empty, token);
 
-        TempData["ToastMessage"] = "درخواست تایید شد";
-        TempData["ToastType"] = "success";
+        SetToast("درخواست تایید شد", ToastSuccess);
         return RedirectToAction("ReceivedRequests");
     }
-
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RejectReceivedRequest(int id, CancellationToken token)
     {
+        if (!await CanAccessAsync(id, ResourceOperation.Reject, token))
+        {
+            return Forbid();
+        }
+
         var existing = await requestService.GetById(id, token);
-        if (existing == null) return NotFound();
+        if (existing is null)
+        {
+            return NotFound();
+        }
 
         if (existing.RequestStatus != (int)RequestStatusEnum.Sent)
         {
-            TempData["ToastMessage"] = "فقط درخواست‌های ارسال‌شده قابل رد هستند";
-            TempData["ToastType"] = "error";
+            SetToast("فقط درخواست‌های ارسال‌شده قابل رد هستند", ToastError);
             return RedirectToAction("ReceivedRequestLines", new { id });
         }
 
-        await requestService.ChangeStatus(id, RequestStatusEnum.Rejected, "", token);
+        await requestService.ChangeStatus(id, RequestStatusEnum.Rejected, string.Empty, token);
 
-        TempData["ToastMessage"] = "درخواست رد شد";
-        TempData["ToastType"] = "success";
+        SetToast("درخواست رد شد", ToastSuccess);
         return RedirectToAction("ReceivedRequests");
     }
+
+    private async Task<IActionResult> AddLine(RequestViewModel model, CancellationToken token)
+    {
+        if (!model.Id.HasValue || model.Id == 0)
+        {
+            if (model.NewLine.ItemClassId is null or 0)
+            {
+                SetToast("انتخاب نوع کالا اجباری است", ToastError);
+                return RedirectToAction("New", new { id = model.Id });
+            }
+
+            if (model.NewLine.ItemId is null or 0)
+            {
+                SetToast("انتخاب کالا اجباری است", ToastError);
+                return RedirectToAction("New", new { id = model.Id });
+            }
+
+            var activeFiscalPeriod = (await fiscalPeriodService.GetActives(token)).FirstOrDefault();
+
+            var createDto = new RequestCreateDto
+            {
+                Status = RequestStatusEnum.Label,
+                SenderId = CurrentUserRecipientId,
+                EnteredBy = CurrentUserId,
+                ConfirmDate = null,
+                RequestNumber = string.Empty,
+                ReceiverId = CurrentUserRecipientParentId,
+                SendDate = DateOnly.FromDateTime(DateTime.Now),
+                FiscalPeriodId = activeFiscalPeriod?.FiscalPeriodId,
+                Lines = []
+            };
+
+            var newId = await requestService.Create(createDto, token);
+            model.Id = newId;
+        }
+
+        var lineDto = new RequestLineDto
+        {
+            ArriveCount = model.NewLine.ArivCount,
+            ReqCount = model.NewLine.ReqCount,
+            CurrentCount = model.NewLine.CurrentCount,
+            UsedCount = model.NewLine.UsedCount,
+            ItemClassId = model.NewLine.ItemClassId,
+            ItemId = model.NewLine.ItemId,
+            ConfirmCount = null,
+            DosePerVialId = model.NewLine.DosePerVialId,
+            Note = model.NewLine.Note,
+            RequestId = model.Id
+        };
+
+        await requestService.AddLine(model.Id.Value, lineDto, token);
+
+        SetToast("کالا اضافه شد", ToastSuccess);
+
+        return RedirectToAction("New", new { id = model.Id });
+    }
+
+    private async Task<bool> DeleteRequestCore(int id, CancellationToken token)
+    {
+        if (id <= 0)
+        {
+            return false;
+        }
+
+        var existing = await requestService.GetById(id, token);
+        if (existing is null || existing.RequestStatus == (int)RequestStatusEnum.Confirmed)
+        {
+            return false;
+        }
+
+        await requestService.Delete(id);
+        return true;
+    }
+
+    private async Task DeleteLineCore(int lineId, int requestId, CancellationToken token)
+    {
+        await requestService.DeleteLine(lineId, token);
+    }
+
+    private async Task<bool> CanAccessAsync(int id, ResourceOperation operation, CancellationToken token)
+    {
+        var entity = await requestService.GetEntityById(id, token);
+
+        return entity is not null && await requestAccessPolicy.CanAsync(entity, operation, User);
+    }
+
+    private async Task PopulateLookupViewBagsAsync(CancellationToken token)
+    {
+        ViewBag.ItemClassList = (await baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, token))
+            .ToSelectList(x => x.Id, x => x.Title);
+    }
+
+    private void SetToast(string message, string type)
+    {
+        TempData[ToastMessageKey] = message;
+        TempData[ToastTypeKey] = type;
+    }
+
+    private void SetSuccessToast(string message = SuccessMessage) => SetToast(message, ToastSuccess);
 }

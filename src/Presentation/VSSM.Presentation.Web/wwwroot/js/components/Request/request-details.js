@@ -1,58 +1,49 @@
-﻿// ============================================================
-// request-details.js  —  مدیریت صفحه جزئیات درخواست
-// شامل: تایید/رد با مودال، اسکرول و دکمه «مشاهده همه»
-// ============================================================
-
-(function () {
+﻿(function () {
     'use strict';
 
-    // ── دکمه تایید ──
-    const btnConfirm = document.getElementById('btnConfirm');
-    if (btnConfirm) {
-        btnConfirm.addEventListener('click', function () {
+    function submitForm(formId) {
+        var form = document.getElementById(formId);
+        if (form) {
+            form.submit();
+        }
+    }
+
+    function bindConfirm(btnId, formId, options) {
+        var btn = document.getElementById(btnId);
+        if (!btn) {
+            return;
+        }
+
+        btn.addEventListener('click', function () {
             if (typeof VSSM !== 'undefined' && VSSM.Modal) {
                 VSSM.Modal.confirm({
-                    title: 'تایید درخواست',
-                    message: 'با تایید درخواست، نیاز می‌باشد یک درخواست جدید برای رده بالاتر ثبت نمایید. آیا ادامه می‌دهید؟',
-                    confirmText: 'تایید',
+                    title: options.title,
+                    message: options.message,
+                    confirmText: options.confirmText,
                     cancelText: 'انصراف',
-                    type: 'info',
-                    onConfirm: function () {
-                        document.getElementById('confirmForm').submit();
-                    }
+                    type: options.type,
+                    onConfirm: function () { submitForm(formId); }
                 });
-            } else {
-                if (confirm('با تایید درخواست، نیاز می‌باشد یک درخواست جدید برای رده بالاتر ثبت نمایید. آیا ادامه می‌دهید؟')) {
-                    document.getElementById('confirmForm').submit();
-                }
+            } else if (window.confirm(options.message)) {
+                submitForm(formId);
             }
         });
     }
 
-    // ── دکمه رد ──
-    const btnReject = document.getElementById('btnReject');
-    if (btnReject) {
-        btnReject.addEventListener('click', function () {
-            if (typeof VSSM !== 'undefined' && VSSM.Modal) {
-                VSSM.Modal.confirm({
-                    title: 'رد درخواست',
-                    message: 'آیا نسبت به رد درخواست مورد نظر مطمئنید؟',
-                    confirmText: 'رد',
-                    cancelText: 'انصراف',
-                    type: 'danger',
-                    onConfirm: function () {
-                        document.getElementById('rejectForm').submit();
-                    }
-                });
-            } else {
-                if (confirm('آیا نسبت به رد درخواست مورد نظر مطمئنید؟')) {
-                    document.getElementById('rejectForm').submit();
-                }
-            }
-        });
-    }
     function initialize() {
-        initToggleButton();
+        bindConfirm('btnConfirm', 'confirmForm', {
+            title: 'تایید درخواست',
+            message: 'با تایید درخواست، نیاز می‌باشد یک درخواست جدید برای رده بالاتر ثبت نمایید. آیا ادامه می‌دهید؟',
+            confirmText: 'تایید',
+            type: 'info'
+        });
+
+        bindConfirm('btnReject', 'rejectForm', {
+            title: 'رد درخواست',
+            message: 'آیا نسبت به رد درخواست مورد نظر مطمئنید؟',
+            confirmText: 'رد',
+            type: 'danger'
+        });
     }
 
     if (document.readyState === 'loading') {
@@ -60,5 +51,4 @@
     } else {
         initialize();
     }
-
 })();

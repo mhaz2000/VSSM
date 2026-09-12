@@ -33,14 +33,19 @@ public sealed class UidInfoService(VSSMDbContext dbContext) : IUidInfoService
         await using var transaction = await dbContext.Database.BeginTransactionAsync(token);
         try
         {
-            await dbContext.TblOrderInfo
-                .Where(o =>
-                    normalized.Contains(o.BatchNumber) &&
-                    o.TblUidInfos.Any(u => u.IsActive))
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(o => o.FkArrivalId, arrivalId)
-                    .SetProperty(o => o.FkItemId, itemId),
-                    token);
+
+            if(isHalal.HasValue is false)
+            {
+                await dbContext.TblOrderInfo
+                    .Where(o =>
+                        normalized.Contains(o.BatchNumber) &&
+                        o.TblUidInfos.Any(u => u.IsActive))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(o => o.FkArrivalId, arrivalId)
+                        .SetProperty(o => o.FkItemId, itemId),
+                        token);
+            }
+
 
             var affectedUids = await dbContext.TblUidInfo
                 .Where(u =>

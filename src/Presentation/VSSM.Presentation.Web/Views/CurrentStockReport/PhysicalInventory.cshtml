@@ -1,4 +1,5 @@
-﻿@using VSSM.Application.DTOs.BaseEntities.Source
+﻿@using VSSM.Application.DTOs.BaseEntities.BaseInfo
+@using VSSM.Application.DTOs.BaseEntities.Source
 @using VSSM.Application.DTOs.BaseEntities.Store
 @using VSSM.Presentation.Web.Models.Base
 @model GridViewModel
@@ -11,7 +12,7 @@
     var items = ViewBag.Items as List<ItemListDto>;
     var sources = ViewBag.Sources as List<SourceGetDto>;
     var stores = ViewBag.Stores as List<StoreListDto>;
-    var itemClasses = ViewBag.ItemClasses as List<ItemClassListDto>;
+    var itemClasses = ViewBag.ItemClasses as List<BaseInfoDto>;
 }
 
 <div class="container-fluid">
@@ -38,12 +39,12 @@
                                 IsRequired = true,
                                 Name = "itemClassId",
                                 Label = "نوع کالا",
-                                Options = itemClasses
+                                Options = itemClasses?
                             .Select(x => new SelectOption
                             {
                                 Value = x.Id.ToString(),
-                                Text = x.Name
-                            }).ToList()
+                                Text = x.Title
+                            }).ToList() ?? []
                             })
                         </div>
 
@@ -62,7 +63,7 @@
 
                         <div class="col-md-6 input-sec">
 
-                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                            @* @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
                                                         new SearchableSelectModel
                                                         {
                                                             Id = "sourceId",
@@ -75,7 +76,7 @@
                                                             Value = x.SourceId.ToString(),
                                                             Text = x.FullName
                                                         }).ToList()
-                                                        })
+                                                        }) *@
                         </div>
 
                         <div class="col-md-6 input-sec">
@@ -87,12 +88,12 @@
                                                             IsRequired = false,
                                                             Name = "storeId",
                                                             Label = "انبار مرتبط با کالا",
-                                                            Options = stores
+                                                            Options = stores?
                                                         .Select(x => new SelectOption
                                                         {
                                                             Value = x.StoreId.ToString(),
                                                             Text = x.FullName
-                                                        }).ToList()
+                                                        }).ToList() ?? []
                                                         })
                         </div>
 

@@ -34,7 +34,7 @@
 
         setSearchableSelectDisabled('itemId', false);
 
-        $.get('/GetItemsByClass/' + classId, function (res) {
+        $.get('/CurrentStockReport/GetItemsByClass/' + classId, function (res) {
             if (res.success) {
 
                 const items = res.result.map(i => ({

@@ -1,0 +1,24 @@
+﻿@{
+    var stores = ViewBag.Stores as string ?? "کلیه انبارها";
+    var items = ViewBag.Items as string ?? "کلیه کالاها";
+    var recipient = ViewBag.RecipientTitle as string ?? "همه مراکز";
+
+    var isAllStores = stores == "کلیه انبارها";
+    var isAllItems = items == "کلیه کالاها";
+    var isAllRecipients = recipient == "همه مراکز";
+}
+
+<div class="report-header-info">
+    <div class="rhi-item">
+        <span class="rhi-label">انبار</span>
+        <span class="rhi-value @(isAllStores ? "is-all" : "")">@stores</span>
+    </div>
+    <div class="rhi-item">
+        <span class="rhi-label">کالاها</span>
+        <span class="rhi-value @(isAllItems ? "is-all" : "")">@items</span>
+    </div>
+    <div class="rhi-item">
+        <span class="rhi-label">گزارش پایین</span>
+        <span class="rhi-value @(isAllRecipients ? "is-all" : "")">@recipient</span>
+    </div>
+</div>

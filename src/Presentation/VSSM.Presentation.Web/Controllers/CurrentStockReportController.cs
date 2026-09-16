@@ -22,12 +22,18 @@ public class CurrentStockReportController(IReportService _reportService,
     IFiscalPeriodService _fiscalPeriodService)
     : BaseController
 {
+
+    private const string AllItemsLabel = "کلیه کالاها";
+    private const string AllStoresLabel = "کلیه انبارها";
+    private const string AllRecipientsLabel = "همه مراکز";
+    private const int AllRecipientsValue = 0;
+
     #region AvailableQuantity
+
     public async Task<IActionResult> AvailableQuantity(CancellationToken cancellationToken = default)
     {
-        // Load dropdowns
         ViewBag.CommercialNames = await _baseInfoService.GetByParentIdAsync(35, cancellationToken);
-        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId);
+        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, cancellationToken);
         ViewBag.Items = await _itemService.GetActives(cancellationToken);
         ViewBag.Sources = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.EnergySources, cancellationToken);
         ViewBag.Stores = await _storeService.GetAllWithRecipientId(CurrentUserRecipientId!.Value, cancellationToken);
@@ -38,43 +44,28 @@ public class CurrentStockReportController(IReportService _reportService,
         var recipients = await _recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.Value, cancellationToken);
         ViewBag.Recipients = recipients;
 
-        var firstChainLevel = recipients.Where(t => t.ChainLevel is not null).OrderBy(t => t.ChainLevel).FirstOrDefault()?.ChainLevel ?? 0;
-        var lastChainLevel = recipients.Where(t => t.ChainLevel is not null).OrderByDescending(t => t.ChainLevel).FirstOrDefault()?.ChainLevel ?? 0;
+        var firstChainLevel = recipients
+            .Where(t => t.ChainLevel is not null)
+            .OrderBy(t => t.ChainLevel)
+            .FirstOrDefault()?.ChainLevel ?? 0;
 
-        List<int> chainLevels = new List<int>();
-        chainLevels = Enumerable.Range(firstChainLevel, lastChainLevel - firstChainLevel + 1).ToList();
-        ViewBag.ChainLevels = chainLevels;
+        var lastChainLevel = recipients
+            .Where(t => t.ChainLevel is not null)
+            .OrderByDescending(t => t.ChainLevel)
+            .FirstOrDefault()?.ChainLevel ?? 0;
+
+        ViewBag.ChainLevels = Enumerable
+            .Range(firstChainLevel, lastChainLevel - firstChainLevel + 1)
+            .ToList();
 
         return View(null);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AvailableQuantityReport(AvailableQuantityReportQuery inputModel, string reportType, int pageNumber = 1,
-        int pageSize = 20,
-        string sort = "ItemName",
-        string direction = "asc",
-        bool toExcel = false,
-        string? reportId = null)
-    {
-        ViewBag.IsPost = true;
-        if (reportType == "detail")
-            return await AvailableQuantityDetailReport(inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId);
-
-        if (reportType == "summary")
-            return await AvailableQuantitySummaryReport(inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId);
-
-        if (reportType == "summaryWithDosePerVial")
-            return await AvailableQuantitySummaryWithDosePerVialReport(inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId);
-
-        if (reportType == "quantitySummary")
-            return await AvailableQuantityQuantitySummaryWithDosePerVialReport(inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId);
-
-        return View(null);
-    }
-
-    private async Task<IActionResult> AvailableQuantityQuantitySummaryWithDosePerVialReport(
+    public async Task<IActionResult> AvailableQuantityReport(
         AvailableQuantityReportQuery inputModel,
+        string reportType,
         int pageNumber = 1,
         int pageSize = 20,
         string sort = "ItemName",
@@ -83,44 +74,56 @@ public class CurrentStockReportController(IReportService _reportService,
         string? reportId = null,
         CancellationToken cancellationToken = default)
     {
-        if (!string.IsNullOrEmpty(reportId))
-        {
-            inputModel = _cache.Get<AvailableQuantityReportQuery>(reportId);
-            _cache.Remove(reportId);
-        }
-        else
-        {
-            reportId = Guid.NewGuid().ToString("N");
-        }
-        ViewBag.AdditionalParam = $"reportType=quantitySummary&reportId={reportId}";
+        ViewBag.IsPost = true;
 
-        _cache.Set<AvailableQuantityReportQuery>(reportId, inputModel, TimeSpan.FromDays(1));
+        return reportType switch
+        {
+            "detail" => await AvailableQuantityDetailReport(
+                inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId, cancellationToken),
+
+            "summary" => await AvailableQuantitySummaryReport(
+                inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId, cancellationToken),
+
+            "summaryWithDosePerVial" => await AvailableQuantitySummaryWithDosePerVialReport(
+                inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId, cancellationToken),
+
+            "quantitySummary" => await AvailableQuantityQuantitySummaryWithDosePerVialReport(
+                inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId, cancellationToken),
+
+            _ => View(null)
+        };
+    }
+
+    private async Task<IActionResult> AvailableQuantityQuantitySummaryWithDosePerVialReport(
+        AvailableQuantityReportQuery inputModel,
+        int pageNumber,
+        int pageSize,
+        string sort,
+        string direction,
+        bool toExcel,
+        string? reportId,
+        CancellationToken cancellationToken)
+    {
+        PrepareCachedReport(ref inputModel, ref reportId, "quantitySummary",
+            pageSize, sort, direction);
 
         if (toExcel)
         {
-            var excelData = await _reportService.GetAvailableQuantityQuantitySummaryReportAsync(inputModel, CurrentUserRecipientId.Value,
-                pageNumber,
-                pageSize,
-                sort,
-                direction,
-                true,
-                cancellationToken);
+            var excelData = await _reportService.GetAvailableQuantityQuantitySummaryReportAsync(
+                inputModel, CurrentUserRecipientId.Value,
+                pageNumber, pageSize, sort, direction, true, cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.AvailableQuantityQuantitySummaryReportExcel(excelData.data);
             return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "مقدار موجود - خلاصه گزارش.xlsx");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "مقدار موجود - خلاصه گزارش.xlsx");
         }
 
-        await SetStoresAndItemsViewBagAsync(inputModel.StoreId, inputModel.ItemId, cancellationToken);
+        await PopulateHeaderAsync(inputModel, cancellationToken);
 
-        var (data, count) = await _reportService.GetAvailableQuantityQuantitySummaryReportAsync(inputModel, CurrentUserRecipientId.Value,
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken);
+        var (data, count) = await _reportService.GetAvailableQuantityQuantitySummaryReportAsync(
+            inputModel, CurrentUserRecipientId.Value,
+            pageNumber, pageSize, sort, direction, false, cancellationToken);
 
         var model = new GridViewModel
         {
@@ -135,13 +138,13 @@ public class CurrentStockReportController(IReportService _reportService,
             },
             Columns = new List<GridColumn>
             {
-                new() { Header = "نوع کالا", PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ItemClass) },
-                new() { Header = "Item Code", PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ItemCode) },
-                new() { Header = "کالا", PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ItemName) },
-                new() { Header = "سری ساخت", PropertyName = nameof(AvailableQuantityQuantitySummaryDto.BatchNumber) },
-                new() { Header = "دوز بر ویال", PropertyName = nameof(AvailableQuantityQuantitySummaryDto.DoesPerVial) },
-                new() { Header = "تاریخ انقضا", PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ExpiryDateText) },
-                new() { Header = "تعداد", PropertyName = nameof(AvailableQuantityQuantitySummaryDto.CurrentStock) },
+                new() { Header = "نوع کالا",       PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ItemClass) },
+                new() { Header = "Item Code",      PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ItemCode) },
+                new() { Header = "کالا",           PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ItemName) },
+                new() { Header = "سری ساخت",       PropertyName = nameof(AvailableQuantityQuantitySummaryDto.BatchNumber) },
+                new() { Header = "دوز بر ویال",    PropertyName = nameof(AvailableQuantityQuantitySummaryDto.DoesPerVial) },
+                new() { Header = "تاریخ انقضا",    PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ExpiryDateText) },
+                new() { Header = "تعداد",          PropertyName = nameof(AvailableQuantityQuantitySummaryDto.CurrentStock) },
             }
         };
 
@@ -150,56 +153,34 @@ public class CurrentStockReportController(IReportService _reportService,
 
     private async Task<IActionResult> AvailableQuantitySummaryWithDosePerVialReport(
         AvailableQuantityReportQuery inputModel,
-        int pageNumber = 1,
-        int pageSize = 20,
-        string sort = "ItemName",
-        string direction = "asc",
-        bool toExcel = false,
-        string? reportId = null,
-        CancellationToken cancellationToken = default)
+        int pageNumber,
+        int pageSize,
+        string sort,
+        string direction,
+        bool toExcel,
+        string? reportId,
+        CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrEmpty(reportId))
-        {
-            inputModel = _cache.Get<AvailableQuantityReportQuery>(reportId);
-            _cache.Remove(reportId);
-        }
-        else
-        {
-            reportId = Guid.NewGuid().ToString("N");
-        }
-        ViewBag.AdditionalParam = $"reportType=summaryWithDosePerVial&reportId={reportId}";
-
-        _cache.Set<AvailableQuantityReportQuery>(reportId, inputModel, TimeSpan.FromDays(1));
+        PrepareCachedReport(ref inputModel, ref reportId, "summaryWithDosePerVial",
+            pageSize, sort, direction);
 
         if (toExcel)
         {
             var excelData = await _reportService.GetAvailableQuantitySummaryWithDosePerVialReportAsync(
-                inputModel,
-                CurrentUserRecipientId.GetValueOrDefault(),
-                pageNumber,
-                pageSize,
-                sort,
-                direction,
-                true,
-                cancellationToken);
+                inputModel, CurrentUserRecipientId.GetValueOrDefault(),
+                pageNumber, pageSize, sort, direction, true, cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.AvailableQuantitySummaryWithDosePerVialReportExcel(excelData.data);
             return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "مقدار موجود - خلاصه گزارش با دوز بر ویال.xlsx");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "مقدار موجود - خلاصه گزارش با دوز بر ویال.xlsx");
         }
 
-        await SetStoresAndItemsViewBagAsync(inputModel.StoreId, inputModel.ItemId, cancellationToken);
+        await PopulateHeaderAsync(inputModel, cancellationToken);
 
         var (data, count) = await _reportService.GetAvailableQuantitySummaryWithDosePerVialReportAsync(
-            inputModel,
-            CurrentUserRecipientId.GetValueOrDefault(),
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken);
+            inputModel, CurrentUserRecipientId.GetValueOrDefault(),
+            pageNumber, pageSize, sort, direction, false, cancellationToken);
 
         var model = new GridViewModel
         {
@@ -214,10 +195,10 @@ public class CurrentStockReportController(IReportService _reportService,
             },
             Columns = new List<GridColumn>
             {
-                new() { Header = "Item Code", PropertyName = nameof(AvailableQuantitySummaryWithDosePerVialDto.ItemCode) },
-                new() { Header = "کالا", PropertyName = nameof(AvailableQuantitySummaryWithDosePerVialDto.ItemName) },
-                new() { Header = "دوز بر ویال", PropertyName = nameof(AvailableQuantitySummaryWithDosePerVialDto.DoesPerVial) },
-                new() { Header = "تعداد", PropertyName = nameof(AvailableQuantitySummaryWithDosePerVialDto.CurrentStock) },
+                new() { Header = "Item Code",     PropertyName = nameof(AvailableQuantitySummaryWithDosePerVialDto.ItemCode) },
+                new() { Header = "کالا",          PropertyName = nameof(AvailableQuantitySummaryWithDosePerVialDto.ItemName) },
+                new() { Header = "دوز بر ویال",   PropertyName = nameof(AvailableQuantitySummaryWithDosePerVialDto.DoesPerVial) },
+                new() { Header = "تعداد",         PropertyName = nameof(AvailableQuantitySummaryWithDosePerVialDto.CurrentStock) },
             }
         };
 
@@ -226,56 +207,34 @@ public class CurrentStockReportController(IReportService _reportService,
 
     private async Task<IActionResult> AvailableQuantitySummaryReport(
         AvailableQuantityReportQuery inputModel,
-        int pageNumber = 1,
-        int pageSize = 20,
-        string sort = "ItemName",
-        string direction = "asc",
-        bool toExcel = false,
-        string? reportId = null,
-        CancellationToken cancellationToken = default)
+        int pageNumber,
+        int pageSize,
+        string sort,
+        string direction,
+        bool toExcel,
+        string? reportId,
+        CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrEmpty(reportId))
-        {
-            inputModel = _cache.Get<AvailableQuantityReportQuery>(reportId);
-            _cache.Remove(reportId);
-        }
-        else
-        {
-            reportId = Guid.NewGuid().ToString("N");
-        }
-        ViewBag.AdditionalParam = $"reportType=summary&reportId={reportId}";
-
-        _cache.Set<AvailableQuantityReportQuery>(reportId, inputModel, TimeSpan.FromDays(1));
+        PrepareCachedReport(ref inputModel, ref reportId, "summary",
+            pageSize, sort, direction);
 
         if (toExcel)
         {
             var excelData = await _reportService.GetAvailableQuantitySummaryReportAsync(
-                inputModel,
-                CurrentUserRecipientId.GetValueOrDefault(),
-                pageNumber,
-                pageSize,
-                sort,
-                direction,
-                true,
-                cancellationToken);
+                inputModel, CurrentUserRecipientId.GetValueOrDefault(),
+                pageNumber, pageSize, sort, direction, true, cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.AvailableQuantitySummaryReportExcel(excelData.data);
             return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "مقدار موجود - گزارش خلاصه موجودی.xlsx");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "مقدار موجود - گزارش خلاصه موجودی.xlsx");
         }
 
-        await SetStoresAndItemsViewBagAsync(inputModel.StoreId, inputModel.ItemId, cancellationToken);
+        await PopulateHeaderAsync(inputModel, cancellationToken);
 
         var (data, count) = await _reportService.GetAvailableQuantitySummaryReportAsync(
-            inputModel,
-            CurrentUserRecipientId.GetValueOrDefault(),
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken);
+            inputModel, CurrentUserRecipientId.GetValueOrDefault(),
+            pageNumber, pageSize, sort, direction, false, cancellationToken);
 
         var model = new GridViewModel
         {
@@ -291,8 +250,8 @@ public class CurrentStockReportController(IReportService _reportService,
             Columns = new List<GridColumn>
             {
                 new() { Header = "Item Code", PropertyName = nameof(AvailableQuantitySummaryDto.ItemCode) },
-                new() { Header = "کالا", PropertyName = nameof(AvailableQuantitySummaryDto.ItemName) },
-                new() { Header = "تعداد", PropertyName = nameof(AvailableQuantitySummaryDto.CurrentStock) },
+                new() { Header = "کالا",      PropertyName = nameof(AvailableQuantitySummaryDto.ItemName) },
+                new() { Header = "تعداد",     PropertyName = nameof(AvailableQuantitySummaryDto.CurrentStock) },
             }
         };
 
@@ -301,57 +260,34 @@ public class CurrentStockReportController(IReportService _reportService,
 
     private async Task<IActionResult> AvailableQuantityDetailReport(
         AvailableQuantityReportQuery inputModel,
-        int pageNumber = 1,
-        int pageSize = 20,
-        string sort = "ItemName",
-        string direction = "asc",
-        bool toExcel = false,
-        string? reportId = null,
-        CancellationToken cancellationToken = default)
+        int pageNumber,
+        int pageSize,
+        string sort,
+        string direction,
+        bool toExcel,
+        string? reportId,
+        CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrEmpty(reportId))
-        {
-            inputModel = _cache.Get<AvailableQuantityReportQuery>(reportId);
-            _cache.Remove(reportId);
-        }
-        else
-        {
-            reportId = Guid.NewGuid().ToString("N");
-        }
-        ViewBag.AdditionalParam = $"reportType=detail&reportId={reportId}";
-
-        _cache.Set<AvailableQuantityReportQuery>(reportId, inputModel, TimeSpan.FromDays(1));
+        PrepareCachedReport(ref inputModel, ref reportId, "detail",
+            pageSize, sort, direction);
 
         if (toExcel)
         {
             var excelData = await _reportService.GetAvailableQuantityDetailReportAsync(
-                inputModel, 
-                CurrentUserRecipientId.GetValueOrDefault(),
-                pageNumber,
-                pageSize,
-                sort,
-                direction,
-                true,
-                cancellationToken);
+                inputModel, CurrentUserRecipientId.GetValueOrDefault(),
+                pageNumber, pageSize, sort, direction, true, cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.AvailableQuantityDetailReportExcel(excelData.data);
             return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "مقدار موجود - جزئیات گزارش.xlsx");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "مقدار موجود - جزئیات گزارش.xlsx");
         }
 
-        await SetStoresAndItemsViewBagAsync(inputModel.StoreId, inputModel.ItemId, cancellationToken);
+        await PopulateHeaderAsync(inputModel, cancellationToken);
 
         var (data, count) = await _reportService.GetAvailableQuantityDetailReportAsync(
-            inputModel, 
-            CurrentUserRecipientId.GetValueOrDefault(),
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken);
-
+            inputModel, CurrentUserRecipientId.GetValueOrDefault(),
+            pageNumber, pageSize, sort, direction, false, cancellationToken);
 
         var model = new GroupedGridViewModel<object, object>
         {
@@ -363,56 +299,145 @@ public class CurrentStockReportController(IReportService _reportService,
                 PageSize = pageSize,
                 TotalCount = count
             },
-            Groups = data.Select(s => new GroupItem<object, object>() { Details = s.Details.Cast<object>().ToList(), Meta = s.Meta }).ToList(),
+            Groups = data.Select(s => new GroupItem<object, object>
+            {
+                Details = s.Details.Cast<object>().ToList(),
+                Meta = s.Meta
+            }).ToList(),
             Columns = new List<GridColumn>
             {
-                new() { Header = "سری ساخت", PropertyName = nameof(AvailableQuantityDetailDto.BatchNumber) },
-                new() { Header = "سازنده", PropertyName = nameof(AvailableQuantityDetailDto.ManufacturerName) },
-                new() { Header = "تاریخ انقضا", PropertyName = nameof(AvailableQuantityDetailDto.ShamsiExpiryDate) },
+                new() { Header = "سری ساخت",              PropertyName = nameof(AvailableQuantityDetailDto.BatchNumber) },
+                new() { Header = "سازنده",                PropertyName = nameof(AvailableQuantityDetailDto.ManufacturerName) },
+                new() { Header = "تاریخ انقضا",           PropertyName = nameof(AvailableQuantityDetailDto.ShamsiExpiryDate) },
                 new() { Header = "روزهای مانده به انقضا", PropertyName = nameof(AvailableQuantityDetailDto.DaysToBeExpired) },
-                new() { Header = "تعداد", PropertyName = nameof(AvailableQuantityDetailDto.CurrentStock) },
-                new() { Header = "دوز بر ویال", PropertyName = nameof(AvailableQuantityDetailDto.DoesPerVial) },
-                new() { Header = "انبار", PropertyName = nameof(AvailableQuantityDetailDto.Stock) },
-                new() { Header = "گیرنده", PropertyName = nameof(AvailableQuantityDetailDto.Recipient) },
-                new() { Header = "تاریخ تولید", PropertyName = nameof(AvailableQuantityDetailDto.ProductionDateText) },
-                new() { Header = "نام تجاری", PropertyName = nameof(AvailableQuantityDetailDto.CommercialName) },
-                new() { Header = "نوع VVM", PropertyName = nameof(AvailableQuantityDetailDto.Vvmtype) },
-                new() { Header = "مرحله VVM", PropertyName = nameof(AvailableQuantityDetailDto.Vvmstage) },
+                new() { Header = "تعداد",                 PropertyName = nameof(AvailableQuantityDetailDto.CurrentStock) },
+                new() { Header = "دوز بر ویال",           PropertyName = nameof(AvailableQuantityDetailDto.DoesPerVial) },
+                new() { Header = "انبار",                 PropertyName = nameof(AvailableQuantityDetailDto.Stock) },
+                new() { Header = "گیرنده",                PropertyName = nameof(AvailableQuantityDetailDto.Recipient) },
+                new() { Header = "تاریخ تولید",           PropertyName = nameof(AvailableQuantityDetailDto.ProductionDateText) },
+                new() { Header = "نام تجاری",             PropertyName = nameof(AvailableQuantityDetailDto.CommercialName) },
+                new() { Header = "نوع VVM",               PropertyName = nameof(AvailableQuantityDetailDto.Vvmtype) },
+                new() { Header = "مرحله VVM",             PropertyName = nameof(AvailableQuantityDetailDto.Vvmstage) },
             }
         };
 
         return View(model);
     }
 
-    private async Task SetStoresAndItemsViewBagAsync(string inputStoreIds, string inputItemIds, CancellationToken cancellationToken)
+    // ─────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Cache/reportId را مدیریت می‌کند و AdditionalParam را ست می‌کند
+    /// تا در Viewهای Report برای Pagination و Excel Export قابل استفاده باشد.
+    /// </summary>
+    private void PrepareCachedReport(
+        ref AvailableQuantityReportQuery inputModel,
+        ref string? reportId,
+        string reportType,
+        int pageSize,
+        string sort,
+        string direction)
     {
-        var storeList = string.Empty;
-        var stores = await _storeService.GetAllWithRecipientId(CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
-        var storeIds = (inputStoreIds ?? "")
-            .Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(int.Parse)
-            .ToList();
-
-        if (!stores.Select(s => s.StoreId).Except(storeIds).Any())
-            storeList = "کلیه انبار ها";
+        if (!string.IsNullOrEmpty(reportId))
+        {
+            var cached = _cache.Get<AvailableQuantityReportQuery>(reportId);
+            if (cached is not null)
+            {
+                inputModel = cached;
+                _cache.Remove(reportId);
+            }
+        }
         else
-            storeList = await _storeService.GetStoreNamesAsync(storeIds);
+        {
+            reportId = Guid.NewGuid().ToString("N");
+        }
 
-        ViewBag.Stores = storeList;
+        ViewBag.AdditionalParam =
+            $"reportType={reportType}" +
+            $"&reportId={reportId}" +
+            $"&pageSize={pageSize}" +
+            $"&sort={Uri.EscapeDataString(sort)}" +
+            $"&direction={direction}";
 
-        var itemList = string.Empty;
+        _cache.Set(reportId, inputModel, TimeSpan.FromDays(1));
+    }
+
+    /// <summary>
+    /// هدر پارامترهای گزارش (انبارها، کالاها، همه مراکز) را آماده می‌کند.
+    /// </summary>
+    private async Task PopulateHeaderAsync(
+        AvailableQuantityReportQuery inputModel,
+        CancellationToken cancellationToken)
+    {
+        await SetStoresAndItemsViewBagAsync(inputModel.StoreId, inputModel.ItemId, cancellationToken);
+        await SetRecipientTitleViewBagAsync(inputModel.RecipientId, cancellationToken);
+    }
+
+    private async Task SetStoresAndItemsViewBagAsync(
+        string inputStoreIds,
+        string inputItemIds,
+        CancellationToken cancellationToken)
+    {
+        // ── Stores ──
+        var stores = await _storeService.GetAllWithRecipientId(
+            CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
+
+        var storeIds = ParseIds(inputStoreIds);
+
+        ViewBag.Stores =
+            storeIds.Count == 0
+                ? AllStoresLabel
+                : !stores.Select(s => s.StoreId).Except(storeIds).Any()
+                    ? AllStoresLabel
+                    : await _storeService.GetStoreNamesAsync(storeIds);
+
+        // ── Items ──
         var items = await _itemService.GetActives(cancellationToken);
-        var itemIds = (inputItemIds ?? "")
-            .Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(int.Parse)
+        var itemIds = ParseIds(inputItemIds);
+
+        ViewBag.Items =
+            itemIds.Count == 0
+                ? AllItemsLabel
+                : !items.Select(s => s.ItemId).Except(itemIds).Any()
+                    ? AllItemsLabel
+                    : await _itemService.GetItemNamesAsync(itemIds);
+    }
+
+    private async Task SetRecipientTitleViewBagAsync(
+        int? recipientId,
+        CancellationToken cancellationToken)
+    {
+        if (recipientId is null || recipientId.Value == AllRecipientsValue)
+        {
+            ViewBag.RecipientTitle = AllRecipientsLabel;
+            return;
+        }
+
+        var recipients = await _recipientService.GetActiveRecipientChildren(
+            CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
+
+        ViewBag.RecipientTitle =
+            recipients.FirstOrDefault(r => r.RecipientId == recipientId.Value)?.FullName
+            ?? AllRecipientsLabel;
+    }
+
+    /// <summary>
+    /// رشته‌ی comma-separated را با TryParse به لیست int تبدیل می‌کند
+    /// تا input نامعتبر باعث Exception نشود.
+    /// </summary>
+    private static List<int> ParseIds(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return new List<int>();
+
+        return raw
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(s => int.TryParse(s, out var id) ? id : (int?)null)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
             .ToList();
-
-        if (!items.Select(s => s.ItemId).Except(itemIds).Any())
-            itemList = "کلیه کالاها";
-        else
-            itemList = await _itemService.GetItemNamesAsync(itemIds);
-
-        ViewBag.Items = itemList;
     }
 
     #endregion
@@ -420,7 +445,7 @@ public class CurrentStockReportController(IReportService _reportService,
     #region PhysicalInventory
     public async Task<IActionResult> PhysicalInventory(CancellationToken cancellationToken = default)
     {
-        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId,cancellationToken);
+        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, cancellationToken);
         ViewBag.Items = await _itemService.GetActives(cancellationToken);
         ViewBag.Stores = await _storeService.GetAllWithRecipientId(CurrentUserRecipientId!.Value, cancellationToken);
 

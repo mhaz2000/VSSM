@@ -17,6 +17,9 @@
 
     let itemsRequest = null;
     let lastRequestedClassId = null;
+    let updateRafId = null;
+
+    const ALL_RECIPIENTS_VALUE = '0';
 
     const escapeHtml = (value) => {
         if (value == null) return '';
@@ -87,34 +90,35 @@
 
         if (!$optionsContainer.length || !$tags.length) return;
 
-        $hidden.val('');
+        $hidden.val('').trigger('change');
         $tags.html(`<span class="ms-placeholder">${escapeHtml(placeholder)}</span>`);
         $optionsContainer.empty();
 
         if (!items || items.length === 0) {
-            $hidden.trigger('change');
             return;
         }
 
-        const selectAll = $(`
+        const fragment = document.createDocumentFragment();
+
+        const $selectAll = $(`
             <div class="ms-option ms-select-all" data-value="__all__">
                 <input type="checkbox" class="ms-option-checkbox" />
                 <span>انتخاب همه</span>
             </div>
         `);
-        $optionsContainer.append(selectAll);
+        fragment.appendChild($selectAll[0]);
 
         items.forEach(item => {
-            const option = $(`
+            const $option = $(`
                 <div class="ms-option" data-value="${escapeHtml(item.value)}">
                     <input type="checkbox" class="ms-option-checkbox" />
                     <span>${escapeHtml(item.text)}</span>
                 </div>
             `);
-            $optionsContainer.append(option);
+            fragment.appendChild($option[0]);
         });
 
-        $hidden.trigger('change');
+        $optionsContainer[0].appendChild(fragment);
     };
 
     const setMultiSelectDisabled = (selectId, disabled) => {
@@ -156,7 +160,6 @@
         const itemClassValue = getValue('#itemClassId');
         const itemValue = getMultiSelectValue('itemId');
         const storeValue = getMultiSelectValue('storeId');
-        const recipientValue = getValue('#recipientId');
         const levelValue = getValue('#level');
         const batchNumber = $.trim(batchNumberInput.val() || '');
         const sourceValue = getValue('#sourceId');
@@ -168,10 +171,15 @@
         const toDate = $.trim(toDateEnInput.val() || toDateInput.val() || '');
         const allSubStores = allSubRecipientStocks.is(':checked');
 
+        const recipientValue = getValue('#recipientId');
+        const recipientFilter = recipientValue && recipientValue !== ALL_RECIPIENTS_VALUE
+            ? recipientValue
+            : null;
+
         return hasValue(itemClassValue)
             || hasValue(itemValue)
             || hasValue(storeValue)
-            || hasValue(recipientValue)
+            || hasValue(recipientFilter)
             || hasValue(levelValue)
             || hasValue(batchNumber)
             || hasValue(sourceValue)
@@ -187,6 +195,11 @@
     const updateSearchButtons = () => {
         if (!searchButtons.length) return;
         searchButtons.prop('disabled', !hasAnyFilter());
+    };
+
+    const scheduleUpdateSearchButtons = () => {
+        if (updateRafId) cancelAnimationFrame(updateRafId);
+        updateRafId = requestAnimationFrame(updateSearchButtons);
     };
 
     const initializeDatePickers = () => {
@@ -251,7 +264,7 @@
             complete: () => {
                 itemsRequest = null;
                 setMultiSelectLoading('itemId', false);
-                updateSearchButtons();
+                scheduleUpdateSearchButtons();
             }
         });
     };
@@ -262,7 +275,7 @@
 
     itemClassSelect.on('change', (e) => {
         const classId = normalizeValue($(e.currentTarget).val());
-        updateSearchButtons();
+        scheduleUpdateSearchButtons();
 
         if (!classId) {
             abortItemsRequest();
@@ -270,7 +283,7 @@
             clearMultiSelect('itemId');
             setMultiSelectDisabled('itemId', true);
             setMultiSelectLoading('itemId', false);
-            updateSearchButtons();
+            scheduleUpdateSearchButtons();
             return;
         }
 
@@ -281,23 +294,31 @@
         loadItemsByClass(classId);
     });
 
-    itemMultiSelect.on('change', updateSearchButtons);
-    storeMultiSelect.on('change', updateSearchButtons);
+    itemMultiSelect.on('change', scheduleUpdateSearchButtons);
+    storeMultiSelect.on('change', scheduleUpdateSearchButtons);
 
-    form.on('change', 'select, input[type="checkbox"]', updateSearchButtons);
-    form.on('input', '#batchNumber, #fromDate, #toDate', updateSearchButtons);
+    form.on('change', 'select, input[type="checkbox"]', scheduleUpdateSearchButtons);
+    form.on('input', '#batchNumber, #fromDate, #toDate', scheduleUpdateSearchButtons);
 
-    fromDateEnInput.on('change input', updateSearchButtons);
-    toDateEnInput.on('change input', updateSearchButtons);
+    fromDateEnInput.on('change input', scheduleUpdateSearchButtons);
+    toDateEnInput.on('change input', scheduleUpdateSearchButtons);
 
-    allSubRecipientStocks.on('change', updateSearchButtons);
+    allSubRecipientStocks.on('change', scheduleUpdateSearchButtons);
+
 
     form.on('submit', (event) => {
         if (!hasAnyFilter()) {
             event.preventDefault();
-            updateSearchButtons();
+            scheduleUpdateSearchButtons();
             return false;
         }
+
+        const itemValues = getMultiSelectValue('itemId');
+        const storeValues = getMultiSelectValue('storeId');
+
+        $('#itemId').val(itemValues ? itemValues.join(',') : '');
+        $('#storeId').val(storeValues ? storeValues.join(',') : '');
+
         return true;
     });
 });

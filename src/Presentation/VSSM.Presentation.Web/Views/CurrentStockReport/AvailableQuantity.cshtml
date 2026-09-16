@@ -15,6 +15,20 @@
     var manufacturers = ViewBag.Manufacturers as List<BaseInfoDto>;
     var vvmstages = ViewBag.Vvmstages as List<BaseInfoDto>;
     var vvmtypes = ViewBag.Vvmtypes as List<BaseInfoDto>;
+
+    // FIX: افزودن گزینه‌ی «همه مراکز» به‌عنوان مقدار پیش‌فرض
+    var recipientOptions = new List<SelectOption>
+    {
+        new SelectOption { Value = "0", Text = "همه مراکز" }
+    };
+    if (recipients is not null)
+    {
+        recipientOptions.AddRange(recipients.Select(x => new SelectOption
+        {
+            Value = x.RecipientId.ToString(),
+            Text = x.FullName
+        }));
+    }
 }
 @section Styles {
     <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
@@ -31,7 +45,13 @@
         <i class="fa fa-filter" style="color:#3b82f6;"></i>
         <span>@ViewData["Title"]</span>
     </div>
-    <form method="post" action="/CurrentStockReport/AvailableQuantityReport" target="_blank" id="availableQuantityForm">
+
+    <form method="post"
+          action="/CurrentStockReport/AvailableQuantityReport"
+          target="_blank"
+          id="availableQuantityForm">
+        @Html.AntiForgeryToken()
+
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-search" style="color:#3b82f6;"></i>
@@ -51,6 +71,7 @@
                             Options = itemClasses?.Select(x => new SelectOption { Value = x.Id.ToString(), Text = x.Title }).ToList() ?? new List<SelectOption>()
                         })
                     </div>
+
                     <div class="f-group filter-items">
                         <label class="f-label" for="itemId">کالاها</label>
                         @await Html.PartialAsync("Components/SearchableMultiSelect/_SearchableMultiSelect",
@@ -63,6 +84,8 @@
                                                     Options = items?.Select(x => new SelectOption { Value = x.ItemId.ToString(), Text = x.FullName }).ToList() ?? new List<SelectOption>()
                                                 })
                     </div>
+
+                    <!-- FIX: گزارش پایین با گزینه «همه مراکز» -->
                     <div class="f-group filter-recipient">
                         <label class="f-label" for="recipientId">گزارش پایین</label>
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
@@ -72,10 +95,11 @@
                                                     Name = "recipientId",
                                                     IsRequired = false,
                                                     Label = "",
-                                                    DefaultText = "-- انتخاب کنید --",
-                                                    Options = recipients?.Select(x => new SelectOption { Value = x.RecipientId.ToString(), Text = x.FullName }).ToList() ?? new List<SelectOption>()
+                                                    DefaultText = "همه مراکز",
+                                                    Options = recipientOptions
                                                 })
                     </div>
+
                     <div class="f-group filter-level">
                         <label class="f-label" for="level">سطح در زنجیره</label>
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
@@ -89,10 +113,12 @@
                                                     Options = chainLevels?.Select(x => new SelectOption { Value = x.ToString(), Text = x.ToString() }).ToList() ?? new List<SelectOption>()
                                                 })
                     </div>
+
                     <div class="f-group filter-batch">
                         <label class="f-label" for="batchNumber">سری ساخت</label>
                         <input id="batchNumber" name="batchNumber" class="f-control" placeholder="شماره سری ساخت" autocomplete="off" />
                     </div>
+
                     <!-- ROW 2 -->
                     <div class="f-group filter-stores">
                         <label class="f-label" for="storeId">انبارها</label>
@@ -106,6 +132,7 @@
                                                     Options = stores?.Select(x => new SelectOption { Value = x.StoreId.ToString(), Text = x.FullName }).ToList() ?? new List<SelectOption>()
                                                 })
                     </div>
+
                     <div class="f-group filter-source">
                         <label class="f-label" for="sourceId">منبع</label>
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
@@ -118,6 +145,7 @@
                                                     Options = sources?.Select(x => new SelectOption { Value = x.SourceId.ToString(), Text = x.FullName }).ToList() ?? new List<SelectOption>()
                                                 })
                     </div>
+
                     <div class="f-group filter-manufacturer">
                         <label class="f-label" for="manufacturerId">سازنده</label>
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
@@ -130,6 +158,7 @@
                                                     Options = manufacturers?.Select(x => new SelectOption { Value = x.Id.ToString(), Text = x.Title }).ToList() ?? new List<SelectOption>()
                                                 })
                     </div>
+
                     <div class="f-group filter-vvm-type">
                         <label class="f-label" for="vvmtypeId">نوع VVM</label>
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
@@ -142,6 +171,7 @@
                                                     Options = vvmtypes?.Select(x => new SelectOption { Value = x.Id.ToString(), Text = x.Title }).ToList() ?? new List<SelectOption>()
                                                 })
                     </div>
+
                     <div class="f-group filter-vvm-stage">
                         <label class="f-label" for="vvmstageId">مرحله VVM</label>
                         @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
@@ -154,6 +184,7 @@
                                                     Options = vvmstages?.Select(x => new SelectOption { Value = x.Id.ToString(), Text = x.Title }).ToList() ?? new List<SelectOption>()
                                                 })
                     </div>
+
                     <!-- ROW 3 -->
                     <div class="row-3">
                         <div class="f-group filter-commercial-name">
@@ -168,44 +199,32 @@
                                                             Options = commercialNames?.Select(x => new SelectOption { Value = x.Id.ToString(), Text = x.Title }).ToList() ?? new List<SelectOption>()
                                                         })
                         </div>
-                        <div class="f-group filter-production-date">
-                            <label class="f-label" for="fromDate">
-                                تاریخ تولید
-                            </label>
 
+                        <div class="f-group filter-production-date">
+                            <label class="f-label" for="fromDate">تاریخ تولید</label>
                             <div class="datepicker-wrap">
                                 <input id="fromDate"
                                        class="f-control datepicker-input"
                                        placeholder="تاریخ تولید"
                                        autocomplete="off" />
-
                                 <i class="fa fa-calendar datepicker-ico"></i>
                             </div>
-
-                            <input type="hidden"
-                                   id="fromDateEn"
-                                   name="productinDate" />
+                            <input type="hidden" id="fromDateEn" name="productinDate" />
                         </div>
 
                         <div class="f-group filter-expiry-date">
-                            <label class="f-label" for="toDate">
-                                تاریخ انقضا
-                            </label>
-
+                            <label class="f-label" for="toDate">تاریخ انقضا</label>
                             <div class="datepicker-wrap">
                                 <input id="toDate"
                                        class="f-control datepicker-input"
                                        placeholder="تاریخ انقضا"
                                        autocomplete="off" />
-
                                 <i class="fa fa-calendar datepicker-ico"></i>
                             </div>
-
-                            <input type="hidden"
-                                   id="toDateEn"
-                                   name="expiryDate" />
+                            <input type="hidden" id="toDateEn" name="expiryDate" />
                         </div>
                     </div>
+
                     <!-- All Sub Stores -->
                     <div class="row-checkbox">
                         <input type="checkbox" id="allSubRecipientStocks" class="big-checkbox" name="AllSubRecipientStocks" value="true" />
@@ -215,32 +234,35 @@
                 </div>
             </div>
         </div>
+
         <!-- FOOTER -->
         <div class="form-footer">
             <a asp-action="Index" class="btn-back">
                 <i class="fa fa-arrow-right"></i>
                 <span>بازگشت</span>
             </a>
-            <button type="submit" class="btn-confirm" name="reportType" value="detail" disabled>
+            <button type="submit" class="btn-confirm" name="reportType" value="detail">
                 <i class="fa fa-search"></i>
                 <span>جزئیات گزارش</span>
             </button>
-            <button type="submit" class="btn-confirm" name="reportType" value="summary" disabled>
+            <button type="submit" class="btn-confirm" name="reportType" value="summary">
                 <i class="fa fa-search"></i>
                 <span>خلاصه گزارش</span>
             </button>
-            <button type="submit" class="btn-confirm" name="reportType" value="summaryWithDosePerVial" disabled>
+            <button type="submit" class="btn-confirm" name="reportType" value="summaryWithDosePerVial">
                 <i class="fa fa-search"></i>
                 <span>خلاصه با دوز بر ویال</span>
             </button>
-            <button type="submit" class="btn-confirm" name="reportType" value="quantitySummary" disabled>
+            <button type="submit" class="btn-confirm" name="reportType" value="quantitySummary">
                 <i class="fa fa-search"></i>
                 <span>خلاصه موجودی</span>
             </button>
         </div>
     </form>
 </div>
+
 <div id="toastContainer"></div>
+
 @section Scripts {
     <script src="~/js/components/shared/toast.js"></script>
     <script src="~/js/persian-date.js"></script>
@@ -249,9 +271,11 @@
     <script src="~/js/shared/searchable-controls.js"></script>
 
     <script>
-        $(document).ready(function() {
-            $('.datepicker-input').each(function() {
-                DatePicker.attach($(this), 'jalali');
+        $(document).ready(function () {
+            $('.datepicker-input').each(function () {
+                if (typeof DatePicker !== 'undefined' && typeof DatePicker.attach === 'function') {
+                    DatePicker.attach($(this), 'jalali');
+                }
             });
         });
     </script>

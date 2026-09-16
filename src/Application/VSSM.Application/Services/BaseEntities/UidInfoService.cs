@@ -34,7 +34,7 @@ public sealed class UidInfoService(VSSMDbContext dbContext) : IUidInfoService
         try
         {
 
-            if(isHalal.HasValue is false)
+            if (isHalal != true)
             {
                 await dbContext.TblOrderInfo
                     .Where(o =>

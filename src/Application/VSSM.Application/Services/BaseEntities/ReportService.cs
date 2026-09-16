@@ -103,7 +103,7 @@ public class ReportService(VSSMDbContext _context) : IReportService
                 BatchNumber = g.Key.BatchNumber,
                 ManufacturerName = g.Key.ManufacturerName,
                 ExpiryDate = g.Key.ExpiryDate,
-                DoesPerVial = int.Parse(g.Key.DoesPerVial),
+                DoesPerVial = g.Key.DoesPerVial,
                 Stock = g.Key.StoreName,
                 Recipient = g.Key.Recipient,
                 ProductionDate = g.Key.ProductionDate,
@@ -225,7 +225,7 @@ public class ReportService(VSSMDbContext _context) : IReportService
                ItemClass = g.Key.ItemClass,
                BatchNumber = g.Key.BatchNumber,
                ExpiryDate = g.Key.ExpiryDate,
-               DoesPerVial = int.Parse(g.Key.DosePerVial),
+               DoesPerVial = g.Key.DosePerVial,
                CurrentStock = g.Sum(s => s.ids.CurrentStock)
            };
 
@@ -375,7 +375,7 @@ public class ReportService(VSSMDbContext _context) : IReportService
             {
                 ItemName = g.Key.FullName,
                 ItemCode = g.Key.Code,
-                DoesPerVial = int.Parse(g.Key.NumDosePerVial),
+                DoesPerVial = g.Key.NumDosePerVial,
                 CurrentStock = g.Sum(s => s.ids.CurrentStock)
             };
 

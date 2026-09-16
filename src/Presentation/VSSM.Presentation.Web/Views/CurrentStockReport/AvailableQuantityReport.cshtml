@@ -3,9 +3,6 @@
 
 @{
     Layout = "~/Views/Shared/_ReportLayout.cshtml";
-}
-
-@{
     ViewData["Title"] = "مقدار موجود - جزئیات گزارش";
 }
 
@@ -13,10 +10,7 @@
     @await Html.PartialAsync("ReportHeader")
 </div>
 
-
-<h5 style="text-align: center;">
-    @ViewData["Title"]
-</h5>
+<h5 style="text-align: center;">@ViewData["Title"]</h5>
 
 <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
     <button type="button" class="btn btn-success" onclick="submitExcel()">
@@ -25,12 +19,9 @@
 </div>
 
 <div>
-    <div>
-        <span>انبار</span>: @ViewBag.Stores
-    </div>
-    <div>
-        <span>کالاها</span>: @ViewBag.Items
-    </div>
+    <div><span>انبار</span>: @(ViewBag.Stores ?? "کلیه انبارها")</div>
+    <div><span>کالاها</span>: @(ViewBag.Items ?? "کلیه کالاها")</div>
+    <div><span>گزارش پایین</span>: @(ViewBag.RecipientTitle ?? "همه مراکز")</div>
 </div>
 
 <div style="margin-top: 1rem;">
@@ -39,14 +30,9 @@
 
 <script>
     function submitExcel() {
-
         const form = document.querySelector('form');
-        if (!form) {
-            console.error("No form found for Excel export.");
-            return;
-        }
+        if (!form) { console.error("No form found for Excel export."); return; }
 
-        // toExcel flag
         let excelInput = form.querySelector('input[name="toExcel"]');
         if (!excelInput) {
             excelInput = document.createElement('input');
@@ -56,33 +42,27 @@
         }
         excelInput.value = 'true';
 
-        // --- Additional param from controller ---
         @if (ViewBag.AdditionalParam != null)
         {
-                    string raw = ViewBag.AdditionalParam.ToString();
-                    var pairs = raw.Split('&');
-
-                    foreach (var p in pairs)
-                    {
-                                if (string.IsNullOrWhiteSpace(p)) { continue; }
-
-                                var parts = p.Split('=');
-                                var key = parts[0];
-                                var value = parts.Length > 1 ? parts[1] : "";
-
-                                <text>
-                                (function() {
-                                    let extra = form.querySelector('input[name="@key"]');
-                                    if (!extra) {
-                                        extra = document.createElement('input');
-                                        extra.type = 'hidden';
-                                        extra.name = '@key';
-                                        form.appendChild(extra);
-                                    }
-                                    extra.value = '@value';
-                                })();
-                                </text>
-                    }
+                string raw = ViewBag.AdditionalParam.ToString();
+                foreach (var p in raw.Split('&', StringSplitOptions.RemoveEmptyEntries))
+                {
+                        var parts = p.Split('=');
+                        var key = parts[0];
+                        var value = parts.Length > 1 ? parts[1] : "";
+                        <text>
+                            (function () {
+                                let extra = form.querySelector('input[name="@key"]');
+                                if (!extra) {
+                                    extra = document.createElement('input');
+                                    extra.type = 'hidden';
+                                    extra.name = '@key';
+                                    form.appendChild(extra);
+                                }
+                                extra.value = '@value';
+                            })();
+                        </text>
+                }
         }
 
         form.method = 'post';

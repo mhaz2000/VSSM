@@ -31,12 +31,6 @@
                 $(this).toggle(txt.indexOf(q) > -1);
             });
         });
-
-        $(document).off('click.ssClose').on('click.ssClose', function (e) {
-            if (!wrapper.is(e.target) && wrapper.has(e.target).length === 0) {
-                control.removeClass('open');
-            }
-        });
     });
 
     $('.ms-wrapper').each(function () {
@@ -46,6 +40,45 @@
         const search = wrapper.find('.ms-search');
         const hidden = wrapper.find('input[type="hidden"]');
         const tags = wrapper.find('.ms-tags');
+
+        const renderTags = (selected) => {
+            const maxLabels = parseInt(wrapper.data('max-labels'), 10);
+            const limit = (!maxLabels || maxLabels <= 0) ? selected.length : maxLabels;
+
+            const visibleValues = selected.slice(0, limit);
+            const hiddenCount = selected.length - visibleValues.length;
+
+            tags.empty();
+
+            if (selected.length === 0) {
+                tags.html('<span class="ms-placeholder">انتخاب کنید</span>');
+                return;
+            }
+
+            visibleValues.forEach(val => {
+                const opt = wrapper.find('.ms-option:not(.ms-select-all)').filter(function () {
+                    return String($(this).data('value')) === String(val);
+                });
+                const text = opt.find('span').first().text().trim() || val;
+
+                tags.append(
+                    '<span class="ms-tag" data-value="' + val + '">' +
+                    '<span class="ms-tag-text">' + text + '</span>' +
+                    '<i class="fa fa-times ms-remove-tag"></i>' +
+                    '</span>'
+                );
+            });
+
+            if (hiddenCount > 0) {
+                tags.append(
+                    '<span class="ms-tag ms-tag-more" ' +
+                    'title="نمایش همه انتخاب‌ها" ' +
+                    'data-hidden="' + hiddenCount + '">+' +
+                    hiddenCount +
+                    '</span>'
+                );
+            }
+        };
 
         const refreshFromHidden = () => {
             const value = hidden.val() || '';
@@ -66,22 +99,7 @@
             const allChecked = allOptions.length > 0 && checkedCount === allOptions.length;
             wrapper.find('.ms-select-all input[type="checkbox"]').prop('checked', allChecked);
 
-            tags.empty();
-            if (selected.length === 0) {
-                tags.html('<span class="ms-placeholder">انتخاب کنید</span>');
-            } else {
-                selected.forEach(val => {
-                    const opt = wrapper.find('.ms-option:not(.ms-select-all)[data-value="' + val + '"]');
-                    const text = opt.find('span').text().trim() || val;
-                    const tag = $(
-                        '<span class="ms-tag" data-value="' + val + '">' +
-                        '<span class="ms-tag-text">' + text + '</span>' +
-                        '<i class="fa fa-times ms-remove-tag"></i>' +
-                        '</span>'
-                    );
-                    tags.append(tag);
-                });
-            }
+            renderTags(selected);
         };
 
         const buildSelectedArray = () => {
@@ -98,12 +116,6 @@
             e.stopPropagation();
             if (wrapper.hasClass('ms-disabled') || wrapper.hasClass('disabled')) return;
             control.toggleClass('open');
-        });
-
-        $(document).off('click.msClose').on('click.msClose', function (e) {
-            if (!wrapper.is(e.target) && wrapper.has(e.target).length === 0) {
-                control.removeClass('open');
-            }
         });
 
         hidden.off('change.msRefresh').on('change.msRefresh', refreshFromHidden);
@@ -138,7 +150,9 @@
             e.stopPropagation();
             const tag = $(this).closest('.ms-tag');
             const val = tag.data('value');
-            const opt = wrapper.find('.ms-option:not(.ms-select-all)[data-value="' + val + '"]');
+            const opt = wrapper.find('.ms-option:not(.ms-select-all)').filter(function () {
+                return String($(this).data('value')) === String(val);
+            });
             if (opt.length) {
                 opt.find('input[type="checkbox"]').prop('checked', false);
                 opt.removeClass('selected');
@@ -149,11 +163,19 @@
         search.off('input.msSearch').on('input.msSearch', function () {
             const q = $(this).val().toLowerCase();
             wrapper.find('.ms-option:not(.ms-select-all)').each(function () {
-                const txt = $(this).find('span').text().trim().toLowerCase();
+                const txt = $(this).find('span').first().text().trim().toLowerCase();
                 $(this).toggle(txt.indexOf(q) > -1);
             });
         });
 
         refreshFromHidden();
     });
+
+    $(document)
+        .off('click.searchableCloseGlobal')
+        .on('click.searchableCloseGlobal', function (e) {
+            const $target = $(e.target);
+            if ($target.closest('.ms-wrapper, .ss-wrapper').length) return;
+            $('.ms-control, .ss-control').removeClass('open');
+        });
 });

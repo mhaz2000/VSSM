@@ -81,6 +81,7 @@
                                                     Name = "itemId",
                                                     Label = "",
                                                     DefaultText = "انتخاب کنید",
+                                                    MaxSelectedLabels = 3,   
                                                     Options = items?.Select(x => new SelectOption { Value = x.ItemId.ToString(), Text = x.FullName }).ToList() ?? new List<SelectOption>()
                                                 })
                     </div>

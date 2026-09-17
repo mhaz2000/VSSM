@@ -1,6 +1,13 @@
 ﻿@using VSSM.Presentation.Web.Models.Base
 @model SearchableMultiSelectModel
 
+@{
+    var selectedCount = Model.SelectedValues?.Count ?? 0;
+    var maxLabels = Model.MaxSelectedLabels <= 0 ? int.MaxValue : Model.MaxSelectedLabels;
+    var visibleValues = Model.SelectedValues?.Take(maxLabels).ToList() ?? new List<string>();
+    var hiddenCount = selectedCount - visibleValues.Count;
+}
+
 <div class="ms-wrapper">
 
     @if (!string.IsNullOrEmpty(Model.Label))
@@ -28,9 +35,9 @@
 
             <div class="ms-tags">
 
-                @if (Model.SelectedValues.Any())
+                @if (selectedCount > 0)
                 {
-                    foreach (var val in Model.SelectedValues)
+                    foreach (var val in visibleValues)
                     {
                         var text = Model.Options
                         .FirstOrDefault(x => x.Value == val)
@@ -49,6 +56,16 @@
 
                             </span>
                         }
+                    }
+
+                    @* +N chip *@
+                    if (hiddenCount > 0)
+                    {
+                        <span class="ms-tag ms-tag-more"
+                              title="نمایش همه انتخاب‌ها"
+                              data-hidden="@hiddenCount">
+                            +@hiddenCount
+                        </span>
                     }
                 }
                 else

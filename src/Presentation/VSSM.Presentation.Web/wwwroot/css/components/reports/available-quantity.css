@@ -1,5 +1,4 @@
-﻿
-.report-wrap {
+﻿.report-wrap {
     margin: 1.5rem;
     direction: rtl;
 }
@@ -19,6 +18,12 @@
     gap: 1rem;
 }
 
+    /* ── کلید حل مشکل عرض ── */
+    .fg-5-5-3 > * {
+        min-width: 0;
+        max-width: 100%;
+    }
+
     .fg-5-5-3 .row-3 {
         grid-column: 1 / -1;
         display: grid;
@@ -26,6 +31,10 @@
         gap: 1rem;
     }
 
+        .fg-5-5-3 .row-3 > * {
+            min-width: 0;
+            max-width: 100%;
+        }
 
     .fg-5-5-3 .row-checkbox {
         grid-column: 1 / -1;
@@ -42,6 +51,7 @@
         box-sizing: border-box;
         transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
     }
+
         .fg-5-5-3 .row-checkbox:hover {
             background: #f0fdf4;
             border-color: #86efac;
@@ -103,17 +113,13 @@
                     transform: rotate(45deg);
                 }
 
-
-
         .fg-5-5-3 .row-checkbox:has( input[type="checkbox"]:checked ) {
             background: #f0fdf4;
             border-color: #86efac;
         }
 
 
-
 @media (max-width: 576px) {
-
     .fg-5-5-3 .row-checkbox {
         width: 100%;
         padding: 0 12px;
@@ -164,35 +170,3 @@
             flex: 1 1 auto;
         }
 }
-
-
-.report-wrap .ms-wrapper {
-    width: 100%;
-}
-
-    .report-wrap .ms-wrapper .ms-control {
-        min-height: 42px;
-        width: 100%;
-    }
-
-    .report-wrap .ms-wrapper .ms-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        max-height: 84px;
-        overflow-y: auto;
-        padding: 4px 6px;
-    }
-
-        .report-wrap .ms-wrapper .ms-tags .ms-tag {
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-    .report-wrap .ms-wrapper .ms-dropdown {
-        max-height: 260px;
-        overflow-y: auto;
-        z-index: 1050;
-    }

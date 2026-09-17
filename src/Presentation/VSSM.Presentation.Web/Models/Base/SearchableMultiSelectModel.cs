@@ -6,6 +6,7 @@
         public string Id { get; set; }
         public string Name { get; set; }
         public string Label { get; set; }
+        public int MaxSelectedLabels { get; set; } = 3;
 
         public List<string> SelectedValues { get; set; } = new();
 

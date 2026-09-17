@@ -12,13 +12,14 @@
 }
 
 
+/* ═══ Display: ارتفاع ثابت — هرگز رشد نمی‌کند ═══ */
 .ss-display,
 .ms-display {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    height: 42px;
+    height: 42px; /* ← fixed (بود min-height) */
     padding: 0 12px;
     background: #fff;
     border: 1px solid #cbd5e1;
@@ -27,6 +28,7 @@
     transition: border-color .15s, box-shadow .15s;
     box-sizing: border-box;
     user-select: none;
+    overflow: hidden; /* ← جلوگیری از سرریز */
 }
 
     .ss-display:hover,
@@ -44,9 +46,8 @@
 .ss-text,
 .ms-tags {
     flex: 1;
+    min-width: 0; /* ← flex child می‌تواند کوچک شود */
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     font-size: 13px;
     color: #1f2937;
 }
@@ -73,6 +74,7 @@
 }
 
 
+/* ═══ Dropdown: مستقل از display، اسکرول مخصوص خودش ═══ */
 .ss-dropdown,
 .ms-dropdown {
     display: none;
@@ -120,7 +122,7 @@
 .ss-options,
 .ms-options {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: auto; /* ← اسکرول فقط اینجا */
     padding: 4px 0;
 }
 
@@ -174,38 +176,87 @@
     }
 
 
+/* ═══════════════════════════════════════════════════════════
+   Multi-Select Chips — single-row, no wrap, no internal scroll
+   ═══════════════════════════════════════════════════════════ */
+
 .ms-tags {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* ← هرگز به خط بعد نمی‌رود */
     gap: 4px;
-    overflow: hidden;
+    overflow: hidden; /* ← اسکرول داخلی ندارد */
+    padding: 0;
+    min-width: 0;
 }
 
 .ms-tag {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    background: #e5e7eb;
-    color: #374151;
     padding: 2px 8px;
-    border-radius: 4px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
     font-size: 12px;
+    font-weight: 500;
     white-space: nowrap;
-    max-width: 120px;
+    flex-shrink: 1; /* ← می‌تواند کوچک شود */
+    min-width: 40px;
+    max-width: 130px;
     overflow: hidden;
-    text-overflow: ellipsis;
+    transition: background-color .12s ease, border-color .12s ease;
 }
 
+    .ms-tag:hover {
+        background: #dbeafe;
+        border-color: #93c5fd;
+    }
+
+    .ms-tag .ms-tag-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+    }
+
     .ms-tag .ms-remove-tag {
-        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        margin-right: 2px;
         font-size: 10px;
-        color: #6b7280;
+        color: #1d4ed8;
+        cursor: pointer;
+        border-radius: 50%;
+        flex-shrink: 0;
+        transition: background-color .12s ease, color .12s ease;
     }
 
         .ms-tag .ms-remove-tag:hover {
-            color: #dc2626;
+            background: #1d4ed8;
+            color: #fff;
         }
+
+.ms-tag-more {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #cbd5e1;
+    font-weight: 600;
+    cursor: default;
+    max-width: none;
+    flex-shrink: 0; 
+    padding: 2px 8px;
+}
+
+    .ms-tag-more:hover {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+    }
+
 
 /* ── غیرفعال ── */
 .ss-wrapper.disabled .ss-display,

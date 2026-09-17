@@ -67,7 +67,7 @@ public class CurrentStockReportController(IReportService _reportService,
         AvailableQuantityReportQuery inputModel,
         string reportType,
         int pageNumber = 1,
-        int pageSize = 20,
+        int pageSize = 1,
         string sort = "ItemName",
         string direction = "asc",
         bool toExcel = false,
@@ -104,6 +104,10 @@ public class CurrentStockReportController(IReportService _reportService,
         string? reportId,
         CancellationToken cancellationToken)
     {
+
+        const int fixedPageSize = 20;
+        pageSize = fixedPageSize;
+
         PrepareCachedReport(ref inputModel, ref reportId, "quantitySummary",
             pageSize, sort, direction);
 
@@ -161,6 +165,9 @@ public class CurrentStockReportController(IReportService _reportService,
         string? reportId,
         CancellationToken cancellationToken)
     {
+        const int fixedPageSize = 20;
+        pageSize = fixedPageSize;
+
         PrepareCachedReport(ref inputModel, ref reportId, "summaryWithDosePerVial",
             pageSize, sort, direction);
 
@@ -215,6 +222,10 @@ public class CurrentStockReportController(IReportService _reportService,
         string? reportId,
         CancellationToken cancellationToken)
     {
+
+        const int fixedPageSize = 20;
+        pageSize = fixedPageSize;
+
         PrepareCachedReport(ref inputModel, ref reportId, "summary",
             pageSize, sort, direction);
 

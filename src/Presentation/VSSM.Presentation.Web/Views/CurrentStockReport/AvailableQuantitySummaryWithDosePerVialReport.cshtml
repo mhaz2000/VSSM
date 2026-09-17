@@ -13,6 +13,22 @@
     <link href="~/css/components/reports/report-header-info.css" rel="stylesheet" />
 }
 
+@{
+    // ← cast به object تا dynamic-ness قطع شود و LINQ قابل کامپایل باشد
+    object additionalRaw = ViewBag.AdditionalParam;
+    string additional = additionalRaw?.ToString() ?? "";
+
+    var additionalPairs = additional
+        .Split('&', StringSplitOptions.RemoveEmptyEntries)
+        .Select(p => p.Split('=', 2))
+        .Select(p => new
+        {
+            Key = Uri.UnescapeDataString(p[0]),
+            Value = p.Length > 1 ? Uri.UnescapeDataString(p[1]) : ""
+        })
+        .ToList();
+}
+
 <div style="margin-top: 1rem;">
     @await Html.PartialAsync("ReportHeader")
 </div>
@@ -23,9 +39,19 @@
 </h5>
 
 <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
-    <button type="button" class="btn btn-success" onclick="submitExcel()">
-        <i class="fas fa-file-excel"></i> خروجی اکسل
-    </button>
+    <form method="post"
+          action="/CurrentStockReport/AvailableQuantityReport"
+          style="margin: 0;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="toExcel" value="true" />
+        @foreach (var pair in additionalPairs)
+        {
+            <input type="hidden" name="@pair.Key" value="@pair.Value" />
+        }
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> خروجی اکسل
+        </button>
+    </form>
 </div>
 
 @await Html.PartialAsync("_ReportHeaderInfo")
@@ -34,55 +60,41 @@
     @await Html.PartialAsync("_DynamicGrid", Model)
 </div>
 
-<script>
-    function submitExcel() {
-
-        const form = document.querySelector('form');
-        if (!form) {
-            console.error("No form found for Excel export.");
-            return;
-        }
-
-        // toExcel flag
-        let excelInput = form.querySelector('input[name="toExcel"]');
-        if (!excelInput) {
-            excelInput = document.createElement('input');
-            excelInput.type = 'hidden';
-            excelInput.name = 'toExcel';
-            form.appendChild(excelInput);
-        }
-        excelInput.value = 'true';
-
-        // --- Additional param from controller ---
-        @if (ViewBag.AdditionalParam != null)
-        {
-                            string raw = ViewBag.AdditionalParam.ToString();
-                            var pairs = raw.Split('&');
-
-                            foreach (var p in pairs)
-                            {
-                                                if (string.IsNullOrWhiteSpace(p)) { continue; }
-
-                                                var parts = p.Split('=');
-                                                var key = parts[0];
-                                                var value = parts.Length > 1 ? parts[1] : "";
-
-                                                <text>
-                                                (function() {
-                                                    let extra = form.querySelector('input[name="@key"]');
-                                                    if (!extra) {
-                                                        extra = document.createElement('input');
-                                                        extra.type = 'hidden';
-                                                        extra.name = '@key';
-                                                        form.appendChild(extra);
-                                                    }
-                                                    extra.value = '@value';
-                                                })();
-                                                </text>
-                            }
-        }
-
-        form.method = 'post';
-        form.submit();
+<!-- ═══════ فرم مخفی برای Pagination ═══════ -->
+<form method="post"
+      action="/CurrentStockReport/AvailableQuantityReport"
+      id="reportForm"
+      style="display:none;">
+    @Html.AntiForgeryToken()
+    @foreach (var pair in additionalPairs)
+    {
+        <input type="hidden" name="@pair.Key" value="@pair.Value" />
     }
+</form>
+
+<script>
+    // جلوگیری از فریز Pagination در کلیک‌های سریع
+    (function () {
+        let isNavigating = false;
+
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.pagination-btn');
+            if (!btn) return;
+            if (btn.tagName === 'A') return;
+            if (btn.classList.contains('disabled')) return;
+
+            if (isNavigating) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+
+            isNavigating = true;
+
+            document.querySelectorAll('.pagination-btn')
+                .forEach(b => b.classList.add('disabled'));
+
+            setTimeout(function () { isNavigating = false; }, 10000);
+        }, true);
+    })();
 </script>

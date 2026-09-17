@@ -1,19 +1,23 @@
-﻿/**
- * dispatch-edit-form.js  —  فرم ویرایش ارسال (هماهنگ با New)
- * نسخه: 2.3 - با اصلاح doseCount برای UID
- */
-
-var addedItems = [];
+﻿var addedItems = [];
 var batchTable = null;
 
 $(function () {
 
-    // ── Toast ──
+    var csrfToken = $('input[name="__RequestVerificationToken"]').val();
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            var method = (settings.type || 'GET').toUpperCase();
+            if (method !== 'GET' && csrfToken) {
+                xhr.setRequestHeader('RequestVerificationToken', csrfToken);
+            }
+        }
+    });
+
     if (typeof dispatchServerMsg !== 'undefined' && dispatchServerMsg) {
         showToast(dispatchServerMsg, dispatchServerType || 'info');
     }
 
-    // ── DatePicker ──
     var $dateInput = $('#Date');
     if (typeof DatePicker !== 'undefined' && DatePicker.attach) {
         DatePicker.attach($dateInput);
@@ -23,7 +27,6 @@ $(function () {
         });
     }
 
-    // ── PaginationTable ──
     batchTable = new PaginationTable({
         tableId: 'itemDetailsTable',
         tbodyId: 'itemDetailsTbody',
@@ -56,7 +59,6 @@ $(function () {
         }
     });
 
-    // ── رویداد change چک‌باکس ──
     $(document).on('change', '.batch-chk', function () {
         var anyChecked = $('.batch-chk:checked').length > 0;
         if (anyChecked) {
@@ -65,10 +67,6 @@ $(function () {
             $('#dispatchForm').removeAttr('data-has-item');
         }
     });
-
-    // ════════════════════════════════════════
-    //  SearchableSelect (همانند dispatch-form)
-    // ════════════════════════════════════════
 
     function bindSSOptionClick($wrapper) {
         $wrapper.find('.ss-option').off('click.ss').on('click.ss', function (e) {
@@ -114,7 +112,6 @@ $(function () {
         bindSSOptionClick($wrapper);
     }
 
-    // ── راه‌اندازی اولیه SearchableSelect ──
     $('.ss-wrapper').each(function () {
         var $wrapper = $(this);
 
@@ -154,10 +151,6 @@ $(function () {
             }, 0);
         }
     });
-
-    // ════════════════════════════════════════
-    //  cascade: نوع کالا ← کالا ← سری ساخت
-    // ════════════════════════════════════════
 
     $('#itemClassSelect').on('change', function () {
         var classId = $(this).val();
@@ -202,7 +195,6 @@ $(function () {
         });
     });
 
-
     if (dispatchId && dispatchId > 0) {
         $.ajax({
             url: dispatchEditGetLinesUrl,
@@ -213,17 +205,14 @@ $(function () {
                     return;
                 }
                 $.each(lines, function (_, line) {
-                    // پشتیبانی از هر دو حالت حروف بزرگ/کوچک
                     var doseCount = line.doseCount || line.DoseCount || 0;
                     var numVial = line.numVial || line.NumVial || 0;
                     var dosePerVial = line.dosePerVial || line.DosePerVial || 0;
 
-                    // اگر doseCount صفر بود و numVial و dosePerVial موجود باشند، محاسبه کن
                     if (doseCount === 0 && numVial > 0 && dosePerVial > 0) {
                         doseCount = numVial * dosePerVial;
                     }
 
-                    // در صورت صفر ماندن، مقدار پیش‌فرض 1 قرار بده (برای جلوگیری از خطای UID)
                     if (doseCount === 0) {
                         doseCount = 1;
                     }
@@ -248,7 +237,7 @@ $(function () {
                         note: line.note || '',
                         uids: line.uids || [],
                         stockInRam: line.currentStock || 0,
-                        requiresDiluent: false,
+                        requiresDiluent: false
                     });
                 });
                 renderAddedItems();
@@ -259,10 +248,6 @@ $(function () {
             }
         });
     }
-
-    // ════════════════════════════════════════
-    //  افزودن آیتم جدید (با ذخیره dosePerVial)
-    // ════════════════════════════════════════
 
     window.addSelectedItem = function () {
         if (dispatchIsConfirmed) {
@@ -317,7 +302,7 @@ $(function () {
                 requiresDiluent: row.requiresDiluent,
                 diluentItemDetailStoreId: row.diluentItemDetailStoreId,
                 diluentItemId: row.diluentItemId,
-                diluentItemName: row.diluentItemName,
+                diluentItemName: row.diluentItemName
             });
             added++;
 
@@ -342,7 +327,7 @@ $(function () {
                     note: 'حلال خودکار',
                     uids: [],
                     stockInRam: 0,
-                    requiresDiluent: false,
+                    requiresDiluent: false
                 });
             }
         });
@@ -358,10 +343,6 @@ $(function () {
         $('#doseCountInput').val('');
     };
 
-    // ════════════════════════════════════════
-    //  حذف آیتم
-    // ════════════════════════════════════════
-
     window.removeItem = function (idx) {
         if (dispatchIsConfirmed) {
             showToast('ارسال تایید شده — امکان ویرایش وجود ندارد', 'error');
@@ -371,7 +352,8 @@ $(function () {
         var item = addedItems[idx];
         var $stockCell = $('.stock-cell-' + item.itemDetailStoreId);
         if ($stockCell.length) {
-            var toReturn = item.uids.length > 0 ? item.uids.length : item.doseCount;
+            var toReturn = getItemScannedCount(item);
+            if (toReturn === 0) toReturn = item.doseCount;
             $stockCell.text((parseInt($stockCell.text()) || 0) + toReturn);
         }
         addedItems.splice(idx, 1);
@@ -379,16 +361,12 @@ $(function () {
         renderAddedItems();
     };
 
-    // ════════════════════════════════════════
-    //  رندر جدول کالاهای افزوده‌شده (با data-idx)
-    // ════════════════════════════════════════
-
     function renderAddedItems() {
         var tbody = $('#addedItemsTbody');
 
         if (addedItems.length === 0) {
             tbody.html(
-                '<tr><td colspan="10" style="padding:24px;color:#9ca3af;text-align:center;">' +
+                '<tr><td colspan="11" style="padding:24px;color:#9ca3af;text-align:center;">' +
                 'کالایی اضافه نشده</td></tr>'
             );
             $('#dispatchForm').removeAttr('data-has-record');
@@ -398,6 +376,8 @@ $(function () {
 
         var html = '';
         $.each(addedItems, function (i, item) {
+            var scannedCount = getItemScannedCount(item);
+
             var actions = dispatchIsConfirmed
                 ? '<span style="color:#9ca3af;font-size:11px;">تایید شده</span>'
                 : '<button type="button" class="btn-action btn-action-uid" data-idx="' + i + '" title="افزودن UID">' +
@@ -413,7 +393,8 @@ $(function () {
                 '<td>' + (item.itemName || '-') + '</td>' +
                 '<td>' + (item.expiryDateShamsi || '-') + '</td>' +
                 '<td>' + item.doseCount + '</td>' +
-                '<td>' + item.numVial + '</td>' +
+                '<td>' + (item.numVial || 0) + '</td>' +
+                '<td>' + scannedCount + '</td>' +
                 '<td>-</td>' +
                 '<td>' + (item.vvmStageName || '-') + '</td>' +
                 '<td>' + (item.manufacturerName || '-') + '</td>' +
@@ -427,9 +408,9 @@ $(function () {
         rebuildHiddenInputs();
     }
 
-    // ════════════════════════════════════════
-    //  rebuild hidden inputs
-    // ════════════════════════════════════════
+    $(document).on('uids-updated', function () {
+        renderAddedItems();
+    });
 
     function rebuildHiddenInputs() {
         var $container = $('#hiddenInputsContainer').empty();
@@ -444,6 +425,7 @@ $(function () {
             add('DispatchLineId', item.dispatchLineId);
             add('ItemDetailStoreId', item.itemDetailStoreId);
             add('ItemId', item.itemId);
+            add('ItemName', item.itemName);
             add('StoreId', item.storeId);
             add('DoseCount', item.doseCount);
             add('VvmstageId', item.vvmStageId);
@@ -452,16 +434,14 @@ $(function () {
             add('Note', item.note);
 
             $.each(item.uids, function (j, uid) {
+                var uidVal = typeof uid === 'string' ? uid : (uid.uid || '');
                 $container.append(
-                    '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uid + '">'
+                    '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uidVal + '">'
                 );
             });
         });
     }
 
-    // ════════════════════════════════════════
-    //  دکمه‌های footer
-    // ════════════════════════════════════════
     $('.js-footer-btn').on('click', function () {
         var submitType = $(this).data('submit');
 
@@ -479,31 +459,27 @@ $(function () {
             return;
         }
 
-        // ── اعتبارسنجی تعداد UID در حالت final ──
         if (submitType === 'final') {
             var mismatchItems = [];
             $.each(addedItems, function (_, item) {
-                var scannedCount = 0;
-                $.each(item.uids, function (_, entry) {
-                    var cnt = typeof entry === 'object' ? (entry.count || 1) : 1;
-                    scannedCount += cnt;
-                });
+                var scannedCount = getItemScannedCount(item);
 
-                if (scannedCount !== item.doseCount) {
-                    mismatchItems.push(item.itemName + ' (درخواستی: ' + item.doseCount + ', اسکن‌شده: ' + scannedCount + ')');
+                if (scannedCount > item.doseCount) {
+                    mismatchItems.push(item.itemName +
+                        ' (درخواستی: ' + item.doseCount +
+                        ', اسکن‌شده: ' + scannedCount + ')');
                 }
             });
 
             if (mismatchItems.length > 0) {
                 showToast(
-                    'تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد:\n' + mismatchItems.join('\n'),
+                    'تعداد UIDهای اسکن‌شده بیشتر از مقدار درخواستی است:\n' + mismatchItems.join('\n'),
                     'error'
                 );
                 return;
             }
         }
 
-        // ── ادامه کد ──
         $('#toastContainer').empty();
         $('#dispatchForm').find('input[name="submitType"]').remove();
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })

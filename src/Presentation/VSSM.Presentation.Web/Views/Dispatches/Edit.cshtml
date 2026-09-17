@@ -9,7 +9,7 @@
     var toastType = TempData["ToastType"] as string ?? "info";
     TempData.Remove("ToastMessage");
     TempData.Remove("ToastType");
-    
+
     var transportModes = ViewBag.TransportModes as List<SelectListItem> ?? new List<SelectListItem>();
     var recipients = ViewBag.Recipients as List<RecipientGetDto> ?? new List<RecipientGetDto>();
     var receivingModes = ViewBag.ReceivingMethods as List<SelectListItem> ?? new List<SelectListItem>();
@@ -32,12 +32,11 @@
     <link href="~/css/components/shared/search-bar.css" rel="stylesheet" />
     <link href="~/css/dispatch-form.css" rel="stylesheet" />
     <link href="~/css/components/shared/pagination-table.css" rel="stylesheet" />
-    <link href="~/css/components/shared/modal.css" rel="stylesheet" asp-append-version="true" />  
+    <link href="~/css/components/shared/modal.css" rel="stylesheet" asp-append-version="true" />
 }
 
 <div id="toastContainer"></div>
 
-@* ── مودال UID ── *@
 <div class="uid-modal-overlay" id="uidModalOverlay">
     <div class="uid-modal">
         <div class="uid-modal-header">
@@ -80,7 +79,6 @@
         <input type="hidden" asp-for="IsConfirmed" />
         <input type="hidden" asp-for="IsDrafted" />
 
-        @* ══════ کارت ۱: اطلاعات اصلی ══════ *@
         <div class="a-card">
             <div class="a-card-header">
                 <h6>
@@ -88,8 +86,8 @@
                     @if (isConfirmed)
                     {
                         <span style="font-size:11px; font-weight:500; color:#15803d;
-                                                 background:#f0fdf4; border:1px solid #bbf7d0;
-                                                 border-radius:6px; padding:2px 10px; margin-right:8px;">
+                                                     background:#f0fdf4; border:1px solid #bbf7d0;
+                                                     border-radius:6px; padding:2px 10px; margin-right:8px;">
                             <i class="fa fa-check"></i> تایید شده
                         </span>
                     }
@@ -240,7 +238,6 @@
             </div>
         </div>
 
-        @* ══════ کارت ۲: انتخاب سری ساخت — فقط اگر تایید نشده ══════ *@
         @if (!isConfirmed)
         {
             <div class="a-card">
@@ -285,7 +282,6 @@
 
         <div id="hiddenInputsContainer"></div>
 
-        @* ══════ کارت ۳: کالاهای ارسال ══════ *@
         <div class="a-card">
             <div class="a-card-header">
                 <h6><i class="fa fa-check-square" style="color:#1d6fb8;"></i> کالاهای ارسال</h6>
@@ -301,6 +297,7 @@
                                 <th>انقضا (شمسی)</th>
                                 <th>تعداد/دوز</th>
                                 <th>تعداد ویال</th>
+                                <th>تعداد اسکن شده</th>
                                 <th>نوع VVM</th>
                                 <th>مرحله VVM</th>
                                 <th>سازنده</th>
@@ -310,7 +307,7 @@
                         </thead>
                         <tbody id="addedItemsTbody">
                             <tr>
-                                <td colspan="10" style="padding:24px;color:#9ca3af;text-align:center;">
+                                <td colspan="11" style="padding:24px;color:#9ca3af;text-align:center;">
                                     در حال بارگذاری...
                                 </td>
                             </tr>
@@ -321,7 +318,6 @@
             </div>
         </div>
 
-        @* ── فوتر ── *@
         <div class="form-footer">
             @if (!isConfirmed)
             {
@@ -340,7 +336,6 @@
             </a>
         </div>
 
-        @* ═══ SessionId مخفی ═══ *@
         <input type="hidden" id="ScanSessionId" value="@Guid.NewGuid().ToString()" />
 
     </form>

@@ -1,4 +1,26 @@
-﻿var _uidCurrentLineIndex = null;
+﻿function getItemScannedCount(item) {
+    if (!item || !item.uids || item.uids.length === 0) return 0;
+
+    var objectSum = 0;
+    var stringCount = 0;
+
+    for (var i = 0; i < item.uids.length; i++) {
+        var e = item.uids[i];
+        if (typeof e === 'object' && e !== null) {
+            objectSum += (e.count || 1);
+        } else {
+            stringCount += 1;
+        }
+    }
+
+    if (item.dispatchLineId > 0 && stringCount > 0) {
+        return (item.doseCount || 0) + objectSum;
+    }
+
+    return objectSum + stringCount;
+}
+
+var _uidCurrentLineIndex = null;
 var _isSubmitting = false;
 
 function openUidModal(idx) {
@@ -30,7 +52,6 @@ function closeUidModal() {
     $('#uidModalOverlay').removeClass('open');
     _uidCurrentLineIndex = null;
     _isSubmitting = false;
-    // 🔔 به‌روزرسانی جدول اصلی پس از بستن مودال
     $(document).trigger('uids-updated');
 }
 
@@ -88,15 +109,11 @@ function submitUid() {
 
             var doseCount = res.count || 1;
 
-            var currentTotal = 0;
-            $.each(item.uids, function (_, entry) {
-                var cnt = typeof entry === 'object' ? (entry.count || 1) : 1;
-                currentTotal += cnt;
-            });
+            var currentTotal = getItemScannedCount(item);
             var newTotal = currentTotal + doseCount;
             var requestedDose = item.requestedDose || 0;
 
-            if (newTotal > requestedDose) {
+            if (requestedDose > 0 && newTotal > requestedDose) {
                 showToast('تعداد کل دوزهای اسکن‌شده (' + newTotal + ') از تعداد درخواستی (' + requestedDose + ') بیشتر است', 'error');
                 $.ajax({
                     url: removeUidFromSessionUrl || '/Dispatches/RemoveScanUid',
@@ -138,13 +155,9 @@ function submitUid() {
 }
 
 function _addUidToRam(item, uid, count) {
-    var currentTotal = 0;
-    $.each(item.uids, function (_, entry) {
-        var cnt = typeof entry === 'object' ? (entry.count || 1) : 1;
-        currentTotal += cnt;
-    });
+    var currentTotal = getItemScannedCount(item);
     var requestedDose = item.requestedDose || 0;
-    if (currentTotal + (count || 1) > requestedDose) {
+    if (currentTotal + (count || 1) > requestedDose && requestedDose > 0) {
         showToast('خطای داخلی: مجموع دوزها از حد مجاز بیشتر شد!', 'error');
         return;
     }
@@ -159,7 +172,6 @@ function _addUidToRam(item, uid, count) {
     updateUidModalCount(item);
     renderUidList(item);
 
-    // 🔔 به‌روزرسانی جدول اصلی
     $(document).trigger('uids-updated');
 
     $('#uidInput').val('').focus();
@@ -168,8 +180,8 @@ function _addUidToRam(item, uid, count) {
 function removeUid(itemIdx, uidIdx) {
     var item = addedItems[itemIdx];
     var entry = item.uids[uidIdx];
-    var uid = entry.uid;
-    var count = entry.count || 1;
+    var uid = typeof entry === 'string' ? entry : entry.uid;
+    var count = typeof entry === 'object' ? (entry.count || 1) : 1;
 
     var url = typeof removeUidFromSessionUrl !== 'undefined'
         ? removeUidFromSessionUrl
@@ -191,7 +203,6 @@ function removeUid(itemIdx, uidIdx) {
                 updateUidModalCount(item);
                 renderUidList(item);
 
-                // 🔔 به‌روزرسانی جدول اصلی
                 $(document).trigger('uids-updated');
 
                 showToast('UID با موفقیت حذف شد', 'success');
@@ -206,12 +217,7 @@ function removeUid(itemIdx, uidIdx) {
 }
 
 function updateUidModalCount(item) {
-    var totalCount = 0;
-    $.each(item.uids, function (_, entry) {
-        var count = typeof entry === 'object' ? (entry.count || 1) : 1;
-        totalCount += count;
-    });
-    $('#uidModalCount').text(totalCount);
+    $('#uidModalCount').text(getItemScannedCount(item));
 }
 
 function renderUidList(item) {

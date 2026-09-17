@@ -286,7 +286,8 @@ $(function () {
         var item = addedItems[idx];
         var $stockCell = $('.stock-cell-' + item.itemDetailStoreId);
         if ($stockCell.length) {
-            var toReturn = item.uids.length > 0 ? item.uids.length : item.doseCount;
+            var toReturn = getItemScannedCount(item);
+            if (toReturn === 0) toReturn = item.doseCount;
             $stockCell.text((parseInt($stockCell.text()) || 0) + toReturn);
         }
         addedItems.splice(idx, 1);
@@ -309,14 +310,16 @@ $(function () {
 
         var html = '';
         $.each(addedItems, function (i, item) {
+            var scannedCount = getItemScannedCount(item);
+
             html +=
                 '<tr>' +
                 '<td>' + (item.batchNumber || '-') + '</td>' +
                 '<td>' + (item.itemName || '-') + '</td>' +
                 '<td>' + (item.expiryDateShamsi || '-') + '</td>' +
                 '<td>' + item.doseCount + '</td>' +
-                '<td>' + item.numVial + '</td>' +
-                '<td>' + (item.uids ? item.uids.length : 0) + '</td>' +
+                '<td>' + (item.numVial || 0) + '</td>' +
+                '<td>' + scannedCount + '</td>' +
                 '<td>-</td>' +
                 '<td>' + (item.vvmStageName || '-') + '</td>' +
                 '<td>' + (item.manufacturerName || '-') + '</td>' +
@@ -389,11 +392,7 @@ $(function () {
         if (submitType === 'final') {
             var mismatchItems = [];
             $.each(addedItems, function (_, item) {
-                var scannedCount = 0;
-                $.each(item.uids, function (_, entry) {
-                    var cnt = typeof entry === 'object' ? (entry.count || 1) : 1;
-                    scannedCount += cnt;
-                });
+                var scannedCount = getItemScannedCount(item);
 
                 if (scannedCount !== item.doseCount) {
                     mismatchItems.push(item.itemName + ' (درخواستی: ' + item.doseCount + ', اسکن‌شده: ' + scannedCount + ')');

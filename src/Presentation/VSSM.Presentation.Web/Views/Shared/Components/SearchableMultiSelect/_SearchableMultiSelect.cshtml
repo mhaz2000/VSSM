@@ -2,13 +2,26 @@
 @model SearchableMultiSelectModel
 
 @{
+    var totalCount = Model.Options?.Count ?? 0;
     var selectedCount = Model.SelectedValues?.Count ?? 0;
     var maxLabels = Model.MaxSelectedLabels <= 0 ? int.MaxValue : Model.MaxSelectedLabels;
-    var visibleValues = Model.SelectedValues?.Take(maxLabels).ToList() ?? new List<string>();
-    var hiddenCount = selectedCount - visibleValues.Count;
+
+    var isAllSelected = selectedCount > 0 && totalCount > 0 && selectedCount == totalCount;
+    var isOverflow = selectedCount > maxLabels;
+
+    var visibleValues = (isAllSelected || isOverflow)
+        ? new List<string>()
+        : (Model.SelectedValues?.Take(maxLabels).ToList() ?? new List<string>());
+
+    var allText = (Model.AllSelectedFormat ?? "همه ({0} مورد)").Replace("{0}", selectedCount.ToString());
+    var overflowText = (Model.OverflowSelectedFormat ?? "{0} مورد انتخاب شده").Replace("{0}", selectedCount.ToString());
 }
 
-<div class="ms-wrapper">
+<div class="ms-wrapper"
+     data-max-labels="@Model.MaxSelectedLabels"
+     data-all-format="@(Model.AllSelectedFormat ?? "همه ({0} مورد)")"
+     data-overflow-format="@(Model.OverflowSelectedFormat ?? "{0} مورد انتخاب شده")"
+     data-placeholder="@Model.DefaultText">
 
     @if (!string.IsNullOrEmpty(Model.Label))
     {
@@ -17,9 +30,7 @@
 
             @if (Model.IsRequired)
             {
-                <span class="form-mandatory">
-                    (اجباری)
-                </span>
+                <span class="form-mandatory">(اجباری)</span>
             }
         </label>
     }
@@ -35,44 +46,38 @@
 
             <div class="ms-tags">
 
-                @if (selectedCount > 0)
+                @if (selectedCount == 0)
                 {
-                    foreach (var val in visibleValues)
-                    {
-                        var text = Model.Options
-                        .FirstOrDefault(x => x.Value == val)
-                        ?.Text;
-
-                        if (text != null)
-                        {
-                            <span class="ms-tag"
-                                  data-value="@val">
-
-                                <span class="ms-tag-text">
-                                    @text
-                                </span>
-
-                                <i class="fa fa-times ms-remove-tag"></i>
-
-                            </span>
-                        }
-                    }
-
-                    @* +N chip *@
-                    if (hiddenCount > 0)
-                    {
-                        <span class="ms-tag ms-tag-more"
-                              title="نمایش همه انتخاب‌ها"
-                              data-hidden="@hiddenCount">
-                            +@hiddenCount
-                        </span>
-                    }
+                    <span class="ms-placeholder">@Model.DefaultText</span>
+                }
+                else if (isAllSelected)
+                {
+                    <span class="ms-tag ms-tag-summary" title="@allText">
+                        <i class="fa fa-check-double"></i>
+                        <span class="ms-tag-text">@allText</span>
+                    </span>
+                }
+                else if (isOverflow)
+                {
+                    <span class="ms-tag ms-tag-summary" title="@overflowText">
+                        <i class="fa fa-list-ul"></i>
+                        <span class="ms-tag-text">@overflowText</span>
+                    </span>
                 }
                 else
                 {
-                    <span class="ms-placeholder">
-                        @Model.DefaultText
-                    </span>
+                    foreach (var val in visibleValues)
+                    {
+                        var text = Model.Options.FirstOrDefault(x => x.Value == val)?.Text;
+
+                        if (text != null)
+                        {
+                            <span class="ms-tag" data-value="@val">
+                                <span class="ms-tag-text">@text</span>
+                                <i class="fa fa-times ms-remove-tag"></i>
+                            </span>
+                        }
+                    }
                 }
 
             </div>
@@ -90,37 +95,24 @@
 
             <div class="ms-options">
 
-                <!-- Select All -->
-
-                <div class="ms-option ms-select-all"
-                     data-value="__all__">
-
+                <div class="ms-option ms-select-all" data-value="__all__">
                     <input type="checkbox" />
-
-                    <span>
-                        انتخاب همه
-                    </span>
-
+                    <span>انتخاب همه</span>
                 </div>
 
                 <hr class="ms-option-separator" />
 
 
-                <!-- Options -->
                 @foreach (var item in Model.Options)
                 {
-                    var isSelected =
-                    Model.SelectedValues.Contains(item.Value);
+                    var isSelected = Model.SelectedValues.Contains(item.Value);
 
                     <div class="ms-option @(isSelected ? "selected" : "")"
                          data-value="@item.Value">
 
-                        <input type="checkbox"
-                               @(isSelected ? "checked" : "") />
+                        <input type="checkbox" @(isSelected ? "checked" : "") />
 
-                        <span>
-                            @item.Text
-                        </span>
+                        <span>@item.Text</span>
 
                     </div>
 

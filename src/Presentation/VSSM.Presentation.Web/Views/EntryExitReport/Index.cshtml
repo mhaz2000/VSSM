@@ -1,0 +1,258 @@
+﻿@using VSSM.Application.DTOs.BaseEntities.BaseInfo
+@using VSSM.Application.DTOs.BaseEntities.Item
+@using VSSM.Application.DTOs.BaseEntities.Recipient
+@using VSSM.Application.DTOs.BaseEntities.Store
+@using VSSM.Presentation.Web.Models.Base
+@{
+    ViewData["Title"] = "گزارش ورود و خروج";
+    var itemClasses = ViewBag.ItemClasses as List<BaseInfoDto> ?? new();
+    var items = ViewBag.Items as List<ItemListDto> ?? new();
+    var stores = ViewBag.Stores as List<StoreListDto> ?? new();
+    var recipients = ViewBag.Recipients as List<RecipientGetDto> ?? new();
+    var manufacturers = ViewBag.Manufacturers as List<BaseInfoDto> ?? new();
+    var vvmStages = ViewBag.VvmStages as List<BaseInfoDto> ?? new();
+    var fiscalPeriods = ViewBag.FiscalPeriods as List<BaseInfoDto> ?? new();
+}
+
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
+    <link href="~/css/components/shared/searchable-controls.css" rel="stylesheet" />
+    <link href="~/css/components/shared/datepicker.css" rel="stylesheet" />
+    <link href="~/css/components/reports/available-quantity.css" rel="stylesheet" />
+}
+
+<div class="report-wrap">
+    <div class="report-page-title">
+        <i class="fa fa-exchange-alt" style="color:#3b82f6;"></i>
+        <span>@ViewData["Title"]</span>
+    </div>
+
+    <form method="post"
+          action="/EntryExitReport/Report"
+          target="_blank"
+          id="entryExitReportForm">
+        @Html.AntiForgeryToken()
+
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-filter" style="color:#3b82f6;"></i>
+                <h6>فیلترهای جستجو</h6>
+            </div>
+            <div class="a-card-body">
+                <div class="fg-5-5-3">
+
+                    <div class="f-group">
+                        <label class="f-label" for="itemClassId">نوع کالا</label>
+                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                        new SearchableSelectModel
+                        {
+                            Id = "itemClassId",
+                            Name = "itemClassId",
+                            Label = "",
+                            DefaultText = "انتخاب کنید",
+                            Options = itemClasses.Select(x => new SelectOption
+                            {
+                                Value = x.Id.ToString(),
+                                Text = x.Title
+                            }).ToList()
+                        })
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="itemId">کالاها</label>
+                        @await Html.PartialAsync("Components/SearchableMultiSelect/_SearchableMultiSelect",
+                                                new SearchableMultiSelectModel
+                                                {
+                                                    Id = "itemId",
+                                                    Name = "itemId",
+                                                    Label = "",
+                                                    DefaultText = "انتخاب کنید",
+                                                    MaxSelectedLabels = 3,
+                                                    Options = items.Select(x => new SelectOption
+                                                    {
+                                                        Value = x.ItemId.ToString(),
+                                                        Text = x.FullName
+                                                    }).ToList()
+                                                })
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="storeId">انبارها</label>
+                        @await Html.PartialAsync("Components/SearchableMultiSelect/_SearchableMultiSelect",
+                                                new SearchableMultiSelectModel
+                                                {
+                                                    Id = "storeId",
+                                                    Name = "storeId",
+                                                    Label = "",
+                                                    DefaultText = "انتخاب کنید",
+                                                    MaxSelectedLabels = 3,
+                                                    Options = stores.Select(x => new SelectOption
+                                                    {
+                                                        Value = x.StoreId.ToString(),
+                                                        Text = x.FullName
+                                                    }).ToList()
+                                                })
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="recipientId">گیرنده</label>
+                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                new SearchableSelectModel
+                                                {
+                                                    Id = "recipientId",
+                                                    Name = "recipientId",
+                                                    Label = "",
+                                                    DefaultText = "همه گیرندگان",
+                                                    Options = recipients.Select(r => new SelectOption
+                                                    {
+                                                        Value = r.RecipientId.ToString(),
+                                                        Text = r.FullName
+                                                    }).ToList()
+                                                })
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="fiscalPeriodId">سال مالی</label>
+                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                new SearchableSelectModel
+                                                {
+                                                    Id = "fiscalPeriodId",
+                                                    Name = "fiscalPeriodId",
+                                                    Label = "",
+                                                    DefaultText = "انتخاب کنید",
+                                                    Options = fiscalPeriods.Select(x => new SelectOption
+                                                    {
+                                                        Value = x.Id.ToString(),
+                                                        Text = x.Title
+                                                    }).ToList()
+                                                })
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="manufacturerId">سازنده</label>
+                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                new SearchableSelectModel
+                                                {
+                                                    Id = "manufacturerId",
+                                                    Name = "manufacturerId",
+                                                    Label = "",
+                                                    DefaultText = "انتخاب کنید",
+                                                    Options = manufacturers.Select(x => new SelectOption
+                                                    {
+                                                        Value = x.Id.ToString(),
+                                                        Text = x.Title
+                                                    }).ToList()
+                                                })
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="vvmstageId">مرحله VVM</label>
+                        @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                                new SearchableSelectModel
+                                                {
+                                                    Id = "vvmstageId",
+                                                    Name = "vvmstageId",
+                                                    Label = "",
+                                                    DefaultText = "انتخاب کنید",
+                                                    Options = vvmStages.Select(x => new SelectOption
+                                                    {
+                                                        Value = x.Id.ToString(),
+                                                        Text = x.Title
+                                                    }).ToList()
+                                                })
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="batchNumber">سری ساخت</label>
+                        <input id="batchNumber" name="batchNumber" class="f-control"
+                               placeholder="شماره سری ساخت" autocomplete="off" />
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="reportNumber">شماره گزارش</label>
+                        <input id="reportNumber" name="reportNumber" class="f-control"
+                               placeholder="شماره گزارش" autocomplete="off" />
+                    </div>
+
+                    <div class="f-group">
+                        <label class="f-label" for="voucherNumber">شماره حواله</label>
+                        <input id="voucherNumber" name="voucherNumber" class="f-control"
+                               placeholder="شماره حواله" autocomplete="off" />
+                    </div>
+
+                    <div class="row-3">
+                        <div class="f-group">
+                            <label class="f-label" for="fromArrivalDate">از تاریخ ورود</label>
+                            <div class="datepicker-wrap">
+                                <input id="fromArrivalDate" class="f-control datepicker-input"
+                                       placeholder="از تاریخ" autocomplete="off" />
+                                <i class="fa fa-calendar datepicker-ico"></i>
+                            </div>
+                            <input type="hidden" id="fromArrivalDateEn" name="fromArrivalDate" />
+                        </div>
+
+                        <div class="f-group">
+                            <label class="f-label" for="toArrivalDate">تا تاریخ ورود</label>
+                            <div class="datepicker-wrap">
+                                <input id="toArrivalDate" class="f-control datepicker-input"
+                                       placeholder="تا تاریخ" autocomplete="off" />
+                                <i class="fa fa-calendar datepicker-ico"></i>
+                            </div>
+                            <input type="hidden" id="toArrivalDateEn" name="toArrivalDate" />
+                        </div>
+
+                        <div class="f-group">
+                            <label class="f-label" for="fromDispatchDate">از تاریخ خروج</label>
+                            <div class="datepicker-wrap">
+                                <input id="fromDispatchDate" class="f-control datepicker-input"
+                                       placeholder="از تاریخ" autocomplete="off" />
+                                <i class="fa fa-calendar datepicker-ico"></i>
+                            </div>
+                            <input type="hidden" id="fromDispatchDateEn" name="fromDispatchDate" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <a asp-action="Index" asp-controller="Home" class="btn-back">
+                <i class="fa fa-arrow-right"></i>
+                <span>بازگشت</span>
+            </a>
+
+            <button type="button" class="btn-back js-clear-filters">
+                <i class="fa fa-eraser"></i>
+                <span>پاک کردن فیلترها</span>
+            </button>
+
+            <button type="submit" class="btn-confirm" name="reportType" value="arrivalByItem">
+                <i class="fa fa-sign-in-alt"></i>
+                <span>ورود بر اساس کالا</span>
+            </button>
+
+            <button type="submit" class="btn-confirm" name="reportType" value="dispatchByRecipient">
+                <i class="fa fa-sign-out-alt"></i>
+                <span>ارسالات بر اساس گیرندگان</span>
+            </button>
+
+            <button type="submit" class="btn-confirm" name="reportType" value="arrivalSummary">
+                <i class="fa fa-clipboard-check"></i>
+                <span>خلاصه موارد رسیده</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<div id="toastContainer"></div>
+
+@section Scripts {
+    <script src="~/js/components/shared/toast.js"></script>
+    <script src="~/js/persian-date.js"></script>
+    <script src="~/js/shared/datepicker.js"></script>
+    <script src="~/js/shared/searchable-controls.js"></script>
+    <script src="~/js/components/reports/entry-exit-report.js"></script>
+}

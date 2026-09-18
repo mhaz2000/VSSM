@@ -1,6 +1,7 @@
 ﻿
 using System.Collections.Generic;
 using VSSM.Application.DTOs.BaseEntities.Reports;
+using VSSM.Application.DTOs.Reports;
 
 namespace VSSM.Application.Interfaces.BaseEntities
 {
@@ -19,5 +20,20 @@ namespace VSSM.Application.Interfaces.BaseEntities
         Task<(List<NotDispatchedToRecipientsDto> data, int count)> GetNotDispatchedToRecipientsAsync(long? itemId, long? fiscalPeriodId, string? fromDate, string? toDate, int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken);
         Task<(List<OutOfStockItemsDto> data, int count)> GetOutOfStockItems(int currentRecipientId, int? itemClassId, int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken);
         Task<(List<TotalLossReportDto> data, int count)> GetTotalLossAsync(long? itemId, DateTime fromDateTime, DateTime toDateTime, int pageNumber, int pageSize, string sort, string direction, bool v, CancellationToken cancellationToken);
+
+        Task<(List<ArrivalReportDto> data, int count)> GetArrivalByItemReportAsync(
+            EntryExitReportQuery query, int currentRecipientId,
+            int pageNumber, int pageSize, string sort, string direction,
+            bool fetchAll, CancellationToken cancellationToken);
+
+        Task<(List<DispatchReportDto> data, int count)> GetDispatchByRecipientReportAsync(
+            EntryExitReportQuery query, int currentRecipientId,
+            int pageNumber, int pageSize, string sort, string direction,
+            bool fetchAll, CancellationToken cancellationToken);
+
+        Task<(List<ArrivalSummaryDto> data, int count)> GetArrivalSummaryReportAsync(
+            EntryExitReportQuery query, int currentRecipientId,
+            int pageNumber, int pageSize, string sort, string direction,
+            bool fetchAll, CancellationToken cancellationToken);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using VSSM.Application.DTOs.BaseEntities.Reports;
+using VSSM.Application.DTOs.Reports;
 
 namespace VSSM.Application.Services.ExcelGenerators
 {
@@ -16,5 +17,10 @@ namespace VSSM.Application.Services.ExcelGenerators
         MemoryStream NotDispatchedToRecipientsExcel(List<NotDispatchedToRecipientsDto> data);
         MemoryStream OutOfStockItemsExcel(List<OutOfStockItemsDto> data);
         MemoryStream PhysicalInventoryExcel(List<InventoryQuantityReportDto> data);
+
+
+        MemoryStream ArrivalByItemReportExcel(List<ArrivalReportDto> data);
+        MemoryStream DispatchByRecipientReportExcel(List<DispatchReportDto> data);
+        MemoryStream ArrivalSummaryReportExcel(List<ArrivalSummaryDto> data);
     }
 }

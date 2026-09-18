@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using VSSM.Application.DTOs.BaseEntities.Reports;
+using VSSM.Application.DTOs.Reports;
 
 namespace VSSM.Application.Services.ExcelGenerators
 {
@@ -694,6 +695,188 @@ namespace VSSM.Application.Services.ExcelGenerators
 
                     ws.Row(1).Height = 25;
                 }
+
+                wb.SaveAs(stream);
+            }
+
+            stream.Position = 0;
+            return stream;
+        }
+    
+
+    public MemoryStream ArrivalByItemReportExcel(List<ArrivalReportDto> data)
+        {
+            var headers = new[]
+            {
+        "نوع کالا", "کالا", "کد کالا", "سازنده", "تاریخ ورود",
+        "شماره گزارش", "سری ساخت", "تعداد", "دوز بر ویال",
+        "تعداد ویال", "تاریخ انقضا", "انبار", "گیرنده"
+    };
+
+            var numericColumns = new[] { 8, 10 };
+
+            var rows = data.Select(item => new object[]
+            {
+        item.ItemClass, item.Item, item.Code, item.Manufacturer, item.ArrivalDate,
+        item.ReportNumber, item.BatchNumber, item.Quantity, item.DosePerVial,
+        item.NumVials, item.ExpiryDate, item.Store, item.Recipient
+            }).ToList();
+
+            return BuildSheet(
+                sheetName: "ورود بر اساس کالا",
+                title: "گزارش ورود بر اساس کالا",
+                headers: headers,
+                rows: rows,
+                numericColumns: numericColumns);
+        }
+
+        public MemoryStream DispatchByRecipientReportExcel(List<DispatchReportDto> data)
+        {
+            var headers = new[]
+            {
+        "نوع کالا", "کالا", "کد کالا", "گیرنده", "تاریخ ارسال",
+        "شماره حواله", "شماره درخواست", "سری ساخت", "تعداد",
+        "دوز بر ویال", "تعداد ویال", "تاریخ انقضا", "انبار"
+    };
+
+            var numericColumns = new[] { 9, 11 };
+
+            var rows = data.Select(item => new object[]
+            {
+        item.ItemClass, item.Item, item.Code, item.Recipient, item.DispatchDate,
+        item.VoucherNumber, item.RequestNumber, item.BatchNumber, item.Quantity,
+        item.DosePerVial, item.NumVials, item.ExpiryDate, item.Store
+            }).ToList();
+
+            return BuildSheet(
+                sheetName: "ارسالات بر اساس گیرندگان",
+                title: "گزارش ارسالات بر اساس گیرندگان",
+                headers: headers,
+                rows: rows,
+                numericColumns: numericColumns);
+        }
+
+        public MemoryStream ArrivalSummaryReportExcel(List<ArrivalSummaryDto> data)
+        {
+            var headers = new[]
+            {
+        "نوع کالا", "کالا", "کد کالا", "جمع تعداد", "جمع ویال"
+    };
+
+            var numericColumns = new[] { 4, 5 };
+
+            var rows = data.Select(item => new object[]
+            {
+        item.ItemClass, item.Item, item.Code, item.TotalQuantity, item.TotalVials
+            }).ToList();
+
+            return BuildSheet(
+                sheetName: "خلاصه موارد رسیده",
+                title: "گزارش خلاصه موارد رسیده",
+                headers: headers,
+                rows: rows,
+                numericColumns: numericColumns);
+        }
+
+        private static MemoryStream BuildSheet(
+    string sheetName,
+    string title,
+    string[] headers,
+    List<object[]> rows,
+    int[] numericColumns)
+        {
+            var stream = new MemoryStream();
+
+            using (var wb = new XLWorkbook())
+            {
+                var ws = wb.Worksheets.Add(sheetName);
+
+                ws.RightToLeft = true;
+                ws.ShowGridLines = false;
+
+                const int titleRow = 1;
+                const int headerRow = 3;
+                const int dataStartRow = 4;
+
+                var titleRange = ws.Range(titleRow, 1, titleRow, headers.Length);
+                titleRange.Merge();
+                titleRange.Value = title;
+                titleRange.Style.Font.Bold = true;
+                titleRange.Style.Font.FontSize = 14;
+                titleRange.Style.Font.FontColor = XLColor.FromHtml("#0F172A");
+                titleRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                titleRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                ws.Row(titleRow).Height = 30;
+
+                for (var i = 0; i < headers.Length; i++)
+                {
+                    var cell = ws.Cell(headerRow, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Font.FontColor = XLColor.FromHtml("#1E3A8A");
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#F1F5F9");
+                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    cell.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+                    cell.Style.Border.BottomBorderColor = XLColor.FromHtml("#CBD5E1");
+                }
+                ws.Row(headerRow).Height = 24;
+
+                for (var r = 0; r < rows.Count; r++)
+                {
+                    var excelRow = dataStartRow + r;
+                    var rowData = rows[r];
+
+                    for (var c = 0; c < headers.Length; c++)
+                    {
+                        var cell = ws.Cell(excelRow, c + 1);
+                        var value = rowData[c];
+
+                        if (value is null)
+                        {
+                            cell.Value = "-";
+                        }
+                        else if (value is long or int or decimal or double)
+                        {
+                            cell.Value = Convert.ToDecimal(value);
+                            cell.Style.NumberFormat.Format = "#,##0";
+                        }
+                        else
+                        {
+                            cell.Value = value.ToString();
+                        }
+
+                        cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                        cell.Style.Alignment.Horizontal = numericColumns.Contains(c + 1)
+                            ? XLAlignmentHorizontalValues.Center
+                            : XLAlignmentHorizontalValues.Right;
+                    }
+
+                    if (r % 2 == 1)
+                    {
+                        ws.Range(excelRow, 1, excelRow, headers.Length)
+                          .Style.Fill.BackgroundColor = XLColor.FromHtml("#FAFBFC");
+                    }
+                }
+
+                if (rows.Count > 0)
+                {
+                    var lastRow = dataStartRow + rows.Count - 1;
+                    var lastRange = ws.Range(lastRow, 1, lastRow, headers.Length);
+                    lastRange.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+                    lastRange.Style.Border.BottomBorderColor = XLColor.FromHtml("#CBD5E1");
+                }
+
+                ws.Columns(1, headers.Length).AdjustToContents();
+
+                foreach (var col in ws.Columns(1, headers.Length))
+                {
+                    if (col.Width < 10) col.Width = 10;
+                    if (col.Width > 40) col.Width = 40;
+                }
+
+                ws.SheetView.FreezeRows(headerRow);
 
                 wb.SaveAs(stream);
             }

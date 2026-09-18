@@ -1,0 +1,13 @@
+﻿@import url("./available-quantity.css");
+
+.report-wrap .js-clear-filters {
+    background: #fff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+}
+
+    .report-wrap .js-clear-filters:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+        color: #374151;
+    }

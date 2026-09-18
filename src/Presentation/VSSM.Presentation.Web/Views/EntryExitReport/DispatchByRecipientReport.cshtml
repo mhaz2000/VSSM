@@ -1,0 +1,76 @@
+﻿@using VSSM.Presentation.Web.Models.Base
+@model GridViewModel
+
+@{
+    Layout = "~/Views/Shared/_ReportLayout.cshtml";
+    ViewData["Title"] = "گزارش ارسالات بر اساس گیرندگان";
+}
+
+@section Styles {
+    <link href="~/css/components/reports/report-header-info.css" rel="stylesheet" />
+}
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("ReportHeader")
+</div>
+
+<h5 style="text-align: center;">@ViewData["Title"]</h5>
+
+<div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+    <form method="post" action="/EntryExitReport/Report" style="margin: 0;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="toExcel" value="true" />
+        @if (ViewBag.AdditionalParam is not null)
+        {
+            foreach (var pair in ViewBag.AdditionalParam.ToString().Split('&', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var parts = pair.Split('=', 2);
+                <input type="hidden" name="@parts[0]" value="@(parts.Length > 1 ? parts[1] : "")" />
+            }
+        }
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> خروجی اکسل
+        </button>
+    </form>
+</div>
+
+@await Html.PartialAsync("_ReportHeaderInfo")
+
+<div style="margin-top: 1rem;">
+    @await Html.PartialAsync("_DynamicGrid", Model)
+</div>
+
+@if (ViewBag.AdditionalParam is not null)
+{
+    <form method="post" action="/EntryExitReport/Report" id="reportForm" style="display:none;">
+        @Html.AntiForgeryToken()
+        @foreach (var pair in ViewBag.AdditionalParam.ToString().Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = pair.Split('=', 2);
+            <input type="hidden" name="@parts[0]" value="@(parts.Length > 1 ? parts[1] : "")" />
+        }
+    </form>
+}
+
+<script>
+    (function () {
+        let isNavigating = false;
+
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.pagination-btn');
+            if (!btn) return;
+            if (btn.tagName === 'A') return;
+            if (btn.classList.contains('disabled')) return;
+
+            if (isNavigating) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+
+            isNavigating = true;
+            document.querySelectorAll('.pagination-btn').forEach(b => b.classList.add('disabled'));
+            setTimeout(() => { isNavigating = false; }, 10000);
+        }, true);
+    })();
+</script>

@@ -212,6 +212,34 @@ public static class MenuConfig
                     new MenuItem { Title = "امحا UID", Controller = "DestroyUid", Action = "Index" }
                 }
             },
+             new MenuItem
+            {
+                Icon = "fa fa-chart-bar",
+                Title = "گزارشات",
+                Children =
+                {
+                    new MenuItem
+                    {
+                        Title = "گزارش‌های موجودی",
+                        Children =
+                        {
+                            new MenuItem
+                            {
+                                Title = "مقدار موجود",
+                                Controller = "CurrentStockReport",
+                                Action = "AvailableQuantity",
+                            },
+                            new MenuItem
+                            {
+                                Title = "گزارش ورود و خروج",
+                                Controller = "EntryExitReport",
+                                Action = "Index",
+                            },
+                        }
+                    },
+                }
+            },
+
 
 
             new MenuItem

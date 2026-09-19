@@ -17,7 +17,9 @@ public class AccountController(
     IRecipientService recipientService,
     ICaptchaService captcha,
     IRateLimitService rateLimit,
-    IAuditService audit) : Controller
+    IAuditService audit,
+    IRefreshTokenService refreshTokens,
+    RefreshTokenCookieService refreshCookie) : Controller
 {
     [HttpGet]
     public IActionResult Login()
@@ -177,6 +179,12 @@ public class AccountController(
             principal,
             authProps);
 
+        // [SECURITY - A07]: صدور توکن تازه‌ساز (refresh token) به‌صورت کوکی HttpOnly.
+        // فقط هشِ آن در پایگاه ذخیره می‌شود (IssueAsync) و نشست کوکیِ نزدیک به انقضا را
+        // بی‌صدا و با چرخش توکن تمدید می‌کند (RefreshTokenSessionMiddleware).
+        var refreshToken = await refreshTokens.IssueAsync(user.UserId, ip, CancellationToken.None);
+        refreshCookie.Append(HttpContext, refreshToken);
+
         await audit.LogAsync("Information", "Login success", user.UserName, ip, "/Account/Login", "POST");
 
         // [SECURITY - A07]: force a password change on first login before anything else.
@@ -200,6 +208,14 @@ public class AccountController(
     public async Task<IActionResult> Logout()
     {
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        // [SECURITY - A07]: خروج واقعی = باطل‌کردن تمام توکن‌های تازه‌سازِ کاربر و حذف کوکی،
+        // تا نشست از طریق توکنِ سرقت‌شده قابل تمدید نباشد.
+        var userId = GetCurrentUserId();
+        if (userId > 0)
+            await refreshTokens.RevokeAllForUserAsync(userId, CancellationToken.None);
+        refreshCookie.Delete(HttpContext);
+
         await audit.LogAsync("Information", "Logout", User.Identity?.Name, ip,
             HttpContext.Request.Path, HttpContext.Request.Method);
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -259,6 +275,11 @@ public class AccountController(
             CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(identity),
             new AuthenticationProperties { IsPersistent = false, ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) });
+
+        // [SECURITY - A07]: تغییر رمز، تمام توکن‌های تازه‌سازِ قبلی را باطل و برای ادامه‌ی نشست
+        // توکن جدید صادر می‌کند تا نشست‌های قدیمیِ دارای refresh token نامعتبر شوند.
+        await refreshTokens.RevokeAllForUserAsync(userId, CancellationToken.None);
+        refreshCookie.Append(HttpContext, await refreshTokens.IssueAsync(userId, ip, CancellationToken.None));
 
         await audit.LogAsync("Information", "Password changed (forced first login)", User.Identity?.Name, ip,
             HttpContext.Request.Path, HttpContext.Request.Method);

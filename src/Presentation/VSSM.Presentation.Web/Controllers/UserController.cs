@@ -13,7 +13,8 @@ public class UserController(
     IRecipientService recipientService,
     IBaseInfoService baseInfoService,
     IRoleService roleService,
-    IAuditService audit) : BaseController
+    IAuditService audit,
+    IRefreshTokenService refreshTokens) : BaseController
 {
 
     public async Task<IActionResult> Index(
@@ -310,6 +311,10 @@ public class UserController(
         }
 
         await userService.ChangePassword(model.UserId, model.NewPassword, token);
+
+        // [SECURITY - A07]: تغییر رمز توسط مدیر، تمام نشست‌های دارای refresh tokenِ آن کاربر
+        // را باطل می‌کند تا با رمز قدیمی صادرشده قابل تمدید نباشند.
+        await refreshTokens.RevokeAllForUserAsync(model.UserId, token);
 
         TempData["ToastMessage"] = "رمز عبور با موفقیت تغییر یافت";
         TempData["ToastType"] = "success";

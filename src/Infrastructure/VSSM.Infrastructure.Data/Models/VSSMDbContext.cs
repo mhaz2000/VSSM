@@ -44,6 +44,7 @@ public partial class VSSMDbContext(
         public virtual DbSet<TblArrivalRepConfig> TblArrivalRepConfigs { get; set; }
         public virtual DbSet<TblSiyamRecipient> TblSiyamRecipients { get; set; }
     public virtual DbSet<TblStoreUsageWarning> TblStoreUsageWarning { get; set; }
+    public virtual DbSet<TblRefreshToken> TblRefreshTokens { get; set; }
 
 
     // Database naming convention:
@@ -1211,6 +1212,68 @@ public partial class VSSMDbContext(
             entity.HasOne(d => d.Role).WithMany(p => p.TblUsers)
                 .HasForeignKey(d => d.RoleId)
                 .HasConstraintName("FK_tblUsers_Roles");
+        });
+
+        modelBuilder.Entity<TblRefreshToken>(entity =>
+        {
+            entity.ToTable("tblRefreshTokens");
+
+            entity.HasKey(e => e.Id)
+                .HasName("PK_TBL_REFRESH_TOKENS");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("PK_REFRESH_TOKEN_ID")
+                .ValueGeneratedOnAdd();
+
+            entity.Property(e => e.UserId)
+                .HasColumnName("FK_USER_ID")
+                .IsRequired();
+
+            entity.Property(e => e.TokenHash)
+                .HasColumnName("TOKEN_HASH")
+                .HasMaxLength(64)
+                .IsUnicode(false)
+                .IsRequired();
+
+            entity.Property(e => e.CreatedUtc)
+                .HasColumnName("CREATED_UTC")
+                .HasColumnType("datetime2");
+
+            entity.Property(e => e.ExpiresUtc)
+                .HasColumnName("EXPIRES_UTC")
+                .HasColumnType("datetime2");
+
+            entity.Property(e => e.RevokedUtc)
+                .HasColumnName("REVOKED_UTC")
+                .HasColumnType("datetime2");
+
+            entity.Property(e => e.CreatedByIp)
+                .HasColumnName("CREATED_BY_IP")
+                .HasMaxLength(45)
+                .IsUnicode(false);
+
+            entity.Property(e => e.ReplacedTokenHash)
+                .HasColumnName("REPLACED_TOKEN_HASH")
+                .HasMaxLength(64)
+                .IsUnicode(false);
+
+            entity.Property(e => e.ReplacedByTokenHash)
+                .HasColumnName("REPLACED_BY_TOKEN_HASH")
+                .HasMaxLength(64)
+                .IsUnicode(false);
+
+            entity.HasIndex(e => e.TokenHash)
+                .IsUnique()
+                .HasDatabaseName("UX_TBL_REFRESH_TOKENS_TOKEN_HASH");
+
+            entity.HasIndex(e => e.UserId)
+                .HasDatabaseName("IX_TBL_REFRESH_TOKENS_USER_ID");
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_TBL_REFRESH_TOKENS_USER");
         });
 
         modelBuilder.Entity<TblVoucherConfig>(entity =>

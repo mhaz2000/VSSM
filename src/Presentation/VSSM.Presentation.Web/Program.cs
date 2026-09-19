@@ -111,6 +111,8 @@ if (!app.Environment.IsDevelopment())
 app.UseRouting();
 
 app.UseAuthentication();
+// [SECURITY - A07]: تمدید بی‌صدا و محدود نشست کوکی قبل از انقضای مطلق، با refresh token (کوکی HttpOnly).
+app.UseMiddleware<RefreshTokenSessionMiddleware>();
 app.UseAuthorization();
 
 app.MapStaticAssets();

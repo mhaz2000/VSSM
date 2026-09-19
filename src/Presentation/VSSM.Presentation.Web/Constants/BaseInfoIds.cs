@@ -20,6 +20,6 @@ public static class BaseInfoIds
     public const int DosePerVial = 84;
     public const int HalalItemClassId = 55;
     public const int Uses = 7;
-
+    public const int Levels = 91;
 }
 

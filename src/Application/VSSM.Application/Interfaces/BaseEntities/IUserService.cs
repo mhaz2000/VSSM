@@ -1,4 +1,5 @@
 ﻿using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.BaseInfo;
 using VSSM.Application.DTOs.BaseEntities.UserManagement;
 
 namespace VSSM.Application.Interfaces.BaseEntities;
@@ -38,4 +39,7 @@ public interface IUserService
     Task<UserSearchResultDto> SearchUsersWithRecipientAsync(string searchTerm, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<bool> ChangeRecipientAsync(int userId, int newRecipientId, CancellationToken cancellationToken = default);
     Task<UserWithRecipientDto> GetUserWithRecipientAsync(int userId, CancellationToken cancellationToken = default);
+
+    Task<List<BaseInfoDto>> GetAdminUsersAsBaseInfoAsync(
+        CancellationToken cancellationToken = default);
 }

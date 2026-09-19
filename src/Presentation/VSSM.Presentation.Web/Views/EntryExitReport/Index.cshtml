@@ -1,7 +1,6 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.BaseInfo
 @using VSSM.Application.DTOs.BaseEntities.Item
 @using VSSM.Application.DTOs.BaseEntities.Recipient
-@using VSSM.Application.DTOs.BaseEntities.Source
 @using VSSM.Application.DTOs.BaseEntities.Store
 @using VSSM.Presentation.Web.Models.Base
 @{
@@ -13,14 +12,14 @@
     var recipients = ViewBag.Recipients as List<RecipientGetDto> ?? new();
     var manufacturers = ViewBag.Manufacturers as List<BaseInfoDto> ?? new();
     var commercialNames = ViewBag.CommercialNames as List<BaseInfoDto> ?? new();
-    var sources = ViewBag.Sources as List<SourceGetDto> ?? new();
+    var sources = ViewBag.Sources as List<BaseInfoDto> ?? new();
     var vvmTypes = ViewBag.VvmTypes as List<BaseInfoDto> ?? new();
     var vvmStages = ViewBag.VvmStages as List<BaseInfoDto> ?? new();
-    var fiscalPeriods = ViewBag.FiscalPeriods as List<BaseInfoDto> ?? new();
+    var fiscalPeriods = ViewBag.FiscalPeriods as List<SelectOption> ?? new();
     var transportationMethods = ViewBag.TransportationMethods as List<BaseInfoDto> ?? new();
-    var chainLevels = ViewBag.ChainLevels as List<int> ?? new();
     var users = ViewBag.Users as List<BaseInfoDto> ?? new();
-    var lowerReports = ViewBag.LowerReports as List<BaseInfoDto> ?? new();
+    var levels = ViewBag.Levels as List<BaseInfoDto> ?? new();
+    var lowerReports = ViewBag.LowerReports as List<RecipientLookupDto> ?? new();
 
     List<SelectOption> Opts<T>(IEnumerable<T> src, Func<T, string> v, Func<T, string> t)
         => src.Select(x => new SelectOption { Value = v(x), Text = t(x) }).ToList();
@@ -89,7 +88,7 @@
                                 new SearchableMultiSelectModel
                                 {
                                     Id = "itemId", Name = "itemId",
-                                    Label = "", DefaultText = "انتخاب کنید",
+                                    Label = "", DefaultText = "ابتدا نوع کالا را انتخاب کنید",
                                     AllSelectedFormat = "همه کالاها ({0} مورد)",
                                     OverflowSelectedFormat = "{0} کالا انتخاب شده",
                                     MaxSelectedLabels = 5,
@@ -138,13 +137,13 @@
 
                             <div class="f-group">
                                 <label class="f-label" for="chainLevel">سطح در زنجیره</label>
-                                <select id="chainLevel" name="chainLevel" class="f-control">
-                                    <option value="">انتخاب کنید</option>
-                                    @foreach (var l in chainLevels)
+                                @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                    new SearchableSelectModel
                                     {
-                                        <option value="@l">@l</option>
-                                    }
-                                </select>
+                                        Id = "chainLevel", Name = "chainLevel",
+                                        Label = "", DefaultText = "انتخاب کنید",
+                                        Options = Opts(levels, x => x.Id.ToString(), x => x.Title)
+                                    })
                             </div>
 
                             <div class="f-group">
@@ -193,7 +192,7 @@
                                     {
                                         Id = "fiscalPeriodId", Name = "fiscalPeriodId",
                                         Label = "", DefaultText = "انتخاب کنید",
-                                        Options = Opts(fiscalPeriods, x => x.Id.ToString(), x => x.Title)
+                                        Options = fiscalPeriods
                                     })
                             </div>
 
@@ -258,7 +257,7 @@
 
                             <div class="f-group">
                                 <div class="f-label-row">
-                                    <label class="f-label" for="fromTransactionDate">از تاریخ تعامل</label>
+                                    <label class="f-label" for="fromTransactionDate">از تاریخ ارسال</label>
                                     <button type="button" class="btn-toggle-date-mode"
                                             data-target="fromTransactionDate" data-mode="jalali">
                                         <i class="fa fa-exchange"></i>
@@ -276,7 +275,7 @@
 
                             <div class="f-group">
                                 <div class="f-label-row">
-                                    <label class="f-label" for="toTransactionDate">تا تاریخ تعامل</label>
+                                    <label class="f-label" for="toTransactionDate">تا تاریخ ارسال</label>
                                     <button type="button" class="btn-toggle-date-mode"
                                             data-target="toTransactionDate" data-mode="jalali">
                                         <i class="fa fa-exchange"></i>
@@ -328,7 +327,7 @@
                                     {
                                         Id = "sourceIdIn", Name = "sourceId",
                                         Label = "", DefaultText = "انتخاب کنید",
-                                        Options = Opts(sources, x => x.SourceId.ToString(), x => x.FullName)
+                                        Options = Opts(sources, x => x.Id.ToString(), x => x.Title)
                                     })
                             </div>
                         </div>
@@ -375,7 +374,7 @@
                                     {
                                         Id = "sourceIdOut", Name = "sourceIdOut",
                                         Label = "", DefaultText = "انتخاب کنید",
-                                        Options = Opts(sources, x => x.SourceId.ToString(), x => x.FullName)
+                                        Options = Opts(sources, x => x.Id.ToString(), x => x.Title)
                                     })
                             </div>
 
@@ -408,5 +407,9 @@
 <div id="toastContainer"></div>
 
 @section Scripts {
+    <script src="~/js/shared/toast.js"></script>
+    <script src="~/js/shared/searchable-controls.js"></script>
+    <script src="~/js/persian-date.js"></script>
+    <script src="~/js/shared/datepicker.js"></script>
     <script src="~/js/components/reports/entry-exit-report.js"></script>
 }

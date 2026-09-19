@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using VSSM.Application.DTOs;
+using VSSM.Application.DTOs.BaseEntities.BaseInfo;
 using VSSM.Application.DTOs.BaseEntities.UserManagement;
 using VSSM.Application.Helpers;
 using VSSM.Application.Interfaces.BaseEntities;
@@ -10,6 +11,22 @@ namespace VSSM.Application.Services.BaseEntities;
 
 public class UserService(VSSMDbContext db) : IUserService
 {
+
+    public async Task<List<BaseInfoDto>> GetAdminUsersAsBaseInfoAsync(
+    CancellationToken cancellationToken = default)
+    {
+        return await db.TblUsers
+            .Where(u => u.IsDeleted != true && u.IsAdmin == true)
+            .OrderBy(u => u.FirstName)
+            .ThenBy(u => u.LastName)
+            .Select(u => new BaseInfoDto
+            {
+                Id = u.UserId,
+                Title = ((u.FirstName ?? "") + " " + (u.LastName ?? "")).Trim()
+            })
+            .ToListAsync(cancellationToken);
+    }
+
     // ---------------- GET BY ID ----------------
     public async Task<UserEditDto> GetById(int id, CancellationToken token)
     {

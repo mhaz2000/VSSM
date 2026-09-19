@@ -8,3 +8,9 @@ public class RecipientSearchDto
     public string Province { get; set; }
     public string City { get; set; }
 }
+
+public record RecipientLookupDto
+{
+    public int Id { get; init; }
+    public string Title { get; init; }
+}

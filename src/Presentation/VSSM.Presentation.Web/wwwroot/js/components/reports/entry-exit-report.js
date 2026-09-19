@@ -8,6 +8,7 @@
     const tabs = form.find('.report-tab');
     const specificInbound = form.find('[data-specific="inbound"]');
     const specificOutbound = form.find('[data-specific="outbound"]');
+    const itemClassSelect = $('#itemClassId');
 
     const escapeHtml = (value) => {
         if (value == null) return '';
@@ -67,6 +68,38 @@
         $btn.attr('data-mode', next);
         $btn.find('.mode-label').text(next === 'jalali' ? 'شمسی' : 'میلادی');
         updateActiveFilters();
+    };
+
+    const loadItemsByClass = (classId) => {
+        if (window.SearchableControls) {
+            window.SearchableControls.setOptions('itemId', []);
+            window.SearchableControls.reset('itemId');
+        }
+
+        if (!classId) return;
+
+        $.ajax({
+            url: '/EntryExitReport/GetItemsByClass',
+            type: 'GET',
+            data: { classId: classId },
+            success: function (res) {
+                if (!res || res.success !== true) return;
+
+                const mapped = (res.result || []).map(x => ({
+                    value: String(x.itemId),
+                    text: x.fullName
+                }));
+
+                if (window.SearchableControls) {
+                    window.SearchableControls.setOptions('itemId', mapped);
+                }
+            },
+            error: function () {
+                if (window.SearchableControls) {
+                    window.SearchableControls.setOptions('itemId', []);
+                }
+            }
+        });
     };
 
     const collectChips = () => {
@@ -202,6 +235,13 @@
             }
         }
 
+        if (name === 'itemClassId') {
+            if (window.SearchableControls) {
+                window.SearchableControls.setOptions('itemId', []);
+                window.SearchableControls.reset('itemId');
+            }
+        }
+
         updateActiveFilters();
     };
 
@@ -211,6 +251,8 @@
                 const id = $(this).find('input[type="hidden"]').first().attr('id');
                 if (id) window.SearchableControls.reset(id);
             });
+
+            window.SearchableControls.setOptions('itemId', []);
         }
 
         form.find('input.datepicker-input').val('');
@@ -229,6 +271,11 @@
         updateActiveFilters();
         if (typeof showToast === 'function') showToast('فیلترها پاک شدند', 'success');
     };
+
+    itemClassSelect.on('change', function () {
+        loadItemsByClass($(this).val());
+        scheduleUpdate();
+    });
 
     tabs.on('click', function () { setReportType($(this).data('report')); });
 

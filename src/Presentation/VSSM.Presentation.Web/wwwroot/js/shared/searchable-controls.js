@@ -8,22 +8,34 @@
         const $hidden = $w.find('input[type="hidden"]').first();
         const $text = $w.find('.ss-text');
 
-        $w.on('click.ssToggle', '.ss-display', function (e) {
+        $w.off('click.ssToggle').on('click.ssToggle', '.ss-display', function (e) {
             e.stopPropagation();
             if ($w.is('.ss-disabled, .disabled')) return;
             $('.ss-control, .ms-control').not($w.find('.ss-control')).removeClass('open');
             $w.find('.ss-control').toggleClass('open');
         });
 
-        $w.on('click.ssOption', '.ss-option', function (e) {
+        $w.off('click.ssOption').on('click.ssOption', '.ss-option', function (e) {
             e.stopPropagation();
             if ($(this).hasClass('disabled')) return;
-            $hidden.val($(this).data('value')).trigger('change');
-            $text.text($(this).text().trim());
+
+            const val = $(this).data('value');
+            const txt = $(this).text().trim();
+
             $w.find('.ss-control').removeClass('open');
+            $text.text(txt);
+            $hidden.val(val);
+
+            try {
+                $hidden.trigger('change');
+            } catch (err) {
+                if (window.console && console.error) {
+                    console.error('SS change handler failed:', err);
+                }
+            }
         });
 
-        $w.on('input.ssSearch', '.ss-search', function () {
+        $w.off('input.ssSearch').on('input.ssSearch', '.ss-search', function () {
             const q = ($(this).val() || '').toLowerCase();
             $w.find('.ss-option').each(function () {
                 $(this).toggle($(this).text().toLowerCase().indexOf(q) > -1);
@@ -100,16 +112,16 @@
             renderTags(selected);
         };
 
-        $hidden.on('change.msRefresh', refresh);
+        $hidden.off('change.msRefresh').on('change.msRefresh', refresh);
 
-        $w.on('click.msToggle', '.ms-display', function (e) {
+        $w.off('click.msToggle').on('click.msToggle', '.ms-display', function (e) {
             e.stopPropagation();
             if ($w.is('.ms-disabled, .disabled')) return;
             $('.ms-control, .ss-control').not($w.find('.ms-control')).removeClass('open');
             $w.find('.ms-control').toggleClass('open');
         });
 
-        $w.on('click.msOption', '.ms-option:not(.ms-select-all)', function (e) {
+        $w.off('click.msOption').on('click.msOption', '.ms-option:not(.ms-select-all)', function (e) {
             e.stopPropagation();
             const val = String($(this).data('value'));
             const selected = readSelected();
@@ -119,7 +131,7 @@
             writeSelected(selected);
         });
 
-        $w.on('click.msSelectAll', '.ms-select-all', function (e) {
+        $w.off('click.msSelectAll').on('click.msSelectAll', '.ms-select-all', function (e) {
             e.stopPropagation();
             const selected = readSelected();
             const total = $w.find('.ms-option:not(.ms-select-all)').length;
@@ -135,18 +147,18 @@
             }
         });
 
-        $w.on('click.msRemoveTag', '.ms-remove-tag', function (e) {
+        $w.off('click.msRemoveTag').on('click.msRemoveTag', '.ms-remove-tag', function (e) {
             e.stopPropagation();
             const val = String($(this).closest('.ms-tag').data('value'));
             writeSelected(readSelected().filter(v => v !== val));
         });
 
-        $w.on('click.msRemoveSummary', '.ms-tag-summary', function (e) {
+        $w.off('click.msRemoveSummary').on('click.msRemoveSummary', '.ms-tag-summary', function (e) {
             e.stopPropagation();
             writeSelected([]);
         });
 
-        $w.on('input.msSearch', '.ms-search', function () {
+        $w.off('input.msSearch').on('input.msSearch', '.ms-search', function () {
             const q = ($(this).val() || '').toLowerCase();
             $w.find('.ms-option:not(.ms-select-all)').each(function () {
                 const txt = $(this).find('span').first().text().toLowerCase();
@@ -186,6 +198,42 @@
             }
 
             $hidden.trigger('change');
+        },
+
+        setOptions(id, items) {
+            const $hidden = $('#' + id);
+            if (!$hidden.length) return;
+
+            const $w = $hidden.closest('.ms-wrapper');
+            if (!$w.length) return;
+
+            const $options = $w.find('.ms-options');
+
+            $options.empty();
+
+            $options.append(
+                '<div class="ms-option ms-select-all" data-value="__all__">' +
+                '<input type="checkbox" />' +
+                '<span>انتخاب همه</span>' +
+                '</div>' +
+                '<hr class="ms-option-separator" />'
+            );
+
+            (items || []).forEach(function (item) {
+                const value = String(item.value != null ? item.value : item.itemId);
+                const text = String(item.text != null ? item.text : item.fullName);
+
+                $options.append(
+                    '<div class="ms-option" data-value="' + value + '">' +
+                    '<input type="checkbox" />' +
+                    '<span>' + text + '</span>' +
+                    '</div>' +
+                    '<hr class="ms-option-separator" />'
+                );
+            });
+
+            $w.find('.ms-search').val('');
+            $hidden.val('').trigger('change.msRefresh');
         }
     };
 });

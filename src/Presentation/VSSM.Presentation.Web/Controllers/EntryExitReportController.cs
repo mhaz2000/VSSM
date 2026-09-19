@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using VSSM.Application.DTOs.BaseEntities.BaseInfo;
 using VSSM.Application.DTOs.BaseEntities.Item;
-using VSSM.Application.DTOs.BaseEntities.Reports;
+using VSSM.Application.DTOs.BaseEntities.Recipient;
 using VSSM.Application.DTOs.Reports;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Services.ExcelGenerators;
@@ -18,6 +19,7 @@ public class EntryExitReportController(
     IRecipientService recipientService,
     IBaseInfoService baseInfoService,
     IFiscalPeriodService fiscalPeriodService,
+    IUserService userService,
     IMemoryCache cache)
     : BaseController
 {
@@ -274,27 +276,91 @@ public class EntryExitReportController(
         cache.Set(reportId, inputModel, TimeSpan.FromDays(1));
     }
 
+
     private async Task PopulateFilterLookupsAsync(CancellationToken cancellationToken)
     {
+        var recipientId = CurrentUserRecipientId.GetValueOrDefault();
+
         ViewBag.ItemClasses = await baseInfoService.GetByParentIdAsync(
             BaseInfoIds.ItemClassesId, cancellationToken);
 
-        ViewBag.Items = await itemService.GetActives(cancellationToken);
+        ViewBag.Items = new List<ItemListDto>();
 
         ViewBag.Stores = await storeService.GetAllWithRecipientId(
-            CurrentUserRecipientId!.Value, cancellationToken);
+            recipientId, cancellationToken);
 
-        ViewBag.Recipients = await recipientService.GetActiveRecipientChildren(
-            CurrentUserRecipientId.Value, cancellationToken);
+        var recipients = await recipientService.GetActiveRecipientChildren(
+            recipientId, cancellationToken);
+
+        ViewBag.Recipients = recipients;
+
+        ViewBag.LowerReports = recipients
+            .Select(r => new RecipientLookupDto
+            {
+                Id = r.RecipientId,
+                Title = r.FullName ?? string.Empty,
+            })
+            .ToList();
+
+        ViewBag.Levels = await baseInfoService.GetByParentIdAsync(
+            BaseInfoIds.Levels, cancellationToken);
 
         ViewBag.Manufacturers = await baseInfoService.GetByParentIdAsync(
-            48, cancellationToken);
+            BaseInfoIds.Manufacturers, cancellationToken);
+
+        ViewBag.CommercialNames = await baseInfoService.GetByParentIdAsync(
+            BaseInfoIds.BrandNames, cancellationToken);
+
+        ViewBag.Sources = await baseInfoService.GetByParentIdAsync(
+            BaseInfoIds.OwnershipTypes, cancellationToken);
+
+        ViewBag.VvmTypes = await baseInfoService.GetByParentIdAsync(
+            BaseInfoIds.VvmTypes, cancellationToken);
 
         ViewBag.VvmStages = await baseInfoService.GetByParentIdAsync(
             BaseInfoIds.VvmStages, cancellationToken);
 
-        ViewBag.FiscalPeriods = await fiscalPeriodService.GetAllAsListAsync(cancellationToken);
+        ViewBag.TransportationMethods = await baseInfoService.GetByParentIdAsync(
+            BaseInfoIds.TransportModes, cancellationToken);
+
+        var rawPeriods = await fiscalPeriodService.GetAllAsListAsync(cancellationToken);
+
+        ViewBag.FiscalPeriods = rawPeriods
+            .Select(x => new SelectOption
+            {
+                Value = x.FiscalPeriodId.ToString(),
+                Text = x.FullName
+            })
+            .ToList();
+
+        ViewBag.Users = await userService.GetAdminUsersAsBaseInfoAsync(cancellationToken);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetItemsByClass(
+        int classId,
+        CancellationToken cancellationToken = default)
+    {
+        if (classId <= 0)
+        {
+            return Json(new
+            {
+                success = true,
+                result = Array.Empty<object>()
+            });
+        }
+
+        var items = await itemService.GetItemsByClassAsync(classId);
+
+        return Json(new
+        {
+            success = true,
+            result = items.Select(i => new
+            {
+                itemId = i.ItemId,
+                fullName = i.FullName
+            })
+        });
+    }
     #endregion
 }

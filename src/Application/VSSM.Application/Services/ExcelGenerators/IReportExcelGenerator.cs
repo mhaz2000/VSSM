@@ -19,7 +19,7 @@ namespace VSSM.Application.Services.ExcelGenerators
         MemoryStream PhysicalInventoryExcel(List<InventoryQuantityReportDto> data);
 
 
-        MemoryStream ArrivalByItemReportExcel(List<ArrivalReportDto> data);
+        MemoryStream ArrivalByItemReportExcel(List<GroupedArrivalByItemDto> data);
         MemoryStream DispatchByRecipientReportExcel(List<DispatchReportDto> data);
         MemoryStream ArrivalSummaryReportExcel(List<ArrivalSummaryDto> data);
     }

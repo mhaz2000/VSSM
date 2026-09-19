@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using VSSM.Application.DTOs.BaseEntities.BaseInfo;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.Recipient;
+using VSSM.Application.DTOs.BaseEntities.Reports;
 using VSSM.Application.DTOs.Reports;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Services.ExcelGenerators;
@@ -49,6 +50,7 @@ public class EntryExitReportController(
 
         return reportType switch
         {
+            "arrival" or
             "arrivalByItem" => await ArrivalByItemAsync(
                 inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId, cancellationToken),
 
@@ -65,15 +67,19 @@ public class EntryExitReportController(
     #region Report Handlers
 
     private async Task<IActionResult> ArrivalByItemAsync(
-        EntryExitReportQuery input,
-        int pageNumber,
-        int pageSize,
-        string sort,
-        string direction,
-        bool toExcel,
-        string? reportId,
-        CancellationToken cancellationToken)
+     EntryExitReportQuery input,
+     int pageNumber,
+     int pageSize,
+     string sort,
+     string direction,
+     bool toExcel,
+     string? reportId,
+     CancellationToken cancellationToken)
     {
+
+        const int fixedPageSize = 1;
+        pageSize = fixedPageSize;
+
         PrepareCachedReport(ref input, ref reportId, "arrivalByItem",
             pageSize, sort, direction);
 
@@ -93,36 +99,94 @@ public class EntryExitReportController(
             input, CurrentUserRecipientId.GetValueOrDefault(),
             pageNumber, pageSize, sort, direction, false, cancellationToken);
 
-        var model = new GridViewModel
+        await PopulateHeaderAsync(input, cancellationToken);
+
+        var model = new GroupedGridViewModel<object, object>
         {
             CurrentSort = sort,
             CurrentDirection = direction,
             Data = new PagedResult<object>
             {
-                Items = data.Cast<object>().ToList(),
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 TotalCount = count
             },
-            Columns = new List<GridColumn>
+            Groups = data.Select(s => new GroupItem<object, object>
             {
-                new() { Header = "نوع کالا",     PropertyName = nameof(ArrivalReportDto.ItemClass) },
-                new() { Header = "کالا",         PropertyName = nameof(ArrivalReportDto.Item) },
-                new() { Header = "کد کالا",      PropertyName = nameof(ArrivalReportDto.Code) },
-                new() { Header = "سازنده",       PropertyName = nameof(ArrivalReportDto.Manufacturer) },
-                new() { Header = "تاریخ ورود",   PropertyName = nameof(ArrivalReportDto.ArrivalDate) },
-                new() { Header = "شماره گزارش", PropertyName = nameof(ArrivalReportDto.ReportNumber) },
-                new() { Header = "سری ساخت",    PropertyName = nameof(ArrivalReportDto.BatchNumber) },
-                new() { Header = "تعداد",        PropertyName = nameof(ArrivalReportDto.Quantity) },
-                new() { Header = "دوز بر ویال", PropertyName = nameof(ArrivalReportDto.DosePerVial) },
-                new() { Header = "تعداد ویال",  PropertyName = nameof(ArrivalReportDto.NumVials) },
-                new() { Header = "تاریخ انقضا", PropertyName = nameof(ArrivalReportDto.ExpiryDate) },
-                new() { Header = "انبار",        PropertyName = nameof(ArrivalReportDto.Store) },
-                new() { Header = "گیرنده",       PropertyName = nameof(ArrivalReportDto.Recipient) },
-            }
+                Details = s.Details.Cast<object>().ToList(),
+                Meta = s.Meta
+            }).ToList(),
+            Columns = new List<GridColumn>
+        {
+            new() { Header = "تاریخ دریافت",   PropertyName = nameof(ArrivalByItemDetailDto.ReceiveDateText) },
+            new() { Header = "تاریخ ورود",     PropertyName = nameof(ArrivalByItemDetailDto.ArrivalDateText) },
+            new() { Header = "شماره گزارش",    PropertyName = nameof(ArrivalByItemDetailDto.ReportNumber) },
+            new() { Header = "منبع",           PropertyName = nameof(ArrivalByItemDetailDto.Source) },
+            new() { Header = "شماره سفارش",    PropertyName = nameof(ArrivalByItemDetailDto.OrderNumber) },
+            new() { Header = "Entered by",     PropertyName = nameof(ArrivalByItemDetailDto.EnteredBy) },
+            new() { Header = "سری ساخت",       PropertyName = nameof(ArrivalByItemDetailDto.BatchNumber) },
+            new() { Header = "سازنده",         PropertyName = nameof(ArrivalByItemDetailDto.Manufacturer) },
+            new() { Header = "دوز-مقدار",      PropertyName = nameof(ArrivalByItemDetailDto.Quantity) },
+            new() { Header = "تعداد ویال",     PropertyName = nameof(ArrivalByItemDetailDto.NumVials) },
+            new() { Header = "دوز بر ویال",    PropertyName = nameof(ArrivalByItemDetailDto.DosePerVial) },
+            new() { Header = "تاریخ انقضا",    PropertyName = nameof(ArrivalByItemDetailDto.ExpiryDateText) },
+            new() { Header = "تاریخ تولید",    PropertyName = nameof(ArrivalByItemDetailDto.ProductionDateText) },
+            new() { Header = "انبار",          PropertyName = nameof(ArrivalByItemDetailDto.Store) },
+            new() { Header = "نام تجاری",      PropertyName = nameof(ArrivalByItemDetailDto.CommercialName) },
+            new() { Header = "نوع VVM",        PropertyName = nameof(ArrivalByItemDetailDto.VvmType) },
+            new() { Header = "مرحله VVM",      PropertyName = nameof(ArrivalByItemDetailDto.VvmStage) },
+            new() { Header = "ملاحظات",        PropertyName = nameof(ArrivalByItemDetailDto.Note) },
+        }
         };
 
         return View("ArrivalByItemReport", model);
+    }
+
+    private async Task PopulateHeaderAsync(
+        EntryExitReportQuery input,
+        CancellationToken cancellationToken)
+    {
+        var storeIds = ParseIds(input.StoreId);
+        var stores = await storeService.GetAllWithRecipientId(
+            CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
+
+        ViewBag.Stores = storeIds.Count == 0 || !stores.Select(s => s.StoreId).Except(storeIds).Any()
+            ? "کلیه انبارها"
+            : string.Join("، ", stores.Where(s => storeIds.Contains(s.StoreId)).Select(s => s.FullName));
+
+        var itemIds = ParseIds(input.ItemId);
+        var items = await itemService.GetActives(cancellationToken);
+
+        ViewBag.Items = itemIds.Count == 0 || !items.Select(i => i.ItemId).Except(itemIds).Any()
+            ? "کلیه کالاها"
+            : string.Join("، ", items.Where(i => itemIds.Contains(i.ItemId)).Select(i => i.FullName));
+
+        if (input.RecipientId is null or 0)
+        {
+            ViewBag.RecipientTitle = "همه مراکز";
+        }
+        else
+        {
+            var recipients = await recipientService.GetActiveRecipientChildren(
+                CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
+
+            ViewBag.RecipientTitle = recipients
+                .FirstOrDefault(r => r.RecipientId == input.RecipientId)?.FullName
+                ?? "همه مراکز";
+        }
+    }
+
+    private static List<int> ParseIds(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return new List<int>();
+
+        return raw
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(s => int.TryParse(s, out var id) ? id : (int?)null)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .ToList();
     }
 
     private async Task<IActionResult> DispatchByRecipientAsync(
@@ -215,6 +279,8 @@ public class EntryExitReportController(
             input, CurrentUserRecipientId.GetValueOrDefault(),
             pageNumber, pageSize, sort, direction, false, cancellationToken);
 
+        await PopulateHeaderAsync(input, cancellationToken);
+
         var model = new GridViewModel
         {
             CurrentSort = sort,
@@ -227,13 +293,24 @@ public class EntryExitReportController(
                 TotalCount = count
             },
             Columns = new List<GridColumn>
-            {
-                new() { Header = "نوع کالا",  PropertyName = nameof(ArrivalSummaryDto.ItemClass) },
-                new() { Header = "کالا",      PropertyName = nameof(ArrivalSummaryDto.Item) },
-                new() { Header = "کد کالا",   PropertyName = nameof(ArrivalSummaryDto.Code) },
-                new() { Header = "جمع تعداد", PropertyName = nameof(ArrivalSummaryDto.TotalQuantity) },
-                new() { Header = "جمع ویال",  PropertyName = nameof(ArrivalSummaryDto.TotalVials) },
-            }
+        {
+            new() { Header = "نوع کالا",     PropertyName = nameof(ArrivalSummaryDto.ItemClass) },
+            new() { Header = "کالا",         PropertyName = nameof(ArrivalSummaryDto.Item) },
+            new() { Header = "کد کالا",      PropertyName = nameof(ArrivalSummaryDto.ItemCode) },
+            new() { Header = "سازنده",       PropertyName = nameof(ArrivalSummaryDto.Manufacturer) },
+            new() { Header = "منبع",         PropertyName = nameof(ArrivalSummaryDto.Source) },
+            new() { Header = "فعالیت",       PropertyName = nameof(ArrivalSummaryDto.Activity) },
+            new() { Header = "تاریخ ورود",   PropertyName = nameof(ArrivalSummaryDto.ArrivalDateText) },
+            new() { Header = "شماره گزارش",  PropertyName = nameof(ArrivalSummaryDto.ReportNumber) },
+            new() { Header = "شماره سفارش",  PropertyName = nameof(ArrivalSummaryDto.OrderNumber) },
+            new() { Header = "تعداد",         PropertyName = nameof(ArrivalSummaryDto.Quantity) },
+            new() { Header = "سری ساخت",     PropertyName = nameof(ArrivalSummaryDto.BatchNumber) },
+            new() { Header = "دوز بر ویال",  PropertyName = nameof(ArrivalSummaryDto.DosePerVial) },
+            new() { Header = "تعداد ویال",   PropertyName = nameof(ArrivalSummaryDto.NumVials) },
+            new() { Header = "قیمت واحد",    PropertyName = nameof(ArrivalSummaryDto.UnitPrice) },
+            new() { Header = "مبلغ کل",      PropertyName = nameof(ArrivalSummaryDto.TotalPrice) },
+            new() { Header = "تاریخ انقضا",  PropertyName = nameof(ArrivalSummaryDto.ExpiryDateText) },
+        }
         };
 
         return View("ArrivalSummaryReport", model);
@@ -335,6 +412,8 @@ public class EntryExitReportController(
 
         ViewBag.Users = await userService.GetAdminUsersAsBaseInfoAsync(cancellationToken);
     }
+
+
 
     [HttpGet]
     public async Task<IActionResult> GetItemsByClass(

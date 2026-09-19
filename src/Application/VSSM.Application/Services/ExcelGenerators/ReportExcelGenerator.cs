@@ -412,7 +412,7 @@ namespace VSSM.Application.Services.ExcelGenerators
 
 
                 ws.SheetView.FreezeRows(1);
-
+                 
                 ws.Columns().AdjustToContents();
 
                 ws.Row(1).Height = 25;
@@ -702,29 +702,58 @@ namespace VSSM.Application.Services.ExcelGenerators
             stream.Position = 0;
             return stream;
         }
-    
 
-    public MemoryStream ArrivalByItemReportExcel(List<ArrivalReportDto> data)
+
+        public MemoryStream ArrivalByItemReportExcel(List<GroupedArrivalByItemDto> data)
         {
             var headers = new[]
             {
-        "نوع کالا", "کالا", "کد کالا", "سازنده", "تاریخ ورود",
-        "شماره گزارش", "سری ساخت", "تعداد", "دوز بر ویال",
-        "تعداد ویال", "تاریخ انقضا", "انبار", "گیرنده"
+        "کالا", "نوع کالا",
+        "تاریخ دریافت", "تاریخ ورود", "شماره گزارش",
+        "منبع", "شماره سفارش", "Entered by",
+        "سری ساخت", "سازنده",
+        "دوز-مقدار", "تعداد ویال", "دوز بر ویال",
+        "تاریخ انقضا", "تاریخ تولید",
+        "انبار", "نام تجاری", "نوع VVM", "مرحله VVM", "ملاحظات"
     };
 
-            var numericColumns = new[] { 8, 10 };
+            var numericColumns = new[] { 11, 12 };
 
-            var rows = data.Select(item => new object[]
+            var rows = new List<object[]>();
+
+            foreach (var group in data)
             {
-        item.ItemClass, item.Item, item.Code, item.Manufacturer, item.ArrivalDate,
-        item.ReportNumber, item.BatchNumber, item.Quantity, item.DosePerVial,
-        item.NumVials, item.ExpiryDate, item.Store, item.Recipient
-            }).ToList();
+                foreach (var d in group.Details)
+                {
+                    rows.Add(new object[]
+                    {
+                group.Meta.ItemName,
+                group.Meta.ItemClass,
+                d.ReceiveDateText,
+                d.ArrivalDateText,
+                d.ReportNumber,
+                d.Source,
+                d.OrderNumber,
+                d.EnteredBy,
+                d.BatchNumber,
+                d.Manufacturer,
+                d.Quantity,
+                d.NumVials,
+                d.DosePerVial,
+                d.ExpiryDateText,
+                d.ProductionDateText,
+                d.Store,
+                d.CommercialName,
+                d.VvmType,
+                d.VvmStage,
+                d.Note
+                    });
+                }
+            }
 
             return BuildSheet(
                 sheetName: "ورود بر اساس کالا",
-                title: "گزارش ورود بر اساس کالا",
+                title: "گزارش ورودی بر اساس کالا",
                 headers: headers,
                 rows: rows,
                 numericColumns: numericColumns);
@@ -760,14 +789,32 @@ namespace VSSM.Application.Services.ExcelGenerators
         {
             var headers = new[]
             {
-        "نوع کالا", "کالا", "کد کالا", "جمع تعداد", "جمع ویال"
+        "نوع کالا", "کالا", "کد کالا", "سازنده", "منبع", "فعالیت",
+        "تاریخ ورود", "شماره گزارش", "شماره سفارش",
+        "تعداد", "سری ساخت", "دوز بر ویال", "تعداد ویال",
+        "قیمت واحد", "مبلغ کل", "تاریخ انقضا"
     };
 
-            var numericColumns = new[] { 4, 5 };
+            var numericColumns = new[] { 10, 13, 14, 15 };
 
-            var rows = data.Select(item => new object[]
+            var rows = data.Select(x => new object[]
             {
-        item.ItemClass, item.Item, item.Code, item.TotalQuantity, item.TotalVials
+        x.ItemClass,
+        x.Item,
+        x.ItemCode,
+        x.Manufacturer,
+        x.Source,
+        x.Activity,
+        x.ArrivalDateText,
+        x.ReportNumber,
+        x.OrderNumber,
+        x.Quantity,
+        x.BatchNumber,
+        x.DosePerVial,
+        x.NumVials,
+        x.UnitPrice,
+        x.TotalPrice,
+        x.ExpiryDateText
             }).ToList();
 
             return BuildSheet(

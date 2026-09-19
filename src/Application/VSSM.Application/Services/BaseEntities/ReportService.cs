@@ -25,15 +25,15 @@ public class ReportService(VSSMDbContext _context) : IReportService
             .ToList();
     }
 
-    public async Task<(List<ArrivalReportDto> data, int count)> GetArrivalByItemReportAsync(
-        EntryExitReportQuery input,
-        int currentRecipientId,
-        int pageNumber,
-        int pageSize,
-        string sort,
-        string direction,
-        bool fetchAll,
-        CancellationToken cancellationToken)
+    public async Task<(List<GroupedArrivalByItemDto> data, int count)> GetArrivalByItemReportAsync(
+    EntryExitReportQuery input,
+    int currentRecipientId,
+    int pageNumber,
+    int pageSize,
+    string sort,
+    string direction,
+    bool fetchAll,
+    CancellationToken cancellationToken)
     {
         var itemIds = ParseIds(input.ItemId);
         var storeIds = ParseIds(input.StoreId);
@@ -64,9 +64,6 @@ public class ReportService(VSSMDbContext _context) : IReportService
         else
             stores = stores.Where(s => s.RecipientId == currentRecipientId);
 
-        if (input.RecipientId is not null)
-            stores = stores.Where(s => s.RecipientId == input.RecipientId);
-
         var items = _context.TblItems.AsQueryable();
         if (itemIds.Count > 0)
             items = items.Where(i => itemIds.Contains(i.ItemId));
@@ -78,81 +75,136 @@ public class ReportService(VSSMDbContext _context) : IReportService
             join al in _context.TblArrivalLines on a.Id equals al.ArrivalId
             join i in items on al.ItemId equals i.ItemId
             join s in stores on al.StoreId equals s.Id
-            join ic in _context.TblBaseInfo on i.FkClassId equals ic.BaseInfoId
+            join ic in _context.TblBaseInfo on i.FkClassId equals ic.BaseInfoId into icj
+            from ic in icj.DefaultIfEmpty()
             join m in _context.TblBaseInfo on al.ManufacturerId equals m.BaseInfoId into mj
             from m in mj.DefaultIfEmpty()
             join dpv in _context.TblBaseInfo on al.DosePerVialId equals dpv.BaseInfoId into dj
             from dpv in dj.DefaultIfEmpty()
-            join r in _context.TblRecipients on s.RecipientId equals r.RecipientId into rj
-            from r in rj.DefaultIfEmpty()
+            join cn in _context.TblBaseInfo on al.CommercialNameId equals cn.BaseInfoId into cnj
+            from cn in cnj.DefaultIfEmpty()
+            join vt in _context.TblBaseInfo on al.VvmTypeId equals vt.BaseInfoId into vtj
+            from vt in vtj.DefaultIfEmpty()
+            join vs in _context.TblBaseInfo on al.VvmStageId equals vs.BaseInfoId into vsj
+            from vs in vsj.DefaultIfEmpty()
+            join u in _context.TblBaseInfo on al.UseId equals u.BaseInfoId into uj
+            from u in uj.DefaultIfEmpty()
+            join ent in _context.TblUsers on a.EnteredById equals ent.UserId into entj
+            from ent in entj.DefaultIfEmpty()
+            join rcp in _context.TblRecipients on s.RecipientId equals rcp.RecipientId into rcpj
+            from rcp in rcpj.DefaultIfEmpty()
+            join o in _context.TblOrderInfo on a.Id equals o.FkArrivalId into oj
+            from o in oj.DefaultIfEmpty()
             where ic.ParentId == 53
                   && (input.VvmstageId == null || al.VvmStageId == input.VvmstageId)
+                  && (input.VvmtypeId == null || al.VvmTypeId == input.VvmtypeId)
                   && (input.ManufacturerId == null || al.ManufacturerId == input.ManufacturerId)
+                  && (input.CommercialNameId == null || al.CommercialNameId == input.CommercialNameId)
+                  && (input.SourceId == null || al.UseId == input.SourceId)
                   && (string.IsNullOrEmpty(input.BatchNumber) || al.BatchNum.Contains(input.BatchNumber))
             select new
             {
-                ItemClass = ic.Title,
-                Item = i.FullName,
-                Code = i.Code,
-                Manufacturer = m != null ? m.Title : "-",
+                ItemName = i.FullName ?? string.Empty,
+                ItemClass = ic != null ? ic.Title : string.Empty,
+
                 ArrivalDate = a.Date,
-                ReportNumber = a.ReportNumber,
-                BatchNumber = al.BatchNum,
-                Quantity = al.Quantity ?? 0,
-                DosePerVial = dpv != null ? dpv.Title : "-",
-                NumVials = al.NumVials ?? 0,
-                ExpiryDate = al.ExpiryDate,
-                Store = s.Name,
-                Recipient = r != null ? r.FullName : "-"
+                ArrivalEntryDate = a.EntryDate,
+                ArrivalReportNumber = a.ReportNumber,
+
+                LineQuantity = al.Quantity,
+                LineNumVials = al.NumVials,
+                LineBatchNum = al.BatchNum,
+                LineExpiryDate = al.ExpiryDate,
+                LineProductionDate = al.ProductionDate,
+                LineNote = al.Note,
+
+                Manufacturer = m != null ? m.Title : null,
+                DosePerVial = dpv != null ? dpv.Title : null,
+                CommercialName = cn != null ? cn.Title : null,
+                VvmType = vt != null ? vt.Title : null,
+                VvmStage = vs != null ? vs.Title : null,
+                Use = u != null ? u.Title : null,
+
+                StoreName = s.Name,
+                RecipientName = rcp != null ? rcp.FullName : null,
+
+                EnteredByFirst = ent != null ? ent.FirstName : null,
+                EnteredByLast = ent != null ? ent.LastName : null,
+
+                OrderNumber = o != null ? (int?)o.NumberOrder : null
             };
 
         rawQuery = rawQuery.AsNoTracking();
 
-        var total = await rawQuery.CountAsync(cancellationToken);
+        var total = await rawQuery
+            .Select(x => x.ItemName)
+            .Distinct()
+            .CountAsync(cancellationToken);
 
-        rawQuery = (sort?.ToLower()) switch
+        List<string> selectedItemNames;
+        if (fetchAll)
         {
-            "itemclass" => direction == "desc" ? rawQuery.OrderByDescending(x => x.ItemClass) : rawQuery.OrderBy(x => x.ItemClass),
-            "item" => direction == "desc" ? rawQuery.OrderByDescending(x => x.Item) : rawQuery.OrderBy(x => x.Item),
-            "code" => direction == "desc" ? rawQuery.OrderByDescending(x => x.Code) : rawQuery.OrderBy(x => x.Code),
-            "manufacturer" => direction == "desc" ? rawQuery.OrderByDescending(x => x.Manufacturer) : rawQuery.OrderBy(x => x.Manufacturer),
-            "arrivaldate" => direction == "desc" ? rawQuery.OrderByDescending(x => x.ArrivalDate) : rawQuery.OrderBy(x => x.ArrivalDate),
-            "reportnumber" => direction == "desc" ? rawQuery.OrderByDescending(x => x.ReportNumber) : rawQuery.OrderBy(x => x.ReportNumber),
-            "batchnumber" => direction == "desc" ? rawQuery.OrderByDescending(x => x.BatchNumber) : rawQuery.OrderBy(x => x.BatchNumber),
-            "quantity" => direction == "desc" ? rawQuery.OrderByDescending(x => x.Quantity) : rawQuery.OrderBy(x => x.Quantity),
-            "dosepervial" => direction == "desc" ? rawQuery.OrderByDescending(x => x.DosePerVial) : rawQuery.OrderBy(x => x.DosePerVial),
-            "numvials" => direction == "desc" ? rawQuery.OrderByDescending(x => x.NumVials) : rawQuery.OrderBy(x => x.NumVials),
-            "expirydate" => direction == "desc" ? rawQuery.OrderByDescending(x => x.ExpiryDate) : rawQuery.OrderBy(x => x.ExpiryDate),
-            "store" => direction == "desc" ? rawQuery.OrderByDescending(x => x.Store) : rawQuery.OrderBy(x => x.Store),
-            "recipient" => direction == "desc" ? rawQuery.OrderByDescending(x => x.Recipient) : rawQuery.OrderBy(x => x.Recipient),
-            _ => rawQuery.OrderByDescending(x => x.ArrivalDate)
-        };
-
-        var rawList = fetchAll
-            ? await rawQuery.ToListAsync(cancellationToken)
-            : await rawQuery
+            selectedItemNames = await rawQuery
+                .Select(x => x.ItemName)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+        }
+        else
+        {
+            selectedItemNames = await rawQuery
+                .Select(x => x.ItemName)
+                .Distinct()
+                .OrderBy(n => n)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
+        }
 
-        var list = rawList.Select(x => new ArrivalReportDto
-        {
-            ItemClass = x.ItemClass,
-            Item = x.Item,
-            Code = x.Code,
-            Manufacturer = x.Manufacturer,
-            ArrivalDate = x.ArrivalDate.HasValue ? x.ArrivalDate.Value.ToShamsi() : "-",
-            ReportNumber = x.ReportNumber,
-            BatchNumber = x.BatchNumber,
-            Quantity = x.Quantity,
-            DosePerVial = x.DosePerVial,
-            NumVials = x.NumVials,
-            ExpiryDate = x.ExpiryDate.HasValue ? x.ExpiryDate.Value.ToShamsi() : "-",
-            Store = x.Store,
-            Recipient = x.Recipient
-        }).ToList();
+        if (selectedItemNames.Count == 0)
+            return (new List<GroupedArrivalByItemDto>(), total);
 
-        return (list, total);
+        var rawList = await rawQuery
+            .Where(x => selectedItemNames.Contains(x.ItemName))
+            .ToListAsync(cancellationToken);
+
+        var grouped = rawList
+            .GroupBy(x => new { x.ItemName, x.ItemClass })
+            .Select(g => new GroupedArrivalByItemDto
+            {
+                Meta = new ArrivalByItemMetaDto
+                {
+                    ItemName = g.Key.ItemName,
+                    ItemClass = g.Key.ItemClass,
+                    TotalQuantity = g.Sum(x => x.LineQuantity ?? 0)
+                },
+                Details = g.Select(x => new ArrivalByItemDetailDto
+                {
+                    ReceiveDate = x.ArrivalEntryDate,
+                    ArrivalDate = x.ArrivalDate,
+                    EnteredBy = ((x.EnteredByFirst ?? string.Empty) + " " +
+                                 (x.EnteredByLast ?? string.Empty)).Trim(),
+                    ReportNumber = x.ArrivalReportNumber,
+                    Source = x.Use,
+                    OrderNumber = x.OrderNumber ?? 0,
+                    Quantity = x.LineQuantity ?? 0,
+                    NumVials = x.LineNumVials ?? 0,
+                    DosePerVial = x.DosePerVial,
+                    BatchNumber = x.LineBatchNum,
+                    Manufacturer = x.Manufacturer,
+                    Use = x.Use,
+                    ExpiryDate = x.LineExpiryDate,
+                    ProductionDate = x.LineProductionDate,
+                    Store = x.StoreName,
+                    CommercialName = x.CommercialName,
+                    VvmType = x.VvmType,
+                    VvmStage = x.VvmStage,
+                    Note = x.LineNote
+                }).OrderBy(d => d.BatchNumber).ToList()
+            })
+            .OrderBy(g => g.Meta.ItemName)
+            .ToList();
+
+        return (grouped, total);
     }
 
     public async Task<(List<DispatchReportDto> data, int count)> GetDispatchByRecipientReportAsync(
@@ -253,15 +305,18 @@ public class ReportService(VSSMDbContext _context) : IReportService
         return (list, total);
     }
 
+
+
+    #endregion
     public async Task<(List<ArrivalSummaryDto> data, int count)> GetArrivalSummaryReportAsync(
-        EntryExitReportQuery input,
-        int currentRecipientId,
-        int pageNumber,
-        int pageSize,
-        string sort,
-        string direction,
-        bool fetchAll,
-        CancellationToken cancellationToken)
+    EntryExitReportQuery input,
+    int currentRecipientId,
+    int pageNumber,
+    int pageSize,
+    string sort,
+    string direction,
+    bool fetchAll,
+    CancellationToken cancellationToken)
     {
         var itemIds = ParseIds(input.ItemId);
         var storeIds = ParseIds(input.StoreId);
@@ -270,6 +325,9 @@ public class ReportService(VSSMDbContext _context) : IReportService
 
         if (input.FiscalPeriodId is not null)
             arrivals = arrivals.Where(a => a.FiscalPeriodId == input.FiscalPeriodId);
+
+        if (!string.IsNullOrWhiteSpace(input.ReportNumber))
+            arrivals = arrivals.Where(a => a.ReportNumber.Contains(input.ReportNumber));
 
         if (!string.IsNullOrEmpty(input.FromArrivalDate))
         {
@@ -295,239 +353,93 @@ public class ReportService(VSSMDbContext _context) : IReportService
         if (input.ItemClassId is not null)
             items = items.Where(i => i.FkClassId == input.ItemClassId);
 
-        var baseQuery =
+        var query =
             from a in arrivals
             join al in _context.TblArrivalLines on a.Id equals al.ArrivalId
             join i in items on al.ItemId equals i.ItemId
             join s in stores on al.StoreId equals s.Id
-            join ic in _context.TblBaseInfo on i.FkClassId equals ic.BaseInfoId
+            join ic in _context.TblBaseInfo on i.FkClassId equals ic.BaseInfoId into icj
+            from ic in icj.DefaultIfEmpty()
+            join m in _context.TblBaseInfo on al.ManufacturerId equals m.BaseInfoId into mj
+            from m in mj.DefaultIfEmpty()
+            join dpv in _context.TblBaseInfo on al.DosePerVialId equals dpv.BaseInfoId into dj
+            from dpv in dj.DefaultIfEmpty()
+            join u in _context.TblBaseInfo on al.UseId equals u.BaseInfoId into uj
+            from u in uj.DefaultIfEmpty()
             where ic.ParentId == 53
-                  && (input.ItemClassId == null || i.FkClassId == input.ItemClassId)
-                  && (string.IsNullOrEmpty(input.BatchNumber) || al.BatchNum.Contains(input.BatchNumber))
+                  && (input.VvmstageId == null || al.VvmStageId == input.VvmstageId)
+                  && (input.VvmtypeId == null || al.VvmTypeId == input.VvmtypeId)
                   && (input.ManufacturerId == null || al.ManufacturerId == input.ManufacturerId)
-            group new { al, i, ic } by new
+                  && (input.CommercialNameId == null || al.CommercialNameId == input.CommercialNameId)
+                  && (input.SourceId == null || al.UseId == input.SourceId)
+                  && (string.IsNullOrEmpty(input.BatchNumber) || al.BatchNum.Contains(input.BatchNumber))
+            select new
             {
-                ItemClass = ic.Title,
-                i.FullName,
-                i.Code
-            }
-            into g
-            select new ArrivalSummaryDto
-            {
-                ItemClass = g.Key.ItemClass,
-                Item = g.Key.FullName,
-                Code = g.Key.Code,
-                TotalQuantity = g.Sum(x => x.al.Quantity ?? 0),
-                TotalVials = g.Sum(x => x.al.NumVials ?? 0)
+                ItemClass = ic != null ? ic.Title : string.Empty,
+                Item = i.FullName ?? string.Empty,
+                ItemCode = i.Code ?? string.Empty,
+                Manufacturer = m != null ? m.Title : null,
+                Source = u != null ? u.Title : null,
+
+                ArrivalDate = a.Date,
+                ReportNumber = a.ReportNumber,
+
+                Quantity = al.Quantity,
+                BatchNumber = al.BatchNum,
+                DosePerVial = dpv != null ? dpv.Title : null,
+                NumVials = al.NumVials,
+                ExpiryDate = al.ExpiryDate
             };
 
-        baseQuery = baseQuery.AsNoTracking();
+        query = query.AsNoTracking();
 
-        var total = await baseQuery.CountAsync(cancellationToken);
+        var total = await query.CountAsync(cancellationToken);
 
-        baseQuery = baseQuery.ApplySorting(
-            string.IsNullOrWhiteSpace(sort) ? "Item" : sort,
+        query = query.ApplySorting(
+            string.IsNullOrWhiteSpace(sort) ? "ArrivalDate" : sort,
             direction == "desc");
 
-        if (fetchAll)
-            return (await baseQuery.ToListAsync(cancellationToken), total);
+        List<ArrivalSummaryDto> list;
 
-        var list = await baseQuery
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
+        if (fetchAll)
+        {
+            var all = await query.ToListAsync(cancellationToken);
+            list = all.Select(MapToSummaryDto).ToList();
+        }
+        else
+        {
+            var rawList = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            list = rawList.Select(MapToSummaryDto).ToList();
+        }
 
         return (list, total);
     }
 
-    #endregion
-    public async Task<(List<GroupedAvailableQuantityDetailDto> data, int count)> GetAvailableQuantityDetailReportAsync(
-    AvailableQuantityReportQuery inputModel,
-    int currentRecipientId,
-    int pageNumber,
-    int pageSize,
-    string sort,
-    string direction,
-    bool fetchAll,
-    CancellationToken cancellationToken)
+    private static ArrivalSummaryDto MapToSummaryDto(dynamic x)
     {
-        var itemIds = (inputModel.ItemId ?? "")
-            .Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(int.Parse)
-            .ToList();
-
-        var storeIds = (inputModel.StoreId ?? "")
-            .Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(int.Parse)
-            .ToList();
-
-        var itemQuery = itemIds.Any()
-            ? _context.TblItems.Where(t => itemIds.Contains(t.ItemId))
-            : _context.TblItems;
-
-        var itemDetailQuery = !string.IsNullOrEmpty(inputModel.BatchNumber)
-            ? _context.TblItemDetails.Where(t => t.BatchNumber.Contains(inputModel.BatchNumber))
-            : _context.TblItemDetails;
-
-        if (inputModel.ManufacturerId is not null)
-            itemDetailQuery = itemDetailQuery.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
-
-        if (inputModel.VvmtypeId is not null)
-            itemDetailQuery = itemDetailQuery.Where(t => t.VvmTypeId == inputModel.VvmtypeId);
-
-        if (inputModel.CommercialNameId is not null)
-            itemDetailQuery = itemDetailQuery.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
-
-        if (!string.IsNullOrEmpty(inputModel.ProductinDate))
+        return new ArrivalSummaryDto
         {
-            var pd = DateTimeHelper.ToGregorian(inputModel.ProductinDate);
-            itemDetailQuery = itemDetailQuery.Where(t => t.ProductionDate.HasValue && t.ProductionDate == pd);
-        }
-
-        if (!string.IsNullOrEmpty(inputModel.ExpiryDate))
-        {
-            var ed = DateTimeHelper.ToGregorian(inputModel.ExpiryDate);
-            itemDetailQuery = itemDetailQuery.Where(t => t.ExpiryDate.HasValue && t.ExpiryDate == ed);
-        }
-
-        var itemDetailStoreQuery = storeIds.Any()
-            ? _context.TblItemDetailStores.Where(t => t.StoreId.HasValue && storeIds.Contains(t.StoreId.Value))
-            : _context.TblItemDetailStores;
-
-        if (inputModel.VvmstageId is not null)
-            itemDetailStoreQuery = _context.TblItemDetailStores.Where(t => t.FkVvmStageId == inputModel.VvmstageId);
-
-        var storeQuery = _context.TblStores.AsQueryable();
-        if (inputModel.AllSubRecipientStocks)
-        {
-            var recipients = _context.TblRecipients
-                .Where(t => t.ParentId == currentRecipientId)
-                .Select(s => s.RecipientId)
-                .ToList();
-            storeQuery = storeQuery.Where(t => t.RecipientId.HasValue && recipients.Contains(t.RecipientId.Value));
-        }
-        else if (inputModel.RecipientId is not null && inputModel.RecipientId != 0)
-        {
-            storeQuery = storeQuery.Where(t => t.RecipientId == inputModel.RecipientId);
-        }
-        else
-        {
-            storeQuery = storeQuery.Where(t => t.RecipientId == currentRecipientId);
-        }
-
-        var parentQuery =
-            from i in itemQuery
-            join id in itemDetailQuery on i.ItemId equals id.ItemId
-            join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0) on id.ItemDetailId equals ids.ItemDetailId
-            join s in storeQuery on ids.StoreId equals s.Id
-            select new { i.ItemId, i.FullName };
-
-        var total = await parentQuery
-            .Select(x => x.ItemId)
-            .Distinct()
-            .CountAsync(cancellationToken);
-
-
-        List<int> selectedItemIds;
-
-        if (fetchAll)
-        {
-            selectedItemIds = await parentQuery
-                .Select(x => x.ItemId)
-                .Distinct()
-                .ToListAsync(cancellationToken);
-        }
-        else
-        {
-            selectedItemIds = await parentQuery
-                .Select(x => x.ItemId)
-                .Distinct()
-                .OrderBy(x => x)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-        }
-
-        if (selectedItemIds.Count == 0)
-            return (new List<GroupedAvailableQuantityDetailDto>(), total);
-
-
-        var detailQuery =
-            from i in itemQuery.Where(t => selectedItemIds.Contains(t.ItemId))
-            join id in itemDetailQuery on i.ItemId equals id.ItemId
-            join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0) on id.ItemDetailId equals ids.ItemDetailId
-            join s in storeQuery on ids.StoreId equals s.Id
-            join r in _context.TblRecipients on s.RecipientId equals r.RecipientId
-
-            join m in _context.TblBaseInfo on id.ManufacturerId equals m.BaseInfoId into mJoin
-            from m in mJoin.DefaultIfEmpty()
-
-            join c in _context.TblBaseInfo on id.CommercialNameId equals c.BaseInfoId into cJoin
-            from c in cJoin.DefaultIfEmpty()
-
-            join dpv in _context.TblBaseInfo on id.DosePerVialId equals dpv.BaseInfoId into dpvJoin
-            from dpv in dpvJoin.DefaultIfEmpty()
-
-            join vt in _context.TblBaseInfo on id.VvmTypeId equals vt.BaseInfoId into vtJoin
-            from vt in vtJoin.DefaultIfEmpty()
-
-            join vs in _context.TblBaseInfo on ids.FkVvmStageId equals vs.BaseInfoId into vsJoin
-            from vs in vsJoin.DefaultIfEmpty()
-
-            group new { i, id, ids, s, m, c, dpv, vt, vs }
-            by new
-            {
-                i.ItemId,
-                id.ItemDetailId,
-                id.BatchNumber,
-                id.ExpiryDate,
-                id.ProductionDate,
-                Recipient = r.FullName,
-                ItemName = i.FullName,
-                ManufacturerName = m.Title,
-                StoreName = s.Name,
-                DoesPerVial = dpv.Title,
-                CommercialName = c.Title,
-                Vvmtype = vt.Title,
-                Vvmstage = vs.Title
-            } into g
-            select new AvailableQuantityDetailDto
-            {
-                ItemName = g.Key.ItemName,
-                BatchNumber = g.Key.BatchNumber,
-                ManufacturerName = g.Key.ManufacturerName,
-                ExpiryDate = g.Key.ExpiryDate,
-                DoesPerVial = g.Key.DoesPerVial,
-                Stock = g.Key.StoreName,
-                Recipient = g.Key.Recipient,
-                ProductionDate = g.Key.ProductionDate,
-                CommercialName = g.Key.CommercialName,
-                Vvmstage = g.Key.Vvmstage,
-                Vvmtype = g.Key.Vvmtype,
-                CurrentStock = g.Sum(t => t.ids.CurrentStock)
-            };
-
-        detailQuery = detailQuery
-            .AsNoTracking()
-            .ApplySorting(sort, direction == "desc");
-
-        var list = await detailQuery.ToListAsync(cancellationToken);
-
-
-        var grouped = list
-            .GroupBy(x => x.ItemName)
-            .Select(g => new GroupedAvailableQuantityDetailDto
-            {
-                Meta = new AvailableQuantityDetailMetaDto
-                {
-                    ItemName = g.Key,
-                    Count = g.Sum(t => t.CurrentStock) ?? 0
-                },
-                Details = g.ToList()
-            })
-            .ToList();
-
-        return (grouped, total);
+            ItemClass = x.ItemClass,
+            Item = x.Item,
+            ItemCode = x.ItemCode,
+            Manufacturer = x.Manufacturer,
+            Source = x.Source,
+            Activity = null,
+            ArrivalDate = x.ArrivalDate,
+            ReportNumber = x.ReportNumber,
+            OrderNumber = 0,
+            Quantity = x.Quantity ?? 0,
+            BatchNumber = x.BatchNumber,
+            DosePerVial = x.DosePerVial,
+            NumVials = x.NumVials ?? 0,
+            UnitPrice = 0m,
+            TotalPrice = 0m,
+            ExpiryDate = x.ExpiryDate
+        };
     }
 
     public async Task<(List<AvailableQuantityQuantitySummaryDto> data, int count)>
@@ -1436,4 +1348,8 @@ public class ReportService(VSSMDbContext _context) : IReportService
 
     }
 
+    public Task<(List<GroupedAvailableQuantityDetailDto> data, int count)> GetAvailableQuantityDetailReportAsync(AvailableQuantityReportQuery inputModel, int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }

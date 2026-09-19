@@ -1,9 +1,9 @@
 ﻿@using VSSM.Presentation.Web.Models.Base
-@model GridViewModel
+@model GroupedGridViewModel<object, object>
 
 @{
     Layout = "~/Views/Shared/_ReportLayout.cshtml";
-    ViewData["Title"] = "گزارش ورود بر اساس کالا";
+    ViewData["Title"] = "گزارش ورودی بر اساس کالا";
 }
 
 @section Styles {
@@ -49,31 +49,25 @@
 @await Html.PartialAsync("_ReportHeaderInfo")
 
 <div style="margin-top: 1rem;">
-    @await Html.PartialAsync("_DynamicGrid", Model)
+    @await Html.PartialAsync("_GroupedDynamicGrid", Model)
 </div>
 
 <script>
     (function () {
         let isNavigating = false;
-
         document.addEventListener('click', function (e) {
             const btn = e.target.closest('.pagination-btn');
             if (!btn) return;
             if (btn.tagName === 'A') return;
             if (btn.classList.contains('disabled')) return;
-
             if (isNavigating) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 return false;
             }
-
             isNavigating = true;
-
-            document.querySelectorAll('.pagination-btn')
-                .forEach(b => b.classList.add('disabled'));
-
-            setTimeout(function () { isNavigating = false; }, 10000);
+            document.querySelectorAll('.pagination-btn').forEach(b => b.classList.add('disabled'));
+            setTimeout(() => { isNavigating = false; }, 10000);
         }, true);
     })();
 </script>

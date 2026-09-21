@@ -26,6 +26,8 @@ public class DispatchEditLineDto
     public string Note { get; set; }
     public long CurrentStock { get; set; }
 
+    public bool IsDiluent { get; set; }
+
     public List<string> Uids { get; set; } = new();
 }
  

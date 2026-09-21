@@ -43,7 +43,7 @@ $(function () {
         ],
         searchFields: ['itemName', 'batchNumber', 'expiryDateShamsi', 'manufacturerName'],
         emptyMessage: 'کالایی انتخاب نشده',
-        rowRenderer: function (rowData, index) {
+        rowRenderer: function (rowData) {
             return `
                 <tr>
                     <td><input type="checkbox" class="batch-chk" data-row='${JSON.stringify(rowData).replace(/'/g, "&#39;")}' /></td>
@@ -208,14 +208,12 @@ $(function () {
                     var doseCount = line.doseCount || line.DoseCount || 0;
                     var numVial = line.numVial || line.NumVial || 0;
                     var dosePerVial = line.dosePerVial || line.DosePerVial || 0;
+                    var isDiluent = line.isDiluent === true || line.IsDiluent === true;
 
                     if (doseCount === 0 && numVial > 0 && dosePerVial > 0) {
                         doseCount = numVial * dosePerVial;
                     }
-
-                    if (doseCount === 0) {
-                        doseCount = 1;
-                    }
+                    if (doseCount === 0) doseCount = 1;
 
                     addedItems.push({
                         idx: addedItems.length,
@@ -237,7 +235,8 @@ $(function () {
                         note: line.note || '',
                         uids: line.uids || [],
                         stockInRam: line.currentStock || 0,
-                        requiresDiluent: false
+                        requiresDiluent: false,
+                        isDiluent: isDiluent
                     });
                 });
                 renderAddedItems();
@@ -279,6 +278,8 @@ $(function () {
             });
             if (exists) return;
 
+            var rowIsDiluent = row.isDiluent === true || row.IsDiluent === true;
+
             addedItems.push({
                 idx: addedItems.length,
                 dispatchLineId: 0,
@@ -294,12 +295,13 @@ $(function () {
                 doseCount: doseCount,
                 numVial: row.dosePerVialNum > 0 ? Math.floor(doseCount / row.dosePerVialNum) : 0,
                 dosePerVial: row.dosePerVialNum || 0,
-                vvmStageId: vvmStageId,
-                vvmStageName: vvmStageName,
+                vvmStageId: rowIsDiluent ? '' : vvmStageId,
+                vvmStageName: rowIsDiluent ? '-' : vvmStageName,
                 note: '',
                 uids: [],
                 stockInRam: row.currentStock,
                 requiresDiluent: row.requiresDiluent,
+                isDiluent: rowIsDiluent,
                 diluentItemDetailStoreId: row.diluentItemDetailStoreId,
                 diluentItemId: row.diluentItemId,
                 diluentItemName: row.diluentItemName
@@ -327,7 +329,8 @@ $(function () {
                     note: 'حلال خودکار',
                     uids: [],
                     stockInRam: 0,
-                    requiresDiluent: false
+                    requiresDiluent: false,
+                    isDiluent: true
                 });
             }
         });
@@ -351,7 +354,7 @@ $(function () {
 
         var item = addedItems[idx];
         var $stockCell = $('.stock-cell-' + item.itemDetailStoreId);
-        if ($stockCell.length) {
+        if ($stockCell.length && !item.isDiluent) {
             var toReturn = getItemScannedCount(item);
             if (toReturn === 0) toReturn = item.doseCount;
             $stockCell.text((parseInt($stockCell.text()) || 0) + toReturn);
@@ -376,19 +379,28 @@ $(function () {
 
         var html = '';
         $.each(addedItems, function (i, item) {
-            var scannedCount = getItemScannedCount(item);
+            var scannedCount = item.isDiluent ? '-' : getItemScannedCount(item);
 
-            var actions = dispatchIsConfirmed
-                ? '<span style="color:#9ca3af;font-size:11px;">تایید شده</span>'
-                : '<button type="button" class="btn-action btn-action-uid" data-idx="' + i + '" title="افزودن UID">' +
-                '<i class="fa fa-qrcode"></i>' +
-                '</button> ' +
-                '<button type="button" class="btn-action btn-action-del" data-idx="' + i + '" title="حذف">' +
-                '<i class="fa fa-trash"></i>' +
-                '</button>';
+            var actions;
+            if (dispatchIsConfirmed) {
+                actions = '<span style="color:#9ca3af;font-size:11px;">تایید شده</span>';
+            } else if (item.isDiluent) {
+                actions =
+                    '<button type="button" class="btn-action btn-action-del" data-idx="' + i + '" title="حذف">' +
+                    '<i class="fa fa-trash"></i>' +
+                    '</button>';
+            } else {
+                actions =
+                    '<button type="button" class="btn-action btn-action-uid" data-idx="' + i + '" title="افزودن UID">' +
+                    '<i class="fa fa-qrcode"></i>' +
+                    '</button> ' +
+                    '<button type="button" class="btn-action btn-action-del" data-idx="' + i + '" title="حذف">' +
+                    '<i class="fa fa-trash"></i>' +
+                    '</button>';
+            }
 
             html +=
-                '<tr>' +
+                '<tr' + (item.isDiluent ? ' style="background:#f9fafb;"' : '') + '>' +
                 '<td>' + (item.batchNumber || '-') + '</td>' +
                 '<td>' + (item.itemName || '-') + '</td>' +
                 '<td>' + (item.expiryDateShamsi || '-') + '</td>' +
@@ -419,7 +431,7 @@ $(function () {
             function add(name, val) {
                 $container.append(
                     '<input type="hidden" name="Items[' + i + '].' + name +
-                    '" value="' + (val || '') + '">'
+                    '" value="' + (val === undefined || val === null ? '' : val) + '">'
                 );
             }
             add('DispatchLineId', item.dispatchLineId);
@@ -432,13 +444,16 @@ $(function () {
             add('BatchNumber', item.batchNumber);
             add('ExpiryDate', item.expiryDate);
             add('Note', item.note);
+            add('IsDiluent', item.isDiluent ? 'true' : 'false');
 
-            $.each(item.uids, function (j, uid) {
-                var uidVal = typeof uid === 'string' ? uid : (uid.uid || '');
-                $container.append(
-                    '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uidVal + '">'
-                );
-            });
+            if (!item.isDiluent) {
+                $.each(item.uids, function (j, uid) {
+                    var uidVal = typeof uid === 'string' ? uid : (uid.uid || '');
+                    $container.append(
+                        '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uidVal + '">'
+                    );
+                });
+            }
         });
     }
 
@@ -461,7 +476,12 @@ $(function () {
 
         if (submitType === 'final') {
             var mismatchItems = [];
+            var hasScannable = false;
+
             $.each(addedItems, function (_, item) {
+                if (item.isDiluent) return;
+
+                hasScannable = true;
                 var scannedCount = getItemScannedCount(item);
 
                 if (scannedCount > item.doseCount) {
@@ -478,6 +498,10 @@ $(function () {
                 );
                 return;
             }
+
+            if (!hasScannable) {
+                scanSessionId = null;
+            }
         }
 
         $('#toastContainer').empty();
@@ -485,7 +509,7 @@ $(function () {
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
             .appendTo('#dispatchForm');
 
-        if (submitType === 'final' && typeof scanSessionId !== 'undefined') {
+        if (submitType === 'final' && scanSessionId) {
             $('#dispatchForm').find('input[name="scanSessionId"]').remove();
             $('<input>').attr({ type: 'hidden', name: 'scanSessionId', value: scanSessionId })
                 .appendTo('#dispatchForm');

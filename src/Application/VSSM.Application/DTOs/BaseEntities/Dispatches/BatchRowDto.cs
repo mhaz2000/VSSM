@@ -28,4 +28,7 @@ public class BatchRowDto
     public string? DiluentExpiryDateShamsi { get; set; }
     public DateTime? DiluentExpiryDate { get; set; }
     public string? DiluentManufacturerName { get; set; }
+
+    public bool IsDiluent { get; set; }
+
 }

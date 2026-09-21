@@ -25,7 +25,10 @@ public interface IDispatchService
             int itemId,
             int recipientId,
             CancellationToken ct = default);
-    Task DecrementStockOnFinalAsync(List<DispatchLineDto> lines, CancellationToken ct = default);
+    Task DecrementStockOnFinalAsync(
+        IEnumerable<DispatchLineDto> items,
+        int dispatchId,
+        CancellationToken token);
     Task RestoreStockAsync(int dispatchId, CancellationToken ct = default);
     Task LinkUidsToDispatchUidAsync(int dispatchId, CancellationToken ct = default);
     Task<(bool isSuccess, string message, ScannedPackage data)> ValidateUidAsync(

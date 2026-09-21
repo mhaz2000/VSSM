@@ -350,7 +350,7 @@ public class ArrivalController(
     public async Task<IActionResult> GetHalalItems(CancellationToken token)
     {
         var list = (await itemService.GetActives(token))
-            .Where(x => x.FkClassId == BaseInfoIds.HalalItemClassId)
+            .Where(x => x.FkClassId == BaseInfoIds.DiluentClassId)
             .Select(x => new { id = x.ItemId, text = x.FullName });
         return Json(list);
     }
@@ -741,7 +741,7 @@ public class ArrivalController(
             .ToSelectList(x => x.Id, x => x.Title);
 
         ViewBag.HalalItems = (await itemService.GetActives(ct))
-            .Where(x => x.FkClassId == BaseInfoIds.HalalItemClassId)
+            .Where(x => x.FkClassId == BaseInfoIds.DiluentClassId)
             .ToSelectList(x => x.ItemId, x => x.FullName);
     }
 

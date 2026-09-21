@@ -22,4 +22,7 @@ public class DispatchLineDto
     public int? BundleId { get; set; }
     public string ItemName { get; internal set; }
     public string VvmstageName { get; internal set; }
+
+    public bool IsDiluent { get; set; }
+
 }

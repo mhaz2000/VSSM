@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 using System.Text.RegularExpressions;
+using VSSM.Application.Constants;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.Barcode;
 using VSSM.Application.DTOs.BaseEntities.Dispatches;
@@ -74,6 +74,7 @@ public class DispatchService(
                 VvmStageId = line.FkVvmStageBaseInfo ?? 0,
                 VvmStageName = vvmStage != null ? vvmStage.Title : "-",
                 line.Note,
+                IsDiluent = item.FkClassId == BaseInfoIds.DiluentClassId,
                 CurrentStock = ids != null ? (ids.CurrentStock ?? 0) : 0,
             }
         ).ToListAsync(ct);
@@ -112,6 +113,7 @@ public class DispatchService(
             VvmStageId = r.VvmStageId,
             VvmStageName = r.VvmStageName,
             Note = r.Note,
+            IsDiluent = r.IsDiluent,
             CurrentStock = r.CurrentStock,
             Uids = uidLookup.TryGetValue((r.ItemId, r.BatchNumber), out var uids) ? uids : new List<string>()
         }).ToList();
@@ -225,55 +227,79 @@ public class DispatchService(
                                         : null,
             DiluentExpiryDate = diluentStore?.ItemDetail?.ExpiryDate,
             DiluentManufacturerName = null,
+
+            IsDiluent = item.FkClassId == BaseInfoIds.DiluentClassId
         }).ToList();
 
         return result;
     }
-    // ──────────────────────────────────────────────────────────────────────────
-    // بند ۱۰a + بند ۹: کسر CurrentStock از tblItemDetailStores هنگام ثبت نهایی
-    // این متد پس از CreateDispatchAsync یا UpdateDispatchAsync صدا زده می‌شود
-    // ──────────────────────────────────────────────────────────────────────────
-    public async Task DecrementStockOnFinalAsync(List<DispatchLineDto> lines, CancellationToken ct = default)
+
+    public async Task DecrementStockOnFinalAsync(
+      IEnumerable<DispatchLineDto> items,
+      int dispatchId,
+      CancellationToken token)
     {
-        foreach (var line in lines)
+        foreach (var item in items)
         {
-            var store = await context.TblItemDetailStores.FindAsync(line.ItemDetailStoreId);
+            var store = await context.TblItemDetailStores
+                .FirstOrDefaultAsync(s => s.PKItemDetailStoreId == item.ItemDetailStoreId, token);
+
             if (store == null) continue;
 
-            store.CurrentStock = (store.CurrentStock ?? 0) - line.DoseCount;
-            if (store.CurrentStock < 0) store.CurrentStock = 0;
+            int decrement;
+
+            if (item.IsDiluent)
+            {
+                decrement = item.DoseCount;
+            }
+            else
+            {
+                var scannedCount = await context.TblDispatchUids
+                    .AsNoTracking()
+                    .Where(u => u.FKDispatchId == dispatchId
+                             && u.UidInfo.OrderInfo.FkItemId == item.ItemId
+                             && u.UidInfo.OrderInfo.BatchNumber == item.BatchNumber)
+                    .CountAsync(token);
+
+                decrement = scannedCount > 0 ? scannedCount : item.DoseCount;
+            }
+
+            if ((store.CurrentStock ?? 0) < decrement)
+                throw new ValidationException($"موجودی {item.ItemName} کافی نیست");
+
+            store.CurrentStock = (store.CurrentStock ?? 0) - decrement;
         }
 
-        await context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(token);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // بند ۱۰c: برگشت موجودی هنگام حذف dispatch یا dispatch lines
-    // در DeleteDispatchAsync این متد نیز فراخوانی شود
-    // ──────────────────────────────────────────────────────────────────────────
-    public async Task RestoreStockAsync(int dispatchId, CancellationToken ct = default)
+    public async Task RestoreStockAsync(int dispatchId, CancellationToken token)
     {
+        var dispatch = await context.TblDispatches
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.DispatchId == dispatchId, token);
+
+        if (dispatch == null || dispatch.IsConfirmed != true)
+            return;
+
         var lines = await context.TblDispatchLines
             .Where(l => l.DispatchId == dispatchId)
-            .ToListAsync(ct);
+            .ToListAsync(token);
 
         foreach (var line in lines)
         {
-            if (line.ItemDetailStoreId == null) continue;
-            var store = await context.TblItemDetailStores.FindAsync(line.ItemDetailStoreId);
+            var store = await context.TblItemDetailStores
+                .FirstOrDefaultAsync(s => s.PKItemDetailStoreId == line.ItemDetailStoreId, token);
+
             if (store == null) continue;
 
-            store.CurrentStock = (store.CurrentStock ?? 0) + (line.Quantity ?? 0);
+            var restoreCount = line.Quantity ?? 0;
+            store.CurrentStock = (store.CurrentStock ?? 0) + restoreCount;
         }
 
-        await context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(token);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // بند ۹: بروزرسانی FK_DISPATCH_UID در tblUidInfo هنگام ثبت نهایی
-    // برای هر UID انتخاب‌شده، فیلد FKDispatchUid با PK جدول tblDispatchUid
-    // بروز می‌شود
-    // ──────────────────────────────────────────────────────────────────────────
     public async Task LinkUidsToDispatchUidAsync(int dispatchId, CancellationToken ct = default)
     {
         var dispatchUids = await context.TblDispatchUids
@@ -384,7 +410,7 @@ public class DispatchService(
                 .FindAsync(item.ItemDetailStoreId);
 
             if (itemDetailStore == null)
-                continue; 
+                continue;
 
             var itemDetail = await context.TblItemDetails
                 .Include(t => t.DosePerVial)
@@ -432,8 +458,8 @@ public class DispatchService(
     }
 
     public async Task<(int dispatchId, long seqPreview)> CreateDispatchAsync(
-        CreateDispatchDto createDispatcheDto, 
-        string submitType, 
+        CreateDispatchDto createDispatcheDto,
+        string submitType,
         CancellationToken cancellationToken)
     {
         var fiscalPeriod = await context.TblFiscalPeriods.FirstOrDefaultAsync(f => f.IsActive.Value);
@@ -513,7 +539,7 @@ public class DispatchService(
 
             foreach (var uid in uidInfos)
             {
-                uid.FKDispatchUid = null; 
+                uid.FKDispatchUid = null;
             }
 
             context.TblDispatchUids.RemoveRange(dispatchUids);

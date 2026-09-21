@@ -1,5 +1,6 @@
 ﻿var addedItems = [];
 var batchTable = null;
+var dispatchIsConfirmed = false;
 
 $(function () {
 
@@ -43,7 +44,7 @@ $(function () {
         ],
         searchFields: ['itemName', 'batchNumber', 'expiryDateShamsi', 'manufacturerName'],
         emptyMessage: 'کالایی انتخاب نشده',
-        rowRenderer: function (rowData, index) {
+        rowRenderer: function (rowData) {
             return `
                 <tr>
                     <td><input type="checkbox" class="batch-chk" data-row='${JSON.stringify(rowData).replace(/'/g, "&#39;")}' /></td>
@@ -196,6 +197,11 @@ $(function () {
     });
 
     window.addSelectedItem = function () {
+        if (dispatchIsConfirmed) {
+            showToast('ارسال تایید شده — امکان ویرایش وجود ندارد', 'error');
+            return;
+        }
+
         var $checked = $('.batch-chk:checked');
         if ($checked.length === 0) {
             showToast('لطفاً حداقل یک سری ساخت را انتخاب کنید.', 'error');
@@ -220,8 +226,11 @@ $(function () {
             });
             if (exists) return;
 
+            var rowIsDiluent = row.isDiluent === true || row.IsDiluent === true;
+
             addedItems.push({
                 idx: addedItems.length,
+                dispatchLineId: 0,
                 itemDetailStoreId: row.itemDetailStoreId,
                 itemId: row.itemId,
                 itemName: row.itemName,
@@ -233,22 +242,24 @@ $(function () {
                 manufacturerName: row.manufacturerName,
                 doseCount: doseCount,
                 numVial: row.dosePerVialNum > 0 ? Math.floor(doseCount / row.dosePerVialNum) : 0,
-                vvmStageId: vvmStageId,
-                vvmStageName: vvmStageName,
+                dosePerVial: row.dosePerVialNum || 0,
+                vvmStageId: rowIsDiluent ? '' : vvmStageId,
+                vvmStageName: rowIsDiluent ? '-' : vvmStageName,
                 note: '',
                 uids: [],
                 stockInRam: row.currentStock,
                 requiresDiluent: row.requiresDiluent,
+                isDiluent: rowIsDiluent,
                 diluentItemDetailStoreId: row.diluentItemDetailStoreId,
                 diluentItemId: row.diluentItemId,
-                diluentItemName: row.diluentItemName,
-                dispatchLineId: 0
+                diluentItemName: row.diluentItemName
             });
             added++;
 
             if (row.requiresDiluent && row.diluentItemDetailStoreId) {
                 addedItems.push({
                     idx: addedItems.length,
+                    dispatchLineId: 0,
                     itemDetailStoreId: row.diluentItemDetailStoreId,
                     itemId: row.diluentItemId,
                     itemName: (row.diluentItemName || '') + ' (حلال - خودکار)',
@@ -260,13 +271,14 @@ $(function () {
                     manufacturerName: row.diluentManufacturerName || '-',
                     doseCount: doseCount,
                     numVial: 0,
+                    dosePerVial: 0,
                     vvmStageId: '',
                     vvmStageName: '-',
                     note: 'حلال خودکار',
                     uids: [],
                     stockInRam: 0,
                     requiresDiluent: false,
-                    dispatchLineId: 0
+                    isDiluent: true
                 });
             }
         });
@@ -283,9 +295,14 @@ $(function () {
     };
 
     window.removeItem = function (idx) {
+        if (dispatchIsConfirmed) {
+            showToast('ارسال تایید شده — امکان ویرایش وجود ندارد', 'error');
+            return;
+        }
+
         var item = addedItems[idx];
         var $stockCell = $('.stock-cell-' + item.itemDetailStoreId);
-        if ($stockCell.length) {
+        if ($stockCell.length && !item.isDiluent) {
             var toReturn = getItemScannedCount(item);
             if (toReturn === 0) toReturn = item.doseCount;
             $stockCell.text((parseInt($stockCell.text()) || 0) + toReturn);
@@ -300,8 +317,8 @@ $(function () {
 
         if (addedItems.length === 0) {
             tbody.html(
-                '<tr id="noAddedRow"><td colspan="11" ' +
-                'style="padding:24px;color:#9ca3af;text-align:center;">کالایی اضافه نشده</td></tr>'
+                '<tr><td colspan="11" style="padding:24px;color:#9ca3af;text-align:center;">' +
+                'کالایی اضافه نشده</td></tr>'
             );
             $('#dispatchForm').removeAttr('data-has-record');
             rebuildHiddenInputs();
@@ -310,10 +327,28 @@ $(function () {
 
         var html = '';
         $.each(addedItems, function (i, item) {
-            var scannedCount = getItemScannedCount(item);
+            var scannedCount = item.isDiluent ? '-' : getItemScannedCount(item);
+
+            var actions;
+            if (dispatchIsConfirmed) {
+                actions = '<span style="color:#9ca3af;font-size:11px;">تایید شده</span>';
+            } else if (item.isDiluent) {
+                actions =
+                    '<button type="button" class="btn-action btn-action-del" data-idx="' + i + '" title="حذف">' +
+                    '<i class="fa fa-trash"></i>' +
+                    '</button>';
+            } else {
+                actions =
+                    '<button type="button" class="btn-action btn-action-uid" data-idx="' + i + '" title="افزودن UID">' +
+                    '<i class="fa fa-qrcode"></i>' +
+                    '</button> ' +
+                    '<button type="button" class="btn-action btn-action-del" data-idx="' + i + '" title="حذف">' +
+                    '<i class="fa fa-trash"></i>' +
+                    '</button>';
+            }
 
             html +=
-                '<tr>' +
+                '<tr' + (item.isDiluent ? ' style="background:#f9fafb;"' : '') + '>' +
                 '<td>' + (item.batchNumber || '-') + '</td>' +
                 '<td>' + (item.itemName || '-') + '</td>' +
                 '<td>' + (item.expiryDateShamsi || '-') + '</td>' +
@@ -324,14 +359,7 @@ $(function () {
                 '<td>' + (item.vvmStageName || '-') + '</td>' +
                 '<td>' + (item.manufacturerName || '-') + '</td>' +
                 '<td>' + (item.note || '-') + '</td>' +
-                '<td style="white-space:nowrap;">' +
-                '<button type="button" class="btn-action btn-action-uid" data-idx="' + i + '" title="افزودن UID">' +
-                '<i class="fa fa-qrcode"></i>' +
-                '</button> ' +
-                '<button type="button" class="btn-action btn-action-del" data-idx="' + i + '" title="حذف">' +
-                '<i class="fa fa-trash"></i>' +
-                '</button>' +
-                '</td>' +
+                '<td style="white-space:nowrap;">' + actions + '</td>' +
                 '</tr>';
         });
 
@@ -350,9 +378,11 @@ $(function () {
         $.each(addedItems, function (i, item) {
             function add(name, val) {
                 $container.append(
-                    '<input type="hidden" name="Items[' + i + '].' + name + '" value="' + (val || '') + '">'
+                    '<input type="hidden" name="Items[' + i + '].' + name +
+                    '" value="' + (val === undefined || val === null ? '' : val) + '">'
                 );
             }
+            add('DispatchLineId', item.dispatchLineId);
             add('ItemDetailStoreId', item.itemDetailStoreId);
             add('ItemId', item.itemId);
             add('ItemName', item.itemName);
@@ -362,13 +392,16 @@ $(function () {
             add('BatchNumber', item.batchNumber);
             add('ExpiryDate', item.expiryDate);
             add('Note', item.note);
+            add('IsDiluent', item.isDiluent ? 'true' : 'false');
 
-            $.each(item.uids, function (j, uid) {
-                var uidVal = typeof uid === 'string' ? uid : uid.uid;
-                $container.append(
-                    '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uidVal + '">'
-                );
-            });
+            if (!item.isDiluent) {
+                $.each(item.uids, function (j, uid) {
+                    var uidVal = typeof uid === 'string' ? uid : (uid.uid || '');
+                    $container.append(
+                        '<input type="hidden" name="Items[' + i + '].Uids[' + j + ']" value="' + uidVal + '">'
+                    );
+                });
+            }
         });
     }
 
@@ -391,20 +424,31 @@ $(function () {
 
         if (submitType === 'final') {
             var mismatchItems = [];
+            var hasScannable = false;
+
             $.each(addedItems, function (_, item) {
+                if (item.isDiluent) return;
+
+                hasScannable = true;
                 var scannedCount = getItemScannedCount(item);
 
-                if (scannedCount !== item.doseCount) {
-                    mismatchItems.push(item.itemName + ' (درخواستی: ' + item.doseCount + ', اسکن‌شده: ' + scannedCount + ')');
+                if (scannedCount > item.doseCount) {
+                    mismatchItems.push(item.itemName +
+                        ' (درخواستی: ' + item.doseCount +
+                        ', اسکن‌شده: ' + scannedCount + ')');
                 }
             });
 
             if (mismatchItems.length > 0) {
                 showToast(
-                    'تعداد UIDهای اسکن‌شده با تعداد درخواستی مطابقت ندارد:\n' + mismatchItems.join('\n'),
+                    'تعداد UIDهای اسکن‌شده بیشتر از مقدار درخواستی است:\n' + mismatchItems.join('\n'),
                     'error'
                 );
                 return;
+            }
+
+            if (!hasScannable) {
+                scanSessionId = null;
             }
         }
 
@@ -413,7 +457,7 @@ $(function () {
         $('<input>').attr({ type: 'hidden', name: 'submitType', value: submitType })
             .appendTo('#dispatchForm');
 
-        if (submitType === 'final' && typeof scanSessionId !== 'undefined') {
+        if (submitType === 'final' && scanSessionId) {
             $('#dispatchForm').find('input[name="scanSessionId"]').remove();
             $('<input>').attr({ type: 'hidden', name: 'scanSessionId', value: scanSessionId })
                 .appendTo('#dispatchForm');
@@ -421,29 +465,4 @@ $(function () {
 
         $('#dispatchForm').submit();
     });
-
-    window.confirmDelete = function () {
-        if (typeof VSSM !== 'undefined' && VSSM.Modal) {
-            VSSM.Modal.confirm({
-                title: 'حذف ارسال',
-                message: 'آیا از حذف این ارسال مطمئن هستید؟',
-                confirmText: 'حذف',
-                cancelText: 'انصراف',
-                type: 'danger',
-                onConfirm: function () {
-                    $('#dispatchForm').find('input[name="submitType"]').remove();
-                    $('<input>').attr({ type: 'hidden', name: 'submitType', value: 'delete' })
-                        .appendTo('#dispatchForm');
-                    $('#dispatchForm').submit();
-                }
-            });
-        } else {
-            if (confirm('آیا از حذف این ارسال اطمینان دارید؟')) {
-                $('#dispatchForm').find('input[name="submitType"]').remove();
-                $('<input>').attr({ type: 'hidden', name: 'submitType', value: 'delete' })
-                    .appendTo('#dispatchForm');
-                $('#dispatchForm').submit();
-            }
-        }
-    };
 });

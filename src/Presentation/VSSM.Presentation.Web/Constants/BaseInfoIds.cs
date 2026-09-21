@@ -18,7 +18,7 @@ public static class BaseInfoIds
     public const int ClimateConditions = 78;
     public const int OwnershipTypes = 81;
     public const int DosePerVial = 84;
-    public const int HalalItemClassId = 55;
+    public const int DiluentClassId = 55;
     public const int Uses = 7;
     public const int Levels = 91;
 }

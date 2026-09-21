@@ -1348,8 +1348,192 @@ public class ReportService(VSSMDbContext _context) : IReportService
 
     }
 
-    public Task<(List<GroupedAvailableQuantityDetailDto> data, int count)> GetAvailableQuantityDetailReportAsync(AvailableQuantityReportQuery inputModel, int currentRecipientId, int pageNumber, int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
+    public async Task<(List<GroupedAvailableQuantityDetailDto> data, int count)> GetAvailableQuantityDetailReportAsync(
+        AvailableQuantityReportQuery inputModel,
+        int currentRecipientId,
+        int pageNumber,
+        int pageSize,
+        string sort,
+        string direction,
+        bool fetchAll,
+        CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var itemIds = (inputModel.ItemId ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(int.Parse)
+            .ToList();
+
+        var storeIds = (inputModel.StoreId ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(int.Parse)
+            .ToList();
+
+        var itemQuery = itemIds.Any()
+            ? _context.TblItems.Where(t => itemIds.Contains(t.ItemId))
+            : _context.TblItems;
+
+        if (inputModel.ItemClassId is not null)
+            itemQuery = itemQuery.Where(t => t.FkClassId == inputModel.ItemClassId);
+
+        var itemDetailQuery = !string.IsNullOrEmpty(inputModel.BatchNumber)
+            ? _context.TblItemDetails.Where(t => t.BatchNumber.Contains(inputModel.BatchNumber))
+            : _context.TblItemDetails;
+
+        if (inputModel.ManufacturerId is not null)
+            itemDetailQuery = itemDetailQuery.Where(t => t.ManufacturerId == inputModel.ManufacturerId);
+
+        if (inputModel.VvmtypeId is not null)
+            itemDetailQuery = itemDetailQuery.Where(t => t.VvmTypeId == inputModel.VvmtypeId);
+
+        if (inputModel.CommercialNameId is not null)
+            itemDetailQuery = itemDetailQuery.Where(t => t.CommercialNameId == inputModel.CommercialNameId);
+
+        if (!string.IsNullOrEmpty(inputModel.ProductinDate))
+        {
+            var pd = DateTimeHelper.ToGregorian(inputModel.ProductinDate);
+            itemDetailQuery = itemDetailQuery.Where(t => t.ProductionDate.HasValue && t.ProductionDate == pd);
+        }
+
+        if (!string.IsNullOrEmpty(inputModel.ExpiryDate))
+        {
+            var ed = DateTimeHelper.ToGregorian(inputModel.ExpiryDate);
+            itemDetailQuery = itemDetailQuery.Where(t => t.ExpiryDate.HasValue && t.ExpiryDate == ed);
+        }
+
+        var itemDetailStoreQuery = storeIds.Any()
+            ? _context.TblItemDetailStores.Where(t => t.StoreId.HasValue && storeIds.Contains(t.StoreId.Value))
+            : _context.TblItemDetailStores;
+
+        if (inputModel.VvmstageId is not null)
+            itemDetailStoreQuery = _context.TblItemDetailStores.Where(t => t.FkVvmStageId == inputModel.VvmstageId);
+
+        var storeQuery = _context.TblStores.AsQueryable();
+        if (inputModel.AllSubRecipientStocks)
+        {
+            var recipients = _context.TblRecipients
+                .Where(t => t.ParentId == currentRecipientId)
+                .Select(s => s.RecipientId)
+                .ToList();
+            storeQuery = storeQuery.Where(t => t.RecipientId.HasValue && recipients.Contains(t.RecipientId.Value));
+        }
+        else if (inputModel.RecipientId is not null && inputModel.RecipientId != 0)
+        {
+            storeQuery = storeQuery.Where(t => t.RecipientId == inputModel.RecipientId);
+        }
+        else
+        {
+            storeQuery = storeQuery.Where(t => t.RecipientId == currentRecipientId);
+        }
+
+        var parentQuery =
+            from i in itemQuery
+            join id in itemDetailQuery on i.ItemId equals id.ItemId
+            join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0) on id.ItemDetailId equals ids.ItemDetailId
+            join s in storeQuery on ids.StoreId equals s.Id
+            select new { i.ItemId, i.FullName };
+
+        var total = await parentQuery
+            .Select(x => x.ItemId)
+            .Distinct()
+            .CountAsync(cancellationToken);
+
+        List<int> selectedItemIds;
+
+        if (fetchAll)
+        {
+            selectedItemIds = await parentQuery
+                .Select(x => x.ItemId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+        }
+        else
+        {
+            selectedItemIds = await parentQuery
+                .Select(x => x.ItemId)
+                .Distinct()
+                .OrderBy(x => x)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+        }
+
+        if (selectedItemIds.Count == 0)
+            return (new List<GroupedAvailableQuantityDetailDto>(), total);
+
+        var detailQuery =
+            from i in itemQuery.Where(t => selectedItemIds.Contains(t.ItemId))
+            join id in itemDetailQuery on i.ItemId equals id.ItemId
+            join ids in itemDetailStoreQuery.Where(t => t.CurrentStock > 0) on id.ItemDetailId equals ids.ItemDetailId
+            join s in storeQuery on ids.StoreId equals s.Id
+            join r in _context.TblRecipients on s.RecipientId equals r.RecipientId
+
+            join m in _context.TblBaseInfo on id.ManufacturerId equals m.BaseInfoId into mJoin
+            from m in mJoin.DefaultIfEmpty()
+
+            join c in _context.TblBaseInfo on id.CommercialNameId equals c.BaseInfoId into cJoin
+            from c in cJoin.DefaultIfEmpty()
+
+            join dpv in _context.TblBaseInfo on id.DosePerVialId equals dpv.BaseInfoId into dpvJoin
+            from dpv in dpvJoin.DefaultIfEmpty()
+
+            join vt in _context.TblBaseInfo on id.VvmTypeId equals vt.BaseInfoId into vtJoin
+            from vt in vtJoin.DefaultIfEmpty()
+
+            join vs in _context.TblBaseInfo on ids.FkVvmStageId equals vs.BaseInfoId into vsJoin
+            from vs in vsJoin.DefaultIfEmpty()
+
+            group new { i, id, ids, s, m, c, dpv, vt, vs }
+            by new
+            {
+                i.ItemId,
+                id.ItemDetailId,
+                id.BatchNumber,
+                id.ExpiryDate,
+                id.ProductionDate,
+                Recipient = r.FullName,
+                ItemName = i.FullName,
+                ManufacturerName = m.Title,
+                StoreName = s.Name,
+                DoesPerVial = dpv.Title,
+                CommercialName = c.Title,
+                Vvmtype = vt.Title,
+                Vvmstage = vs.Title
+            } into g
+            select new AvailableQuantityDetailDto
+            {
+                ItemName = g.Key.ItemName,
+                BatchNumber = g.Key.BatchNumber,
+                ManufacturerName = g.Key.ManufacturerName,
+                ExpiryDate = g.Key.ExpiryDate,
+                DoesPerVial = g.Key.DoesPerVial,
+                Stock = g.Key.StoreName,
+                Recipient = g.Key.Recipient,
+                ProductionDate = g.Key.ProductionDate,
+                CommercialName = g.Key.CommercialName,
+                Vvmstage = g.Key.Vvmstage,
+                Vvmtype = g.Key.Vvmtype,
+                CurrentStock = g.Sum(t => t.ids.CurrentStock)
+            };
+
+        detailQuery = detailQuery
+            .AsNoTracking()
+            .ApplySorting(sort, direction == "desc");
+
+        var list = await detailQuery.ToListAsync(cancellationToken);
+
+        var grouped = list
+            .GroupBy(x => x.ItemName)
+            .Select(g => new GroupedAvailableQuantityDetailDto
+            {
+                Meta = new AvailableQuantityDetailMetaDto
+                {
+                    ItemName = g.Key,
+                    Count = g.Sum(t => t.CurrentStock) ?? 0
+                },
+                Details = g.ToList()
+            })
+            .ToList();
+
+        return (grouped, total);
     }
 }

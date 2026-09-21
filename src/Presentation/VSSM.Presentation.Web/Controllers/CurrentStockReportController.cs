@@ -95,16 +95,15 @@ public class CurrentStockReportController(IReportService _reportService,
     }
 
     private async Task<IActionResult> AvailableQuantityQuantitySummaryWithDosePerVialReport(
-        AvailableQuantityReportQuery inputModel,
-        int pageNumber,
-        int pageSize,
-        string sort,
-        string direction,
-        bool toExcel,
-        string? reportId,
-        CancellationToken cancellationToken)
+    AvailableQuantityReportQuery inputModel,
+    int pageNumber,
+    int pageSize,
+    string sort,
+    string direction,
+    bool toExcel,
+    string? reportId,
+    CancellationToken cancellationToken)
     {
-
         const int fixedPageSize = 20;
         pageSize = fixedPageSize;
 
@@ -129,27 +128,39 @@ public class CurrentStockReportController(IReportService _reportService,
             inputModel, CurrentUserRecipientId.Value,
             pageNumber, pageSize, sort, direction, false, cancellationToken);
 
-        var model = new GridViewModel
+        var groups = data
+            .GroupBy(x => new { x.ItemClass, x.ItemCode, x.ItemName })
+            .Select(g => new GroupItem<object, object>
+            {
+                Meta = new AvailableQuantityQuantitySummaryMetaDto
+                {
+                    ItemClass = g.Key.ItemClass,
+                    ItemCode = g.Key.ItemCode,
+                    ItemName = g.Key.ItemName,
+                    TotalCount = g.Sum(x => x.CurrentStock ?? 0)
+                },
+                Details = g.Cast<object>().ToList()
+            })
+            .ToList();
+
+        var model = new GroupedGridViewModel<object, object>
         {
             CurrentSort = sort,
             CurrentDirection = direction,
             Data = new PagedResult<object>
             {
-                Items = data.Cast<object>().ToList(),
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 TotalCount = count
             },
+            Groups = groups,
             Columns = new List<GridColumn>
-            {
-                new() { Header = "نوع کالا",       PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ItemClass) },
-                new() { Header = "Item Code",      PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ItemCode) },
-                new() { Header = "کالا",           PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ItemName) },
-                new() { Header = "سری ساخت",       PropertyName = nameof(AvailableQuantityQuantitySummaryDto.BatchNumber) },
-                new() { Header = "دوز بر ویال",    PropertyName = nameof(AvailableQuantityQuantitySummaryDto.DoesPerVial) },
-                new() { Header = "تاریخ انقضا",    PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ExpiryDateText) },
-                new() { Header = "تعداد",          PropertyName = nameof(AvailableQuantityQuantitySummaryDto.CurrentStock) },
-            }
+        {
+            new() { Header = "سری ساخت",    PropertyName = nameof(AvailableQuantityQuantitySummaryDto.BatchNumber) },
+            new() { Header = "دوز بر ویال", PropertyName = nameof(AvailableQuantityQuantitySummaryDto.DoesPerVial) },
+            new() { Header = "تاریخ انقضا", PropertyName = nameof(AvailableQuantityQuantitySummaryDto.ExpiryDateText) },
+            new() { Header = "تعداد",       PropertyName = nameof(AvailableQuantityQuantitySummaryDto.CurrentStock) },
+        }
         };
 
         return View("AvailableQuantityQuantitySummaryReport", model);

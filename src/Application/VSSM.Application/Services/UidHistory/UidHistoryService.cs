@@ -153,14 +153,20 @@ public class UidHistoryService(
         {
             string receiverName = dispatch.Receiver?.FullName ?? "-";
             string requestNum = dispatch.RequestNum ?? "-";
-            int.TryParse(dispatch.TransportMode, out int transportModeId);
-            var transportMode = await baseInfoService.GetByIdAsync(transportModeId);
+            string transportModeTitle = "-";
+
+            if (int.TryParse(dispatch.TransportMode, out int transportModeId))
+            {
+                var transportMode = await baseInfoService.GetByIdAsync(transportModeId);
+                transportModeTitle = transportMode?.Title ?? "-";
+            }
+
 
             string dispatchDesc =
                 $"انتقال برای: {receiverName} - " +
                 $"طی شماره فاکتور: {dispatch.DispatchVoucherNumber ?? "-"} - " +
                 $"از طریق انبار: {storeName ?? "-"} - " +
-                $"روش انتقال: {transportMode.Title} - " +
+                $"روش انتقال: {transportModeTitle} - " +
                 $"شماره درخواست: {requestNum}";
 
             rows.Add(new UidHistoryRowDto

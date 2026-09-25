@@ -22,5 +22,10 @@ namespace VSSM.Application.Services.ExcelGenerators
         MemoryStream ArrivalByItemReportExcel(List<GroupedArrivalByItemDto> data);
         MemoryStream DispatchByRecipientReportExcel(List<DispatchReportDto> data);
         MemoryStream ArrivalSummaryReportExcel(List<ArrivalSummaryDto> data);
+        MemoryStream DispatchReportExcel(List<DispatchReportDto> data);
+
+        MemoryStream DispatchSummaryByRecipientReportExcel(List<DispatchSummaryByRecipientDto> data);
+
+        MemoryStream DispatchedItemsSummaryReportExcel(List<DispatchedItemsSummaryDto> data);
     }
 }

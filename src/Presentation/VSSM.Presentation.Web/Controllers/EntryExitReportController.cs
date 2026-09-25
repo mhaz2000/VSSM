@@ -60,11 +60,179 @@ public class EntryExitReportController(
             "arrivalSummary" => await ArrivalSummaryAsync(
                 inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId, cancellationToken),
 
+            "dispatch" => await DispatchAsync(
+                inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId, cancellationToken),
+
+            "dispatchSummaryByRecipient" => await DispatchSummaryByRecipientAsync(
+                inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId, cancellationToken),
+
+            "dispatchedItemsSummary" => await DispatchedItemsSummaryAsync(
+                inputModel, pageNumber, pageSize, sort, direction, toExcel, reportId, cancellationToken),
+
             _ => View("Index")
         };
     }
 
     #region Report Handlers
+
+    private async Task<IActionResult> DispatchAsync(
+    EntryExitReportQuery input,
+    int pageNumber,
+    int pageSize,
+    string sort,
+    string direction,
+    bool toExcel,
+    string? reportId,
+    CancellationToken cancellationToken)
+    {
+        PrepareCachedReport(ref input, ref reportId, "dispatch", pageSize, sort, direction);
+
+        if (toExcel)
+        {
+            var (excelData, _) = await reportService.GetDispatchReportAsync(
+                input, CurrentUserRecipientId.GetValueOrDefault(),
+                pageNumber, pageSize, sort, direction, true, cancellationToken);
+
+            var stream = excelGenerator.DispatchReportExcel(excelData);
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ارسال.xlsx");
+        }
+
+        var (data, count) = await reportService.GetDispatchReportAsync(
+            input, CurrentUserRecipientId.GetValueOrDefault(),
+            pageNumber, pageSize, sort, direction, false, cancellationToken);
+
+        var model = new GridViewModel
+        {
+            CurrentSort = sort,
+            CurrentDirection = direction,
+            Data = new PagedResult<object>
+            {
+                Items = data.Cast<object>().ToList(),
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = count
+            },
+            Columns = new List<GridColumn>
+        {
+            new() { Header = "نوع کالا",       PropertyName = nameof(DispatchReportDto.ItemClass) },
+            new() { Header = "کالا",           PropertyName = nameof(DispatchReportDto.Item) },
+            new() { Header = "کد کالا",        PropertyName = nameof(DispatchReportDto.Code) },
+            new() { Header = "گیرنده",         PropertyName = nameof(DispatchReportDto.Recipient) },
+            new() { Header = "تاریخ ارسال",    PropertyName = nameof(DispatchReportDto.DispatchDate) },
+            new() { Header = "شماره حواله",    PropertyName = nameof(DispatchReportDto.VoucherNumber) },
+            new() { Header = "شماره درخواست",  PropertyName = nameof(DispatchReportDto.RequestNumber) },
+            new() { Header = "سری ساخت",       PropertyName = nameof(DispatchReportDto.BatchNumber) },
+            new() { Header = "تعداد",          PropertyName = nameof(DispatchReportDto.Quantity) },
+            new() { Header = "دوز بر ویال",    PropertyName = nameof(DispatchReportDto.DosePerVial) },
+            new() { Header = "تعداد ویال",     PropertyName = nameof(DispatchReportDto.NumVials) },
+            new() { Header = "تاریخ انقضا",    PropertyName = nameof(DispatchReportDto.ExpiryDate) },
+            new() { Header = "انبار",          PropertyName = nameof(DispatchReportDto.Store) },
+        }
+        };
+
+        return View("DispatchReport", model);
+    }
+
+    private async Task<IActionResult> DispatchSummaryByRecipientAsync(
+        EntryExitReportQuery input,
+        int pageNumber,
+        int pageSize,
+        string sort,
+        string direction,
+        bool toExcel,
+        string? reportId,
+        CancellationToken cancellationToken)
+    {
+        PrepareCachedReport(ref input, ref reportId, "dispatchSummaryByRecipient", pageSize, sort, direction);
+
+        if (toExcel)
+        {
+            var (excelData, _) = await reportService.GetDispatchSummaryByRecipientReportAsync(
+                input, CurrentUserRecipientId.GetValueOrDefault(),
+                pageNumber, pageSize, sort, direction, true, cancellationToken);
+
+            var stream = excelGenerator.DispatchSummaryByRecipientReportExcel(excelData);
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "خلاصه ارسالات بر گیرنده.xlsx");
+        }
+
+        var (data, count) = await reportService.GetDispatchSummaryByRecipientReportAsync(
+            input, CurrentUserRecipientId.GetValueOrDefault(),
+            pageNumber, pageSize, sort, direction, false, cancellationToken);
+
+        var model = new GridViewModel
+        {
+            CurrentSort = sort,
+            CurrentDirection = direction,
+            Data = new PagedResult<object>
+            {
+                Items = data.Cast<object>().ToList(),
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = count
+            },
+            Columns = new List<GridColumn>
+        {
+            new() { Header = "گیرنده",         PropertyName = nameof(DispatchSummaryByRecipientDto.Recipient) },
+            new() { Header = "نوع کالا",       PropertyName = nameof(DispatchSummaryByRecipientDto.ItemClass) },
+            new() { Header = "کالا",           PropertyName = nameof(DispatchSummaryByRecipientDto.Item) },
+            new() { Header = "مجموع تعداد",    PropertyName = nameof(DispatchSummaryByRecipientDto.TotalQuantity) },
+            new() { Header = "مجموع ویال",     PropertyName = nameof(DispatchSummaryByRecipientDto.TotalNumVials) },
+        }
+        };
+
+        return View("DispatchSummaryByRecipientReport", model);
+    }
+
+    private async Task<IActionResult> DispatchedItemsSummaryAsync(
+        EntryExitReportQuery input,
+        int pageNumber,
+        int pageSize,
+        string sort,
+        string direction,
+        bool toExcel,
+        string? reportId,
+        CancellationToken cancellationToken)
+    {
+        PrepareCachedReport(ref input, ref reportId, "dispatchedItemsSummary", pageSize, sort, direction);
+
+        if (toExcel)
+        {
+            var (excelData, _) = await reportService.GetDispatchedItemsSummaryReportAsync(
+                input, CurrentUserRecipientId.GetValueOrDefault(),
+                pageNumber, pageSize, sort, direction, true, cancellationToken);
+
+            var stream = excelGenerator.DispatchedItemsSummaryReportExcel(excelData);
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "خلاصه موارد ارسالی.xlsx");
+        }
+
+        var (data, count) = await reportService.GetDispatchedItemsSummaryReportAsync(
+            input, CurrentUserRecipientId.GetValueOrDefault(),
+            pageNumber, pageSize, sort, direction, false, cancellationToken);
+
+        var model = new GridViewModel
+        {
+            CurrentSort = sort,
+            CurrentDirection = direction,
+            Data = new PagedResult<object>
+            {
+                Items = data.Cast<object>().ToList(),
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = count
+            },
+            Columns = new List<GridColumn>
+        {
+            new() { Header = "نوع کالا",       PropertyName = nameof(DispatchedItemsSummaryDto.ItemClass) },
+            new() { Header = "کالا",           PropertyName = nameof(DispatchedItemsSummaryDto.Item) },
+            new() { Header = "کد کالا",        PropertyName = nameof(DispatchedItemsSummaryDto.Code) },
+            new() { Header = "مجموع تعداد",    PropertyName = nameof(DispatchedItemsSummaryDto.TotalQuantity) },
+            new() { Header = "مجموع ویال",     PropertyName = nameof(DispatchedItemsSummaryDto.TotalNumVials) },
+        }
+        };
+
+        return View("DispatchedItemsSummaryReport", model);
+    }
+
 
     private async Task<IActionResult> ArrivalByItemAsync(
      EntryExitReportQuery input,

@@ -50,5 +50,36 @@ namespace VSSM.Application.Interfaces.BaseEntities
             string direction,
             bool fetchAll,
             CancellationToken cancellationToken);
+
+
+        Task<(List<DispatchReportDto> data, int count)> GetDispatchReportAsync(
+            EntryExitReportQuery input,
+            int currentRecipientId,
+            int pageNumber,
+            int pageSize,
+            string sort,
+            string direction,
+            bool fetchAll,
+            CancellationToken cancellationToken);
+
+        Task<(List<DispatchSummaryByRecipientDto> data, int count)> GetDispatchSummaryByRecipientReportAsync(
+            EntryExitReportQuery input,
+            int currentRecipientId,
+            int pageNumber,
+            int pageSize,
+            string sort,
+            string direction,
+            bool fetchAll,
+            CancellationToken cancellationToken);
+
+        Task<(List<DispatchedItemsSummaryDto> data, int count)> GetDispatchedItemsSummaryReportAsync(
+            EntryExitReportQuery input,
+            int currentRecipientId,
+            int pageNumber,
+            int pageSize,
+            string sort,
+            string direction,
+            bool fetchAll,
+            CancellationToken cancellationToken);
     }
 }

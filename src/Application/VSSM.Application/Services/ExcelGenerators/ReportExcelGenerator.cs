@@ -6,6 +6,93 @@ namespace VSSM.Application.Services.ExcelGenerators
 {
     public class ReportExcelGenerator : IReportExcelGenerator
     {
+        public MemoryStream DispatchReportExcel(List<DispatchReportDto> data)
+        {
+            var headers = new[]
+            {
+        "نوع کالا", "کالا", "کد کالا", "گیرنده", "تاریخ ارسال",
+        "شماره حواله", "شماره درخواست", "سری ساخت", "تعداد",
+        "دوز بر ویال", "تعداد ویال", "تاریخ انقضا", "انبار"
+    };
+
+            var numericColumns = new[] { 9, 11 };
+
+            var rows = data.Select(item => new object[]
+            {
+        item.ItemClass,
+        item.Item,
+        item.Code,
+        item.Recipient,
+        item.DispatchDate,
+        item.VoucherNumber,
+        item.RequestNumber,
+        item.BatchNumber,
+        item.Quantity,
+        item.DosePerVial,
+        item.NumVials,
+        item.ExpiryDate,
+        item.Store
+            }).ToList();
+
+            return BuildSheet(
+                sheetName: "ارسال",
+                title: "گزارش ارسال",
+                headers: headers,
+                rows: rows,
+                numericColumns: numericColumns);
+        }
+
+        public MemoryStream DispatchSummaryByRecipientReportExcel(List<DispatchSummaryByRecipientDto> data)
+        {
+            var headers = new[]
+            {
+        "گیرنده", "نوع کالا", "کالا", "مجموع تعداد", "مجموع ویال"
+    };
+
+            var numericColumns = new[] { 4, 5 };
+
+            var rows = data.Select(item => new object[]
+            {
+        item.Recipient,
+        item.ItemClass,
+        item.Item,
+        item.TotalQuantity,
+        item.TotalNumVials
+            }).ToList();
+
+            return BuildSheet(
+                sheetName: "خلاصه ارسالات بر گیرنده",
+                title: "گزارش خلاصه ارسالات بر گیرنده",
+                headers: headers,
+                rows: rows,
+                numericColumns: numericColumns);
+        }
+
+        public MemoryStream DispatchedItemsSummaryReportExcel(List<DispatchedItemsSummaryDto> data)
+        {
+            var headers = new[]
+            {
+        "نوع کالا", "کالا", "کد کالا", "مجموع تعداد", "مجموع ویال"
+    };
+
+            var numericColumns = new[] { 4, 5 };
+
+            var rows = data.Select(item => new object[]
+            {
+        item.ItemClass,
+        item.Item,
+        item.Code,
+        item.TotalQuantity,
+        item.TotalNumVials
+            }).ToList();
+
+            return BuildSheet(
+                sheetName: "خلاصه موارد ارسالی",
+                title: "گزارش خلاصه موارد ارسالی",
+                headers: headers,
+                rows: rows,
+                numericColumns: numericColumns);
+        }
         public MemoryStream AvailableQuantityDetailReportExcel(List<GroupedAvailableQuantityDetailDto> data)
         {
             var stream = new MemoryStream();

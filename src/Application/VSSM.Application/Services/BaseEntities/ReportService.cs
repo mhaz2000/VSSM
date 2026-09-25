@@ -12,6 +12,212 @@ public class ReportService(VSSMDbContext _context) : IReportService
 {
     #region Entry/Exit Reports
 
+    public async Task<(List<DispatchReportDto> data, int count)> GetDispatchReportAsync(
+    EntryExitReportQuery input, int currentRecipientId, int pageNumber, int pageSize,
+    string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
+    {
+        var itemIds = ParseIds(input.ItemId);
+        var storeIds = ParseIds(input.StoreId);
+
+        var dispatches = _context.TblDispatches.AsQueryable();
+
+        if (input.FiscalPeriodId is not null)
+            dispatches = dispatches.Where(d => d.FiscalPeriodId == input.FiscalPeriodId);
+
+        if (!string.IsNullOrEmpty(input.FromDispatchDate))
+        {
+            var from = DateTimeHelper.ToGregorian(input.FromDispatchDate);
+            dispatches = dispatches.Where(d => d.Date >= from);
+        }
+
+        if (!string.IsNullOrEmpty(input.ToDispatchDate))
+        {
+            var to = DateTimeHelper.ToGregorian(input.ToDispatchDate).AddDays(1).AddTicks(-1);
+            dispatches = dispatches.Where(d => d.Date <= to);
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.VoucherNumber))
+            dispatches = dispatches.Where(d => d.ReportNumber.Contains(input.VoucherNumber));
+
+        var stores = _context.TblStores.AsQueryable();
+        if (storeIds.Count > 0)
+            stores = stores.Where(s => storeIds.Contains(s.Id));
+        else
+            stores = stores.Where(s => s.RecipientId == currentRecipientId);
+
+        var items = _context.TblItems.AsQueryable();
+        if (itemIds.Count > 0)
+            items = items.Where(i => itemIds.Contains(i.ItemId));
+        if (input.ItemClassId is not null)
+            items = items.Where(i => i.FkClassId == input.ItemClassId);
+
+        var query =
+            from d in dispatches
+            join dl in _context.TblDispatchLines on d.DispatchId equals dl.DispatchId
+            join i in items on dl.ItemId equals i.ItemId
+            join s in stores on dl.StoreId equals s.Id
+            join ic in _context.TblBaseInfo on i.FkClassId equals ic.BaseInfoId
+            join recv in _context.TblRecipients on d.ReceiverId equals recv.RecipientId
+            join dpv in _context.TblBaseInfo on dl.DosePerVialId equals dpv.BaseInfoId into dj
+            from dpv in dj.DefaultIfEmpty()
+            join m in _context.TblBaseInfo on dl.ManufacturerId equals m.BaseInfoId into mj
+            from m in mj.DefaultIfEmpty()
+            where ic.ParentId == 53
+                  && (input.RecipientId == null || d.ReceiverId == input.RecipientId)
+                  && (input.ManufacturerId == null || dl.ManufacturerId == input.ManufacturerId)
+                  && (input.VvmstageId == null || dl.FkVvmStageBaseInfo == input.VvmstageId)
+                  && (string.IsNullOrEmpty(input.BatchNumber) || dl.BatchNumber.Contains(input.BatchNumber))
+            select new DispatchReportDto
+            {
+                ItemClass = ic.Title,
+                Item = i.FullName,
+                Code = i.Code,
+                Recipient = recv.FullName,
+                DispatchDate = d.Date.HasValue ? d.Date.Value.ToShamsi() : "-",
+                VoucherNumber = d.ReportNumber ?? "-",
+                RequestNumber = d.RequestNum ?? "-",
+                BatchNumber = dl.BatchNumber ?? "-",
+                Quantity = dl.Quantity ?? 0,
+                DosePerVial = dpv != null ? dpv.Title : "-",
+                NumVials = dl.NumVial ?? 0,
+                ExpiryDate = dl.ExpiryDate.HasValue ? dl.ExpiryDate.Value.ToShamsi() : "-",
+                Store = s.Name
+            };
+
+        query = query.AsNoTracking();
+        var total = await query.CountAsync(cancellationToken);
+        query = query.ApplySorting(string.IsNullOrWhiteSpace(sort) ? "DispatchDate" : sort, direction == "desc");
+
+        if (fetchAll)
+            return (await query.ToListAsync(cancellationToken), total);
+
+        var list = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        return (list, total);
+    }
+
+    public async Task<(List<DispatchSummaryByRecipientDto> data, int count)> GetDispatchSummaryByRecipientReportAsync(
+        EntryExitReportQuery input, int currentRecipientId, int pageNumber, int pageSize,
+        string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
+    {
+        var itemIds = ParseIds(input.ItemId);
+        var storeIds = ParseIds(input.StoreId);
+
+        var dispatches = _context.TblDispatches.AsQueryable();
+
+        if (input.FiscalPeriodId is not null)
+            dispatches = dispatches.Where(d => d.FiscalPeriodId == input.FiscalPeriodId);
+
+        if (!string.IsNullOrEmpty(input.FromDispatchDate))
+        {
+            var from = DateTimeHelper.ToGregorian(input.FromDispatchDate);
+            dispatches = dispatches.Where(d => d.Date >= from);
+        }
+
+        if (!string.IsNullOrEmpty(input.ToDispatchDate))
+        {
+            var to = DateTimeHelper.ToGregorian(input.ToDispatchDate).AddDays(1).AddTicks(-1);
+            dispatches = dispatches.Where(d => d.Date <= to);
+        }
+
+        var items = _context.TblItems.AsQueryable();
+        if (itemIds.Count > 0)
+            items = items.Where(i => itemIds.Contains(i.ItemId));
+        if (input.ItemClassId is not null)
+            items = items.Where(i => i.FkClassId == input.ItemClassId);
+
+        var query =
+            from d in dispatches
+            join dl in _context.TblDispatchLines on d.DispatchId equals dl.DispatchId
+            join i in items on dl.ItemId equals i.ItemId
+            join ic in _context.TblBaseInfo on i.FkClassId equals ic.BaseInfoId
+            join recv in _context.TblRecipients on d.ReceiverId equals recv.RecipientId
+            where ic.ParentId == 53
+                  && (input.RecipientId == null || d.ReceiverId == input.RecipientId)
+            group new { d, dl, i, ic, recv }
+            by new
+            {
+                recv.RecipientId,
+                RecipientName = recv.FullName,   
+                i.ItemId,
+                ItemName = i.FullName,           
+                ic.Title
+            } into g
+            select new DispatchSummaryByRecipientDto
+            {
+                Recipient = g.Key.RecipientName,
+                ItemClass = g.Key.Title,
+                Item = g.Key.ItemName,
+                TotalQuantity = g.Sum(x => x.dl.Quantity ?? 0),
+                TotalNumVials = g.Sum(x => x.dl.NumVial ?? 0)
+            };
+
+        query = query.AsNoTracking();
+        var total = await query.CountAsync(cancellationToken);
+        query = query.ApplySorting(string.IsNullOrWhiteSpace(sort) ? "Recipient" : sort, direction == "desc");
+
+        if (fetchAll)
+            return (await query.ToListAsync(cancellationToken), total);
+
+        var list = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        return (list, total);
+    }
+
+    public async Task<(List<DispatchedItemsSummaryDto> data, int count)> GetDispatchedItemsSummaryReportAsync(
+        EntryExitReportQuery input, int currentRecipientId, int pageNumber, int pageSize,
+        string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
+    {
+        var itemIds = ParseIds(input.ItemId);
+
+        var dispatches = _context.TblDispatches.AsQueryable();
+
+        if (input.FiscalPeriodId is not null)
+            dispatches = dispatches.Where(d => d.FiscalPeriodId == input.FiscalPeriodId);
+
+        if (!string.IsNullOrEmpty(input.FromDispatchDate))
+        {
+            var from = DateTimeHelper.ToGregorian(input.FromDispatchDate);
+            dispatches = dispatches.Where(d => d.Date >= from);
+        }
+
+        if (!string.IsNullOrEmpty(input.ToDispatchDate))
+        {
+            var to = DateTimeHelper.ToGregorian(input.ToDispatchDate).AddDays(1).AddTicks(-1);
+            dispatches = dispatches.Where(d => d.Date <= to);
+        }
+
+        var items = _context.TblItems.AsQueryable();
+        if (itemIds.Count > 0)
+            items = items.Where(i => itemIds.Contains(i.ItemId));
+        if (input.ItemClassId is not null)
+            items = items.Where(i => i.FkClassId == input.ItemClassId);
+
+        var query =
+            from d in dispatches
+            join dl in _context.TblDispatchLines on d.DispatchId equals dl.DispatchId
+            join i in items on dl.ItemId equals i.ItemId
+            join ic in _context.TblBaseInfo on i.FkClassId equals ic.BaseInfoId
+            where ic.ParentId == 53
+                  && (input.RecipientId == null || d.ReceiverId == input.RecipientId)
+            group new { d, dl, i, ic } by new { i.ItemId, i.FullName, i.Code, ic.Title } into g
+            select new DispatchedItemsSummaryDto
+            {
+                ItemClass = g.Key.Title,
+                Item = g.Key.FullName,
+                Code = g.Key.Code,
+                TotalQuantity = g.Sum(x => x.dl.Quantity ?? 0),
+                TotalNumVials = g.Sum(x => x.dl.NumVial ?? 0)
+            };
+
+        query = query.AsNoTracking();
+        var total = await query.CountAsync(cancellationToken);
+        query = query.ApplySorting(string.IsNullOrWhiteSpace(sort) ? "Item" : sort, direction == "desc");
+
+        if (fetchAll)
+            return (await query.ToListAsync(cancellationToken), total);
+
+        var list = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        return (list, total);
+    }
     private static List<int> ParseIds(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))

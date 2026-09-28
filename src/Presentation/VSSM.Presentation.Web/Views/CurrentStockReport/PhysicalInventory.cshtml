@@ -1,130 +1,112 @@
 ﻿@using VSSM.Application.DTOs.BaseEntities.BaseInfo
-@using VSSM.Application.DTOs.BaseEntities.Source
 @using VSSM.Application.DTOs.BaseEntities.Store
 @using VSSM.Presentation.Web.Models.Base
-@model GridViewModel
-
 @{
     ViewData["Title"] = "گزارش موجودی";
+
+    var items       = ViewBag.Items       as List<ItemListDto>  ?? new();
+    var stores      = ViewBag.Stores      as List<StoreListDto> ?? new();
+    var itemClasses = ViewBag.ItemClasses as List<BaseInfoDto>  ?? new();
+
+    List<SelectOption> Opts<T>(IEnumerable<T> src, Func<T, string> v, Func<T, string> t)
+        => src.Select(x => new SelectOption { Value = v(x), Text = t(x) }).ToList();
 }
 
-@{
-    var items = ViewBag.Items as List<ItemListDto>;
-    var sources = ViewBag.Sources as List<SourceGetDto>;
-    var stores = ViewBag.Stores as List<StoreListDto>;
-    var itemClasses = ViewBag.ItemClasses as List<BaseInfoDto>;
+@section Styles {
+    <link href="~/css/components/shared/a-card.css" rel="stylesheet" />
+    <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
+    <link href="~/css/components/shared/btn.css" rel="stylesheet" />
+    <link href="~/css/components/shared/toast.css" rel="stylesheet" />
+    <link href="~/css/components/shared/searchable-controls.css" rel="stylesheet" />
+    <link href="~/css/components/reports/physical-inventory.css" rel="stylesheet" />
 }
 
-<div class="container-fluid">
+<div class="report-wrap">
+    <div class="report-page-title">
+        <i class="fa fa-cubes" style="color:#16a34a;"></i>
+        <span>@ViewData["Title"]</span>
+    </div>
 
-    <div class="card mt-3">
-        <div class="card-block">
+    <form method="post" action="/CurrentStockReport/PhysicalInventoryReport"
+          target="_blank" id="physicalInventoryForm">
+        @Html.AntiForgeryToken()
 
-            <div class="grid-wrapper">
+        <div class="a-card">
+            <div class="a-card-header">
+                <i class="fa fa-filter" style="color:#16a34a;"></i>
+                <h6>فیلترها</h6>
+            </div>
+            <div class="a-card-body">
 
-                <div class="grid-header">
-                    <strong style="font-size: 1.2rem">@ViewData["Title"]</strong>
+                <section class="filter-section">
+                    <header class="filter-section-header">
+                        <span class="filter-section-badge">۱</span>
+                        <h5>جستجو</h5>
+                    </header>
+                    <div class="filters-grid filters-grid-3">
+
+                        <div class="f-group">
+                            <label class="f-label" for="itemClassId">
+                                نوع کالا <span class="req">*</span>
+                            </label>
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                new SearchableSelectModel
+                                {
+                                    Id = "itemClassId", Name = "itemClassId",
+                                    IsRequired = true,
+                                    Label = "", DefaultText = "انتخاب کنید",
+                                    Options = Opts(itemClasses, x => x.Id.ToString(), x => x.Title)
+                                })
+                        </div>
+
+                        <div class="f-group">
+                            <label class="f-label" for="itemId">کالا</label>
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                new SearchableSelectModel
+                                {
+                                    Id = "itemId", Name = "itemId",
+                                    IsRequired = false,
+                                    Label = "", DefaultText = "ابتدا نوع کالا را انتخاب کنید",
+                                    Options = new List<SelectOption>()
+                                })
+                        </div>
+
+                        <div class="f-group">
+                            <label class="f-label" for="storeId">انبار مرتبط با کالا</label>
+                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
+                                new SearchableSelectModel
+                                {
+                                    Id = "storeId", Name = "storeId",
+                                    IsRequired = false,
+                                    Label = "", DefaultText = "همه انبارها",
+                                    Options = Opts(stores, x => x.StoreId.ToString(), x => x.FullName)
+                                })
+                        </div>
+
+                    </div>
+                </section>
+
+                <div class="card-actions">
+                    <button type="button" class="btn-secondary js-clear-filters">
+                        <i class="fa fa-eraser"></i>
+                        <span>پاک کردن فیلترها</span>
+                    </button>
+                    <button type="submit" class="btn-confirm btn-primary-action"
+                            id="searchBtn" disabled>
+                        <i class="fa fa-play"></i>
+                        <span>تهیه گزارش</span>
+                    </button>
                 </div>
-
-                    <form method="get" action="/CurrentStockReport/PhysicalInventoryReport" target="_blank" class="card p-3 mb-3">
-
-                    <div class="row g-3">
-
-                        <div class="col-md-6 input-sec">
-
-                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                            new SearchableSelectModel
-                            {
-                                Id = "itemClassId",
-                                IsRequired = true,
-                                Name = "itemClassId",
-                                Label = "نوع کالا",
-                                Options = itemClasses?
-                            .Select(x => new SelectOption
-                            {
-                                Value = x.Id.ToString(),
-                                Text = x.Title
-                            }).ToList() ?? []
-                            })
-                        </div>
-
-                        <div class="col-md-6 input-sec">
-
-                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                                        new SearchableSelectModel
-                                                        {
-                                                            Id = "itemId",
-                                                            IsRequired = false,
-                                                            Name = "itemId",
-                                                            Label = "کالا",
-                                                            Options = []
-                                                        })
-                        </div>
-
-                        <div class="col-md-6 input-sec">
-
-                            @* @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                                        new SearchableSelectModel
-                                                        {
-                                                            Id = "sourceId",
-                                                            IsRequired = false,
-                                                            Name = "sourceId",
-                                                            Label = "منبع",
-                                                            Options = sources
-                                                        .Select(x => new SelectOption
-                                                        {
-                                                            Value = x.SourceId.ToString(),
-                                                            Text = x.FullName
-                                                        }).ToList()
-                                                        }) *@
-                        </div>
-
-                        <div class="col-md-6 input-sec">
-
-                            @await Html.PartialAsync("Components/SearchableSelect/_SearchableSelect",
-                                                        new SearchableSelectModel
-                                                        {
-                                                            Id = "storeId",
-                                                            IsRequired = false,
-                                                            Name = "storeId",
-                                                            Label = "انبار مرتبط با کالا",
-                                                            Options = stores?
-                                                        .Select(x => new SelectOption
-                                                        {
-                                                            Value = x.StoreId.ToString(),
-                                                            Text = x.FullName
-                                                        }).ToList() ?? []
-                                                        })
-                        </div>
-
-                    </div>
-
-                    <div class="text-start mt-3" style="margin-top: 1rem; margin-right: 0px;">
-                        <button type="submit" class="btn btn-primary" id="searchBtn" disabled>
-                            <i class="fa fa-search"></i> جستجو
-                        </button>
-
-                    </div>
-                </form>
-
-                @if (Model != null)
-                {
-                    <div style="margin-top: 1rem;">
-                        @await Html.PartialAsync("ReportHeader")
-                    </div>
-
-                    <div style="margin-top: 1rem;">
-                        @await Html.PartialAsync("_DynamicGrid", Model)
-                    </div>
-                }
 
             </div>
         </div>
-
-    </div>
+    </form>
 </div>
 
-@section Scripts {
+<div id="toastContainer"></div>
 
-<script src="~/js/components/reports/current-stock.js"></script>
+@section Scripts {
+    <script src="~/js/shared/toast.js"></script>
+    <script src="~/js/shared/searchable-controls.js"></script>
+    <script src="~/js/components/reports/physical-inventory.js"></script>
 }

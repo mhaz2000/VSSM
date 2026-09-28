@@ -1,0 +1,134 @@
+﻿.report-wrap {
+    margin: 1.5rem;
+    direction: rtl;
+}
+
+.report-page-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+    font-size: 17px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+    .report-page-title i {
+        font-size: 18px;
+    }
+
+.filter-section + .filter-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed #e5e7eb;
+}
+
+.filter-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.filter-section-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.filter-section-header h5 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.filters-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.filters-grid-1 {
+    grid-template-columns: minmax(0, 420px);
+}
+
+.filters-grid > * {
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 576px) {
+    .filters-grid-1 {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+.f-label .req {
+    color: #dc2626;
+    font-weight: 700;
+    margin-inline-start: 2px;
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+    .card-actions .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 42px;
+        padding: 0 18px;
+        background: #ffffff;
+        color: #6b7280;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color .15s, border-color .15s, color .15s;
+    }
+
+        .card-actions .btn-secondary:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+            color: #374151;
+        }
+
+    .card-actions .btn-primary-action {
+        padding: 0 24px;
+    }
+
+        .card-actions .btn-primary-action:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+@media (max-width: 576px) {
+    .card-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+        .card-actions .btn-secondary,
+        .card-actions .btn-primary-action {
+            width: 100%;
+            justify-content: center;
+        }
+}

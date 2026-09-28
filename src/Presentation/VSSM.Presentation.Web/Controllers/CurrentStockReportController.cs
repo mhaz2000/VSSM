@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using VSSM.Application.DTOs.BaseEntities.Item;
 using VSSM.Application.DTOs.BaseEntities.ItemDetail;
 using VSSM.Application.DTOs.BaseEntities.Reports;
+using VSSM.Application.DTOs.Reports;
 using VSSM.Application.Interfaces.BaseEntities;
 using VSSM.Application.Services.ExcelGenerators;
 using VSSM.Application.Shared;
@@ -465,63 +466,65 @@ public class CurrentStockReportController(IReportService _reportService,
     #endregion
 
     #region PhysicalInventory
+
     public async Task<IActionResult> PhysicalInventory(CancellationToken cancellationToken = default)
     {
-        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, cancellationToken);
+        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(
+            BaseInfoIds.ItemClassesId, cancellationToken);
         ViewBag.Items = await _itemService.GetActives(cancellationToken);
-        ViewBag.Stores = await _storeService.GetAllWithRecipientId(CurrentUserRecipientId!.Value, cancellationToken);
+        ViewBag.Stores = await _storeService.GetAllWithRecipientId(
+            CurrentUserRecipientId!.Value, cancellationToken);
 
         return View(null);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> PhysicalInventoryReport(
-        long? itemClassId,
-        long? itemId,
-        long? sourceId,
-        long? storeId,
+        PhysicalInventoryQuery inputModel,
         int pageNumber = 1,
         int pageSize = 20,
         string sort = "ItemName",
         string direction = "asc",
         bool toExcel = false,
+        string? reportId = null,
         CancellationToken cancellationToken = default)
     {
+        PrepareCachedPhysicalInventoryReport(
+            ref inputModel, ref reportId, pageSize, sort, direction);
 
-        var (data, count) = await _reportService.GetInventoryQuantitiesAsync(
-            itemClassId,
-            itemId,
-            sourceId,
-            storeId,
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            CurrentUserRecipientId!.Value,
-            false,
-            cancellationToken
-        );
+        var currentRecipientId = CurrentUserRecipientId!.Value;
 
+        // ── Excel ──
         if (toExcel)
         {
             var excelData = await _reportService.GetInventoryQuantitiesAsync(
-            itemClassId,
-            itemId,
-            sourceId,
-            storeId,
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            CurrentUserRecipientId!.Value,
-            true,
-            cancellationToken
-            );
+                inputModel.ItemClassId,
+                inputModel.ItemId,
+                inputModel.SourceId,
+                inputModel.StoreId,
+                pageNumber, pageSize, sort, direction,
+                currentRecipientId,
+                true,
+                cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.PhysicalInventoryExcel(excelData.data);
+
             return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "PhysicalInventoryReport.xlsx");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "PhysicalInventoryReport.xlsx");
         }
+
+        // ── Grid ──
+        var (data, count) = await _reportService.GetInventoryQuantitiesAsync(
+            inputModel.ItemClassId,
+            inputModel.ItemId,
+            inputModel.SourceId,
+            inputModel.StoreId,
+            pageNumber, pageSize, sort, direction,
+            currentRecipientId,
+            false,
+            cancellationToken);
 
         var model = new GridViewModel
         {
@@ -535,79 +538,108 @@ public class CurrentStockReportController(IReportService _reportService,
                 TotalCount = count
             },
             Columns = new List<GridColumn>
-            {
-                new() { Header = "نوع کالا", PropertyName = nameof(InventoryQuantityReportDto.ItemClass) },
-                new() { Header = "کالا", PropertyName = nameof(InventoryQuantityReportDto.Item) },
-                new() { Header = "سازنده", PropertyName = nameof(InventoryQuantityReportDto.Manufacturer) },
-                new() { Header = "سری ساخت", PropertyName = nameof(InventoryQuantityReportDto.BatchNumber) },
-                new() { Header = "تاریخ انقضا", PropertyName = nameof(InventoryQuantityReportDto.ExpiryDate) },
-                new() { Header = "نام انبار", PropertyName = nameof(InventoryQuantityReportDto.Store) },
-                new() { Header = "تعداد", PropertyName = nameof(InventoryQuantityReportDto.Quantity) },
-            }
+        {
+            new() { Header = "نوع کالا",  PropertyName = nameof(InventoryQuantityReportDto.ItemClass) },
+            new() { Header = "کالا",      PropertyName = nameof(InventoryQuantityReportDto.Item) },
+            new() { Header = "سازنده",    PropertyName = nameof(InventoryQuantityReportDto.Manufacturer) },
+            new() { Header = "سری ساخت",  PropertyName = nameof(InventoryQuantityReportDto.BatchNumber) },
+            new() { Header = "تاریخ انقضا", PropertyName = nameof(InventoryQuantityReportDto.ExpiryDate) },
+            new() { Header = "نام انبار", PropertyName = nameof(InventoryQuantityReportDto.Store) },
+            new() { Header = "تعداد",     PropertyName = nameof(InventoryQuantityReportDto.Quantity) },
+        }
         };
 
-        return View(model);
+        return View("PhysicalInventoryReport", model);
+    }
+
+    private void PrepareCachedPhysicalInventoryReport(
+        ref PhysicalInventoryQuery inputModel,
+        ref string? reportId,
+        int pageSize,
+        string sort,
+        string direction)
+    {
+        if (!string.IsNullOrEmpty(reportId))
+        {
+            var cached = _cache.Get<PhysicalInventoryQuery>(reportId);
+            if (cached is not null)
+            {
+                inputModel = cached;
+                _cache.Remove(reportId);
+            }
+        }
+        else
+        {
+            reportId = Guid.NewGuid().ToString("N");
+        }
+
+        ViewBag.ReportId = reportId;
+        ViewBag.AdditionalParam =
+            $"reportId={reportId}" +
+            $"&pageSize={pageSize}" +
+            $"&sort={Uri.EscapeDataString(sort)}" +
+            $"&direction={direction}";
+
+        _cache.Set(reportId, inputModel, TimeSpan.FromDays(1));
     }
 
     #endregion
 
     #region NotDispatchedToRecipients
+
     public async Task<IActionResult> NotDispatchedToRecipients(CancellationToken cancellationToken = default)
     {
-        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, cancellationToken);
+        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(
+            BaseInfoIds.ItemClassesId, cancellationToken);
+
         ViewBag.FiscalPeriods = await _fiscalPeriodService.GetAllAsListAsync(cancellationToken);
 
         return View(null);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> NotDispatchedToRecipientsReport(
-        long? itemClassId,
-        long? itemId,
-        long? fiscalPeriodId,
-        string? fromDate,
-        string? toDate,
+        NotDispatchedToRecipientsQuery inputModel,
         int pageNumber = 1,
         int pageSize = 20,
-        string sort = "Reciever",
+        string sort = "FullName",
         string direction = "asc",
         bool toExcel = false,
+        string? reportId = null,
         CancellationToken cancellationToken = default)
     {
+        PrepareCachedNotDispatchedReport(
+            ref inputModel, ref reportId, pageSize, sort, direction);
 
-        var (data, count) = await _reportService.GetNotDispatchedToRecipientsAsync(
-            itemId,
-            fiscalPeriodId,
-            fromDate,
-            toDate,
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken
-        );
-
-
+        // ── Excel ──
         if (toExcel)
         {
             var excelData = await _reportService.GetNotDispatchedToRecipientsAsync(
-                itemId,
-                fiscalPeriodId,
-                fromDate,
-                toDate,
-                pageNumber,
-                pageSize,
-                sort,
-                direction,
+                inputModel.ItemId,
+                inputModel.FiscalPeriodId,
+                inputModel.FromDate,
+                inputModel.ToDate,
+                pageNumber, pageSize, sort, direction,
                 true,
-                cancellationToken
-            );
+                cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.NotDispatchedToRecipientsExcel(excelData.data);
+
             return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "ZeroDispatchReport.xlsx");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "ZeroDispatchReport.xlsx");
         }
+
+        // ── Grid ──
+        var (data, count) = await _reportService.GetNotDispatchedToRecipientsAsync(
+            inputModel.ItemId,
+            inputModel.FiscalPeriodId,
+            inputModel.FromDate,
+            inputModel.ToDate,
+            pageNumber, pageSize, sort, direction,
+            false,
+            cancellationToken);
 
         var model = new GridViewModel
         {
@@ -621,92 +653,143 @@ public class CurrentStockReportController(IReportService _reportService,
                 TotalCount = count
             },
             Columns = new List<GridColumn>
-            {
-                new() { Header = "گیرنده", PropertyName = nameof(NotDispatchedToRecipientsDto.FullName) },
-            }
+        {
+            new() { Header = "گیرنده", PropertyName = nameof(NotDispatchedToRecipientsDto.FullName) },
+        }
         };
 
-        return View(model);
+        return View("NotDispatchedToRecipientsReport", model);
+    }
+
+    private void PrepareCachedNotDispatchedReport(
+        ref NotDispatchedToRecipientsQuery inputModel,
+        ref string? reportId,
+        int pageSize,
+        string sort,
+        string direction)
+    {
+        if (!string.IsNullOrEmpty(reportId))
+        {
+            var cached = _cache.Get<NotDispatchedToRecipientsQuery>(reportId);
+            if (cached is not null)
+            {
+                inputModel = cached;
+                _cache.Remove(reportId);
+            }
+        }
+        else
+        {
+            reportId = Guid.NewGuid().ToString("N");
+        }
+
+        ViewBag.ReportId = reportId;
+        ViewBag.AdditionalParam =
+            $"reportId={reportId}" +
+            $"&pageSize={pageSize}" +
+            $"&sort={Uri.EscapeDataString(sort)}" +
+            $"&direction={direction}";
+
+        _cache.Set(reportId, inputModel, TimeSpan.FromDays(1));
     }
 
     #endregion
 
     #region ItemForRecipientInYear
+
     public async Task<IActionResult> ItemForRecipientInYear(CancellationToken cancellationToken = default)
     {
         ViewBag.Items = await _itemService.GetActives(cancellationToken);
-        var recipients = await _recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
+
+        var recipients = await _recipientService.GetActiveRecipientChildren(
+            CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
         ViewBag.Recipients = recipients;
 
-        var firstChainLevel = recipients.Where(t => t.ChainLevel is not null).OrderBy(t => t.ChainLevel).FirstOrDefault()?.ChainLevel ?? 0;
-        var lastChainLevel = recipients.Where(t => t.ChainLevel is not null).OrderByDescending(t => t.ChainLevel).FirstOrDefault()?.ChainLevel ?? 0;
+        var firstChainLevel = recipients
+            .Where(t => t.ChainLevel is not null)
+            .OrderBy(t => t.ChainLevel)
+            .FirstOrDefault()?.ChainLevel ?? 0;
 
-        List<int> chainLevels = new List<int>();
-        chainLevels = Enumerable.Range(firstChainLevel, lastChainLevel - firstChainLevel + 1).ToList();
-        ViewBag.ChainLevels = chainLevels;
+        var lastChainLevel = recipients
+            .Where(t => t.ChainLevel is not null)
+            .OrderByDescending(t => t.ChainLevel)
+            .FirstOrDefault()?.ChainLevel ?? 0;
+
+        ViewBag.ChainLevels = Enumerable
+            .Range(firstChainLevel, lastChainLevel - firstChainLevel + 1)
+            .ToList();
 
         var fiscalPeriods = await _fiscalPeriodService.GetAllAsListAsync(cancellationToken);
 
-        List<int> years = new List<int>();
+        var firstYear = fiscalPeriods
+            .Where(t => t.StartDate is not null)
+            .OrderBy(t => t.StartDate!.Value.Year)
+            .FirstOrDefault()?.StartDate?.Year ?? 0;
 
-        var firstYear = fiscalPeriods.Where(t => t.StartDate is not null).OrderBy(t => t.StartDate.Value.Year).FirstOrDefault()?.StartDate?.Year ?? 0;
-        var lastYear = fiscalPeriods.Where(t => t.EndTime is not null).OrderByDescending(t => t.EndTime.Value.Year).FirstOrDefault()?.EndTime?.Year ?? 0;
+        var lastYear = fiscalPeriods
+            .Where(t => t.EndTime is not null)
+            .OrderByDescending(t => t.EndTime!.Value.Year)
+            .FirstOrDefault()?.EndTime?.Year ?? 0;
 
-        years = Enumerable.Range(firstYear, lastYear - firstYear + 1).ToList();
-
-        ViewBag.Years = years;
+        ViewBag.Years = Enumerable
+            .Range(firstYear, lastYear - firstYear + 1)
+            .ToList();
 
         return View(null);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ItemForRecipientInYearReport(
-        long? itemId,
-        string? year,
-        string? level,
-        int? recipientId,
+        ItemForRecipientInYearQuery inputModel,
         int pageNumber = 1,
         int pageSize = 20,
         string sort = "Reciever",
         string direction = "asc",
         bool toExcel = false,
+        string? reportId = null,
         CancellationToken cancellationToken = default)
     {
+        PrepareCachedItemForRecipientInYearReport(
+            ref inputModel, ref reportId, pageSize, sort, direction);
 
-        var (data, count) = await _reportService.GetItemForRecipientInYear(
-            CurrentUserRecipientId.GetValueOrDefault(),
-            itemId,
-            int.Parse(year),
-            string.IsNullOrEmpty(level) ? null : int.Parse(level),
-            recipientId,
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken
-        );
+        var currentRecipientId = CurrentUserRecipientId.GetValueOrDefault();
 
+        // ── Excel ──
         if (toExcel)
         {
             var excelData = await _reportService.GetItemForRecipientInYear(
-                CurrentUserRecipientId.GetValueOrDefault(),
-                itemId,
-                int.Parse(year),
-                string.IsNullOrEmpty(level) ? null : int.Parse(level),
-                recipientId,
+                currentRecipientId,
+                inputModel.ItemId,
+                inputModel.Year ?? 0,
+                inputModel.Level,
+                inputModel.RecipientId,
                 pageNumber,
                 pageSize,
                 sort,
                 direction,
                 true,
-                cancellationToken
-            );
+                cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.ItemForRecipientInYearExcel(excelData.data);
+
             return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "گزارش کالا برای گیرندگان در سال.xlsx");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "گزارش کالا برای گیرندگان در سال.xlsx");
         }
+
+        // ── Grid ──
+        var (data, count) = await _reportService.GetItemForRecipientInYear(
+            currentRecipientId,
+            inputModel.ItemId,
+            inputModel.Year ?? 0,
+            inputModel.Level,
+            inputModel.RecipientId,
+            pageNumber,
+            pageSize,
+            sort,
+            direction,
+            false,
+            cancellationToken);
 
         var model = new GridViewModel
         {
@@ -720,26 +803,57 @@ public class CurrentStockReportController(IReportService _reportService,
                 TotalCount = count
             },
             Columns = new List<GridColumn>
-            {
-                new() { Header = "گیرنده", PropertyName = nameof(ItemForRecipientInYearDto.Reciever) },
-                new() { Header = "ژانویه", PropertyName = nameof(ItemForRecipientInYearDto.Jan) },
-                new() { Header = "فوریه", PropertyName = nameof(ItemForRecipientInYearDto.Feb) },
-                new() { Header = "مارس", PropertyName = nameof(ItemForRecipientInYearDto.Mar) },
-                new() { Header = "آپریل", PropertyName = nameof(ItemForRecipientInYearDto.Apr) },
-                new() { Header = "می", PropertyName = nameof(ItemForRecipientInYearDto.May) },
-                new() { Header = "ژوئن", PropertyName = nameof(ItemForRecipientInYearDto.Jun) },
-                new() { Header = "جولای", PropertyName = nameof(ItemForRecipientInYearDto.Jul) },
-                new() { Header = "آگوست", PropertyName = nameof(ItemForRecipientInYearDto.Agu) },
-                new() { Header = "سپتامبر", PropertyName = nameof(ItemForRecipientInYearDto.Sep) },
-                new() { Header = "اکتبر", PropertyName = nameof(ItemForRecipientInYearDto.Oct) },
-                new() { Header = "نوامبر", PropertyName = nameof(ItemForRecipientInYearDto.Nov) },
-                new() { Header = "دسامبر", PropertyName = nameof(ItemForRecipientInYearDto.Dec) },
-                new() { Header = "Total Quota", PropertyName = nameof(ItemForRecipientInYearDto.TotalQuota) },
-                new() { Header = "مقدار احتیاج سالانه", PropertyName = nameof(ItemForRecipientInYearDto.YearlyNeed) },
-            }
+        {
+            new() { Header = "گیرنده",              PropertyName = nameof(ItemForRecipientInYearDto.Reciever) },
+            new() { Header = "ژانویه",              PropertyName = nameof(ItemForRecipientInYearDto.Jan) },
+            new() { Header = "فوریه",               PropertyName = nameof(ItemForRecipientInYearDto.Feb) },
+            new() { Header = "مارس",                PropertyName = nameof(ItemForRecipientInYearDto.Mar) },
+            new() { Header = "آپریل",               PropertyName = nameof(ItemForRecipientInYearDto.Apr) },
+            new() { Header = "می",                  PropertyName = nameof(ItemForRecipientInYearDto.May) },
+            new() { Header = "ژوئن",                PropertyName = nameof(ItemForRecipientInYearDto.Jun) },
+            new() { Header = "جولای",               PropertyName = nameof(ItemForRecipientInYearDto.Jul) },
+            new() { Header = "آگوست",               PropertyName = nameof(ItemForRecipientInYearDto.Agu) },
+            new() { Header = "سپتامبر",             PropertyName = nameof(ItemForRecipientInYearDto.Sep) },
+            new() { Header = "اکتبر",               PropertyName = nameof(ItemForRecipientInYearDto.Oct) },
+            new() { Header = "نوامبر",              PropertyName = nameof(ItemForRecipientInYearDto.Nov) },
+            new() { Header = "دسامبر",              PropertyName = nameof(ItemForRecipientInYearDto.Dec) },
+            new() { Header = "Total Quota",         PropertyName = nameof(ItemForRecipientInYearDto.TotalQuota) },
+            new() { Header = "مقدار احتیاج سالانه", PropertyName = nameof(ItemForRecipientInYearDto.YearlyNeed) },
+        }
         };
 
-        return View(model);
+        return View("ItemForRecipientInYearReport", model);
+    }
+
+    private void PrepareCachedItemForRecipientInYearReport(
+        ref ItemForRecipientInYearQuery inputModel,
+        ref string? reportId,
+        int pageSize,
+        string sort,
+        string direction)
+    {
+        if (!string.IsNullOrEmpty(reportId))
+        {
+            var cached = _cache.Get<ItemForRecipientInYearQuery>(reportId);
+            if (cached is not null)
+            {
+                inputModel = cached;
+                _cache.Remove(reportId);
+            }
+        }
+        else
+        {
+            reportId = Guid.NewGuid().ToString("N");
+        }
+
+        ViewBag.ReportId = reportId;
+        ViewBag.AdditionalParam =
+            $"reportId={reportId}" +
+            $"&pageSize={pageSize}" +
+            $"&sort={Uri.EscapeDataString(sort)}" +
+            $"&direction={direction}";
+
+        _cache.Set(reportId, inputModel, TimeSpan.FromDays(1));
     }
 
     #endregion
@@ -845,55 +959,55 @@ public class CurrentStockReportController(IReportService _reportService,
 
     #endregion
 
-    #region  OutOfStockItems
+    #region OutOfStockItems
 
     public async Task<IActionResult> OutOfStockItems(CancellationToken cancellationToken = default)
     {
-        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, cancellationToken);
+        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(
+            BaseInfoIds.ItemClassesId, cancellationToken);
 
         return View(null);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> OutOfStockItemsReport(
-        int? itemClassId,
+        OutOfStockItemsQuery inputModel,
         int pageNumber = 1,
         int pageSize = 20,
         string sort = "ItemName",
         string direction = "asc",
         bool toExcel = false,
+        string? reportId = null,
         CancellationToken cancellationToken = default)
     {
+        PrepareCachedOutOfStockReport(
+            ref inputModel, ref reportId, pageSize, sort, direction);
 
-        var (data, count) = await _reportService.GetOutOfStockItems(
-            CurrentUserRecipientId.GetValueOrDefault(),
-            itemClassId,
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken
-        );
-
+        var currentRecipientId = CurrentUserRecipientId.GetValueOrDefault();
 
         if (toExcel)
         {
             var excelData = await _reportService.GetOutOfStockItems(
-                CurrentUserRecipientId.GetValueOrDefault(),
-                itemClassId,
-                pageNumber,
-                pageSize,
-                sort,
-                direction,
+                currentRecipientId,
+                inputModel.ItemClassId,
+                pageNumber, pageSize, sort, direction,
                 true,
-                cancellationToken
-            );
+                cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.OutOfStockItemsExcel(excelData.data);
+
             return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "zeroStock.xlsx");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "zeroStock.xlsx");
         }
+
+        var (data, count) = await _reportService.GetOutOfStockItems(
+            currentRecipientId,
+            inputModel.ItemClassId,
+            pageNumber, pageSize, sort, direction,
+            false,
+            cancellationToken);
 
         var model = new GridViewModel
         {
@@ -907,74 +1021,107 @@ public class CurrentStockReportController(IReportService _reportService,
                 TotalCount = count
             },
             Columns = new List<GridColumn>
-            {
-                new() { Header = "نام کالا", PropertyName = nameof(OutOfStockItemsDto.ItemName) }
-            }
+        {
+            new() { Header = "نام کالا", PropertyName = nameof(OutOfStockItemsDto.ItemName) }
+        }
         };
 
-        return View(model);
+        return View("OutOfStockItemsReport", model);
+    }
+
+    private void PrepareCachedOutOfStockReport(
+        ref OutOfStockItemsQuery inputModel,
+        ref string? reportId,
+        int pageSize,
+        string sort,
+        string direction)
+    {
+        if (!string.IsNullOrEmpty(reportId))
+        {
+            var cached = _cache.Get<OutOfStockItemsQuery>(reportId);
+            if (cached is not null)
+            {
+                inputModel = cached;
+                _cache.Remove(reportId);
+            }
+        }
+        else
+        {
+            reportId = Guid.NewGuid().ToString("N");
+        }
+
+        ViewBag.ReportId = reportId;
+        ViewBag.AdditionalParam =
+            $"reportId={reportId}" +
+            $"&pageSize={pageSize}" +
+            $"&sort={Uri.EscapeDataString(sort)}" +
+            $"&direction={direction}";
+
+        _cache.Set(reportId, inputModel, TimeSpan.FromDays(1));
     }
 
     #endregion
-
     #region Indicator
 
     public async Task<IActionResult> Indicator(CancellationToken cancellationToken = default)
     {
-        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, cancellationToken);
+        ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(
+            BaseInfoIds.ItemClassesId, cancellationToken);
 
         return View(null);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> IndicatorReport(
-        int? itemClassId,
-        int? itemId,
-        string? batchNumber,
+        IndicatorReportQuery inputModel,
         int pageNumber = 1,
         int pageSize = 20,
         string sort = "Recipient",
         string direction = "asc",
         bool toExcel = false,
+        string? reportId = null,
         CancellationToken cancellationToken = default)
     {
-        var itemDetail = await _reportService.GetItemIndicatorDetail(CurrentUserRecipientId.GetValueOrDefault(), itemId, batchNumber);
-
-        itemDetail.CurrentStock = (await _itemDetailsService.GetItemBatchNumbers(itemId.Value, CurrentUserRecipientId.GetValueOrDefault(), CancellationToken.None))
-            .FirstOrDefault(t => t.BatchNumber == batchNumber)?.CurrentStock ?? 0;
-
-        ViewBag.ItemDetail = itemDetail;
-
-        var (data, count) = await _reportService.GetItemIndicator(
-            CurrentUserRecipientId.Value,
-            itemId,
-            batchNumber,
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken
-        );
+        PrepareCachedIndicatorReport(ref inputModel, ref reportId, pageSize, sort, direction);
 
         if (toExcel)
         {
             var excelData = await _reportService.GetItemIndicator(
                 CurrentUserRecipientId.Value,
-                itemId,
-                batchNumber,
-                pageNumber,
-                pageSize,
-                sort,
-                direction,
-                true,
-                cancellationToken
-            );
+                inputModel.ItemId,
+                inputModel.BatchNumber,
+                pageNumber, pageSize, sort, direction, true,
+                cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.ItemIndicatorExcel(excelData.data);
             return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "گزارش اندیکاتور.xlsx");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "گزارش اندیکاتور.xlsx");
         }
+
+        var itemDetail = await _reportService.GetItemIndicatorDetail(
+            CurrentUserRecipientId.GetValueOrDefault(),
+            inputModel.ItemId,
+            inputModel.BatchNumber);
+
+        if (inputModel.ItemId.HasValue)
+        {
+            itemDetail.CurrentStock = (await _itemDetailsService.GetItemBatchNumbers(
+                    inputModel.ItemId.Value,
+                    CurrentUserRecipientId.GetValueOrDefault(),
+                    CancellationToken.None))
+                .FirstOrDefault(t => t.BatchNumber == inputModel.BatchNumber)?.CurrentStock ?? 0;
+        }
+
+        ViewBag.ItemDetail = itemDetail;
+
+        var (data, count) = await _reportService.GetItemIndicator(
+            CurrentUserRecipientId.Value,
+            inputModel.ItemId,
+            inputModel.BatchNumber,
+            pageNumber, pageSize, sort, direction, false,
+            cancellationToken);
 
         var model = new GridViewModel
         {
@@ -988,21 +1135,51 @@ public class CurrentStockReportController(IReportService _reportService,
                 TotalCount = count
             },
             Columns = new List<GridColumn>
-            {
-                new() { Header = "شماره حواله / شماره گزارش", PropertyName = nameof(ItemIndicatorDto.ReportNumber) },
-                new() { Header = "شماره درخواست", PropertyName = nameof(ItemIndicatorDto.RequestNum) },
-                new() { Header = "تاریخ", PropertyName = nameof(ItemIndicatorDto.DateText) },
-                new() { Header = "از / به", PropertyName = nameof(ItemIndicatorDto.Recipient) },
-                new() { Header = "ورودی (دریافتی)", PropertyName = nameof(ItemIndicatorDto.Arrival) },
-                new() { Header = "خروجی (ارسالی)", PropertyName = nameof(ItemIndicatorDto.Dispatch) },
-                new() { Header = "مانده", PropertyName = nameof(ItemIndicatorDto.CurrentStock) },
-                new() { Header = "توضیح", PropertyName = nameof(ItemIndicatorDto.Description) },
-            }
+        {
+            new() { Header = "شماره حواله / شماره گزارش", PropertyName = nameof(ItemIndicatorDto.ReportNumber) },
+            new() { Header = "شماره درخواست",             PropertyName = nameof(ItemIndicatorDto.RequestNum) },
+            new() { Header = "تاریخ",                     PropertyName = nameof(ItemIndicatorDto.DateText) },
+            new() { Header = "از / به",                   PropertyName = nameof(ItemIndicatorDto.Recipient) },
+            new() { Header = "ورودی (دریافتی)",           PropertyName = nameof(ItemIndicatorDto.Arrival) },
+            new() { Header = "خروجی (ارسالی)",            PropertyName = nameof(ItemIndicatorDto.Dispatch) },
+            new() { Header = "مانده",                     PropertyName = nameof(ItemIndicatorDto.CurrentStock) },
+            new() { Header = "توضیح",                     PropertyName = nameof(ItemIndicatorDto.Description) },
+        }
         };
 
-        return View(model);
+        return View("IndicatorReport", model);
     }
 
+    private void PrepareCachedIndicatorReport(
+        ref IndicatorReportQuery inputModel,
+        ref string? reportId,
+        int pageSize,
+        string sort,
+        string direction)
+    {
+        if (!string.IsNullOrEmpty(reportId))
+        {
+            var cached = _cache.Get<IndicatorReportQuery>(reportId);
+            if (cached is not null)
+            {
+                inputModel = cached;
+                _cache.Remove(reportId);
+            }
+        }
+        else
+        {
+            reportId = Guid.NewGuid().ToString("N");
+        }
+
+        ViewBag.ReportId = reportId;
+        ViewBag.AdditionalParam =
+            $"reportId={reportId}" +
+            $"&pageSize={pageSize}" +
+            $"&sort={Uri.EscapeDataString(sort)}" +
+            $"&direction={direction}";
+
+        _cache.Set(reportId, inputModel, TimeSpan.FromDays(1));
+    }
 
     #endregion
 

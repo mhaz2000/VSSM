@@ -1,77 +1,172 @@
 ﻿$(function () {
+    "use strict";
 
-    // Disable both selects on page load
-    setSearchableSelectDisabled('itemId', true);
-    setSearchableSelectDisabled('batchNumber', true);
+    const form = $('#indicatorReportForm');
+    if (!form.length) return;
 
-    const searchBtn = $('#searchBtn');
+    const searchBtn = form.find('#searchBtn');
+    const itemClassSelect = $('#itemClassId');
+    const itemSelect = $('#itemId');
+    const batchSelect = $('#batchNumber');
 
-    function toggleSearchButton() {
-        const hasItemClass = $('#itemClassId').val();
-        const hasItem = $('#itemId').val();
+    /* ─────────────────────────────────────────
+       Helpers — با تکیه بر توابع سراسری موجود
+       در searchable-controls.js
+    ───────────────────────────────────────── */
+    const setDisabled = (id, disabled) => {
+        if (typeof setSearchableSelectDisabled === 'function') {
+            setSearchableSelectDisabled(id, disabled);
+        } else {
+            // Fallback: disabled بصری
+            const wrap = $('#' + id).closest('.ss-wrapper, .f-group');
+            wrap.toggleClass('is-disabled', disabled)
+                .css('opacity', disabled ? .6 : 1)
+                .css('pointer-events', disabled ? 'none' : '');
+        }
+    };
 
-        searchBtn.prop('disabled', !hasItemClass);
-    }
+    const setOptions = (id, options) => {
+        if (typeof setSearchableSelectOptions === 'function') {
+            setSearchableSelectOptions(id, options || []);
+        } else if (window.SearchableControls && window.SearchableControls.setOptions) {
+            window.SearchableControls.setOptions(id, options || []);
+        }
+    };
 
+    const resetSelect = (id) => {
+        if (window.SearchableControls && typeof window.SearchableControls.reset === 'function') {
+            window.SearchableControls.reset(id);
+        } else {
+            $('#' + id).val('');
+        }
+    };
+
+    const toggleSearchButton = () => {
+        const hasItemClass = !!itemClassSelect.val();
+        const hasItem = !!itemSelect.val();
+        const hasBatch = !!batchSelect.val();
+
+        // دکمه تنها زمانی فعال می‌شود که هر سه مقدار انتخاب شده باشد
+        searchBtn.prop('disabled', !(hasItemClass && hasItem && hasBatch));
+    };
+
+    /* ─────────────────────────────────────────
+       حالت اولیه
+    ───────────────────────────────────────── */
+    setDisabled('itemId', true);
+    setDisabled('batchNumber', true);
+    setOptions('itemId', []);
+    setOptions('batchNumber', []);
     toggleSearchButton();
 
+    /* ─────────────────────────────────────────
+       تغییر نوع کالا
+    ───────────────────────────────────────── */
+    itemClassSelect.on('change', function () {
+        const classId = $(this).val();
 
-    $('#itemClassId').on('change', function () {
-
-        let classId = $(this).val();
-
+        // reset زنجیره
+        setDisabled('itemId', true);
+        setDisabled('batchNumber', true);
+        resetSelect('itemId');
+        resetSelect('batchNumber');
+        setOptions('itemId', []);
+        setOptions('batchNumber', []);
         toggleSearchButton();
 
-        setSearchableSelectDisabled('itemId', true);
-        setSearchableSelectOptions('itemId', []);
+        if (!classId) return;
 
-        setSearchableSelectDisabled('batchNumber', true);
-        setSearchableSelectOptions('batchNumber', []);
+        setDisabled('itemId', false);
 
-        if (!classId) {
-            return;
-        }
+        $.ajax({
+            url: '/CurrentStockReport/GetItemsByClass/' + classId,
+            type: 'GET',
+            success: function (res) {
+                if (!res || res.success !== true) return;
 
-        setSearchableSelectDisabled('itemId', false);
-
-        $.get('/CurrentStockReport/GetItemsByClass/' + classId, function (res) {
-            if (res.success) {
-
-                const items = res.result.map(i => ({
-                    value: i.id,
+                const items = (res.result || []).map(i => ({
+                    value: String(i.id),
                     text: i.fullName
                 }));
 
-                setSearchableSelectOptions('itemId', items);
+                setOptions('itemId', items);
+            },
+            error: function () {
+                setOptions('itemId', []);
             }
         });
     });
 
+    /* ─────────────────────────────────────────
+       تغییر کالا
+    ───────────────────────────────────────── */
+    itemSelect.on('change', function () {
+        const itemId = $(this).val();
 
-    $('#itemId').on('change', function () {
+        setDisabled('batchNumber', true);
+        resetSelect('batchNumber');
+        setOptions('batchNumber', []);
+        toggleSearchButton();
 
-        let itemId = $(this).val();
+        if (!itemId) return;
 
-        setSearchableSelectDisabled('batchNumber', true);
-        setSearchableSelectOptions('batchNumber', []);
+        setDisabled('batchNumber', false);
 
-        if (!itemId) {
-            return;
-        }
+        $.ajax({
+            url: '/GetItemBatchNumbers/' + itemId,
+            type: 'GET',
+            success: function (res) {
+                if (!res || res.success !== true) return;
 
-        setSearchableSelectDisabled('batchNumber', false);
-
-        $.get('/GetItemBatchNumbers/' + itemId, function (res) {
-            if (res.success) {
-                debugger
-                const batchNumbers = res.result.map(b => ({
+                const batches = (res.result || []).map(b => ({
                     value: b.batchNumber,
-                    text: b.batchNumber + " (مقدار موجود: " + b.currentStock + ")"
+                    text: b.batchNumber + ' (مقدار موجود: ' + b.currentStock + ')'
                 }));
 
-                setSearchableSelectOptions('batchNumber', batchNumbers);
+                setOptions('batchNumber', batches);
+            },
+            error: function () {
+                setOptions('batchNumber', []);
             }
         });
     });
 
+    /* ─────────────────────────────────────────
+       تغییر سری ساخت → فقط toggle دکمه
+    ───────────────────────────────────────── */
+    batchSelect.on('change', toggleSearchButton);
+
+    /* ─────────────────────────────────────────
+       پاک کردن فیلترها
+    ───────────────────────────────────────── */
+    form.on('click', '.js-clear-filters', function (e) {
+        e.preventDefault();
+
+        resetSelect('itemClassId');
+        resetSelect('itemId');
+        resetSelect('batchNumber');
+
+        setOptions('itemId', []);
+        setOptions('batchNumber', []);
+
+        setDisabled('itemId', true);
+        setDisabled('batchNumber', true);
+
+        toggleSearchButton();
+
+        if (typeof showToast === 'function') {
+            showToast('فیلترها پاک شدند', 'success');
+        }
+    });
+
+
+    form.on('submit', function () {
+        const $btn = form.find('.btn-primary-action');
+        const original = $btn.html();
+
+        $btn.prop('disabled', true)
+            .html('<i class="fa fa-spinner fa-spin"></i> در حال تهیه گزارش...');
+
+        setTimeout(() => $btn.prop('disabled', false).html(original), 2500);
+    });
 });

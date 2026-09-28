@@ -1,36 +1,103 @@
-﻿@using Microsoft.AspNetCore.WebUtilities
-@using VSSM.Presentation.Web.Models.Base
+﻿@using VSSM.Presentation.Web.Models.Base
 @model GridViewModel
 
 @{
     Layout = "~/Views/Shared/_ReportLayout.cshtml";
+    ViewData["Title"] = "گزارش عدم ارسال کالا به رده";
 }
 
-@{
-    ViewData["Title"] = "Stock Report";
+@section Styles {
+    <link href="~/css/components/reports/report-header-info.css" rel="stylesheet" />
 }
 
 <div style="margin-top: 1rem;">
     @await Html.PartialAsync("ReportHeader")
 </div>
 
+<h5 style="text-align: center;">@ViewData["Title"]</h5>
+
+@if (ViewBag.AdditionalParam is not null)
+{
+    <form method="post" action="/CurrentStockReport/NotDispatchedToRecipientsReport"
+          id="reportForm" style="display:none;">
+        @Html.AntiForgeryToken()
+        @foreach (var pair in ViewBag.AdditionalParam.ToString().Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = pair.Split('=', 2);
+            <input type="hidden" name="@parts[0]" value="@(parts.Length > 1 ? parts[1] : "")" />
+        }
+    </form>
+}
+
 <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
-    @{
-        var query = QueryHelpers.ParseQuery(Context.Request.QueryString.ToString());
-
-        query["toExcel"] = "true";
-
-        var newQueryString = QueryHelpers.AddQueryString(
-        Context.Request.Path,
-        query.ToDictionary(k => k.Key, k => k.Value.ToString())
-        );
-    }
-    <a class="btn btn-success" href="@newQueryString">
-        <i class="fas fa-file-excel"></i> خروجی اکسل
-    </a>
+    <form method="post" action="/CurrentStockReport/NotDispatchedToRecipientsReport" style="margin: 0;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="toExcel" value="true" />
+        @if (ViewBag.AdditionalParam is not null)
+        {
+            foreach (var pair in ViewBag.AdditionalParam.ToString().Split('&', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var parts = pair.Split('=', 2);
+                <input type="hidden" name="@parts[0]" value="@(parts.Length > 1 ? parts[1] : "")" />
+            }
+        }
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> خروجی اکسل
+        </button>
+    </form>
 </div>
 
+@await Html.PartialAsync("_ReportHeaderInfo")
 
 <div style="margin-top: 1rem;">
     @await Html.PartialAsync("_DynamicGrid", Model)
 </div>
+
+<script>
+    (function () {
+        const PAGE_SIZE = '@(Model.Data.PageSize)';
+        let isNavigating = false;
+
+        window.submitPagination = function (pageNum) {
+            if (isNavigating) return false;
+            isNavigating = true;
+
+            const form = document.getElementById('reportForm');
+            if (!form) { isNavigating = false; return; }
+
+            let pageInput = form.querySelector('input[name="pageNumber"]');
+            if (!pageInput) {
+                pageInput = document.createElement('input');
+                pageInput.type = 'hidden';
+                pageInput.name = 'pageNumber';
+                form.appendChild(pageInput);
+            }
+            pageInput.value = pageNum;
+
+            let sizeInput = form.querySelector('input[name="pageSize"]');
+            if (!sizeInput) {
+                sizeInput = document.createElement('input');
+                sizeInput.type = 'hidden';
+                sizeInput.name = 'pageSize';
+                form.appendChild(sizeInput);
+            }
+            sizeInput.value = PAGE_SIZE;
+
+            form.method = 'post';
+            form.submit();
+        };
+
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.pagination-btn');
+            if (!btn) return;
+            if (btn.tagName === 'A') return;
+            if (btn.classList.contains('disabled')) return;
+
+            if (isNavigating) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }, true);
+    })();
+</script>

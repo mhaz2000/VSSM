@@ -1,4 +1,4 @@
-﻿﻿@using VSSM.Presentation.Web.Models.Base
+﻿@using VSSM.Presentation.Web.Models.Base
 @model GridViewModel
 
 @section Styles {
@@ -7,7 +7,6 @@
     <link href="~/css/components/shared/f-control.css" rel="stylesheet" />
     <link href="~/css/components/shared/btn.css" rel="stylesheet" />
     <link href="~/css/components/shared/uid-modal.css" rel="stylesheet" />
-
 }
 
 @{
@@ -25,7 +24,6 @@
     </script>
 }
 
-
 <div class="grid-wrapper">
     <div class="grid-header" style="direction:rtl;">
 
@@ -36,8 +34,8 @@
         <div class="d-flex align-items-center gap-2">
 
             <form method="get" class="m-0">
-                <input type="hidden" name="sort" value="@Model.CurrentSort" />
-                <input type="hidden" name="direction" value="@Model.CurrentDirection" />
+                <input type="hidden" name="sortField" value="@Model.CurrentSort" />
+                <input type="hidden" name="sortOrder" value="@Model.CurrentDirection" />
                 <input type="hidden" name="pageSize" value="@Model.Data.PageSize" />
 
                 <div class="search-wrap">
@@ -100,14 +98,10 @@
         $(function () {
             var pendingDeleteForm = null;
 
-            // ===== تغییر (تسک d) =====
-            // دریافت توکن ضد جعل از صفحه
             var token = $('input[name="__RequestVerificationToken"]').val();
-            // اگر توکن وجود نداشت، آن را از فرم‌های موجود استخراج کنیم
             if (!token) {
                 token = $('form').first().find('input[name="__RequestVerificationToken"]').val();
             }
-            // ===========================
 
             $(document).on("click", ".open-modal", function (e) {
                 e.preventDefault();
@@ -126,18 +120,10 @@
             $(document).on("click", ".delete-user", function (e) {
                 e.preventDefault();
                 var form = $(this).closest("form");
-                if (form.length === 0) {
-                    // اگر فرم وجود نداشت، یک فرم ساخته و به آن متصل می‌شویم
-                    // اما بهتر است _DynamicGrid فرم داشته باشد.
-                    // راه حل: از AJAX استفاده کنیم اما برای کمترین تغییر، یک hidden input به فرم اضافه می‌کنیم.
-                }
 
-                // ===== تغییر (تسک d) =====
-                // اضافه کردن توکن به فرم اگر موجود نبود
                 if (form.find('input[name="__RequestVerificationToken"]').length === 0 && token) {
                     form.append('<input type="hidden" name="__RequestVerificationToken" value="' + token + '" />');
                 }
-                // ===========================
 
                 pendingDeleteForm = form;
 

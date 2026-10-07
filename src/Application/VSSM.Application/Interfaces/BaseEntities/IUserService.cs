@@ -14,6 +14,8 @@ public interface IUserService
         string sortOrder,
         CancellationToken token);
 
+    Task<bool> UserNameExists(string userName, int? excludeUserId, CancellationToken token);
+
     Task<UserEditDto> GetById(int id, CancellationToken token);
 
     Task<int> Create(UserCreateDto dto, CancellationToken token);

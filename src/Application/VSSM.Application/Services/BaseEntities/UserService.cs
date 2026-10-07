@@ -11,9 +11,8 @@ namespace VSSM.Application.Services.BaseEntities;
 
 public class UserService(VSSMDbContext db) : IUserService
 {
-
     public async Task<List<BaseInfoDto>> GetAdminUsersAsBaseInfoAsync(
-    CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         return await db.TblUsers
             .Where(u => u.IsDeleted != true && u.IsAdmin == true)
@@ -27,17 +26,30 @@ public class UserService(VSSMDbContext db) : IUserService
             .ToListAsync(cancellationToken);
     }
 
-    // ---------------- GET BY ID ----------------
+    public async Task<bool> UserNameExists(string userName, int? excludeUserId, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(userName))
+            return false;
+
+        var name = userName.Trim();
+        var query = db.TblUsers.Where(u => u.UserName == name && u.IsDeleted != true);
+
+        if (excludeUserId.HasValue && excludeUserId.Value > 0)
+            query = query.Where(u => u.UserId != excludeUserId.Value);
+
+        return await query.AnyAsync(token);
+    }
+
     public async Task<UserEditDto> GetById(int id, CancellationToken token)
     {
         var x = await db.TblUsers.FirstOrDefaultAsync(u => u.UserId == id, token);
-        if (x == null) throw new Exception("User not found");
+        if (x == null) throw new Exception("کاربر یافت نشد");
 
         return new UserEditDto
         {
             UserId = x.UserId,
             UserName = x.UserName,
-            Password = null, // Never surface the stored hash to the UI; edit form is blank-by-design.
+            Password = null,
             FirstName = x.FirstName,
             LastName = x.LastName,
             Email = x.Email,
@@ -56,6 +68,12 @@ public class UserService(VSSMDbContext db) : IUserService
 
     public async Task<int> Create(UserCreateDto dto, CancellationToken token)
     {
+        if (string.IsNullOrWhiteSpace(dto.UserName))
+            throw new Exception("نام کاربری الزامی است.");
+
+        if (await UserNameExists(dto.UserName, null, token))
+            throw new Exception("نام کاربری وارد شده تکراری است.");
+
         if (string.IsNullOrWhiteSpace(dto.Password))
             throw new Exception("کلمه عبور الزامی است.");
 
@@ -63,7 +81,7 @@ public class UserService(VSSMDbContext db) : IUserService
 
         var model = new TblUser
         {
-            UserName = dto.UserName,
+            UserName = dto.UserName.Trim(),
             Password = PasswordHasher.Hash(dto.Password),
             FirstName = dto.FirstName,
             LastName = dto.LastName,
@@ -88,21 +106,24 @@ public class UserService(VSSMDbContext db) : IUserService
         return model.UserId;
     }
 
-    // ---------------- UPDATE ----------------
     public async Task<bool> Update(UserEditDto dto, CancellationToken token)
     {
         var x = await db.TblUsers.FirstOrDefaultAsync(u => u.UserId == dto.UserId, token);
-        if (x == null) throw new Exception("User not found");
+        if (x == null) throw new Exception("کاربر یافت نشد");
 
-        // Only validate/hash password if it's provided — a blank password on edit
-        // means "keep current", so we leave the stored hash untouched in that case.
+        if (string.IsNullOrWhiteSpace(dto.UserName))
+            throw new Exception("نام کاربری الزامی است.");
+
+        if (await UserNameExists(dto.UserName, dto.UserId, token))
+            throw new Exception("نام کاربری وارد شده تکراری است.");
+
         if (!string.IsNullOrEmpty(dto.Password))
         {
             ValidatePasswordPolicy(dto.Password, "کلمه عبور");
             x.Password = PasswordHasher.Hash(dto.Password);
         }
 
-        x.UserName = dto.UserName;
+        x.UserName = dto.UserName.Trim();
         x.FirstName = dto.FirstName;
         x.LastName = dto.LastName;
         x.Email = dto.Email;
@@ -118,12 +139,10 @@ public class UserService(VSSMDbContext db) : IUserService
         x.CourseDate = dto.CourseDate;
         x.IsDeleted = false;
 
-
         await db.SaveChangesAsync(token);
         return true;
     }
 
-    // ---------------- VALIDATE PASSWORD POLICY ----------------
     private void ValidatePasswordPolicy(string password, string fieldName)
     {
         if (string.IsNullOrWhiteSpace(password))
@@ -141,62 +160,53 @@ public class UserService(VSSMDbContext db) : IUserService
         ValidatePasswordPolicy(newPassword, "کلمه عبور جدید");
 
         var x = await db.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);
-        if (x == null) throw new Exception("User not found");
+        if (x == null) throw new Exception("کاربر یافت نشد");
 
         x.Password = PasswordHasher.Hash(newPassword);
         await db.SaveChangesAsync(token);
         return true;
     }
 
-    // [SECURITY - A07]: clears/sets the forced-password-change flag (used by the first-login flow).
     public async Task SetMustChangePasswordAsync(int userId, bool value, CancellationToken token)
     {
         var x = await db.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);
-        if (x == null) throw new Exception("User not found");
+        if (x == null) throw new Exception("کاربر یافت نشد");
 
         x.MustChangePassword = value;
         await db.SaveChangesAsync(token);
     }
 
-    // ---------------- SOFT DELETE ----------------
     public async Task<bool> ToggleActiveness(int id, CancellationToken token)
     {
-        var user = await db.TblUsers
-            .FirstOrDefaultAsync(u => u.UserId == id, token);
-
-        if (user == null)
-            throw new Exception("User not found");
+        var user = await db.TblUsers.FirstOrDefaultAsync(u => u.UserId == id, token);
+        if (user == null) throw new Exception("کاربر یافت نشد");
 
         user.IsDeleted = !(user.IsDeleted ?? false);
-
         await db.SaveChangesAsync(token);
 
         return user.IsDeleted ?? false;
     }
 
-    // ---------------- PAGED LIST ----------------
     public async Task<PagingSearchOrderDto<UserGetDto>> GetPagedList(
-     string? search,
-     int page,
-     int pageSize,
-     string sortField,
-     string sortOrder,
-     CancellationToken token)
+        string? search,
+        int page,
+        int pageSize,
+        string sortField,
+        string sortOrder,
+        CancellationToken token)
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
-        // Base query (not deleted users)
         var query =
             from u in db.TblUsers
+            where u.IsDeleted != true
             join r in db.TblRecipients on u.RecipientId equals r.RecipientId into gj
-            from r in gj.DefaultIfEmpty()   // LEFT JOIN
+            from r in gj.DefaultIfEmpty()
             select new { User = u, Recipient = r };
 
-        // ============= SEARCH =============
         if (!string.IsNullOrWhiteSpace(search))
         {
             var s = search.Trim();
-
             query = query.Where(x =>
                 x.User.FirstName.Contains(s) ||
                 x.User.LastName.Contains(s) ||
@@ -205,7 +215,6 @@ public class UserService(VSSMDbContext db) : IUserService
             );
         }
 
-        // ============= SORT =============
         query = sortField switch
         {
             "UserName" => sortOrder == "asc"
@@ -225,7 +234,6 @@ public class UserService(VSSMDbContext db) : IUserService
 
         paging.TotalItems = await query.CountAsync(token);
 
-        // ============= SELECT DTO =============
         var list = await query
             .Skip(paging.Skip)
             .Take(paging.PageSize)
@@ -262,9 +270,6 @@ public class UserService(VSSMDbContext db) : IUserService
         {
             UserId = x.UserId,
             UserName = x.UserName,
-            // The stored hash is returned here for the login path to verify against and to
-            // detect legacy plaintext values for transparent upgrade. This is an internal
-            // DTO — it never reaches the browser (the edit form uses GetById, which omits it).
             Password = x.Password,
             FirstName = x.FirstName,
             LastName = x.LastName,
@@ -283,9 +288,6 @@ public class UserService(VSSMDbContext db) : IUserService
         };
     }
 
-    // ---------------- VERIFY PASSWORD ----------------
-    // True when the plaintext password matches the stored PBKDF2 hash.
-    // False for a stored plaintext value (handled by the caller's upgrade path).
     public async Task<bool> VerifyPassword(int userId, string password, CancellationToken token)
     {
         var x = await db.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);
@@ -294,14 +296,8 @@ public class UserService(VSSMDbContext db) : IUserService
         return PasswordHasher.Verify(password, x.Password);
     }
 
-    // ---------------- UPGRADE ALL LEGACY PLAINTEXT PASSWORDS ----------------
-    // [SECURITY - A07]: هش کردن یک‌باره تمام رمزهای ذخیره‌شده به صورت متنی (plaintext)
-    // در هنگام راه‌اندازی. پس از این، مسیر مقایسه‌ی plaintext حذف می‌شود و رمزها فقط
-    // از طریق PBKDF2 (مقایسه constant-time) بررسی می‌گردند. این متد idempotent است.
     public async Task UpgradeAllPlaintextPasswordsAsync(CancellationToken token)
     {
-        // [SECURITY - A07]: materialize first (IsDeleted is SQL-translatable), then apply the
-        // C#-only hash check in memory — EF cannot translate PasswordHasher.LooksHashed to SQL.
         var candidates = await db.TblUsers
             .Where(u => u.IsDeleted != true)
             .ToListAsync(token);
@@ -312,7 +308,6 @@ public class UserService(VSSMDbContext db) : IUserService
 
         foreach (var u in legacy)
         {
-            // مقدار متنیِ فعلی را هش می‌کنیم (همان رمز کاربر، صرفاً به صورت هش‌شده ذخیره می‌شود).
             u.Password = PasswordHasher.Hash(u.Password!);
         }
 
@@ -320,9 +315,6 @@ public class UserService(VSSMDbContext db) : IUserService
             await db.SaveChangesAsync(token);
     }
 
-    // ---------------- UPGRADE PLAINTEXT TO HASH ----------------
-    // Re-hashes and persists a password that was stored as plaintext. Used by the login
-    // path to migrate legacy users transparently on their first successful login.
     public async Task<bool> UpgradePasswordToHash(int userId, string plaintextPassword, CancellationToken token)
     {
         var x = await db.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);

@@ -1,14 +1,14 @@
-﻿﻿﻿@using VSSM.Presentation.Web.Models.Base
+﻿@using VSSM.Presentation.Web.Models.Base
 @model UserViewModel
 
 @{
-    string formName = Model.UserId > 0 ? "ویرایش کاربر" : "ثبت کاربر جدید";
+    var isNewUser = Model.UserId == null || Model.UserId == 0;
+    string formName = isNewUser ? "ثبت کاربر جدید" : "ویرایش کاربر";
     var serverMsg = TempData["ToastMessage"]?.ToString();
     var serverType = TempData["ToastType"]?.ToString();
     TempData.Remove("ToastMessage");
     TempData.Remove("ToastType");
     var recipients = ViewBag.RecipientList as List<SelectListItem>;
-    var isNewUser = Model.UserId == null || Model.UserId == 0;
 }
 
 @section Styles {
@@ -69,10 +69,8 @@
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="UserId" />
 
-        <!-- ===== تغییر (تسک e): نمایش خلاصه خطاها ===== -->
-        <div asp-validation-summary="All" class="text-danger" style="margin-bottom:1rem;"></div>
-        <!-- ============================================= -->
-        <!-- اطلاعات کاربری -->
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:1rem;"></div>
+
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-user" style="color:#1d6fb8;"></i>
@@ -104,7 +102,6 @@
             </div>
         </div>
 
-        <!-- اطلاعات تماس -->
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-phone" style="color:#16a34a;"></i>
@@ -131,7 +128,6 @@
             </div>
         </div>
 
-        <!-- بخش پسورد - فقط برای کاربر جدید -->
         @if (isNewUser)
         {
             <div class="a-card">
@@ -160,7 +156,6 @@
             </div>
         }
 
-        <!-- اطلاعات شغلی و دسترسی -->
         <div class="a-card">
             <div class="a-card-header">
                 <i class="fa fa-briefcase" style="color:#8b5cf6;"></i>
@@ -222,7 +217,6 @@
             </div>
         </div>
 
-        <!-- فوتر -->
         <div class="form-footer a-card">
             <a asp-action="Index" class="btn-back">
                 <i class="fa fa-arrow-right"></i> بازگشت
@@ -237,8 +231,8 @@
 @section Scripts {
     <script src="~/js/shared/toast.js"></script>
     <script>
-        var serverMsg = "@(serverMsg ?? "")";
-        var serverType = "@(serverType ?? "info")";
+        var serverMsg = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(serverMsg ?? ""));
+        var serverType = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(serverType ?? "info"));
         var isNewUser = @(isNewUser ? "true" : "false");
 
         $(function () {
@@ -282,56 +276,44 @@
                 }
             });
 
-            // اعتبارسنجی پسورد - فقط در حالت ایجاد کاربر جدید
             if (isNewUser) {
                 function validatePassword() {
                     var password = $('#Password').val();
                     var confirm = $('#ConfirmPassword').val();
-                    var isValid = true;
 
-                    // Reset border colors
                     $('#Password, #ConfirmPassword').css('border-color', '');
 
-                    // Validate password length
                     if (password && password.length < 8) {
                         $('#Password').css('border-color', '#dc2626');
-                        isValid = false;
                     } else if (password && password.length >= 8) {
                         $('#Password').css('border-color', '#22c55e');
                     }
 
-                    // Validate password match
                     if (confirm && password !== confirm) {
                         $('#ConfirmPassword').css('border-color', '#dc2626');
-                        isValid = false;
                     } else if (confirm && password === confirm && password.length >= 8) {
                         $('#ConfirmPassword').css('border-color', '#22c55e');
                     }
-
-                    return isValid;
                 }
 
                 $('#Password, #ConfirmPassword').on('input', validatePassword);
 
-                $('form').on('submit', function(e) {
+                $('form').on('submit', function (e) {
                     var password = $('#Password').val();
                     var confirm = $('#ConfirmPassword').val();
 
-                    // Check if password is empty
                     if (!password) {
                         e.preventDefault();
                         showToast('گذرواژه الزامی است.', 'error');
                         return false;
                     }
 
-                    // Check password length
                     if (password.length < 8) {
                         e.preventDefault();
                         showToast('گذرواژه باید حداقل ۸ کاراکتر باشد.', 'error');
                         return false;
                     }
 
-                    // Check password match
                     if (password !== confirm) {
                         e.preventDefault();
                         showToast('گذرواژه و تکرار آن مطابقت ندارند.', 'error');
@@ -340,8 +322,7 @@
                 });
             }
 
-            // استایل‌دهی به فیلدهای دارای خطا
-            $('.field-validation-error').each(function() {
+            $('.field-validation-error').each(function () {
                 var parent = $(this).closest('.f-group');
                 if ($(this).text().trim() !== '') {
                     parent.find('.f-control, select').addClass('input-validation-error');

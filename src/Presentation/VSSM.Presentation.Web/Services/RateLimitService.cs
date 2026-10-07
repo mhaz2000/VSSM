@@ -1,31 +1,27 @@
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace VSSM.Presentation.Web.Services;
 
 public interface IRateLimitService
 {
-    /// <summary>Returns whether the key is currently blocked and seconds remaining.</summary>
     (bool blocked, int remainingSeconds) Check(string key);
-
-    /// <summary>Records a failed attempt; blocks the key once the threshold is reached.</summary>
     void RegisterFailure(string key);
-
-    /// <summary>Clears failure/block state for a key (call on success).</summary>
     void Reset(string key);
 }
 
-/// <summary>
-/// In-memory brute-force protection for login. Uses IMemoryCache only
-/// (no distributed cache). Blocks an IP / username after N consecutive failures
-/// for a cool-down window.
-/// </summary>
 public class RateLimitService : IRateLimitService
 {
     private readonly IMemoryCache _cache;
-    private static readonly TimeSpan Window = TimeSpan.FromMinutes(15);
-    private const int Threshold = 5;
+    private readonly TimeSpan _window;
+    private readonly int _threshold;
 
-    public RateLimitService(IMemoryCache cache) => _cache = cache;
+    public RateLimitService(IMemoryCache cache, IOptions<RateLimitOptions> options)
+    {
+        _cache = cache;
+        _window = TimeSpan.FromMinutes(options.Value.WindowMinutes);
+        _threshold = options.Value.Threshold;
+    }
 
     public (bool blocked, int remainingSeconds) Check(string key)
     {
@@ -39,19 +35,19 @@ public class RateLimitService : IRateLimitService
         var fkey = "fail_" + key;
         var cnt = _cache.GetOrCreate(fkey, e =>
         {
-            e.AbsoluteExpirationRelativeToNow = Window;
+            e.AbsoluteExpirationRelativeToNow = _window;
             return 0;
         });
         cnt++;
 
-        if (cnt >= Threshold)
+        if (cnt >= _threshold)
         {
-            _cache.Set("blk_" + key, DateTimeOffset.UtcNow.Add(Window), Window);
+            _cache.Set("blk_" + key, DateTimeOffset.UtcNow.Add(_window), _window);
             _cache.Remove(fkey);
         }
         else
         {
-            _cache.Set(fkey, cnt, Window);
+            _cache.Set(fkey, cnt, _window);
         }
     }
 

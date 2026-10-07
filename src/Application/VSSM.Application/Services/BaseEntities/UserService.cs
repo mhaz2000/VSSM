@@ -61,7 +61,6 @@ public class UserService(VSSMDbContext db) : IUserService
             CodeJob = x.JobId,
             IsAdmin = x.IsAdmin ?? false,
             Course = x.Course,
-            CourseDate = x.CourseDate,
             RoleId = x.RoleId
         };
     }
@@ -94,7 +93,6 @@ public class UserService(VSSMDbContext db) : IUserService
             JobId = dto.CodeJob,
             IsAdmin = dto.IsAdmin,
             Course = dto.Course,
-            CourseDate = dto.CourseDate,
             EntryDate = DateTime.Now,
             RoleId = dto.RoleId,
             MustChangePassword = true,
@@ -136,7 +134,6 @@ public class UserService(VSSMDbContext db) : IUserService
         x.JobId = dto.CodeJob;
         x.IsAdmin = dto.IsAdmin;
         x.Course = dto.Course;
-        x.CourseDate = dto.CourseDate;
         x.IsDeleted = false;
 
         await db.SaveChangesAsync(token);
@@ -283,7 +280,6 @@ public class UserService(VSSMDbContext db) : IUserService
             CodeJob = x.JobId,
             IsAdmin = x.IsAdmin ?? false,
             Course = x.Course,
-            CourseDate = x.CourseDate,
             MustChangePassword = x.MustChangePassword
         };
     }

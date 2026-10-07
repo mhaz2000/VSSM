@@ -1173,7 +1173,6 @@ public partial class VSSMDbContext(
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.MustChangePassword).HasColumnName("MustChangePassword");
             entity.Property(e => e.Course).HasMaxLength(200);
-            entity.Property(e => e.CourseDate).HasColumnType("datetime");
             entity.Property(e => e.Email).HasMaxLength(200);
             entity.Property(e => e.EnteredById).HasColumnName("EnteredByID");
             entity.Property(e => e.EntryDate).HasColumnType("datetime");

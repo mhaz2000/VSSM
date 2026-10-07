@@ -112,21 +112,24 @@ public class UserController(
     {
         if (!IsAdmin()) return Forbid();
 
-        await LoadDropDowns(token);
-
         if (id == null)
+        {
+            await LoadDropDowns(token);
             return View(new UserViewModel());
+        }
 
         var dto = await userService.GetById(id.Value, token);
         if (dto == null)
             return NotFound();
 
+        await LoadDropDowns(token, dto.RoleId);
+
         var model = new UserViewModel
         {
             UserId = dto.UserId,
-            UserName = dto.UserName.Trim(),
-            FirstName = dto.FirstName.Trim(),
-            LastName = dto.LastName.Trim(),
+            UserName = dto.UserName?.Trim(),
+            FirstName = dto.FirstName?.Trim(),
+            LastName = dto.LastName?.Trim(),
             Email = dto.Email?.Trim(),
             Phone1 = dto.Phone1?.Trim(),
             Phone2 = dto.Phone2?.Trim(),
@@ -326,7 +329,7 @@ public class UserController(
     private bool IsAdmin() =>
         string.Equals(CurrentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
 
-    private async Task LoadDropDowns(CancellationToken cancellationToken)
+    private async Task LoadDropDowns(CancellationToken cancellationToken, int? currentRoleId = null)
     {
         ViewBag.RecipientList = (await recipientService.GetActiveRecipients(cancellationToken))
             .Select(x => new SelectListItem
@@ -336,9 +339,8 @@ public class UserController(
             })
             .ToList();
 
-
         var eduList = await baseInfoService.GetByParentIdAsync(61, cancellationToken);
-        ViewBag.EduList = eduList is null ? [] : (await baseInfoService.GetByParentIdAsync(61, cancellationToken))
+        ViewBag.EduList = eduList is null ? [] : eduList
             .Select(x => new SelectListItem
             {
                 Value = x.Id.ToString(),
@@ -347,8 +349,7 @@ public class UserController(
             .ToList();
 
         var jobList = await baseInfoService.GetByParentIdAsync(60, cancellationToken);
-
-        ViewBag.JobList = jobList is null ? [] : (await baseInfoService.GetByParentIdAsync(60, cancellationToken))
+        ViewBag.JobList = jobList is null ? [] : jobList
             .Select(x => new SelectListItem
             {
                 Value = x.Id.ToString(),
@@ -361,17 +362,29 @@ public class UserController(
             .Select(x => new SelectListItem
             {
                 Value = ((int)x).ToString(),
-                Text = x.GetDisplayName() // Persian name
+                Text = x.GetDisplayName()
             })
             .ToList();
 
-
-        ViewBag.Roles = (await roleService.GetAll(cancellationToken))
+        var roles = (await roleService.GetAll(cancellationToken))
             .Select(x => new SelectListItem
             {
                 Value = x.Id.ToString(),
                 Text = x.Name
             })
             .ToList();
+
+        if (currentRoleId.HasValue &&
+            !roles.Any(r => r.Value == currentRoleId.Value.ToString()))
+        {
+            roles.Insert(0, new SelectListItem
+            {
+                Value = currentRoleId.Value.ToString(),
+                Text = $"نقش حذف‌شده (شناسه {currentRoleId.Value})",
+                Selected = true
+            });
+        }
+
+        ViewBag.Roles = roles;
     }
 }

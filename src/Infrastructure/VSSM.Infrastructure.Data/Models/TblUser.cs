@@ -42,7 +42,6 @@ public partial class TblUser
     public int? JobId { get; set; }
     public string FreeNote { get; set; }
     public string Course { get; set; }
-    public DateTime? CourseDate { get; set; }
 
     // Reference Navigation Properties
     public virtual TblBaseInfo CodeJobNavigation { get; set; }

@@ -7,6 +7,7 @@ using VSSM.Infrastructure.Data.Models;
 using VSSM.Presentation.Web;
 using VSSM.Presentation.Web.Filters;
 using VSSM.Presentation.Web.Middlewares;
+using VSSM.Presentation.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,8 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddHostedService<OrdersInquiryBackgroundService>();
 builder.Services.AddHostedService<AuditRetentionBackgroundService>();
 
+builder.Services.Configure<RateLimitOptions>(
+    builder.Configuration.GetSection(RateLimitOptions.SectionName));
 
 builder.Services.AddMemoryCache();
 

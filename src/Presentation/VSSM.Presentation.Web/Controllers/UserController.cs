@@ -233,7 +233,8 @@ public class UserController(
                     CodeJob = model.CodeJob,
                     IsAdmin = model.IsAdmin,
                     Course = model.Course,
-                    RoleId = model.RoleId
+                    RoleId = model.RoleId,
+                    MustChangePassword = false,
                 };
 
                 dto.IsActive = true;
@@ -273,9 +274,24 @@ public class UserController(
 
         var active = await userService.ToggleActiveness(id, token);
 
-        TempData["ToastMessage"] = active ? "با موفقیت فعال شد." : "با موفقیت حذف شد.";
+        if (!active)
+        {
+            await refreshTokens.RevokeAllForUserAsync(id, token);
+        }
+
+        TempData["ToastMessage"] = active
+            ? "با موفقیت فعال شد."
+            : "با موفقیت حذف شد.";
+
         TempData["ToastType"] = "success";
-        await audit.LogAsync("Information", $"User {(active ? "activated" : "deactivated")}: id={id}", User.Identity?.Name, HttpContext.Connection.RemoteIpAddress?.ToString(), HttpContext.Request.Path, HttpContext.Request.Method);
+
+        await audit.LogAsync(
+            "Information",
+            $"User {(active ? "activated" : "deactivated")}: id={id}",
+            User.Identity?.Name,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            HttpContext.Request.Path,
+            HttpContext.Request.Method);
 
         return RedirectToAction("Index");
     }

@@ -95,48 +95,88 @@ public class RoleController(
         return View(model);
     }
 
-    public async Task<IActionResult> Create(RolePermissionViewModel model, CancellationToken cancellationToken)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(
+        RolePermissionViewModel model,
+        CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-        {
-            return View("RolePermissions", model);
-        }
+        if (!IsAdmin())
+            return Forbid();
 
+        if (!ModelState.IsValid)
+            return View("RolePermissions", model);
 
         if (model.RoleId == null || model.RoleId == 0)
         {
-            // ---------- Create ----------
-            var roleDto = new RoleCreateDto { Name = model.RoleName };
-            var roleId = await roleService.Create(roleDto, cancellationToken);
-            if (roleId > 0)
+            var roleDto = new RoleCreateDto
             {
-                var selectedMenus = model.Menus.Where(m => m.IsSelected)
-                                                .Select(m => new RoleMenuDto
-                                                {
-                                                    RoleId = roleId,
-                                                    MenuId = m.Id
-                                                }).ToList();
-                var result = await roleService.AddRoleMenu(selectedMenus, cancellationToken);
+                Name = model.RoleName
+            };
+
+            var roleId = await roleService.Create(roleDto, cancellationToken);
+
+            if (roleId <= 0)
+            {
+                ModelState.AddModelError(
+                    nameof(model.RoleName),
+                    "نام نقش تکراری است.");
+
+                return View("RolePermissions", model);
             }
+
+            var selectedMenus = model.Menus
+                .Where(m => m.IsSelected)
+                .Select(m => new RoleMenuDto
+                {
+                    RoleId = roleId,
+                    MenuId = m.Id
+                })
+                .ToList();
+
+            await roleService.AddRoleMenu(selectedMenus, cancellationToken);
         }
         else
         {
-            // ---------- Update ----------
-            var roleDto = new RoleListDto { Name = model.RoleName, Id = model.RoleId };
-            var selectedMenus = model.Menus.Where(m => m.IsSelected)
-                                                .Select(m => new RoleMenuDto
-                                                {
-                                                    RoleId = model.RoleId,
-                                                    MenuId = m.Id
-                                                }).ToList();
-            var result = await roleService.UpdateRoleMenus(roleDto, selectedMenus, cancellationToken);
+            var roleDto = new RoleListDto
+            {
+                Name = model.RoleName,
+                Id = model.RoleId.Value
+            };
+
+            var selectedMenus = model.Menus
+                .Where(m => m.IsSelected)
+                .Select(m => new RoleMenuDto
+                {
+                    RoleId = model.RoleId.Value,
+                    MenuId = m.Id
+                })
+                .ToList();
+
+            var result = await roleService.UpdateRoleMenus(
+                roleDto,
+                selectedMenus,
+                cancellationToken);
+
+            if (!result)
+            {
+                ModelState.AddModelError(
+                    nameof(model.RoleName),
+                    "نام نقش تکراری است یا نقش موردنظر یافت نشد.");
+
+                return View("RolePermissions", model);
+            }
         }
 
         TempData["ToastMessage"] = "عملیات با موفقیت انجام شد";
         TempData["ToastType"] = "success";
 
-        return RedirectToAction("Index");
+        return RedirectToAction(nameof(Index));
     }
 
-
+    private bool IsAdmin() =>
+        string.Equals(
+        CurrentUserRole,
+        "ادمین",
+        StringComparison.OrdinalIgnoreCase);
 }

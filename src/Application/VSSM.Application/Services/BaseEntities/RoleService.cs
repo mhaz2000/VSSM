@@ -23,17 +23,26 @@ namespace VSSM.Application.Services.BaseEntities
             _dbContext = dbContext;
         }
 
-        public async Task<int> Create(RoleCreateDto dto, CancellationToken cancellationToken)
+        public async Task<int> Create(
+            RoleCreateDto dto,
+            CancellationToken cancellationToken)
         {
-            
-            /* dto to model*/
+            var exists = await _dbContext.Roles
+                .AnyAsync(
+                    x => x.Name == dto.Name,
+                    cancellationToken);
+
+            if (exists)
+                return 0;
+
             var model = new Role
             {
                 Name = dto.Name
             };
 
-            await _dbContext.Roles.AddAsync(model);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Roles.AddAsync(model, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
             return model.Id;
         }
 
@@ -167,31 +176,48 @@ namespace VSSM.Application.Services.BaseEntities
             return true;
         }
 
-        public async Task<bool> UpdateRoleMenus(RoleListDto roleDto ,List<RoleMenuDto> roleMenuDto, CancellationToken cancellationToken)
+        public async Task<bool> UpdateRoleMenus(
+            RoleListDto roleDto,
+            List<RoleMenuDto> roleMenuDto,
+            CancellationToken cancellationToken)
         {
-            // update role
             var entity = await _dbContext.Roles
-                                .Where(x => x.Id == roleDto.Id)
-                                .FirstOrDefaultAsync(cancellationToken);
-            if (entity != null)
-            {
-                entity.Name = roleDto.Name;
-            }
+                .FirstOrDefaultAsync(
+                    x => x.Id == roleDto.Id,
+                    cancellationToken);
 
-            // delete old rolemenus
-            var rolemenus = _dbContext.RoleMenus
-                                .Where(x => x.RoleId == roleDto.Id);
-            _dbContext.RoleMenus.RemoveRange(rolemenus);
+            if (entity == null)
+                return false;
 
-            // add new rolemenus
-            var roleMenu = roleMenuDto.Select(r => new RoleMenu
-            {
-                RoleId = r.RoleId,
-                MenuId = r.MenuId
-            }).ToList();
-            await _dbContext.RoleMenus.AddRangeAsync(roleMenu);
+            var duplicateName = await _dbContext.Roles
+                .AnyAsync(
+                    x => x.Id != roleDto.Id &&
+                         x.Name == roleDto.Name,
+                    cancellationToken);
 
-            await _dbContext.SaveChangesAsync();
+            if (duplicateName)
+                return false;
+
+            entity.Name = roleDto.Name;
+
+            var roleMenus = _dbContext.RoleMenus
+                .Where(x => x.RoleId == roleDto.Id);
+
+            _dbContext.RoleMenus.RemoveRange(roleMenus);
+
+            var roleMenu = roleMenuDto
+                .Select(r => new RoleMenu
+                {
+                    RoleId = r.RoleId,
+                    MenuId = r.MenuId
+                })
+                .ToList();
+
+            await _dbContext.RoleMenus.AddRangeAsync(
+                roleMenu,
+                cancellationToken);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return true;
         }

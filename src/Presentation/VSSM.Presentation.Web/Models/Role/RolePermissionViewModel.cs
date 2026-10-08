@@ -4,10 +4,13 @@ namespace VSSM.Presentation.Web.Models.Role;
 
 public class RolePermissionViewModel
 {
-    public int RoleId { get; set; }
-    [Required(ErrorMessage = "وارد کردن نام نقش الزامی است")]
-    [Display(Name = "نام نقش")]
-    public string RoleName { get; set; } = string.Empty;
+    public int? RoleId { get; set; }
+
+    [Required(ErrorMessage = "نام نقش الزامی است.")]
+    [StringLength(50, MinimumLength = 2,
+        ErrorMessage = "نام نقش باید بین ۲ تا ۵۰ کاراکتر باشد.")]
+    public string RoleName { get; set; }
+
     public List<MenuCheckboxViewModel> Menus { get; set; } = [];
 }
 

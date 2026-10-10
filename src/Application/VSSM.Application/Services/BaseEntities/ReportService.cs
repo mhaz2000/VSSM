@@ -1055,27 +1055,187 @@ public class ReportService(VSSMDbContext _context) : IReportService
             .ToListAsync(), total);
     }
 
-    public async Task<(List<InventoryHistoryDto> data, int count)> GetInventoryHistory(int currentRecipientId, long? itemId,
-        int? fiscalPeriodId, int? level, int? recipientId, string? fromDate, string? toDate, int pageNumber, int pageSize, string sort,
-        string direction, bool fetchAll, CancellationToken cancellationToken)
+    public async Task<(List<InventoryHistoryDto> data, int count)>
+    GetInventoryHistory(
+        int currentRecipientId,
+        long? itemId,
+        int? fiscalPeriodId,
+        int? level,
+        int? recipientId,
+        string? fromDate,
+        string? toDate,
+        int pageNumber,
+        int pageSize,
+        string sort,
+        string direction,
+        bool fetchAll,
+        CancellationToken cancellationToken)
     {
-        var paging = new PagingModel { Page = pageNumber, PageSize = pageSize };
+        const int maxPageSize = 100;
 
-        var itemQuery = _context.TblItems.Where(t => t.ItemId == itemId);
+        if (currentRecipientId <= 0)
+        {
+            throw new ArgumentException(
+                "شناسه گیرنده کاربر جاری معتبر نیست.",
+                nameof(currentRecipientId));
+        }
 
-        var dispatches = fiscalPeriodId is not null ? _context.TblDispatches.Where(t => t.FiscalPeriodId == fiscalPeriodId) : _context.TblDispatches;
-        var arrivals = fiscalPeriodId is not null ? _context.TblArrivals.Where(t => t.FiscalPeriodId == fiscalPeriodId) : _context.TblArrivals;
-        var reciepients = recipientId is null ? _context.TblRecipients.Where(t => t.ParentId == currentRecipientId) : _context.TblRecipients.Where(t => t.RecipientId == recipientId);
-        reciepients = level is not null ? reciepients.Where(t => t.ChainLevel == level) : reciepients;
+        if (pageNumber < 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(pageNumber),
+                "شماره صفحه باید بزرگ‌تر یا مساوی ۱ باشد.");
+        }
+
+        if (pageSize < 1 || pageSize > maxPageSize)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(pageSize),
+                $"اندازه صفحه باید بین ۱ و {maxPageSize} باشد.");
+        }
+
+        if (itemId.HasValue && itemId.Value <= 0)
+        {
+            throw new ArgumentException(
+                "شناسه کالا معتبر نیست.",
+                nameof(itemId));
+        }
+
+        if (fiscalPeriodId.HasValue && fiscalPeriodId.Value <= 0)
+        {
+            throw new ArgumentException(
+                "شناسه دوره فعالیت معتبر نیست.",
+                nameof(fiscalPeriodId));
+        }
+
+        if (recipientId.HasValue && recipientId.Value <= 0)
+        {
+            throw new ArgumentException(
+                "شناسه گیرنده معتبر نیست.",
+                nameof(recipientId));
+        }
+
+        if (level.HasValue && level.Value < 0)
+        {
+            throw new ArgumentException(
+                "سطح زنجیره معتبر نیست.",
+                nameof(level));
+        }
+
+        var allowedSorts = new[]
+        {
+        nameof(InventoryHistoryDto.Year),
+        nameof(InventoryHistoryDto.Month),
+        nameof(InventoryHistoryDto.InStock)
+    };
+
+        var normalizedSort = allowedSorts.FirstOrDefault(
+            s => s.Equals(sort, StringComparison.OrdinalIgnoreCase));
+
+        if (normalizedSort is null)
+        {
+            throw new ArgumentException(
+                "فیلد مرتب‌سازی معتبر نیست.",
+                nameof(sort));
+        }
+
+        if (!string.Equals(direction, "asc",
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(direction, "desc",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "جهت مرتب‌سازی باید asc یا desc باشد.",
+                nameof(direction));
+        }
+
+        var isDescending = direction.Equals(
+            "desc",
+            StringComparison.OrdinalIgnoreCase);
+
+        var itemQuery = _context.TblItems.AsQueryable();
+
+        if (itemId.HasValue)
+        {
+            var itemExists = await itemQuery.AnyAsync(
+                t => t.ItemId == itemId.Value,
+                cancellationToken);
+
+            if (!itemExists)
+            {
+                throw new ArgumentException(
+                    "کالای انتخاب‌شده وجود ندارد.",
+                    nameof(itemId));
+            }
+
+            itemQuery = itemQuery.Where(
+                t => t.ItemId == itemId.Value);
+        }
+
+        if (fiscalPeriodId.HasValue)
+        {
+            var fiscalPeriodExists = await _context.TblDispatches.AnyAsync(
+                t => t.FiscalPeriodId == fiscalPeriodId.Value,
+                cancellationToken);
+
+            if (!fiscalPeriodExists)
+            {
+                throw new ArgumentException(
+                    "دوره فعالیت انتخاب‌شده معتبر نیست.",
+                    nameof(fiscalPeriodId));
+            }
+        }
+
+        var reciepients = recipientId.HasValue
+            ? _context.TblRecipients.Where(
+                t => t.RecipientId == recipientId.Value)
+            : _context.TblRecipients.Where(
+                t => t.ParentId == currentRecipientId);
+
+        if (recipientId.HasValue)
+        {
+            var recipientExists = await _context.TblRecipients.AnyAsync(
+                t => t.RecipientId == recipientId.Value &&
+                     t.ParentId == currentRecipientId,
+                cancellationToken);
+
+            if (!recipientExists)
+            {
+                throw new ArgumentException(
+                    "گیرنده انتخاب‌شده معتبر نیست یا در محدوده دسترسی کاربر قرار ندارد.",
+                    nameof(recipientId));
+            }
+        }
+
+        if (level.HasValue)
+        {
+            reciepients = reciepients.Where(
+                t => t.ChainLevel == level.Value);
+        }
+
+        var dispatches = fiscalPeriodId.HasValue
+            ? _context.TblDispatches.Where(
+                t => t.FiscalPeriodId == fiscalPeriodId.Value)
+            : _context.TblDispatches;
+
+        var arrivals = fiscalPeriodId.HasValue
+            ? _context.TblArrivals.Where(
+                t => t.FiscalPeriodId == fiscalPeriodId.Value)
+            : _context.TblArrivals;
 
         var query =
             from a in arrivals
-            join al in _context.TblArrivalLines on a.Id equals al.ArrivalId
-            join i in itemQuery on al.ItemId equals i.ItemId
-            join r in reciepients on a.ReceiverId equals r.RecipientId
-            join d in dispatches on a.DispatchId equals d.DispatchId into dispatchJoin
+            join al in _context.TblArrivalLines
+                on a.Id equals al.ArrivalId
+            join i in itemQuery
+                on al.ItemId equals i.ItemId
+            join r in reciepients
+                on a.ReceiverId equals r.RecipientId
+            join d in dispatches
+                on a.DispatchId equals d.DispatchId into dispatchJoin
             from d in dispatchJoin.DefaultIfEmpty()
-            join dl in _context.TblDispatchLines on d.DispatchId equals dl.DispatchId into dispatchLineJoin
+            join dl in _context.TblDispatchLines
+                on d.DispatchId equals dl.DispatchId into dispatchLineJoin
             from dl in dispatchLineJoin.DefaultIfEmpty()
             select new
             {
@@ -1085,51 +1245,91 @@ public class ReportService(VSSMDbContext _context) : IReportService
                 DispatchQuantity = dl.Quantity
             };
 
-        if (!string.IsNullOrEmpty(fromDate))
+        if (!string.IsNullOrWhiteSpace(fromDate))
         {
-            if (!DateTime.TryParse(fromDate, out DateTime from))
+            DateTime from;
+
+            if (!DateTime.TryParse(fromDate, out from))
+            {
                 from = DateTimeHelper.ToGregorian(fromDate);
+            }
 
             query = query.Where(x => x.ArrivalDate >= from);
         }
 
-        if (!string.IsNullOrEmpty(toDate))
+        if (!string.IsNullOrWhiteSpace(toDate))
         {
-            if (!DateTime.TryParse(fromDate, out DateTime to))
+            DateTime to;
+
+            if (!DateTime.TryParse(toDate, out to))
+            {
                 to = DateTimeHelper.ToGregorian(toDate);
+            }
 
             query = query.Where(x => x.ArrivalDate <= to);
         }
 
-        var grouped = from q in query
-                      group q by new
-                      {
-                          q.ArrivalDate.Value.Year,
-                          q.ArrivalDate.Value.Month
-                      }
-                      into g
-                      select new InventoryHistoryDto
-                      {
-                          Year = g.Key.Year,
-                          Month = g.Key.Month,
+        var grouped =
+            from q in query
+            where q.ArrivalDate.HasValue
+            group q by new
+            {
+                Year = q.ArrivalDate.Value.Year,
+                Month = q.ArrivalDate.Value.Month
+            }
+            into g
+            select new InventoryHistoryDto
+            {
+                Year = g.Key.Year,
+                Month = g.Key.Month,
+                InStock =
+                    (g.Sum(x => x.ArrivalQuantity) -
+                     g.Sum(x =>
+                         x.DispatchDate != null
+                             ? x.DispatchQuantity
+                             : 0)) ?? 0
+            };
 
-                          InStock = g.Sum(x => x.ArrivalQuantity)
-                                   - g.Sum(x => x.DispatchDate != null ? x.DispatchQuantity : 0) ?? 0
-                      };
+        var total = await grouped.CountAsync(cancellationToken);
 
-        grouped = grouped.OrderBy(t => t.Year).ThenBy(t => t.Month).AsNoTracking();
+        grouped = normalizedSort switch
+        {
+            nameof(InventoryHistoryDto.Year) =>
+                isDescending
+                    ? grouped.OrderByDescending(t => t.Year)
+                        .ThenByDescending(t => t.Month)
+                    : grouped.OrderBy(t => t.Year)
+                        .ThenBy(t => t.Month),
 
-        var total = await grouped.CountAsync();
+            nameof(InventoryHistoryDto.Month) =>
+                isDescending
+                    ? grouped.OrderByDescending(t => t.Month)
+                        .ThenByDescending(t => t.Year)
+                    : grouped.OrderBy(t => t.Month)
+                        .ThenBy(t => t.Year),
 
-        grouped = grouped.ApplySorting(sort, direction == "desc");
+            nameof(InventoryHistoryDto.InStock) =>
+                isDescending
+                    ? grouped.OrderByDescending(t => t.InStock)
+                    : grouped.OrderBy(t => t.InStock),
+
+            _ => grouped.OrderBy(t => t.Year).ThenBy(t => t.Month)
+        };
+
+        grouped = grouped.AsNoTracking();
 
         if (fetchAll)
-            return (await grouped.ToListAsync(), 0);
+        {
+            var allData = await grouped.ToListAsync(cancellationToken);
+            return (allData, total);
+        }
 
-        return (await grouped
+        var data = await grouped
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync(), total);
+            .ToListAsync(cancellationToken);
+
+        return (data, total);
     }
 
     public async Task<(List<InventoryQuantityReportDto> data, int count)> GetInventoryQuantitiesAsync(long? itemClassId,
@@ -1384,34 +1584,116 @@ public class ReportService(VSSMDbContext _context) : IReportService
             .ToListAsync(), total);
     }
 
-    public async Task<(List<OutOfStockItemsDto> data, int count)> GetOutOfStockItems(int currentRecipientId, int? itemClassId, int pageNumber,
-        int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
+    public async Task<(List<OutOfStockItemsDto> data, int count)>
+        GetOutOfStockItems(
+            int currentRecipientId,
+            int? itemClassId,
+            int pageNumber,
+            int pageSize,
+            string sort,
+            string direction,
+            bool fetchAll,
+            CancellationToken cancellationToken)
     {
-        var nonZeroStockItems = from i in _context.TblItems.Where(t => t.IsActive != null && t.IsActive.Value && t.FkClassId == itemClassId)
-                                join id in _context.TblItemDetails on i.ItemId equals id.ItemId
-                                join ids in _context.TblItemDetailStores.Where(t => t.CurrentStock != 0) on id.ItemDetailId equals ids.ItemDetailId
-                                join s in _context.TblStores.Where(t => t.RecipientId == currentRecipientId) on ids.StoreId equals s.Id
-                                select new { i.ItemId, i.FullName };
+        const int maxPageSize = 100;
 
-        var allItems = _context.TblItems.Where(t => t.IsActive.HasValue && t.IsActive.Value && t.FkClassId == itemClassId)
-            .Select(s => new { s.ItemId, s.FullName });
+        if (currentRecipientId <= 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(currentRecipientId),
+                "شناسه دریافت‌کننده معتبر نیست.");
 
-        var query = allItems.Except(nonZeroStockItems)
-            .Select(s => new OutOfStockItemsDto() { ItemName = s.FullName }).AsNoTracking();
+        if (pageNumber < 1)
+            throw new ArgumentOutOfRangeException(
+                nameof(pageNumber),
+                "شماره صفحه باید بزرگ‌تر یا مساوی ۱ باشد.");
 
-        var total = await query.CountAsync();
+        if (pageSize < 1 || pageSize > maxPageSize)
+            throw new ArgumentOutOfRangeException(
+                nameof(pageSize),
+                $"تعداد رکورد در صفحه باید بین ۱ و {maxPageSize} باشد.");
 
-        query = query.ApplySorting(sort, direction == "desc");
+        if (!string.Equals(
+                sort,
+                nameof(OutOfStockItemsDto.ItemName),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "ستون انتخاب‌شده برای مرتب‌سازی معتبر نیست.",
+                nameof(sort));
+        }
+
+        if (!string.Equals(direction, "asc",
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(direction, "desc",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "جهت مرتب‌سازی باید asc یا desc باشد.",
+                nameof(direction));
+        }
+
+        sort = nameof(OutOfStockItemsDto.ItemName);
+        var isDescending = direction.Equals(
+            "desc",
+            StringComparison.OrdinalIgnoreCase);
+
+        var allItems = _context.TblItems
+            .Where(item =>
+                item.IsActive == true &&
+                (!itemClassId.HasValue ||
+                 item.FkClassId == itemClassId.Value))
+            .Select(item => new
+            {
+                item.ItemId,
+                item.FullName
+            });
+
+        var nonZeroStockItems =
+            from item in _context.TblItems
+            where item.IsActive == true &&
+                  (!itemClassId.HasValue ||
+                   item.FkClassId == itemClassId.Value)
+            join detail in _context.TblItemDetails
+                on item.ItemId equals detail.ItemId
+            join detailStore in _context.TblItemDetailStores
+                    .Where(store => store.CurrentStock != 0)
+                on detail.ItemDetailId equals detailStore.ItemDetailId
+            join store in _context.TblStores
+                    .Where(store => store.RecipientId == currentRecipientId)
+                on detailStore.StoreId equals store.Id
+            select new
+            {
+                item.ItemId,
+                item.FullName
+            };
+
+        var query = allItems
+            .Except(nonZeroStockItems)
+            .Select(item => new OutOfStockItemsDto
+            {
+                ItemName = item.FullName
+            })
+            .AsNoTracking();
+
+        var total = await query.CountAsync(cancellationToken);
+
+        query = isDescending
+            ? query.OrderByDescending(item => item.ItemName)
+            : query.OrderBy(item => item.ItemName);
 
         if (fetchAll)
-            return (await query.ToListAsync(), 0);
+        {
+            var allData = await query.ToListAsync(cancellationToken);
+            return (allData, total);
+        }
 
-        return (await query
+        var data = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync(), total);
-    }
+            .ToListAsync(cancellationToken);
 
+        return (data, total);
+    }
     public async Task<(List<TotalLossReportDto> data, int count)> GetTotalLossAsync(long? itemId, DateTime fromDateTime, DateTime toDateTime, int pageNumber,
         int pageSize, string sort, string direction, bool fetchAll, CancellationToken cancellationToken)
     {

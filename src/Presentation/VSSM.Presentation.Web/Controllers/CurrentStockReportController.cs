@@ -883,64 +883,111 @@ public class CurrentStockReportController(IReportService _reportService,
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> InventoryHistoryReport(
-    long? itemId,
-    int? fiscalPeriodId,
-    string? level,
-    int? recipientId,
-    string? fromDate,
-    string? toDate,
-    int pageNumber = 1,
-    int pageSize = 20,
-    string sort = "Reciever",
-    string direction = "asc",
-    bool toExcel = false,
-    CancellationToken cancellationToken = default)
+        long? itemId,
+        int? fiscalPeriodId,
+        string? level,
+        int? recipientId,
+        string? fromDate,
+        string? toDate,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sort = "Year",
+        string direction = "asc",
+        bool toExcel = false,
+        CancellationToken cancellationToken = default)
     {
+        const int maxPageSize = 100;
+
+        if (pageNumber < 1)
+            return BadRequest("شماره صفحه باید بزرگ‌تر یا مساوی ۱ باشد.");
+
+        if (pageSize < 1 || pageSize > maxPageSize)
+            return BadRequest(
+                $"اندازه صفحه باید بین ۱ و {maxPageSize} باشد.");
+
+        if (itemId.HasValue && itemId.Value <= 0)
+            return BadRequest("شناسه کالا معتبر نیست.");
+
+        if (fiscalPeriodId.HasValue && fiscalPeriodId.Value <= 0)
+            return BadRequest("شناسه دوره فعالیت معتبر نیست.");
+
+        if (recipientId.HasValue && recipientId.Value <= 0)
+            return BadRequest("شناسه گیرنده معتبر نیست.");
+
+        int? chainLevel = null;
+
+        if (!string.IsNullOrWhiteSpace(level))
+        {
+            if (!int.TryParse(level, out var parsedLevel) ||
+                parsedLevel < 0)
+            {
+                return BadRequest("سطح زنجیره معتبر نیست.");
+            }
+
+            chainLevel = parsedLevel;
+        }
+
+        var allowedSorts = new[]
+        {
+        nameof(InventoryHistoryDto.Year),
+        nameof(InventoryHistoryDto.Month),
+        nameof(InventoryHistoryDto.InStock)
+    };
+
+        var normalizedSort = allowedSorts.FirstOrDefault(
+            s => s.Equals(sort, StringComparison.OrdinalIgnoreCase));
+
+        if (normalizedSort is null)
+            return BadRequest("فیلد مرتب‌سازی معتبر نیست.");
+
+        if (!string.Equals(direction, "asc",
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(direction, "desc",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("جهت مرتب‌سازی باید asc یا desc باشد.");
+        }
+
+        if (!CurrentUserRecipientId.HasValue ||
+            CurrentUserRecipientId.Value <= 0)
+        {
+            return BadRequest("شناسه گیرنده کاربر جاری معتبر نیست.");
+        }
+
+        var currentRecipientId = CurrentUserRecipientId.Value;
+
+        var normalizedDirection = direction.ToLowerInvariant();
 
         var (data, count) = await _reportService.GetInventoryHistory(
-            CurrentUserRecipientId.GetValueOrDefault(),
+            currentRecipientId,
             itemId,
             fiscalPeriodId,
-            string.IsNullOrEmpty(level) ? null : int.Parse(level),
+            chainLevel,
             recipientId,
             fromDate,
             toDate,
             pageNumber,
             pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken
-        );
+            normalizedSort,
+            normalizedDirection,
+            toExcel,
+            cancellationToken);
 
         if (toExcel)
         {
-            var excelData = await _reportService.GetInventoryHistory(
-            CurrentUserRecipientId.GetValueOrDefault(),
-            itemId,
-            fiscalPeriodId,
-            string.IsNullOrEmpty(level) ? null : int.Parse(level),
-            recipientId,
-            fromDate,
-            toDate,
-            pageNumber,
-            pageSize,
-            sort,
-            direction,
-            false,
-            cancellationToken
-        );
+            var stream =
+                _reportExcelGenerator.InventoryHistoryExcel(data);
 
-            MemoryStream stream = _reportExcelGenerator.InventoryHistoryExcel(excelData.data);
-            return File(stream,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "تاریخچه موجودی.xlsx");
+            return File(
+                stream,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "تاریخچه موجودی.xlsx");
         }
 
         var model = new GridViewModel
         {
-            CurrentSort = sort,
-            CurrentDirection = direction,
+            CurrentSort = normalizedSort,
+            CurrentDirection = normalizedDirection,
             Data = new PagedResult<object>
             {
                 Items = data.Cast<object>().ToList(),
@@ -949,11 +996,23 @@ public class CurrentStockReportController(IReportService _reportService,
                 TotalCount = count
             },
             Columns = new List<GridColumn>
+        {
+            new()
             {
-                new() { Header = "مقدار در پایان ماه", PropertyName = nameof(InventoryHistoryDto.InStock) },
-                new() { Header = "سال", PropertyName = nameof(InventoryHistoryDto.Year) },
-                new() { Header = "ماه", PropertyName = nameof(InventoryHistoryDto.Month) },
+                Header = "مقدار در پایان ماه",
+                PropertyName = nameof(InventoryHistoryDto.InStock)
+            },
+            new()
+            {
+                Header = "سال",
+                PropertyName = nameof(InventoryHistoryDto.Year)
+            },
+            new()
+            {
+                Header = "ماه",
+                PropertyName = nameof(InventoryHistoryDto.Month)
             }
+        }
         };
 
         return View(model);
@@ -983,23 +1042,65 @@ public class CurrentStockReportController(IReportService _reportService,
         string? reportId = null,
         CancellationToken cancellationToken = default)
     {
-        PrepareCachedOutOfStockReport(
-            ref inputModel, ref reportId, pageSize, sort, direction);
+        const int maxPageSize = 100;
 
-        var currentRecipientId = CurrentUserRecipientId.GetValueOrDefault();
+        if (pageNumber < 1)
+            return BadRequest("شماره صفحه باید بزرگ‌تر یا مساوی ۱ باشد.");
+
+        if (pageSize < 1 || pageSize > maxPageSize)
+            return BadRequest(
+                $"تعداد رکورد در صفحه باید بین ۱ و {maxPageSize} باشد.");
+
+        if (!string.Equals(
+                sort,
+                nameof(OutOfStockItemsDto.ItemName),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("ستون انتخاب‌شده برای مرتب‌سازی معتبر نیست.");
+        }
+
+        if (!string.Equals(direction, "asc",
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(direction, "desc",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("جهت مرتب‌سازی باید asc یا desc باشد.");
+        }
+
+        sort = nameof(OutOfStockItemsDto.ItemName);
+        direction = direction.ToLowerInvariant();
+
+        if (!CurrentUserRecipientId.HasValue ||
+            CurrentUserRecipientId.Value <= 0)
+        {
+            return BadRequest("شناسه دریافت‌کننده معتبر نیست.");
+        }
+
+        var currentRecipientId = CurrentUserRecipientId.Value;
+
+        PrepareCachedOutOfStockReport(
+            ref inputModel,
+            ref reportId,
+            pageSize,
+            sort,
+            direction);
 
         if (toExcel)
         {
-            var excelData = await _reportService.GetOutOfStockItems(
+            var (excelData, _) = await _reportService.GetOutOfStockItems(
                 currentRecipientId,
                 inputModel.ItemClassId,
-                pageNumber, pageSize, sort, direction,
+                pageNumber,
+                pageSize,
+                sort,
+                direction,
                 true,
                 cancellationToken);
 
-            MemoryStream stream = _reportExcelGenerator.OutOfStockItemsExcel(excelData.data);
+            var stream = _reportExcelGenerator.OutOfStockItemsExcel(excelData);
 
-            return File(stream,
+            return File(
+                stream,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "zeroStock.xlsx");
         }
@@ -1007,7 +1108,10 @@ public class CurrentStockReportController(IReportService _reportService,
         var (data, count) = await _reportService.GetOutOfStockItems(
             currentRecipientId,
             inputModel.ItemClassId,
-            pageNumber, pageSize, sort, direction,
+            pageNumber,
+            pageSize,
+            sort,
+            direction,
             false,
             cancellationToken);
 
@@ -1024,7 +1128,11 @@ public class CurrentStockReportController(IReportService _reportService,
             },
             Columns = new List<GridColumn>
         {
-            new() { Header = "نام کالا", PropertyName = nameof(OutOfStockItemsDto.ItemName) }
+            new()
+            {
+                Header = "نام کالا",
+                PropertyName = nameof(OutOfStockItemsDto.ItemName)
+            }
         }
         };
 

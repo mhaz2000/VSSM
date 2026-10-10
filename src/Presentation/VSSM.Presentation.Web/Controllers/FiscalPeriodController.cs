@@ -148,7 +148,7 @@ public sealed class FiscalPeriodController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        await fiscalPeriodService.Delete(id, cancellationToken);
+        await fiscalPeriodService.DeleteAsync(id, cancellationToken);
         return RedirectToAction(nameof(Index));
     }
 }

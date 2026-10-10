@@ -241,14 +241,17 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
         await tx.CommitAsync(token);
     }
 
-
-    /* =========================
-       DRAFT
-    ========================= */
-    public async Task SetDraft(int arrivalId, ArrivalCreateDto dto, CancellationToken token)
+    public async Task SetDraft(
+        int arrivalId,
+        ArrivalCreateDto dto,
+        CancellationToken token)
     {
-        var arrival = await db.TblArrivals.FindAsync(new object[] { arrivalId }, token);
-        if (arrival == null) return;
+        var arrival = await db.TblArrivals
+            .FindAsync(new object[] { arrivalId }, token);
+
+        if (arrival == null)
+            throw new KeyNotFoundException(
+                $"Arrival with ID {arrivalId} was not found.");
 
         arrival.ReportNumber = dto.ReportNumber;
         arrival.EntryDate = DateTime.Now;
@@ -261,9 +264,6 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
         await db.SaveChangesAsync(token);
     }
 
-    /* =========================
-       DELETE WHOLE ARRIVAL
-    ========================= */
     public async Task Cancel(int id, CancellationToken token)
     {
         var arrival = await db.TblArrivals.FindAsync(new object[] { id }, token);
@@ -273,9 +273,6 @@ public class ArrivalService(VSSMDbContext db) : IArrivalService
         await db.SaveChangesAsync(token);
     }
 
-    /* =========================
-       DELETE ONE LINE
-    ========================= */
     public async Task CancelLine(int arrivalLineId, CancellationToken token)
     {
         var line = await db.TblArrivalLines.FindAsync(new object[] { arrivalLineId }, token);

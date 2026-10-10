@@ -1328,7 +1328,7 @@ public class ReportService(VSSMDbContext _context) : IReportService
             .ToListAsync(), total);
     }
 
-    public async Task<ItemIndicatorDetailDto> GetItemIndicatorDetail(int currentRecipientId, int? itemId, string? batchNumber)
+    public async Task<ItemIndicatorDetailDto?> GetItemIndicatorDetail(int currentRecipientId, int? itemId, string? batchNumber)
     {
         var query = from i in _context.TblItems.Where(t => t.ItemId == itemId)
                     join id in _context.TblItemDetails.Where(t => t.BatchNumber == batchNumber) on i.ItemId equals id.ItemId

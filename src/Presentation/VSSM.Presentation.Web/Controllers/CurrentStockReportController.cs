@@ -37,12 +37,12 @@ public class CurrentStockReportController(IReportService _reportService,
         ViewBag.ItemClasses = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.ItemClassesId, cancellationToken);
         ViewBag.Items = await _itemService.GetActives(cancellationToken);
         ViewBag.Sources = await _baseInfoService.GetByParentIdAsync(BaseInfoIds.EnergySources, cancellationToken);
-        ViewBag.Stores = await _storeService.GetAllWithRecipientId(CurrentUserRecipientId!.Value, cancellationToken);
+        ViewBag.Stores = await _storeService.GetAllWithRecipientId(CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
         ViewBag.Manufacturers = await _baseInfoService.GetByParentIdAsync(48, cancellationToken);
         ViewBag.Vvmstages = await _baseInfoService.GetByParentIdAsync(30, cancellationToken);
         ViewBag.Vvmtypes = await _baseInfoService.GetByParentIdAsync(22, cancellationToken);
 
-        var recipients = await _recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.Value, cancellationToken);
+        var recipients = await _recipientService.GetActiveRecipientChildren(CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
         ViewBag.Recipients = recipients;
 
         var firstChainLevel = recipients
@@ -114,7 +114,7 @@ public class CurrentStockReportController(IReportService _reportService,
         if (toExcel)
         {
             var excelData = await _reportService.GetAvailableQuantityQuantitySummaryReportAsync(
-                inputModel, CurrentUserRecipientId.Value,
+                inputModel, CurrentUserRecipientId.GetValueOrDefault(),
                 pageNumber, pageSize, sort, direction, true, cancellationToken);
 
             MemoryStream stream = _reportExcelGenerator.AvailableQuantityQuantitySummaryReportExcel(excelData.data);
@@ -126,7 +126,7 @@ public class CurrentStockReportController(IReportService _reportService,
         await PopulateHeaderAsync(inputModel, cancellationToken);
 
         var (data, count) = await _reportService.GetAvailableQuantityQuantitySummaryReportAsync(
-            inputModel, CurrentUserRecipientId.Value,
+            inputModel, CurrentUserRecipientId.GetValueOrDefault(),
             pageNumber, pageSize, sort, direction, false, cancellationToken);
 
         var groups = data
@@ -473,7 +473,7 @@ public class CurrentStockReportController(IReportService _reportService,
             BaseInfoIds.ItemClassesId, cancellationToken);
         ViewBag.Items = await _itemService.GetActives(cancellationToken);
         ViewBag.Stores = await _storeService.GetAllWithRecipientId(
-            CurrentUserRecipientId!.Value, cancellationToken);
+            CurrentUserRecipientId.GetValueOrDefault(), cancellationToken);
 
         return View(null);
     }
@@ -493,7 +493,7 @@ public class CurrentStockReportController(IReportService _reportService,
         PrepareCachedPhysicalInventoryReport(
             ref inputModel, ref reportId, pageSize, sort, direction);
 
-        var currentRecipientId = CurrentUserRecipientId!.Value;
+        var currentRecipientId = CurrentUserRecipientId.GetValueOrDefault();
 
         // ── Excel ──
         if (toExcel)
@@ -880,6 +880,8 @@ public class CurrentStockReportController(IReportService _reportService,
         return View(null);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> InventoryHistoryReport(
     long? itemId,
     int? fiscalPeriodId,
@@ -1071,6 +1073,7 @@ public class CurrentStockReportController(IReportService _reportService,
         return View(null);
     }
 
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> IndicatorReport(
@@ -1083,44 +1086,79 @@ public class CurrentStockReportController(IReportService _reportService,
         string? reportId = null,
         CancellationToken cancellationToken = default)
     {
-        PrepareCachedIndicatorReport(ref inputModel, ref reportId, pageSize, sort, direction);
+        PrepareCachedIndicatorReport(
+            ref inputModel, ref reportId, pageSize, sort, direction);
+
+        var currentRecipientId = CurrentUserRecipientId;
+
+        if (!currentRecipientId.HasValue)
+        {
+            ModelState.AddModelError(
+                string.Empty, "اطلاعات گیرنده کاربر جاری یافت نشد.");
+
+            return View("IndicatorReport");
+        }
 
         if (toExcel)
         {
             var excelData = await _reportService.GetItemIndicator(
-                CurrentUserRecipientId.Value,
+                currentRecipientId.Value,
                 inputModel.ItemId,
                 inputModel.BatchNumber,
-                pageNumber, pageSize, sort, direction, true,
+                pageNumber,
+                pageSize,
+                sort,
+                direction,
+                true,
                 cancellationToken);
 
-            MemoryStream stream = _reportExcelGenerator.ItemIndicatorExcel(excelData.data);
-            return File(stream,
+            var stream = _reportExcelGenerator.ItemIndicatorExcel(excelData.data);
+
+            return File(
+                stream,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "گزارش اندیکاتور.xlsx");
         }
 
-        var itemDetail = await _reportService.GetItemIndicatorDetail(
-            CurrentUserRecipientId.GetValueOrDefault(),
-            inputModel.ItemId,
-            inputModel.BatchNumber);
+        ItemIndicatorDetailDto? itemDetail = null;
 
         if (inputModel.ItemId.HasValue)
         {
-            itemDetail.CurrentStock = (await _itemDetailsService.GetItemBatchNumbers(
-                    inputModel.ItemId.Value,
-                    CurrentUserRecipientId.GetValueOrDefault(),
-                    CancellationToken.None))
-                .FirstOrDefault(t => t.BatchNumber == inputModel.BatchNumber)?.CurrentStock ?? 0;
+            itemDetail = await _reportService.GetItemIndicatorDetail(
+                currentRecipientId.Value,
+                inputModel.ItemId,
+                inputModel.BatchNumber);
+
+            if (itemDetail is null)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "مشخصات تکمیلی کالا یا سری ساخت موردنظر یافت نشد.");
+
+                return View("IndicatorReport");
+            }
+
+            var batchNumbers = await _itemDetailsService.GetItemBatchNumbers(
+                inputModel.ItemId.Value,
+                currentRecipientId.Value,
+                cancellationToken);
+
+            itemDetail.CurrentStock = batchNumbers
+                .FirstOrDefault(t => t.BatchNumber == inputModel.BatchNumber)
+                ?.CurrentStock ?? 0;
         }
 
         ViewBag.ItemDetail = itemDetail;
 
         var (data, count) = await _reportService.GetItemIndicator(
-            CurrentUserRecipientId.Value,
+            currentRecipientId.Value,
             inputModel.ItemId,
             inputModel.BatchNumber,
-            pageNumber, pageSize, sort, direction, false,
+            pageNumber,
+            pageSize,
+            sort,
+            direction,
+            false,
             cancellationToken);
 
         var model = new GridViewModel
@@ -1137,18 +1175,19 @@ public class CurrentStockReportController(IReportService _reportService,
             Columns = new List<GridColumn>
         {
             new() { Header = "شماره حواله / شماره گزارش", PropertyName = nameof(ItemIndicatorDto.ReportNumber) },
-            new() { Header = "شماره درخواست",             PropertyName = nameof(ItemIndicatorDto.RequestNum) },
-            new() { Header = "تاریخ",                     PropertyName = nameof(ItemIndicatorDto.DateText) },
-            new() { Header = "از / به",                   PropertyName = nameof(ItemIndicatorDto.Recipient) },
-            new() { Header = "ورودی (دریافتی)",           PropertyName = nameof(ItemIndicatorDto.Arrival) },
-            new() { Header = "خروجی (ارسالی)",            PropertyName = nameof(ItemIndicatorDto.Dispatch) },
-            new() { Header = "مانده",                     PropertyName = nameof(ItemIndicatorDto.CurrentStock) },
-            new() { Header = "توضیح",                     PropertyName = nameof(ItemIndicatorDto.Description) },
+            new() { Header = "شماره درخواست", PropertyName = nameof(ItemIndicatorDto.RequestNum) },
+            new() { Header = "تاریخ", PropertyName = nameof(ItemIndicatorDto.DateText) },
+            new() { Header = "از / به", PropertyName = nameof(ItemIndicatorDto.Recipient) },
+            new() { Header = "ورودی (دریافتی)", PropertyName = nameof(ItemIndicatorDto.Arrival) },
+            new() { Header = "خروجی (ارسالی)", PropertyName = nameof(ItemIndicatorDto.Dispatch) },
+            new() { Header = "مانده", PropertyName = nameof(ItemIndicatorDto.CurrentStock) },
+            new() { Header = "توضیح", PropertyName = nameof(ItemIndicatorDto.Description) },
         }
         };
 
         return View("IndicatorReport", model);
     }
+
 
     private void PrepareCachedIndicatorReport(
         ref IndicatorReportQuery inputModel,
@@ -1211,7 +1250,7 @@ public class CurrentStockReportController(IReportService _reportService,
 
         try
         {
-            var itemDetails = await _itemDetailsService.GetItemBatchNumbers(itemId, CurrentUserRecipientId.Value, CancellationToken.None);
+            var itemDetails = await _itemDetailsService.GetItemBatchNumbers(itemId, CurrentUserRecipientId.GetValueOrDefault(), CancellationToken.None);
 
             apiResult.Success = true;
             apiResult.Message = string.Empty;

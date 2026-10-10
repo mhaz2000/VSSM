@@ -177,14 +177,18 @@ namespace VSSM.Application.Services.BaseEntities
             await _db.SaveChangesAsync(token);
         }
 
-        public async Task Delete(int id, CancellationToken token)
+        public async Task<bool> DeleteAsync(int id, CancellationToken token)
         {
-            var e = await _db.TblMinMaxItems
+            var entity = await _db.TblMinMaxItems
                 .FirstOrDefaultAsync(x => x.MinMaxItemId == id, token);
-            if (e == null) return;
 
-            _db.TblMinMaxItems.Remove(e);
+            if (entity == null)
+                return false;
+
+            _db.TblMinMaxItems.Remove(entity);
             await _db.SaveChangesAsync(token);
+
+            return true;
         }
     }
 }

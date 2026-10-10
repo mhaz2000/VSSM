@@ -7,20 +7,13 @@ using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities;
 
-public class RecipientMaxItemService : IRecipientMaxItemService
+public class RecipientMaxItemService(
+    VSSMDbContext dbContext, 
+    IValidator<RecipientMaxItemDto> validator) : IRecipientMaxItemService
 {
-    private readonly VSSMDbContext _dbContext;
-    private readonly IValidator<RecipientMaxItemDto> _validator;
-
-    public RecipientMaxItemService(VSSMDbContext dbContext, IValidator<RecipientMaxItemDto> validator)
-    {
-        _dbContext = dbContext;
-        _validator = validator;
-    }
-
     public async Task<int> Create(RecipientMaxItemDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
+        var validationResult = await validator.ValidateAsync(dto, cancellationToken);
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
@@ -34,8 +27,8 @@ public class RecipientMaxItemService : IRecipientMaxItemService
             RelatedToItem = dto.RelatedToItem
         };
 
-        await _dbContext.TblRecipientMaxItems.AddAsync(entity, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.TblRecipientMaxItems.AddAsync(entity, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return entity.RecipientMaxItemId;
     }
 
@@ -49,7 +42,7 @@ public class RecipientMaxItemService : IRecipientMaxItemService
     {
         var paging = new PagingModel { Page = page, PageSize = pageSize };
 
-        IQueryable<TblRecipientMaxItem> query = _dbContext.TblRecipientMaxItems.AsNoTracking();
+        IQueryable<TblRecipientMaxItem> query = dbContext.TblRecipientMaxItems.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -99,7 +92,7 @@ public class RecipientMaxItemService : IRecipientMaxItemService
 
     public async Task<RecipientMaxItemDto> GetById(int id, CancellationToken cancellationToken)
     {
-        var entity = await _dbContext.TblRecipientMaxItems
+        var entity = await dbContext.TblRecipientMaxItems
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.RecipientMaxItemId == id, cancellationToken);
 
@@ -120,11 +113,11 @@ public class RecipientMaxItemService : IRecipientMaxItemService
 
     public async Task<bool> Update(RecipientMaxItemDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(dto, cancellationToken);
+        var validationResult = await validator.ValidateAsync(dto, cancellationToken);
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
-        var entity = await _dbContext.TblRecipientMaxItems
+        var entity = await dbContext.TblRecipientMaxItems
             .FirstOrDefaultAsync(x => x.RecipientMaxItemId == dto.RecipientMaxItemId, cancellationToken);
 
         if (entity == null)
@@ -137,20 +130,20 @@ public class RecipientMaxItemService : IRecipientMaxItemService
         entity.ReceiverId = dto.ReceiverId;
         entity.RelatedToItem = dto.RelatedToItem;
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     public async Task<bool> Delete(int id, CancellationToken cancellationToken)
     {
-        var entity = await _dbContext.TblRecipientMaxItems
+        var entity = await dbContext.TblRecipientMaxItems
             .FirstOrDefaultAsync(x => x.RecipientMaxItemId == id, cancellationToken);
 
         if (entity == null)
             return false;
 
-        _dbContext.TblRecipientMaxItems.Remove(entity);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        dbContext.TblRecipientMaxItems.Remove(entity);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
 }

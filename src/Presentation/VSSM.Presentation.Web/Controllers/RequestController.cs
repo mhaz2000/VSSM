@@ -222,6 +222,7 @@ public class RequestController(
     {
         await PopulateLookupViewBagsAsync(token);
 
+
         if (model.Id.HasValue)
         {
             var operation = command == "StatusDelete"
@@ -276,6 +277,12 @@ public class RequestController(
                     return RedirectToAction("Index");
                 }
             }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            await PopulateLookupViewBagsAsync(token);
+            return View("New", model);
         }
 
         return await AddLine(model, token);
@@ -512,23 +519,34 @@ public class RequestController(
         return RedirectToAction("ReceivedRequests");
     }
 
-    private async Task<IActionResult> AddLine(RequestViewModel model, CancellationToken token)
+
+
+    private async Task<IActionResult> AddLine(
+        RequestViewModel model,
+        CancellationToken token)
     {
-        if (!model.Id.HasValue || model.Id == 0)
+        if (model.NewLine.ItemClassId is null or <= 0)
         {
-            if (model.NewLine.ItemClassId is null or 0)
-            {
-                SetToast("انتخاب نوع کالا اجباری است", ToastError);
-                return RedirectToAction("New", new { id = model.Id });
-            }
+            SetToast("انتخاب نوع کالا الزامی است.", ToastError);
+            return RedirectToAction("New", new { id = model.Id });
+        }
 
-            if (model.NewLine.ItemId is null or 0)
-            {
-                SetToast("انتخاب کالا اجباری است", ToastError);
-                return RedirectToAction("New", new { id = model.Id });
-            }
+        if (model.NewLine.ItemId is null or <= 0)
+        {
+            SetToast("انتخاب کالا الزامی است.", ToastError);
+            return RedirectToAction("New", new { id = model.Id });
+        }
 
-            var activeFiscalPeriod = (await fiscalPeriodService.GetActives(token)).FirstOrDefault();
+        if (!TryValidateModel(model.NewLine, nameof(model.NewLine)))
+        {
+            await PopulateLookupViewBagsAsync(token);
+            return View("New", model);
+        }
+
+        if (!model.Id.HasValue || model.Id.Value <= 0)
+        {
+            var activeFiscalPeriod =
+                (await fiscalPeriodService.GetActives(token)).FirstOrDefault();
 
             var createDto = new RequestCreateDto
             {
@@ -563,10 +581,12 @@ public class RequestController(
 
         await requestService.AddLine(model.Id.Value, lineDto, token);
 
-        SetToast("کالا اضافه شد", ToastSuccess);
+        SetToast("کالا اضافه شد.", ToastSuccess);
 
         return RedirectToAction("New", new { id = model.Id });
     }
+
+
 
     private async Task<bool> DeleteRequestCore(int id, CancellationToken token)
     {

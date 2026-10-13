@@ -90,13 +90,40 @@ public class OrderInfoService(VSSMDbContext dbContext) : IOrderInfoService
         }
     }
 
-    public async Task RemoveAsync(int id, CancellationToken cancellationToken)
+    public async Task RemoveAsync(
+        int id,
+        CancellationToken cancellationToken)
     {
-        dbContext.TblUidInfo.RemoveRange(dbContext.TblUidInfo.Where(t => t.FkOrderInfo == id));
-        dbContext.TblOrderInfo.Remove(dbContext.TblOrderInfo.Find(id));
+        var order = await dbContext.TblOrderInfo
+            .FirstOrDefaultAsync(
+                o => o.PkOrderInfo == id,
+                cancellationToken);
 
-        await dbContext.SaveChangesAsync();
-    }
+        if (order is null)
+            throw new KeyNotFoundException(
+                $"سفارش با شناسه {id} یافت نشد.");
+
+        await using var transaction =
+            await dbContext.Database.BeginTransactionAsync(
+                cancellationToken);
+
+        try
+        {
+            var uidInfos = dbContext.TblUidInfo
+                .Where(u => u.FkOrderInfo == id);
+
+            dbContext.TblUidInfo.RemoveRange(uidInfos);
+            dbContext.TblOrderInfo.Remove(order);
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }   
 
     public async Task UploadAsync(XDocument doc, string fileName, int itemId, int dosePerVialId, int userId)
     {

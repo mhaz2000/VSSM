@@ -25,48 +25,75 @@ public class DestroyUidService(
     }
 
     public async Task<(bool Success, string Message, List<DestroyUidSearchResultDto> Data)>
-        SearchByBatchAsync(string batchNumber, int userRecipientId, CancellationToken token)
+        SearchByBatchAsync(
+            string batchNumber,
+            int userRecipientId,
+            CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(batchNumber))
             return (false, "سری ساخت اجباری است", []);
 
+        batchNumber = batchNumber.Trim();
+
+        if (batchNumber.Length > 50)
+            return (false, "طول شماره سری ساخت نباید بیشتر از ۵۰ کاراکتر باشد", []);
+
+        if (batchNumber.Any(char.IsControl))
+            return (false, "قالب شماره سری ساخت معتبر نیست", []);
+
         var validStoreIds = await db.TblStores
-             .Where(s => s.RecipientId == userRecipientId)
-             .Select(s => s.Id)
-             .ToListAsync(token);
+            .AsNoTracking()
+            .Where(s => s.RecipientId == userRecipientId)
+            .Select(s => s.Id)
+            .ToListAsync(token);
 
         if (validStoreIds.Count == 0)
             return (false, "کاربر جاری دسترسی به هیچ انباری ندارد", []);
 
         var order = await db.TblOrderInfo
             .AsNoTracking()
-            .Include(o => o.TblUidInfos)
             .FirstOrDefaultAsync(o =>
-                o.BatchNumber == batchNumber && o.Status == "APPLIED", token);
+                o.BatchNumber == batchNumber &&
+                o.Status == "APPLIED", token);
 
         if (order == null)
             return (false, "سری ساخت یافت نشد", []);
 
-        var uidCount = order.TblUidInfos.Count(u =>
-            u.IsActive == true &&
-            u.Used == false &&
-            u.FkDestroyId == null &&
-            u.CurrentStore == userRecipientId);
+        var uidCount = await db.TblUidInfo
+            .AsNoTracking()
+            .CountAsync(u =>
+                u.FkOrderInfo == order.PkOrderInfo &&
+                u.IsActive == true &&
+                u.Used == false &&
+                u.FkDestroyId == null &&
+                u.CurrentStore.HasValue &&
+                validStoreIds.Contains(u.CurrentStore.Value),
+                token);
 
         if (uidCount == 0)
             return (false, "سری ساخت وارد شده فاقد UID معتبر می‌باشد", []);
 
         var itemName = await db.TblItems
+            .AsNoTracking()
             .Where(i => i.ItemId == order.FkItemId)
             .Select(i => i.FullName)
             .FirstOrDefaultAsync(token) ?? "-";
+
+        var doseInfo = await baseInfoService
+            .GetByIdAsync(order.FkDosePerVialId);
+
+        if (doseInfo == null ||
+            !int.TryParse(doseInfo.Title, out var dosePerVial))
+        {
+            return (false, "اطلاعات تعداد دوز معتبر نیست", []);
+        }
 
         var result = new DestroyUidSearchResultDto
         {
             PkOrderInfo = order.PkOrderInfo,
             BatchNumber = order.BatchNumber,
             ItemName = itemName,
-            DosePerVial = order.FkDosePerVialId,
+            DosePerVial = dosePerVial,
             ProductionDate = order.ManufactureDate.ToShamsi(),
             ExpiryDate = order.ExpirationDate?.ToShamsi() ?? "-",
             UidCount = uidCount

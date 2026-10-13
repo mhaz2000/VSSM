@@ -1,5 +1,4 @@
-﻿// Application/Interfaces/BaseEntities/IMinMaxItemService.cs
-using VSSM.Application.DTOs;
+﻿using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.MinMaxItem;
 
 namespace VSSM.Application.Interfaces.BaseEntities;

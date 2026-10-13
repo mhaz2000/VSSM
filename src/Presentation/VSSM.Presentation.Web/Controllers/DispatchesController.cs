@@ -255,23 +255,41 @@ public class DispatchesController(
         return RedirectToAction(nameof(Index));
     }
 
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete(
+    int id,
+    CancellationToken cancellationToken)
     {
-        var dispatch = await dispatchService.GetEntityByIdAsync(id);
-        if (dispatch == null)
-            return NotFound();
-
-        if (dispatch.IsConfirmed == true)
+        try
         {
-            await dispatchService.RestoreStockAsync(id, cancellationToken);
-        }
+            var deleted = await dispatchService
+                .DeleteDispatchAndRestoreStockAsync(
+                    id,
+                    cancellationToken);
 
-        await dispatchService.DeleteDispatchAsync(id, cancellationToken);
+            if (!deleted)
+                return NotFound();
+
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+
+            TempData["ToastMessage"] =
+                "حذف ارسال انجام نشد. لطفاً مجدداً وضعیت را بررسی کنید.";
+            TempData["ToastType"] = "error";
+
+            return RedirectToAction(nameof(Index));
+        }
 
         TempData["ToastMessage"] = "ارسال با موفقیت حذف شد.";
         TempData["ToastType"] = "success";
+
 
         await audit.LogAsync(
             "Warning",
@@ -527,9 +545,19 @@ public class DispatchesController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Confirm(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Confirm(
+        int id,
+        CancellationToken cancellationToken)
     {
-        await dispatchService.ConfirmDispatchAsync(id, cancellationToken);
+        try
+        {
+            await dispatchService.ConfirmDispatchAsync(id, cancellationToken);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+
         await audit.LogAsync(
             "Information",
             $"Dispatch confirmed: id={id}",
@@ -539,7 +567,6 @@ public class DispatchesController(
             HttpContext.Request.Method);
 
         return RedirectToAction(nameof(Index));
-
     }
 
     public async Task<IActionResult> New(CancellationToken cancellationToken)

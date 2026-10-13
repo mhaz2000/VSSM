@@ -54,4 +54,9 @@ public interface IDispatchService
 
     Task<DispatchPrintDto?> GetDispatchPrintDataAsync(int id);
     Task<string> GenerateReportNumberAsync();
+
+    Task<bool> DeleteDispatchAndRestoreStockAsync(
+       int dispatchId,
+       CancellationToken token);
+
 }

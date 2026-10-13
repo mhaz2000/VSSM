@@ -319,18 +319,33 @@ public class DispatchService(
 
     public async Task ConfirmDispatchAsync(int id, CancellationToken cancellationToken)
     {
-        var dispatch = await context.TblDispatches.FindAsync(id);
+        var dispatch = await context.TblDispatches.FindAsync(id, cancellationToken);
 
-        if (dispatch.IsConfirmed.HasValue && dispatch.IsConfirmed.Value)
+        if (dispatch is null)
+            throw new KeyNotFoundException($"ارسال با شناسه {id} یافت نشد.");
+
+        if (dispatch.IsConfirmed == true)
             return;
 
         dispatch.IsConfirmed = true;
         dispatch.IsDrafted = false;
         dispatch.ConfirmationTime = DateTime.Now;
-        dispatch.DispatchVoucherNumber = (int.Parse(dispatch.DispatchVoucherNumber) + 1).ToString();
+
+        if (!int.TryParse(dispatch.DispatchVoucherNumber, out var voucherNumber))
+        {
+            throw new InvalidOperationException(
+                $"شماره حواله ارسال با شناسه {id} معتبر نیست.");
+        }
+
+        if (voucherNumber == int.MaxValue)
+        {
+            throw new InvalidOperationException(
+                $"امکان افزایش شماره حواله ارسال با شناسه {id} وجود ندارد.");
+        }
+
+        dispatch.DispatchVoucherNumber = (voucherNumber + 1).ToString();
 
         await context.SaveChangesAsync(cancellationToken);
-
     }
 
     public async Task UpdateDispatchAsync(UpdateDispatchDto updateDispatcheDto, string submitType, CancellationToken cancellationToken)
@@ -550,6 +565,44 @@ public class DispatchService(
         {
             context.TblDispatches.Remove(dispatch);
             await context.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task<bool> DeleteDispatchAndRestoreStockAsync(
+    int dispatchId,
+    CancellationToken token)
+    {
+        await using var transaction =
+            await context.Database.BeginTransactionAsync(token);
+
+        try
+        {
+            var dispatch = await context.TblDispatches
+                .FirstOrDefaultAsync(
+                    d => d.DispatchId == dispatchId,
+                    token);
+
+            if (dispatch == null)
+            {
+                await transaction.RollbackAsync(token);
+                return false;
+            }
+
+            if (dispatch.IsConfirmed == true)
+            {
+                await RestoreStockAsync(dispatchId, token);
+            }
+
+            await DeleteDispatchAsync(dispatchId, token);
+
+            await transaction.CommitAsync(token);
+
+            return true;
+        }
+        catch
+        {
+            await transaction.RollbackAsync(token);
+            throw;
         }
     }
 

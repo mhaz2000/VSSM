@@ -11,7 +11,6 @@ public partial class TblBaseInfo
     public string CreateBy { get; set; }
     public string UpdateBy { get; set; }
     public DateTime UpdateDate { get; set; }
-
     public virtual TblBaseInfo? Parent { get; set; }
     public virtual ICollection<TblBaseInfo> Children { get; set; } = new List<TblBaseInfo>();
     public virtual ICollection<TblDestroyUid> DestroyUids { get; set; } = new List<TblDestroyUid>();

@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
 using System.Security.Authentication;
 using VSSM.Application.Services.BackgroundServices;
+using VSSM.Application.Settings;
 using VSSM.Infrastructure.Data.Models;
+using VSSM.Infrastructure.Settings;
 using VSSM.Presentation.Web;
 using VSSM.Presentation.Web.Filters;
+using VSSM.Presentation.Web.HostedServices;
 using VSSM.Presentation.Web.Middlewares;
 using VSSM.Presentation.Web.Services;
 
@@ -35,10 +38,14 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddHostedService<OrdersInquiryBackgroundService>();
 builder.Services.AddHostedService<AuditRetentionBackgroundService>();
 
-builder.Services.Configure<RateLimitOptions>(
-    builder.Configuration.GetSection(RateLimitOptions.SectionName));
 
 builder.Services.AddMemoryCache();
+
+builder.Services.AddSingleton<ISecuritySettingsProvider, SecuritySettingsProvider>();
+builder.Services.AddHostedService<SecuritySettingsPreloadHostedService>();
+
+builder.Services.AddScoped<IRateLimitService, RateLimitService>();
+
 
 if (builder.Environment.IsDevelopment())
 {

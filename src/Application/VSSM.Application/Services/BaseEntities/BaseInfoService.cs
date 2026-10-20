@@ -1,14 +1,16 @@
-using DocumentFormat.OpenXml.Office2010.Excel;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using VSSM.Application.DTOs;
 using VSSM.Application.DTOs.BaseEntities.BaseInfo;
 using VSSM.Application.Interfaces.BaseEntities;
+using VSSM.Application.Settings;
 using VSSM.Infrastructure.Data.Models;
 
 namespace VSSM.Application.Services.BaseEntities
 {
-    public class BaseInfoService(VSSMDbContext dbContext) : IBaseInfoService
+    public class BaseInfoService(
+        VSSMDbContext dbContext,
+        ISecuritySettingsProvider securitySettings) : IBaseInfoService
     {
         public async Task AddAsync(BaseInfoInputDto model, int currentUserId)
         {
@@ -17,7 +19,7 @@ namespace VSSM.Application.Services.BaseEntities
             var baseInfo = new TblBaseInfo()
             {
                 Title = model.Title,
-                Code = model.Code,
+                Code = model.Code,          
                 ParentId = model.ParentId,
                 Order = model.Order,
                 CreateDate = DateTime.Now,
@@ -28,11 +30,17 @@ namespace VSSM.Application.Services.BaseEntities
 
             await dbContext.AddAsync(baseInfo);
             await dbContext.SaveChangesAsync();
+
+            if (IsSecurityKey(baseInfo.Title))
+                securitySettings.Invalidate();
         }
 
         public async Task<BaseInfoDto> GetByIdAsync(int id)
         {
             var baseInfo = await dbContext.TblBaseInfo.FindAsync(id);
+
+            if (baseInfo is null)
+                return null!;
 
             return new BaseInfoDto()
             {
@@ -43,63 +51,75 @@ namespace VSSM.Application.Services.BaseEntities
                 Order = baseInfo.Order,
             };
         }
-
-        public async Task<(List<BaseInfoDto> data, int count)> GetPagedBaseInfoAsync(string? search, int page, int pageSize, CancellationToken cancellationToken)
+        public async Task<(List<BaseInfoDto> data, int count)> GetPagedBaseInfoAsync(
+            string? search, int page, int pageSize, CancellationToken cancellationToken)
         {
-            var paging = new PagingModel { Page = page, PageSize = pageSize };
-
-            var query = dbContext.TblBaseInfo.Include(t => t.Parent).Select(s => new BaseInfoDto()
-            {
-                Id = s.BaseInfoId,
-                ParentId = s.ParentId,
-                Title = s.Title,
-                Code = s.Code,
-                UpdatedDate = s.UpdateDate,
-                ParentTitle = s.Parent != null ? s.Parent.Title : string.Empty
-            });
-                        
+            var query = dbContext.TblBaseInfo
+                .Include(t => t.Parent)
+                .Select(s => new BaseInfoDto()
+                {
+                    Id = s.BaseInfoId,
+                    ParentId = s.ParentId,
+                    Title = s.Title,
+                    Code = s.Code,
+                    UpdatedDate = s.UpdateDate,
+                    ParentTitle = s.Parent != null ? s.Parent.Title : string.Empty
+                });
 
             query = query.OrderByDescending(t => t.Id).AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(d =>
-                    d.Title.Contains(search) ||
+                    d.Title!.Contains(search) ||
                     (!string.IsNullOrEmpty(d.Code) && d.Code.Contains(search)) ||
-                    d.ParentTitle.Contains(search)
+                    (!string.IsNullOrEmpty(d.ParentTitle) && d.ParentTitle.Contains(search))
                 );
             }
 
-            var total = await query.CountAsync();
+            var total = await query.CountAsync(cancellationToken);
 
             return (await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync(), total);
+                .ToListAsync(cancellationToken), total);
         }
 
         public async Task RemoveAsync(int id)
         {
-            dbContext.TblBaseInfo.Remove(await dbContext.TblBaseInfo.FindAsync(id));
+            var entity = await dbContext.TblBaseInfo.FindAsync(id);
+            if (entity is null) return;
+
+            var wasSecurityKey = IsSecurityKey(entity.Title);
+
+            dbContext.TblBaseInfo.Remove(entity);
             await dbContext.SaveChangesAsync();
+
+            if (wasSecurityKey)
+                securitySettings.Invalidate();
         }
 
         public async Task UpdateAsync(BaseInfoInputDto model, int currentUserId)
         {
-            var baseInfo = await dbContext.TblBaseInfo.FindAsync(model.BaseInfoId);
+            var baseInfo = await dbContext.TblBaseInfo.FindAsync(model.BaseInfoId)
+                ?? throw new InvalidOperationException($"BaseInfo {model.BaseInfoId} not found.");
+
             var currentUser = await dbContext.TblUsers.FindAsync(currentUserId);
 
             baseInfo.UpdateDate = DateTime.Now;
-            baseInfo.UpdateBy = currentUser.UserName ?? string.Empty;
+            baseInfo.UpdateBy = currentUser?.UserName ?? string.Empty;
             baseInfo.Title = model.Title;
-            baseInfo.Code = model.Code;
+            baseInfo.Code = model.Code;    
             baseInfo.Order = model.Order;
 
             await dbContext.SaveChangesAsync();
 
+            if (IsSecurityKey(baseInfo.Title))
+                securitySettings.Invalidate();
         }
 
-        public async Task<List<BaseInfoDto>> GetByParentIdAsync(int parentId, CancellationToken cancellationToken = default)
+        public async Task<List<BaseInfoDto>> GetByParentIdAsync(
+            int parentId, CancellationToken cancellationToken = default)
         {
             return await dbContext.TblBaseInfo
                 .Where(x => x.ParentId == parentId)
@@ -115,5 +135,7 @@ namespace VSSM.Application.Services.BaseEntities
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
+        private static bool IsSecurityKey(string? title) =>
+            SecuritySettings.IsSecurityTitle(title);
     }
 }
